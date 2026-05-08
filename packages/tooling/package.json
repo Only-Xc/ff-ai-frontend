@@ -5,6 +5,8 @@
   "type": "module",
   "exports": {
     "./eslint/react-vite": "./eslint/react-vite.js",
+    "./eslint/typescript": "./eslint/typescript.js",
+    "./tsconfig/browser-lib.json": "./tsconfig/browser-lib.json",
     "./tsconfig/node.json": "./tsconfig/node.json",
     "./tsconfig/react-app.json": "./tsconfig/react-app.json"
   },

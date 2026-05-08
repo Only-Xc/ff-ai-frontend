@@ -1,0 +1,15 @@
+export default {
+  'routes.groups.platform': '平台管理',
+  'routes.groups.workspace': '工作空间',
+  'routes.groups.business': '业务管理',
+  'routes.usage.title': '用量与余额',
+  'routes.generate.title': '应用生成',
+  'routes.tickets.title': '我的工单',
+  'routes.apps.title': '我的应用',
+  'routes.board.title': '我的看板',
+  'routes.data.title': '应用数据',
+  'routes.settings.title': '设置',
+  'routes.workspace.title': '工作台',
+  'routes.workspaceOverview.title': '工作空间',
+  'routes.notFound.title': '404',
+}

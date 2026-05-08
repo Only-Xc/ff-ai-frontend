@@ -13,13 +13,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.2",
+    "@ff-ai-frontend/utils": "workspace:*",
+    "@formatjs/intl-localematcher": "^0.8.6",
+    "@tanstack/react-query": "^5.100.6",
+    "antd": "^6.3.7",
+    "antd-style": "^4.1.0",
+    "i18next": "^26.0.10",
+    "i18next-resources-to-backend": "^1.2.1",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "react-i18next": "^17.0.7",
+    "react-router": "^7.14.2",
+    "usehooks-ts": "^3.1.1",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
-    "@ff-ai-frontend/tooling": "workspace:*",
     "@babel/core": "catalog:",
+    "@ff-ai-frontend/tooling": "workspace:*",
     "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
     "@types/babel__core": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -28,6 +41,7 @@
     "eslint": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "tailwindcss": "catalog:",
     "vite": "catalog:"
   }
 }

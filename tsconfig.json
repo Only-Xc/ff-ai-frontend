@@ -1,4 +1,8 @@
 {
   "files": [],
-  "references": [{ "path": "./apps/admin-web" }, { "path": "./apps/user-web" }]
+  "references": [
+    { "path": "./packages/utils" },
+    { "path": "./apps/admin-web" },
+    { "path": "./apps/user-web" }
+  ]
 }

@@ -1,0 +1,15 @@
+export default {
+  'routes.groups.platform': 'إدارة المنصة',
+  'routes.groups.workspace': 'مساحة العمل',
+  'routes.groups.business': 'إدارة الأعمال',
+  'routes.usage.title': 'الاستخدام والرصيد',
+  'routes.generate.title': 'إنشاء التطبيقات',
+  'routes.tickets.title': 'تذاكري',
+  'routes.apps.title': 'تطبيقاتي',
+  'routes.board.title': 'لوحاتي',
+  'routes.data.title': 'بيانات التطبيق',
+  'routes.settings.title': 'الإعدادات',
+  'routes.workspace.title': 'لوحة العمل',
+  'routes.workspaceOverview.title': 'مساحة العمل',
+  'routes.notFound.title': '404',
+}
