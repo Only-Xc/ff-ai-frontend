@@ -40,10 +40,7 @@ export interface RequestPlugin {
     config: RequestConfig,
     context: RequestContext,
   ): MaybePromise<RequestConfig | void>
-  onResponse?(
-    response: unknown,
-    context: RequestContext,
-  ): MaybePromise<unknown>
+  onResponse?(response: unknown, context: RequestContext): MaybePromise<unknown>
   onError?(
     error: RequestError,
     context: RequestContext,
@@ -98,3 +95,5 @@ export type RequestErrorHandler = (
   error: RequestError,
   config?: RequestConfig,
 ) => MaybePromise<void>
+
+export type ResponseRestfulHandler = (data: unknown) => MaybePromise<void>

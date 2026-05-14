@@ -7,6 +7,7 @@ export {
 export { errorHandlerPlugin } from './plugin/error-handler.js'
 export { dedupePlugin, getPendingRequestKey } from './plugin/dedupe.js'
 export { dataPlugin, unwrapCodeDataPlugin } from './plugin/response.js'
+export { restfulPlugin } from './plugin/restful.js'
 export { createRequestClient } from './core/client.js'
 export { createRequestPlugin } from './core/plugin.js'
 export type { RequestErrorOptions } from './core/error.js'

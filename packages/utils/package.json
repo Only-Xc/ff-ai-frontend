@@ -17,13 +17,16 @@
       "import": "./src/storage/index.ts"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "oxlint && eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "format": "oxfmt . --write",
-    "format:check": "oxfmt . --check"
+    "format": "oxfmt . --ignore-path ../../.gitignore --write",
+    "format:check": "oxfmt . --ignore-path ../../.gitignore --check"
   },
   "dependencies": {
     "axios": "^1.15.2",

@@ -138,7 +138,10 @@ function normalizeAxiosError(error: AxiosError<unknown>): RequestError {
       cause: error,
       config: error.config as RequestConfig | undefined,
       data: responseData,
-      message: readErrorMessage(error) ?? DEFAULT_REQUEST_ERROR_MESSAGE,
+      message:
+        readRestfulErrorMessage(responseData) ??
+        readErrorMessage(error) ??
+        DEFAULT_REQUEST_ERROR_MESSAGE,
       status: error.response.status,
     })
   }
@@ -172,4 +175,24 @@ function readAxiosErrorConfig(error: unknown): RequestConfig | undefined {
  */
 function readErrorMessage(error: Error): string | undefined {
   return error.message.trim() ? error.message : undefined
+}
+
+function readRestfulErrorMessage(data: unknown): string | undefined {
+  if (!isRecord(data)) {
+    return undefined
+  }
+
+  return (
+    readNonEmptyString(data.message) ??
+    readNonEmptyString(data.detail) ??
+    readNonEmptyString(data.error)
+  )
+}
+
+function readNonEmptyString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value : undefined
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
