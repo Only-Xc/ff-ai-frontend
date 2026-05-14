@@ -1,0 +1,76 @@
+import { App as AntdApp, ConfigProvider, theme } from 'antd'
+import { useMemo } from 'react'
+import type { ReactNode } from 'react'
+import { useIsomorphicLayoutEffect } from 'usehooks-ts'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
+import { defaultSettings } from '@/config/defaultSettings'
+import { useLocale } from '@/i18n/useLocale'
+import { useAppStore } from '@/store/useApp'
+import { GlobalMessageRegister } from '@/utils/message'
+
+interface Props {
+  children: ReactNode
+}
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+export function AppProvider({ children }: Props) {
+  const colorPrimary = defaultSettings.colorPrimary
+
+  // 深色模式
+  const themeMode = useAppStore((state) => state.theme)
+  useIsomorphicLayoutEffect(() => {
+    document.documentElement.dataset.theme = themeMode
+  }, [themeMode])
+
+  // 多语言
+  const { antdLocale, direction, locale } = useLocale()
+
+  useIsomorphicLayoutEffect(() => {
+    document.documentElement.lang = locale
+    document.documentElement.dir = direction
+  }, [direction, locale])
+
+  // antd 主题配置
+  const antdTheme = useMemo(
+    () => ({
+      algorithm:
+        themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
+      token: {
+        colorPrimary,
+      },
+      components: {
+        Layout: {
+          headerHeight: 52,
+        },
+      },
+    }),
+    [colorPrimary, themeMode],
+  )
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ConfigProvider
+        direction={direction}
+        locale={antdLocale}
+        theme={antdTheme}
+      >
+        <AntdApp className="h-full">
+          <GlobalMessageRegister />
+          {children}
+        </AntdApp>
+      </ConfigProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  )
+}

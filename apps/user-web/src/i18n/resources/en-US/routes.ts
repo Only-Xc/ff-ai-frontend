@@ -1,0 +1,15 @@
+export default {
+  'routes.groups.platform': 'Platform',
+  'routes.groups.workspace': 'Workspace',
+  'routes.groups.business': 'Business',
+  'routes.chat.title': 'Usage & Balance',
+  'routes.generate.title': 'App Generation',
+  'routes.tickets.title': 'My Tickets',
+  'routes.apps.title': 'My Apps',
+  'routes.board.title': 'My Boards',
+  'routes.data.title': 'App Data',
+  'routes.settings.title': 'Settings',
+  'routes.workspace.title': 'Dashboard',
+  'routes.workspaceOverview.title': 'Workspace',
+  'routes.notFound.title': '404',
+}
