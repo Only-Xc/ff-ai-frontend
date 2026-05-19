@@ -2,14 +2,27 @@ import { App as AntdApp, ConfigProvider, theme } from 'antd'
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useIsomorphicLayoutEffect } from 'usehooks-ts'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { defaultSettings } from '@/config/defaultSettings'
 import { useLocale } from '@/i18n/useLocale'
 import { useAppStore } from '@/store/useApp'
+import { GlobalMessageRegister } from '@/utils/message'
 
 interface Props {
   children: ReactNode
 }
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 export function AppProvider({ children }: Props) {
   const colorPrimary = defaultSettings.colorPrimary
@@ -38,7 +51,7 @@ export function AppProvider({ children }: Props) {
       },
       components: {
         Layout: {
-          headerHeight: 60,
+          headerHeight: 52,
         },
       },
     }),
@@ -46,8 +59,18 @@ export function AppProvider({ children }: Props) {
   )
 
   return (
-    <ConfigProvider direction={direction} locale={antdLocale} theme={antdTheme}>
-      <AntdApp className="h-full">{children}</AntdApp>
-    </ConfigProvider>
+    <QueryClientProvider client={queryClient}>
+      <ConfigProvider
+        direction={direction}
+        locale={antdLocale}
+        theme={antdTheme}
+      >
+        <AntdApp className="h-full">
+          <GlobalMessageRegister />
+          {children}
+        </AntdApp>
+      </ConfigProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   )
 }

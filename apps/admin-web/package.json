@@ -19,6 +19,10 @@
     "@tanstack/react-query": "^5.100.6",
     "antd": "^6.3.7",
     "antd-style": "^4.1.0",
+    "axios": "^1.15.2",
+    "date-fns": "^4.1.0",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.6",
     "i18next": "^26.0.10",
     "i18next-resources-to-backend": "^1.2.1",
     "react": "catalog:",
@@ -26,6 +30,7 @@
     "react-i18next": "^17.0.7",
     "react-router": "^7.14.2",
     "usehooks-ts": "^3.1.1",
+    "uuid": "^11.1.1",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
@@ -33,6 +38,7 @@
     "@ff-ai-frontend/tooling": "workspace:*",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
+    "@tanstack/react-query-devtools": "^5.100.10",
     "@types/babel__core": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

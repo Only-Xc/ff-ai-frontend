@@ -2,7 +2,7 @@ export default {
   'routes.groups.platform': 'إدارة المنصة',
   'routes.groups.workspace': 'مساحة العمل',
   'routes.groups.business': 'إدارة الأعمال',
-  'routes.usage.title': 'الاستخدام والرصيد',
+  'routes.chat.title': 'الاستخدام والرصيد',
   'routes.generate.title': 'إنشاء التطبيقات',
   'routes.tickets.title': 'تذاكري',
   'routes.apps.title': 'تطبيقاتي',

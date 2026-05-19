@@ -2,7 +2,7 @@ export default {
   'routes.groups.platform': 'Platform',
   'routes.groups.workspace': 'Workspace',
   'routes.groups.business': 'Business',
-  'routes.usage.title': 'Usage & Balance',
+  'routes.chat.title': 'Usage & Balance',
   'routes.generate.title': 'App Generation',
   'routes.tickets.title': 'My Tickets',
   'routes.apps.title': 'My Apps',

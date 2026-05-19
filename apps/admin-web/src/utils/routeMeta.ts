@@ -42,8 +42,9 @@ export function getRouteMatches(
     const isExact = normalizedRoutePath === normalizedPathname
     const isParent =
       route.children && normalizedPathname.startsWith(`${normalizedRoutePath}/`)
+    const isPathlessParent = !route.path && route.children
 
-    if (isExact || isParent) {
+    if (isExact || isParent || isPathlessParent) {
       const current = meta.title
         ? [
             {
@@ -61,6 +62,8 @@ export function getRouteMatches(
           pathname,
           routePath,
         )
+
+        if (!isExact && !childMatches.length) continue
 
         return [...current, ...childMatches]
       }

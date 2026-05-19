@@ -2,7 +2,7 @@ export default {
   'routes.groups.platform': '平台管理',
   'routes.groups.workspace': '工作空间',
   'routes.groups.business': '业务管理',
-  'routes.usage.title': '用量与余额',
+  'routes.chat.title': '工作台',
   'routes.generate.title': '应用生成',
   'routes.tickets.title': '我的工单',
   'routes.apps.title': '我的应用',

@@ -18,13 +18,13 @@ export function Logo() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex h-full items-center gap-3">
-      <LogoIcon className="size-8 text-(--primary)" />
+    <div className="flex h-full items-center gap-2">
+      <LogoIcon className="size-7 text-(--primary)" />
       <div className="flex flex-col leading-1">
-        <div className="text-base font-bold leading-[1.2] tracking-normal text-(--text-strong)">
+        <div className="text-sm font-bold leading-[1.15] tracking-normal text-(--text-strong)">
           {t('common.appTitle')}
         </div>
-        <div className="mt-0.75 text-[10px] tracking-[1.5px] text-(--muted)">
+        <div className="mt-0.5 text-[10px] tracking-[1.2px] text-(--muted)">
           {t('common.appSubtitle')}
         </div>
       </div>

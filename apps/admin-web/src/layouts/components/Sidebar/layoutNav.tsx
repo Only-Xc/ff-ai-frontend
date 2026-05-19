@@ -1,20 +1,21 @@
 import type { TFunction } from 'i18next'
 import type { ReactNode } from 'react'
 
-import type { AppRouteObject } from '@/router/routes'
+import type { AppRouteObject, RouteMeta } from '@/router/routes'
 import { getRouteTitle } from '@/utils/routeMeta'
 
-export interface NavItem {
+export interface NavTreeItem {
   key: string
   label: string
-  path: string
+  kind: 'group' | 'submenu' | 'menu'
+  path?: string
   icon?: ReactNode
-  order: number
+  children?: NavTreeItem[]
 }
 
-export interface NavGroup {
-  label: string
-  items: NavItem[]
+type NavTreeItemWithOrder = NavTreeItem & {
+  order: number
+  children?: NavTreeItemWithOrder[]
 }
 
 function joinPath(parentPath: string, path?: string) {
@@ -24,81 +25,122 @@ function joinPath(parentPath: string, path?: string) {
   return `${parentPath.replace(/\/$/, '')}/${path}`.replace(/\/+/g, '/')
 }
 
+function getNavKey(meta: RouteMeta, routePath: string) {
+  return meta.navKey ?? routePath
+}
+
+function getMenuKind(
+  meta: RouteMeta,
+  hasChildren: boolean,
+): NavTreeItem['kind'] {
+  if (meta.menuType === 'catalog') {
+    return meta.menuMode === 'submenu' ? 'submenu' : 'group'
+  }
+
+  if (meta.menuType === 'menu') return 'menu'
+
+  return hasChildren ? 'submenu' : 'menu'
+}
+
+function stripOrder(item: NavTreeItemWithOrder): NavTreeItem {
+  return {
+    key: item.key,
+    label: item.label,
+    kind: item.kind,
+    path: item.path,
+    icon: item.icon,
+    children: item.children?.map(stripOrder),
+  }
+}
+
 function collectNavItems(
   routes: AppRouteObject[],
   t: TFunction,
   parentPath = '',
-): (NavItem & { group: string })[] {
-  return routes.flatMap((route) => {
-    const routePath = joinPath(parentPath, route.path)
-    const meta = route.handle
-    const current =
-      meta?.title && meta.navGroup && !meta.hideInMenu
-        ? [
-            {
-              group: getNavGroupLabel(meta.navGroup, meta.navGroupKey, t),
-              key: meta.navKey ?? routePath,
-              label: getRouteTitle(meta, t),
-              path: routePath,
-              icon: meta.icon,
-              order: meta.navOrder ?? 0,
-            },
-          ]
+): NavTreeItemWithOrder[] {
+  return routes
+    .flatMap((route) => {
+      const routePath = joinPath(parentPath, route.path)
+      const meta = route.handle
+      const children = route.children
+        ? collectNavItems(route.children, t, routePath)
         : []
-    const children = route.children
-      ? collectNavItems(route.children, t, routePath)
-      : []
 
-    return [...current, ...children]
-  })
-}
+      if (!meta?.title || meta.hideInMenu) return children
 
-function getNavGroupLabel(
-  navGroup: string,
-  navGroupKey: string | undefined,
-  t: TFunction,
-) {
-  if (navGroupKey) {
-    const translated = t(navGroupKey)
+      const kind = getMenuKind(meta, children.length > 0)
+      const path = kind === 'menu' ? routePath : undefined
 
-    if (translated && translated !== navGroupKey) return translated
-  }
+      const item: NavTreeItemWithOrder = {
+        key: getNavKey(meta, routePath),
+        label: getRouteTitle(meta, t),
+        kind,
+        path,
+        icon: meta.icon,
+        order: meta.navOrder ?? 0,
+        children: children.length ? children : undefined,
+      }
 
-  return navGroup
-}
-
-export function buildNavGroups(routes: AppRouteObject[], t: TFunction): NavGroup[] {
-  const groupMap = new Map<string, NavItem[]>()
-
-  for (const item of collectNavItems(routes, t)) {
-    const groupItems = groupMap.get(item.group) ?? []
-
-    groupItems.push({
-      key: item.key,
-      label: item.label,
-      path: item.path,
-      icon: item.icon,
-      order: item.order,
+      return [item]
     })
-    groupMap.set(item.group, groupItems)
-  }
-
-  return Array.from(groupMap.entries()).map(([label, items]) => ({
-    label,
-    items: items.sort((left, right) => left.order - right.order),
-  }))
+    .sort((left, right) => left.order - right.order)
 }
 
-export function getActiveNavKey(pathname: string, navGroups: NavGroup[]) {
-  const items = navGroups.flatMap((group) => group.items)
-  const exactMatch = items.find((item) => item.path === pathname)
+export function buildNavItems(
+  routes: AppRouteObject[],
+  t: TFunction,
+): NavTreeItem[] {
+  return collectNavItems(routes, t).map(stripOrder)
+}
 
-  if (exactMatch) return exactMatch.key
+export function getPathByNavKey(navItems: NavTreeItem[]) {
+  const pathByKey = new Map<string, string>()
+
+  function collect(items: NavTreeItem[]) {
+    for (const item of items) {
+      if (item.path) pathByKey.set(item.key, item.path)
+      if (item.children) collect(item.children)
+    }
+  }
+
+  collect(navItems)
+
+  return pathByKey
+}
+
+export function getActiveNavKey(pathname: string, navItems: NavTreeItem[]) {
+  const pathEntries = Array.from(getPathByNavKey(navItems).entries())
+  const exactMatch = pathEntries.find(([, path]) => path === pathname)
+
+  if (exactMatch) return exactMatch[0]
 
   return (
-    items
-      .filter((item) => pathname.startsWith(`${item.path}/`))
-      .sort((left, right) => right.path.length - left.path.length)
-      .at(0)?.key ?? ''
+    pathEntries
+      .filter(([, path]) => pathname.startsWith(`${path}/`))
+      .sort((left, right) => right[1].length - left[1].length)
+      .at(0)?.[0] ?? ''
   )
+}
+
+export function getOpenNavKeys(activeKey: string, navItems: NavTreeItem[]) {
+  const parents: string[] = []
+
+  function findParents(items: NavTreeItem[], ancestors: string[]): boolean {
+    for (const item of items) {
+      if (item.key === activeKey) {
+        parents.push(...ancestors)
+        return true
+      }
+
+      if (item.children && findParents(item.children, [...ancestors, item.key])) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  findParents(navItems, [])
+
+  return parents
 }

@@ -42,7 +42,7 @@ export function PageShellHeader() {
   const breadcrumbs = buildBreadcrumbs(appRoutes, location.pathname, t)
   const title = current
     ? getRouteTitle(current.meta, t)
-    : t('routes.usage.title')
+    : t('routes.chat.title')
   const subtitle = current?.meta.subtitleKey
     ? t(current.meta.subtitleKey)
     : t('pages.shell.defaultSubtitle')

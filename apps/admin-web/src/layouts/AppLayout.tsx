@@ -10,8 +10,7 @@ import { appRoutes } from '@/router/routes'
 import { useAppStore } from '@/store/useApp'
 import { getCurrentRouteMeta, getRouteTitle } from '@/utils/routeMeta'
 import { Header } from './components/Header'
-import { buildNavGroups, getActiveNavKey } from './components/Sidebar/layoutNav'
-import { PageShellHeader } from './components/PageShellHeader'
+import { buildNavItems, getActiveNavKey } from './components/Sidebar/layoutNav'
 import { Sidebar } from './components/Sidebar'
 
 const {
@@ -76,10 +75,10 @@ export function AppLayout() {
   const toggleSidebarCollapsed = useAppStore(
     (state) => state.toggleSidebarCollapsed,
   )
-  const navGroups = useMemo(() => buildNavGroups(appRoutes, t), [t])
+  const navItems = useMemo(() => buildNavItems(appRoutes, t), [t])
   const activeKey = useMemo(
-    () => getActiveNavKey(location.pathname, navGroups),
-    [location.pathname, navGroups],
+    () => getActiveNavKey(location.pathname, navItems),
+    [location.pathname, navItems],
   )
   const sidebarWidth = sidebarCollapsed
     ? SIDEBAR_COLLAPSED_WIDTH
@@ -145,7 +144,7 @@ export function AppLayout() {
           <Sidebar
             activeKey={activeKey}
             collapsed={sidebarCollapsed}
-            navGroups={navGroups}
+            navItems={navItems}
           />
           <div
             style={{
@@ -183,12 +182,9 @@ export function AppLayout() {
             paddingInlineEnd: 10,
           }}
         >
-          <div className="h-full w-full px-8 pb-10 pt-6 bg-(--ant-color-bg-container) rounded-md">
-            <PageShellHeader />
-            <main>
-              <Outlet />
-            </main>
-          </div>
+          <main className="h-full w-full bg-(--ant-color-bg-container) rounded-md">
+            <Outlet />
+          </main>
         </LayoutContent>
       </Layout>
       <Drawer
@@ -203,7 +199,7 @@ export function AppLayout() {
       >
         <Sidebar
           activeKey={activeKey}
-          navGroups={navGroups}
+          navItems={navItems}
           onNavigate={() => setMenuOpen(false)}
         />
       </Drawer>

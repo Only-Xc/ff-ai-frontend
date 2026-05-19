@@ -14,6 +14,7 @@ import { Navigate, type RouteObject } from 'react-router'
 
 import { AnalysisPage } from '@/pages/dashboard/Analysis'
 import { NotFoundPage } from '@/pages/exception/NotFoundPage'
+import { LoginPage } from '@/pages/login/Login'
 import { WorkspacePage } from '@/pages/workspace/Workspace'
 
 export interface RouteMeta {
@@ -36,6 +37,16 @@ export type AppRouteObject = Omit<RouteObject, 'children' | 'handle'> & {
 }
 
 export const appRoutes: AppRouteObject[] = [
+  {
+    path: '/login',
+    element: <LoginPage />,
+    handle: {
+      title: '登录',
+      layout: false,
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+    },
+  },
   {
     path: '/usage',
     handle: {
