@@ -1,4 +1,3 @@
-import { useNanobotClientStore } from '@/store/useNanobotClient'
 import { useAuthStore } from '@/store/useAuth'
 import {
   authPlugin,
@@ -7,8 +6,8 @@ import {
   errorHandlerPlugin,
   normalizeRequestError,
   restfulPlugin,
-} from '@ff-ai-frontend/utils/request'
-import type { RequestConfig } from '@ff-ai-frontend/utils/request'
+} from '@ff-ai-frontend/utils'
+import type { RequestConfig } from '@ff-ai-frontend/utils'
 import { globalMessage } from '@/utils/message'
 
 function shouldSkipGlobalErrorToast(config?: RequestConfig) {
@@ -66,7 +65,7 @@ export const aiApiClient = createRequestClient({
     dedupePlugin(),
     authPlugin({
       format: (token) => `Bearer ${token}`,
-      getToken: () => useNanobotClientStore.getState().token,
+      getToken: () => useAuthStore.getState().accessToken,
       headerName: 'Authorization',
     }),
   ],

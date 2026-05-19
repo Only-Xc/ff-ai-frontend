@@ -1,0 +1,135 @@
+import { requestClient } from '@/utils/request'
+
+import type { ChatSummary } from './types'
+import { useAuthStore } from '@/store/useAuth'
+
+interface SessionRow {
+  key: string
+  created_at: string | null
+  updated_at: string | null
+  title?: string
+  preview?: string
+}
+
+interface CreateSessionData {
+  project_id?: string
+  title: string
+}
+
+export interface SessionDetailResponse {
+  key: string
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface SessionMediaUrl {
+  url: string
+  name?: string
+}
+
+export interface SessionMessagesResponse {
+  key: string
+  created_at: string | null
+  updated_at: string | null
+  messages: {
+    role: string
+    content: string
+    timestamp?: string
+    tool_calls?: unknown
+    tool_call_id?: string
+    name?: string
+    media_urls?: SessionMediaUrl[]
+  }[]
+}
+
+export function splitSessionKey(key: string | null): {
+  channel: string
+  chatId: string
+} {
+  if (!key) {
+    return { channel: '', chatId: '' }
+  }
+
+  const index = key.indexOf(':')
+
+  if (index === -1) {
+    return { channel: '', chatId: key }
+  }
+
+  return {
+    channel: key.slice(0, index),
+    chatId: key.slice(index + 1),
+  }
+}
+
+export function conversations_list(): Promise<ChatSummary[]> {
+  return requestClient<{ sessions: SessionRow[] }>({
+    url: '/api/conversations',
+    method: 'GET',
+  }).then((data) =>
+    data.sessions.map(
+      (row): ChatSummary => ({
+        key: row.key,
+        ...splitSessionKey(row.key),
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        title: row.title ?? '',
+        preview: row.preview ?? '',
+      }),
+    ),
+  )
+}
+
+export function conversations_create(data: CreateSessionData) {
+  return requestClient({
+    url: '/api/conversations',
+    method: 'POST',
+    data,
+  })
+}
+
+export function conversations_detail(
+  conversationId: string,
+): Promise<SessionDetailResponse> {
+  return requestClient({
+    url: `/api/conversations/${conversationId}`,
+    method: 'GET',
+  })
+}
+
+export function conversations_message(
+  conversationId: string,
+): Promise<SessionMessagesResponse> {
+  return requestClient({
+    url: `/api/conversations/${conversationId}/messages`,
+    method: 'GET',
+  })
+}
+
+export function conversations_delete(conversationId: string): Promise<boolean> {
+  return requestClient<{ deleted: boolean }>({
+    url: `/api/conversations/${conversationId}`,
+    method: 'DELETE',
+  }).then((res) => res.deleted)
+}
+
+export function deriveWsUrl(
+  options: { chatId?: string; clientId?: string } = {},
+): string {
+  const url = new URL('/api/chat/ws', window.location.origin)
+
+  url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  url.searchParams.set('token', useAuthStore.getState().accessToken)
+
+  // 客户端标识；不传则服务端生成 anon-xxxx，并在 ready 中回传
+  if (options.clientId) {
+    url.searchParams.set('client_id', options.clientId)
+  }
+
+  // 默认会话路由键
+  if (options.chatId) {
+    url.searchParams.set('chat_id', options.chatId)
+  }
+
+  return url.toString()
+}

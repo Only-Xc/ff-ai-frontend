@@ -7,7 +7,7 @@ import { Navigate, type RouteObject } from 'react-router'
 
 import { AnalysisPage } from '@/pages/dashboard/Analysis'
 import { NotFoundPage } from '@/pages/exception/NotFoundPage'
-import { WorkspacePage } from '@/pages/workspace/Workspace'
+import { ChatPage } from '@/pages/chat/Chat'
 import { LoginPage } from '@/pages/login/Login'
 
 export interface RouteMeta {
@@ -44,7 +44,7 @@ export const appRoutes: AppRouteObject[] = [
     children: [
       {
         path: '/chat',
-        element: <WorkspacePage />,
+        element: <ChatPage />,
         handle: {
           title: '工作台',
           // titleKey: 'routes.chat.title',

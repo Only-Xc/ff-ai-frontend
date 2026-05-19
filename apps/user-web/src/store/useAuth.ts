@@ -6,7 +6,14 @@ export const AUTH_TOKEN_STORAGE_KEY = 'ff-user-access-token'
 
 export type AuthStatus = 'idle' | 'authenticated' | 'anonymous'
 
-export type AuthUser = Record<string, unknown>
+export interface AuthUser {
+  email: string
+  is_active: boolean
+  is_superuser: boolean
+  full_name: string
+  id: string
+  created_at: string
+}
 
 interface AuthState {
   accessToken: string

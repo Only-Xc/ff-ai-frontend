@@ -15,6 +15,10 @@
     "./storage": {
       "types": "./src/storage/index.ts",
       "import": "./src/storage/index.ts"
+    },
+    "./websocket": {
+      "types": "./src/websocket/index.ts",
+      "import": "./src/websocket/index.ts"
     }
   },
   "files": [
@@ -30,7 +34,7 @@
   },
   "dependencies": {
     "axios": "^1.15.2",
-    "store2": "^2.14.4"
+    "mitt": "^3.0.1"
   },
   "devDependencies": {
     "@ff-ai-frontend/tooling": "workspace:*",

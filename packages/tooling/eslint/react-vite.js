@@ -29,6 +29,10 @@ export function createReactViteEslintConfig({ tsconfigRootDir }) {
           tsconfigRootDir,
         },
       },
+      rules: {
+        'react-hooks/set-state-in-effect': 'off',
+        'react-x/set-state-in-effect': 'off',
+      },
     },
     ...oxlint.configs['flat/recommended'],
   ])

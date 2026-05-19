@@ -1,4 +1,3 @@
-import { Spin } from 'antd'
 import { useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
@@ -43,14 +42,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!accessToken) {
     return <Navigate replace to="/login" state={{ from: location }} />
-  }
-
-  if (status !== 'authenticated') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-(--bg)">
-        <Spin size="large" description="正在校验登录状态" />
-      </div>
-    )
   }
 
   return children
