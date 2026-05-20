@@ -182,7 +182,7 @@ export function AppLayout() {
             paddingInlineEnd: 10,
           }}
         >
-          <main className="h-full w-full bg-(--ant-color-bg-container) rounded-md">
+          <main className="h-full w-full">
             <Outlet />
           </main>
         </LayoutContent>

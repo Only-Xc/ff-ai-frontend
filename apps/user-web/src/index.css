@@ -6,51 +6,6 @@
 @source './';
 
 :root,
-[data-theme='dark'] {
-  color-scheme: dark;
-  --admin-bg: #0a0c10;
-  --admin-panel: #12141d;
-  --admin-card: #161823;
-  --admin-border: #262936;
-  --admin-border-strong: #333747;
-  --admin-primary: #6b43f7;
-  --admin-primary-2: #5a36db;
-  --admin-text: #e2e8f0;
-  --admin-text-muted: #8b93a5;
-  --admin-text-subtle: #64748b;
-  --admin-success: #2dd4bf;
-  --admin-info: #3b82f6;
-  --admin-warning: #f59e0b;
-  --admin-danger: #ef4444;
-  --bg: var(--admin-bg);
-  --panel: var(--admin-panel);
-  --card: var(--admin-card);
-  --header-bg: rgb(10 12 16 / 0.6);
-  --control-bg: rgb(255 255 255 / 0.03);
-  --control-hover-bg: rgb(255 255 255 / 0.06);
-  --control-subtle-bg: rgb(255 255 255 / 0.05);
-  --nav-active-bg: #25234d;
-  --plan-card-bg: #161925;
-  --table-row-border: rgb(51 55 71 / 0.5);
-  --table-row-hover-bg: rgb(255 255 255 / 0.025);
-  --divider-subtle: rgb(51 55 71 / 0.52);
-  --scrollbar-thumb: #2d3142;
-  --scrollbar-thumb-hover: #4a506a;
-  --border: var(--admin-border);
-  --border-strong: var(--admin-border-strong);
-  --primary: var(--admin-primary);
-  --primary-hover: var(--admin-primary-2);
-  --text: var(--admin-text);
-  --text-strong: #ffffff;
-  --muted: var(--admin-text-muted);
-  --dark-text: var(--admin-text-subtle);
-  --focus-ring: rgb(147 197 253 / 0.88);
-  --green: var(--admin-success);
-  --blue: var(--admin-info);
-  --purple: #8b5cf6;
-  --orange: var(--admin-warning);
-}
-
 [data-theme='light'] {
   color-scheme: light;
   --admin-bg: #f5f7fb;
@@ -93,6 +48,51 @@
   --green: var(--admin-success);
   --blue: var(--admin-info);
   --purple: #7c3aed;
+  --orange: var(--admin-warning);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --admin-bg: #0a0c10;
+  --admin-panel: #12141d;
+  --admin-card: #161823;
+  --admin-border: #262936;
+  --admin-border-strong: #333747;
+  --admin-primary: #6b43f7;
+  --admin-primary-2: #5a36db;
+  --admin-text: #e2e8f0;
+  --admin-text-muted: #8b93a5;
+  --admin-text-subtle: #64748b;
+  --admin-success: #2dd4bf;
+  --admin-info: #3b82f6;
+  --admin-warning: #f59e0b;
+  --admin-danger: #ef4444;
+  --bg: var(--admin-bg);
+  --panel: var(--admin-panel);
+  --card: var(--admin-card);
+  --header-bg: rgb(10 12 16 / 0.6);
+  --control-bg: rgb(255 255 255 / 0.03);
+  --control-hover-bg: rgb(255 255 255 / 0.06);
+  --control-subtle-bg: rgb(255 255 255 / 0.05);
+  --nav-active-bg: #25234d;
+  --plan-card-bg: #161925;
+  --table-row-border: rgb(51 55 71 / 0.5);
+  --table-row-hover-bg: rgb(255 255 255 / 0.025);
+  --divider-subtle: rgb(51 55 71 / 0.52);
+  --scrollbar-thumb: #2d3142;
+  --scrollbar-thumb-hover: #4a506a;
+  --border: var(--admin-border);
+  --border-strong: var(--admin-border-strong);
+  --primary: var(--admin-primary);
+  --primary-hover: var(--admin-primary-2);
+  --text: var(--admin-text);
+  --text-strong: #ffffff;
+  --muted: var(--admin-text-muted);
+  --dark-text: var(--admin-text-subtle);
+  --focus-ring: rgb(147 197 253 / 0.88);
+  --green: var(--admin-success);
+  --blue: var(--admin-info);
+  --purple: #8b5cf6;
   --orange: var(--admin-warning);
 }
 

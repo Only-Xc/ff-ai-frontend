@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Result, Spin } from 'antd'
 
+import { PageContainer } from '@/components/Container'
 import { AgentMsgHistory } from './components/AgentMsgHistory'
 import { AgentConversation } from './components/AgentConversation'
 
@@ -100,7 +101,7 @@ function ChatWorkspace(agentClient: AgentClientValue) {
   const agent = useAgent(agentClient)
 
   return (
-    <div
+    <PageContainer
       className="overflow-hidden"
       style={{ height: 'calc(100vh - var(--ant-layout-header-height) - 10px)' }}
     >
@@ -155,6 +156,8 @@ function ChatWorkspace(agentClient: AgentClientValue) {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }
+
+export default ChatPage

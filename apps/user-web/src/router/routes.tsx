@@ -1,14 +1,9 @@
-import {
-  DesktopOutlined,
-  ProjectOutlined,
-} from '@ant-design/icons'
+import { DesktopOutlined, ProjectOutlined } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 
-import { AnalysisPage } from '@/pages/dashboard/Analysis'
 import { NotFoundPage } from '@/pages/exception/NotFoundPage'
-import { ChatPage } from '@/pages/chat/Chat'
-import { LoginPage } from '@/pages/login/Login'
+import { lazyLoad } from './runtime/lazyLoad'
 
 export interface RouteMeta {
   title?: string
@@ -32,7 +27,7 @@ export type AppRouteObject = Omit<RouteObject, 'children' | 'handle'> & {
 export const appRoutes: AppRouteObject[] = [
   {
     path: '/login',
-    element: <LoginPage />,
+    element: lazyLoad(() => import('@/pages/login/Login')),
     handle: {
       title: '登录',
       layout: false,
@@ -44,7 +39,7 @@ export const appRoutes: AppRouteObject[] = [
     children: [
       {
         path: '/chat',
-        element: <ChatPage />,
+        element: lazyLoad(() => import('@/pages/chat/Chat')),
         handle: {
           title: '工作台',
           // titleKey: 'routes.chat.title',
@@ -56,10 +51,9 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
       {
-        path: '/todo',
-        element: <AnalysisPage />,
+        path: '/agent-ticket',
         handle: {
-          title: '研发大盘',
+          title: '智能体与工单',
           // titleKey: 'routes.settings.title',
           icon: <ProjectOutlined />,
           menuType: 'menu',
@@ -67,6 +61,56 @@ export const appRoutes: AppRouteObject[] = [
           navOrder: 2,
           hideInBreadcrumb: true,
         },
+        children: [
+          {
+            index: true,
+            element: <Navigate replace to="tickets" />,
+            handle: {
+              hideInMenu: true,
+            },
+          },
+          {
+            element: lazyLoad(() => import('@/pages/agent-ticket/AgentTicket')),
+            children: [
+              {
+                path: 'tickets',
+                element: lazyLoad(
+                  () => import('@/pages/agent-ticket/components/TicketList'),
+                ),
+                handle: {
+                  title: '工单列表',
+                  hideInMenu: true,
+                },
+              },
+              {
+                path: 'agents',
+                element: lazyLoad(
+                  () => import('@/pages/agent-ticket/components/AgentList'),
+                ),
+                handle: {
+                  title: '智能体列表',
+                  hideInMenu: true,
+                },
+              },
+            ],
+          },
+          {
+            path: 'tasks/:taskId/board',
+            element: lazyLoad(() => import('@/pages/agent-ticket/TaskBoard')),
+            handle: {
+              title: '动态看板',
+              hideInMenu: true,
+            },
+          },
+          {
+            path: 'agents/:agentId',
+            element: lazyLoad(() => import('@/pages/agent-ticket/AgentDetail')),
+            handle: {
+              title: '智能体详情',
+              hideInMenu: true,
+            },
+          },
+        ],
       },
     ],
   },

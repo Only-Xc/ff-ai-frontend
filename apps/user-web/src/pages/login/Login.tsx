@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
 import { loginWithPassword, testAccessToken } from '@/api/auth'
-import { getLoginAccessState } from '@/router/loginAccess'
 import { useAuthStore } from '@/store/useAuth'
 
 import { globalMessage } from '@/utils/message'
@@ -34,11 +33,10 @@ export function LoginPage() {
   const status = useAuthStore((state) => state.status)
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated)
   const clearAuth = useAuthStore((state) => state.clearAuth)
-  const loginAccessState = getLoginAccessState({ accessToken, status })
-  const checkingToken = loginAccessState.type === 'verify'
+  const checkingToken = Boolean(accessToken) && status !== 'authenticated'
 
   useEffect(() => {
-    if (loginAccessState.type !== 'verify') {
+    if (!checkingToken) {
       return
     }
 
@@ -63,8 +61,8 @@ export function LoginPage() {
   }, [
     accessToken,
     clearAuth,
+    checkingToken,
     navigate,
-    loginAccessState.type,
     setAuthenticated,
   ])
 
@@ -83,11 +81,11 @@ export function LoginPage() {
     }
   }
 
-  if (loginAccessState.type === 'redirect') {
-    return <Navigate replace to={loginAccessState.to} />
+  if (status === 'authenticated') {
+    return <Navigate replace to="/" />
   }
 
-  if (loginAccessState.type === 'verify') {
+  if (checkingToken) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-(--bg) text-(--text)">
         <Spin size="large" description="正在校验登录状态" />
@@ -105,11 +103,11 @@ export function LoginPage() {
           </div>
           <Typography.Title
             level={1}
-            className="m-0! max-w-[620px] text-[40px]! leading-[1.12]!"
+            className="m-0! max-w-155 text-[40px]! leading-[1.12]!"
           >
             FF AI Platform
           </Typography.Title>
-          <Typography.Paragraph className="mt-5! max-w-[560px] text-base! leading-7! text-(--muted)!">
+          <Typography.Paragraph className="mt-5! max-w-140 text-base! leading-7! text-(--muted)!">
             统一管理 Agent
             工作台、应用配置与运行数据。登录后进入首页，继续处理当前平台任务。
           </Typography.Paragraph>
@@ -128,7 +126,7 @@ export function LoginPage() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[420px] rounded-lg border border-(--border) bg-(--panel) p-6 sm:p-8">
+        <section className="mx-auto w-full max-w-105 rounded-lg border border-(--border) bg-(--panel) p-6 sm:p-8">
           <Space className="w-full" direction="vertical" size={24}>
             <div>
               <Typography.Title level={2} className="mb-2! text-2xl!">
@@ -195,3 +193,5 @@ export function LoginPage() {
     </main>
   )
 }
+
+export default LoginPage
