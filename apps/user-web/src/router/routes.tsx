@@ -1,4 +1,8 @@
-import { DesktopOutlined, ProjectOutlined } from '@ant-design/icons'
+import {
+  DesktopOutlined,
+  ProjectOutlined,
+  WalletOutlined,
+} from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 
@@ -111,6 +115,18 @@ export const appRoutes: AppRouteObject[] = [
             },
           },
         ],
+      },
+      {
+        path: '/billing-center',
+        element: lazyLoad(() => import('@/pages/billing-center/BillingCenter')),
+        handle: {
+          title: '账单中心',
+          icon: <WalletOutlined />,
+          menuType: 'menu',
+          navKey: 'billingCenter',
+          navOrder: 3,
+          hideInBreadcrumb: true,
+        },
       },
     ],
   },
