@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next'
+import { matchPath } from 'react-router'
 
 import type { AppRouteObject, RouteMeta } from '@/router/routes'
 
@@ -25,6 +26,27 @@ function normalizePath(pathname: string) {
   return pathname
 }
 
+function isRoutePatternMatch(
+  routePath: string,
+  pathname: string,
+  end: boolean,
+) {
+  const normalizedRoutePath = normalizePath(routePath)
+  const normalizedPathname = normalizePath(pathname)
+
+  if (normalizedRoutePath.includes(':') || normalizedRoutePath.includes('*')) {
+    return Boolean(
+      matchPath({ path: normalizedRoutePath, end }, normalizedPathname),
+    )
+  }
+
+  if (end) {
+    return normalizedRoutePath === normalizedPathname
+  }
+
+  return normalizedPathname.startsWith(`${normalizedRoutePath}/`)
+}
+
 export function getRouteMatches(
   routes: AppRouteObject[],
   pathname: string,
@@ -38,10 +60,10 @@ export function getRouteMatches(
 
     if (routePath === '*' || !meta) continue
 
-    const normalizedRoutePath = normalizePath(routePath)
-    const isExact = normalizedRoutePath === normalizedPathname
+    const isExact = isRoutePatternMatch(routePath, normalizedPathname, true)
     const isParent =
-      route.children && normalizedPathname.startsWith(`${normalizedRoutePath}/`)
+      route.children &&
+      isRoutePatternMatch(routePath, normalizedPathname, false)
     const isPathlessParent = !route.path && route.children
 
     if (isExact || isParent || isPathlessParent) {

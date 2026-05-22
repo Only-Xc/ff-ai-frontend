@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
 import { loginWithPassword, testAccessToken } from '@/api/auth'
-import { getLoginAccessState } from '@/router/loginAccess'
 import { useAuthStore } from '@/store/useAuth'
 
 import { globalMessage } from '@/utils/message'
@@ -34,11 +33,10 @@ export function LoginPage() {
   const status = useAuthStore((state) => state.status)
   const setAuthenticated = useAuthStore((state) => state.setAuthenticated)
   const clearAuth = useAuthStore((state) => state.clearAuth)
-  const loginAccessState = getLoginAccessState({ accessToken, status })
-  const checkingToken = loginAccessState.type === 'verify'
+  const checkingToken = Boolean(accessToken) && status !== 'authenticated'
 
   useEffect(() => {
-    if (loginAccessState.type !== 'verify') {
+    if (!checkingToken) {
       return
     }
 
@@ -63,8 +61,8 @@ export function LoginPage() {
   }, [
     accessToken,
     clearAuth,
+    checkingToken,
     navigate,
-    loginAccessState.type,
     setAuthenticated,
   ])
 
@@ -83,11 +81,11 @@ export function LoginPage() {
     }
   }
 
-  if (loginAccessState.type === 'redirect') {
-    return <Navigate replace to={loginAccessState.to} />
+  if (status === 'authenticated') {
+    return <Navigate replace to="/" />
   }
 
-  if (loginAccessState.type === 'verify') {
+  if (checkingToken) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-(--bg) text-(--text)">
         <Spin size="large" description="正在校验登录状态" />
@@ -101,19 +99,20 @@ export function LoginPage() {
         <section className="hidden lg:block">
           <div className="mb-8 inline-flex items-center gap-2 rounded-md border border-(--border) bg-(--control-bg) px-3 py-2 text-sm text-(--muted)">
             <SafetyCertificateOutlined className="text-(--green)" />
-            管理后台安全访问
+            安全访问控制台
           </div>
           <Typography.Title
             level={1}
-            className="m-0! max-w-[620px] text-[40px]! leading-[1.12]!"
+            className="m-0! max-w-155 text-[40px]! leading-[1.12]!"
           >
-            FF AI Admin
+            FF AI Platform
           </Typography.Title>
-          <Typography.Paragraph className="mt-5! max-w-[560px] text-base! leading-7! text-(--muted)!">
-            统一管理平台用量、应用配置、工单与业务数据。登录后进入后台首页，继续处理管理任务。
+          <Typography.Paragraph className="mt-5! max-w-140 text-base! leading-7! text-(--muted)!">
+            统一管理 Agent
+            工作台、应用配置与运行数据。登录后进入首页，继续处理当前平台任务。
           </Typography.Paragraph>
           <div className="mt-10 grid max-w-[560px] grid-cols-3 gap-3">
-            {['Usage', 'Apps', 'Tickets'].map((item) => (
+            {['Agent', 'Workspace', 'Schema'].map((item) => (
               <div
                 key={item}
                 className="rounded-md border border-(--border) bg-(--card) px-4 py-3"
@@ -127,14 +126,14 @@ export function LoginPage() {
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-[420px] rounded-lg border border-(--border) bg-(--panel) p-6 sm:p-8">
+        <section className="mx-auto w-full max-w-105 rounded-lg border border-(--border) bg-(--panel) p-6 sm:p-8">
           <Space className="w-full" direction="vertical" size={24}>
             <div>
               <Typography.Title level={2} className="mb-2! text-2xl!">
-                管理员登录
+                账号登录
               </Typography.Title>
               <Typography.Text className="text-(--muted)">
-                使用管理账号进入后台
+                使用平台账号进入首页
               </Typography.Text>
             </div>
 
@@ -194,3 +193,5 @@ export function LoginPage() {
     </main>
   )
 }
+
+export default LoginPage

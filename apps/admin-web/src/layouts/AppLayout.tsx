@@ -133,6 +133,7 @@ export function AppLayout() {
             overflow: 'auto',
             height: 'calc(100% - var(--ant-layout-header-height))',
             position: 'fixed',
+            zIndex: 9,
             insetInlineStart: 0,
             top: 'var(--ant-layout-header-height)',
             scrollbarGutter: 'stable',
@@ -182,7 +183,7 @@ export function AppLayout() {
             paddingInlineEnd: 10,
           }}
         >
-          <main className="h-full w-full bg-(--ant-color-bg-container) rounded-md">
+          <main className="h-full w-full">
             <Outlet />
           </main>
         </LayoutContent>

@@ -24,6 +24,21 @@ const queryClient = new QueryClient({
   },
 })
 
+const themeBackgroundTokens = {
+  dark: {
+    colorBgLayout: '#0a0c10',
+    colorBgContainer: '#12141d',
+    colorBgElevated: '#161823',
+    colorBorderSecondary: '#262936',
+  },
+  light: {
+    colorBgLayout: '#f5f7fb',
+    colorBgContainer: '#ffffff',
+    colorBgElevated: '#ffffff',
+    colorBorderSecondary: '#e5e7ef',
+  },
+}
+
 export function AppProvider({ children }: Props) {
   const colorPrimary = defaultSettings.colorPrimary
 
@@ -48,10 +63,15 @@ export function AppProvider({ children }: Props) {
         themeMode === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm,
       token: {
         colorPrimary,
+        colorLink: colorPrimary,
+        ...themeBackgroundTokens[themeMode],
       },
       components: {
         Layout: {
           headerHeight: 52,
+        },
+        Table: {
+          headerBorderRadius: 0,
         },
       },
     }),

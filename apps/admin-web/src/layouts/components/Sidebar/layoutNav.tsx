@@ -58,32 +58,51 @@ function collectNavItems(
   t: TFunction,
   parentPath = '',
 ): NavTreeItemWithOrder[] {
-  return routes
-    .flatMap((route) => {
-      const routePath = joinPath(parentPath, route.path)
-      const meta = route.handle
-      const children = route.children
-        ? collectNavItems(route.children, t, routePath)
-        : []
+  const items: NavTreeItemWithOrder[] = []
+  let sortableItems: NavTreeItemWithOrder[] = []
 
-      if (!meta?.title || meta.hideInMenu) return children
+  function flushSortableItems() {
+    if (!sortableItems.length) return
 
-      const kind = getMenuKind(meta, children.length > 0)
-      const path = kind === 'menu' ? routePath : undefined
+    items.push(
+      ...sortableItems.sort((left, right) => left.order - right.order),
+    )
+    sortableItems = []
+  }
 
-      const item: NavTreeItemWithOrder = {
-        key: getNavKey(meta, routePath),
-        label: getRouteTitle(meta, t),
-        kind,
-        path,
-        icon: meta.icon,
-        order: meta.navOrder ?? 0,
-        children: children.length ? children : undefined,
+  for (const route of routes) {
+    const routePath = joinPath(parentPath, route.path)
+    const meta = route.handle
+    const children = route.children
+      ? collectNavItems(route.children, t, routePath)
+      : []
+
+    if (!meta?.title || meta.hideInMenu) {
+      if (children.length) {
+        flushSortableItems()
+        items.push(...children)
       }
 
-      return [item]
+      continue
+    }
+
+    const kind = getMenuKind(meta, children.length > 0)
+    const path = kind === 'menu' ? routePath : undefined
+
+    sortableItems.push({
+      key: getNavKey(meta, routePath),
+      label: getRouteTitle(meta, t),
+      kind,
+      path,
+      icon: meta.icon,
+      order: meta.navOrder ?? 0,
+      children: children.length ? children : undefined,
     })
-    .sort((left, right) => left.order - right.order)
+  }
+
+  flushSortableItems()
+
+  return items
 }
 
 export function buildNavItems(
