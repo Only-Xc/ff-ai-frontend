@@ -1,4 +1,5 @@
 import {
+  CodeOutlined,
   DesktopOutlined,
   ProjectOutlined,
   WalletOutlined,
@@ -124,6 +125,33 @@ export const appRoutes: AppRouteObject[] = [
           icon: <WalletOutlined />,
           menuType: 'menu',
           navKey: 'billingCenter',
+          navOrder: 3,
+          hideInBreadcrumb: true,
+        },
+      },
+    ],
+  },
+  {
+    handle: {
+      title: '应用列表',
+      // titleKey: 'routes.groups.workspace',
+      menuType: 'catalog',
+      menuMode: 'group',
+      navKey: 'workspace',
+      navOrder: 2,
+      hideInBreadcrumb: true,
+    },
+    children: [
+      {
+        path: '/schema-renderer-demo',
+        element: lazyLoad(
+          () => import('@/pages/schema-renderer/SchemaRendererDemo'),
+        ),
+        handle: {
+          title: 'SchemaRender 示例',
+          icon: <CodeOutlined />,
+          menuType: 'menu',
+          navKey: 'schemaRendererDemo',
           navOrder: 3,
           hideInBreadcrumb: true,
         },
