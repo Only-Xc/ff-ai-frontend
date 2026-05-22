@@ -89,6 +89,17 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/tickets/:taskId/intervention',
+    element: lazyLoad(
+      () => import('@/pages/intervention-workbench/InterventionWorkbench'),
+    ),
+    handle: {
+      title: '人工介入',
+      navKey: 'tickets',
+      hideInMenu: true,
+    },
+  },
+  {
     path: '/',
     element: <Navigate replace to="/tickets" />,
     handle: {
