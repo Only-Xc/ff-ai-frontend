@@ -41,6 +41,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/tickets',
+    element: lazyLoad(() => import('@/pages/ticket-kanban/TicketKanban')),
+    handle: {
+      title: '全局工单',
+      titleKey: 'routes.tickets.title',
+      icon: <FileTextOutlined />,
+      navKey: 'tickets',
+      navOrder: 2,
+      hideInBreadcrumb: true,
+    },
+  },
+  {
     path: '/',
     element: <Navigate replace to="/tickets" />,
     handle: {
