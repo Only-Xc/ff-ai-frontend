@@ -65,6 +65,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/ops-metrics',
+    element: lazyLoad(() => import('@/pages/ops-metrics/OpsMetrics')),
+    handle: {
+      title: '运营大盘',
+      titleKey: 'routes.opsMetrics.title',
+      icon: <LineChartOutlined />,
+      navKey: 'ops-metrics',
+      navOrder: 4,
+      hideInBreadcrumb: true,
+    },
+  },
+  {
     path: '/',
     element: <Navigate replace to="/tickets" />,
     handle: {
