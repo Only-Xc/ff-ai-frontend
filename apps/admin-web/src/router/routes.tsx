@@ -77,6 +77,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/lifecycle-ops',
+    element: lazyLoad(() => import('@/pages/lifecycle-ops/LifecycleOps')),
+    handle: {
+      title: '生命周期调度',
+      titleKey: 'routes.lifecycleOps.title',
+      icon: <DeploymentUnitOutlined />,
+      navKey: 'lifecycle-ops',
+      navOrder: 5,
+      hideInBreadcrumb: true,
+    },
+  },
+  {
     path: '/',
     element: <Navigate replace to="/tickets" />,
     handle: {
