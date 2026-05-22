@@ -53,6 +53,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/skills',
+    element: lazyLoad(() => import('@/pages/skill-hub/SkillHub')),
+    handle: {
+      title: '技能库',
+      titleKey: 'routes.skills.title',
+      icon: <AppstoreOutlined />,
+      navKey: 'skills',
+      navOrder: 3,
+      hideInBreadcrumb: true,
+    },
+  },
+  {
     path: '/',
     element: <Navigate replace to="/tickets" />,
     handle: {
