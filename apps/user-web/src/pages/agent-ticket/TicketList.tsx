@@ -1,4 +1,4 @@
-import { SearchOutlined } from '@ant-design/icons'
+import { ReloadOutlined } from '@ant-design/icons'
 import {
   Alert,
   Button,
@@ -11,43 +11,39 @@ import {
 } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import {
+  tenantTaskKeys,
   tenantTasks_list,
   type TaskStatusFilter,
   type TenantTask,
-} from '@/api/agentTicket'
+} from '@/api/agent-ticket'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
-import { formatDateTime, formatNullableText } from './format'
-import { taskStatusFilterOptions } from './filterOptions'
-import { TaskStatusTag, TaskTypeTag } from './status'
+import { TaskStatusTag, TaskTypeTag } from './components/status'
+import { taskStatusFilterOptions } from './constants'
+import { formatDateTime, formatNullableText } from './utils/format'
 
-interface TicketFilterValues {
+type TicketFilterValues = {
   status?: TaskStatusFilter
 }
 
 export function TicketList() {
-  const navigate = useNavigate()
   const [form] = Form.useForm<TicketFilterValues>()
   const [status, setStatus] = useState<TaskStatusFilter>()
   const pagination = usePaginationParams()
 
-  const { data, isError, isLoading, refetch } = useQuery({
-    queryKey: [
-      'tenant-tasks',
-      status ?? 'all',
-      pagination.query.skip,
-      pagination.query.limit,
-    ],
-    queryFn: () =>
-      tenantTasks_list({
-        status,
-        ...pagination.query,
-      }),
+  const listParams = {
+    status,
+    ...pagination.query,
+  }
+
+  const { data, isError, isFetching, refetch } = useQuery({
+    queryKey: tenantTaskKeys.list(listParams),
+    queryFn: () => tenantTasks_list(listParams),
+    placeholderData: keepPreviousData,
   })
   const columns = useMemo<TableProps<TenantTask>['columns']>(
     () => [
@@ -98,46 +94,24 @@ export function TicketList() {
           </span>
         ),
       },
-      {
-        title: '操作',
-        key: 'action',
-        fixed: 'right',
-        width: 100,
-        render: (_, record) => (
-          <Button
-            type="link"
-            className="px-0! font-medium"
-            onClick={() =>
-              void navigate(`/agent-ticket/tasks/${record.task_id}/board`)
-            }
-          >
-            查看面板
-          </Button>
-        ),
-      },
     ],
-    [navigate],
+    [],
   )
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
-      {/* Filter Bar */}
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
-        <Form
-          form={form}
-          layout="inline"
-          className="flex-1"
-          onFinish={(values) => {
-            setStatus(values.status)
-            pagination.reset()
-          }}
-        >
+        <Form className="flex-1" form={form} layout="inline">
           <Form.Item name="status">
             <Select<TaskStatusFilter>
               allowClear
               className="w-35"
               options={taskStatusFilterOptions}
               placeholder="全部状态"
+              onChange={(value) => {
+                setStatus(value)
+                pagination.reset()
+              }}
             />
           </Form.Item>
 
@@ -153,11 +127,12 @@ export function TicketList() {
                 重置
               </Button>
               <Button
+                icon={<ReloadOutlined />}
+                loading={isFetching}
                 type="primary"
-                htmlType="submit"
-                icon={<SearchOutlined />}
+                onClick={() => void refetch()}
               >
-                查询
+                刷新
               </Button>
             </Space>
           </Form.Item>
@@ -178,15 +153,14 @@ export function TicketList() {
         />
       ) : null}
 
-      {/* Table Card */}
       <TableScrollYWrapper
         className="min-h-0 flex-1 border-t border-t-(--ant-color-border-secondary)"
-        refreshKey={`${data?.data.length ?? 0}:${isLoading}`}
+        refreshKey={`${data?.data.length ?? 0}:${isFetching}`}
       >
         <Table<TenantTask>
           columns={columns}
           dataSource={data?.data ?? []}
-          loading={isLoading}
+          loading={isFetching}
           pagination={false}
           rowKey="task_id"
         />

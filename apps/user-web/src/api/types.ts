@@ -150,3 +150,13 @@ export type Outbound =
        * generic websocket protocol for other clients. */
       webui?: true
     }
+
+export interface PaginationQuery {
+  skip: number
+  limit: number
+}
+
+export interface ListResult<T> {
+  data: T[]
+  count: number
+}

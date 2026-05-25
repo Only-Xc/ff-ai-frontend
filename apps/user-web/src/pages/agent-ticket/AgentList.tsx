@@ -1,4 +1,4 @@
-import { ApiOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons'
+import { ApiOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons'
 import {
   Alert,
   Button,
@@ -13,26 +13,24 @@ import {
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import {
+  tenantAgentKeys,
   tenantAgents_list,
   type AgentStatus,
   type TenantAgent,
-} from '@/api/agentTicket'
+} from '@/api/agent-ticket'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
-import { formatDateTime, formatNullableText } from './format'
-import { agentStatusFilterOptions } from './filterOptions'
-import { AgentStatusTag } from './status'
+import { agentStatusFilterOptions } from './constants'
+import { AgentStatusTag } from './components/status'
+import { formatDateTime, formatNullableText } from './utils/format'
+import { openEndpointUrl } from './utils/openEndpointUrl'
 
-interface AgentFilterValues {
+type AgentFilterValues = {
   status?: AgentStatus
-}
-
-function openEndpointUrl(url: string) {
-  window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 export function AgentList() {
@@ -40,19 +38,15 @@ export function AgentList() {
   const [form] = Form.useForm<AgentFilterValues>()
   const [status, setStatus] = useState<AgentStatus>()
   const pagination = usePaginationParams()
+  const listParams = {
+    status,
+    ...pagination.query,
+  }
 
-  const { data, isError, isLoading, refetch } = useQuery({
-    queryKey: [
-      'tenant-agents',
-      status ?? 'all',
-      pagination.query.skip,
-      pagination.query.limit,
-    ],
-    queryFn: () =>
-      tenantAgents_list({
-        status,
-        ...pagination.query,
-      }),
+  const { data, isError, isFetching, refetch } = useQuery({
+    queryKey: tenantAgentKeys.list(listParams),
+    queryFn: () => tenantAgents_list(listParams),
+    placeholderData: keepPreviousData,
   })
 
   const columns = useMemo<TableProps<TenantAgent>['columns']>(
@@ -133,21 +127,17 @@ export function AgentList() {
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
-        <Form
-          form={form}
-          layout="inline"
-          className="flex-1"
-          onFinish={(values) => {
-            setStatus(values.status)
-            pagination.reset()
-          }}
-        >
+        <Form className="flex-1" form={form} layout="inline">
           <Form.Item name="status">
             <Select<AgentStatus>
               allowClear
               className="w-40"
               options={agentStatusFilterOptions}
               placeholder="全部状态"
+              onChange={(value) => {
+                setStatus(value)
+                pagination.reset()
+              }}
             />
           </Form.Item>
           <Form.Item>
@@ -162,11 +152,12 @@ export function AgentList() {
                 重置
               </Button>
               <Button
+                icon={<ReloadOutlined />}
+                loading={isFetching}
                 type="primary"
-                htmlType="submit"
-                icon={<SearchOutlined />}
+                onClick={() => void refetch()}
               >
-                查询
+                刷新
               </Button>
             </Space>
           </Form.Item>
@@ -189,12 +180,12 @@ export function AgentList() {
 
       <TableScrollYWrapper
         className="min-h-0 flex-1 border-t border-t-(--ant-color-border-secondary)"
-        refreshKey={`${data?.data.length ?? 0}:${isLoading}`}
+        refreshKey={`${data?.data.length ?? 0}:${isFetching}`}
       >
         <Table<TenantAgent>
           columns={columns}
           dataSource={data?.data ?? []}
-          loading={isLoading}
+          loading={isFetching}
           pagination={false}
           rowKey="agent_id"
           scroll={{ x: 1000 }}

@@ -80,7 +80,7 @@ export const appRoutes: AppRouteObject[] = [
               {
                 path: 'tickets',
                 element: lazyLoad(
-                  () => import('@/pages/agent-ticket/components/TicketList'),
+                  () => import('@/pages/agent-ticket/TicketList'),
                 ),
                 handle: {
                   title: '工单列表',
@@ -90,7 +90,7 @@ export const appRoutes: AppRouteObject[] = [
               {
                 path: 'agents',
                 element: lazyLoad(
-                  () => import('@/pages/agent-ticket/components/AgentList'),
+                  () => import('@/pages/agent-ticket/AgentList'),
                 ),
                 handle: {
                   title: '智能体列表',

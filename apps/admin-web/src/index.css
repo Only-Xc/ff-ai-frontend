@@ -125,3 +125,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.ant-table-empty .ant-table-placeholder .ant-table-cell {
+  border-bottom: 0 none;
+}

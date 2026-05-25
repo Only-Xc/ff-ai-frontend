@@ -131,3 +131,7 @@ body {
 .x-markdown.x-markdown-dark {
   --font-size: 16px;
 }
+
+.ant-table-empty .ant-table-placeholder .ant-table-cell {
+  border-bottom: 0 none;
+}

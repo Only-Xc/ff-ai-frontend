@@ -16,27 +16,14 @@ import {
   Typography,
 } from 'antd'
 import { createStyles } from 'antd-style'
-import type { ReactNode } from 'react'
 import { useNavigate, useParams } from 'react-router'
 
-import type { TaskStatus } from '@/api/agentTicket'
-
-const DEFAULT_TASK_STEP = 2
-
-const taskStepIndexMap: Record<TaskStatus, number> = {
-  CREATED: 0,
-  ANALYZING: 0,
-  ROUTING: 1,
-  CODING: 2,
-  TESTING: 2,
-  DEPLOYING: 2,
-  COMPLETED: 3,
-  PENDING_APPROVAL: 2,
-  FAILED: 2,
-}
+import type { TaskStatus } from '@/api/agent-ticket'
+import { DetailPageShell } from './components/DetailPageShell'
+import { defaultTaskStep, taskStepIndexMap } from './constants'
 
 function getTaskStepCurrent(status?: TaskStatus) {
-  if (!status) return DEFAULT_TASK_STEP
+  if (!status) return defaultTaskStep
 
   return taskStepIndexMap[status]
 }
@@ -89,14 +76,6 @@ const useStyles = createStyles(() => ({
     lineHeight: 1.6,
   },
 }))
-
-function DetailPageShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
-      <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
-    </div>
-  )
-}
 
 export function TaskBoard() {
   const { styles } = useStyles()
