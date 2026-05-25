@@ -1,6 +1,6 @@
 import { Typography } from 'antd'
 import type { DescriptionsProps } from 'antd'
-import { format, isValid } from 'date-fns'
+import dayjs from 'dayjs'
 import isEmpty from 'lodash-es/isEmpty'
 
 import type {
@@ -37,11 +37,11 @@ export const statusColorMap: Record<AdminTaskStatus, string> = {
 export function formatDateTime(value?: string) {
   if (!value) return '-'
 
-  const date = new Date(value)
+  const date = dayjs(value)
 
-  if (!isValid(date)) return '-'
+  if (!date.isValid()) return '-'
 
-  return format(date, 'yyyy/MM/dd HH:mm:ss')
+  return date.format('YYYY/MM/DD HH:mm:ss')
 }
 
 export function safeStringify(value: unknown) {

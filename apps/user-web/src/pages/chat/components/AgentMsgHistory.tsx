@@ -3,7 +3,7 @@ import type { ConversationsProps } from '@ant-design/x'
 import { Conversations } from '@ant-design/x'
 import type { GetProp, MenuProps } from 'antd'
 import { Empty, Spin, theme } from 'antd'
-import { isToday, isValid, isYesterday, parseISO } from 'date-fns'
+import dayjs from 'dayjs'
 
 import type { ChatSummary } from '@/api/types'
 import { sessionTitle } from '@/pages/chat/hooks/useAgentSessions'
@@ -19,17 +19,17 @@ interface AgentMsgHistoryProps {
 
 function groupLabel(session: ChatSummary): string {
   const dateText = session.updatedAt ?? session.createdAt
-  const date = dateText ? parseISO(dateText) : null
+  const date = dateText ? dayjs(dateText) : null
 
-  if (!date || !isValid(date)) {
+  if (!date?.isValid()) {
     return '更早'
   }
 
-  if (isToday(date)) {
+  if (date.isSame(dayjs(), 'day')) {
     return '今天'
   }
 
-  if (isYesterday(date)) {
+  if (date.isSame(dayjs().subtract(1, 'day'), 'day')) {
     return '昨天'
   }
 

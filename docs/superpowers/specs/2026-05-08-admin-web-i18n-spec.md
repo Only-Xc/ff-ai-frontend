@@ -44,7 +44,7 @@
 | --- | --- | --- | --- |
 | `zh-CN` | `简体中文` | `ltr` | `antd/locale/zh_CN` |
 | `en-US` | `English` | `ltr` | `antd/locale/en_US` |
-| `ar-SA` | `العربية` | `rtl` | `antd/locale/ar_EG` |
+| `ar` | `العربية` | `rtl` | `antd/locale/ar_EG` |
 
 默认语言为 `zh-CN`。
 
@@ -127,7 +127,7 @@ const resourceModules = import.meta.glob<LocaleResourceModule>(
 src/i18n/resources/
   zh-CN.ts
   en-US.ts
-  ar-SA.ts
+  ar.ts
 ```
 
 聚合入口按业务域合并资源：
@@ -215,7 +215,7 @@ Ant Design 集成：
 影响范围：
 
 - Ant Design 组件文案和日期等 locale 能力。
-- 组件方向，`ar-SA` 下使用 RTL。
+- 组件方向，`ar` 下使用 RTL。
 - 全局 HTML `lang` 与 `dir` 属性。
 - 布局中依赖 `direction` 的 Tooltip 和 Drawer 方向。
 
@@ -361,8 +361,7 @@ pnpm --filter @ff-ai-frontend/admin-web build
 
 - 首次进入页面时使用 local storage 语言偏好。
 - 清空 `ff-admin-locale` 后使用浏览器语言匹配。
-- Header 语言菜单能在 `zh-CN`、`en-US`、`ar-SA` 之间切换。
-- `ar-SA` 下 `html.dir` 为 `rtl`，Ant Design 组件方向同步为 RTL。
+- Header 语言菜单能在 `zh-CN`、`en-US`、`ar` 之间切换。
+- `ar` 下 `html.dir` 为 `rtl`，Ant Design 组件方向同步为 RTL。
 - 页面标题、侧边栏、面包屑、Header、业务卡片文案随语言切换更新。
 - 刷新页面后保持上一次选择的语言。
-

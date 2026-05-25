@@ -1,4 +1,4 @@
-import { format, isValid, parseISO } from 'date-fns'
+import dayjs from 'dayjs'
 import trim from 'lodash-es/trim'
 
 export function formatNumber(value?: number | null) {
@@ -21,11 +21,11 @@ export function formatCurrency(value?: number | null) {
 export function formatDateTime(value?: string | null) {
   if (!value) return '从未调用'
 
-  const date = parseISO(value)
+  const date = dayjs(value)
 
-  if (!isValid(date)) return '-'
+  if (!date.isValid()) return '-'
 
-  return format(date, 'yyyy/MM/dd HH:mm')
+  return date.format('YYYY/MM/DD HH:mm')
 }
 
 export function formatText(value?: string | null) {

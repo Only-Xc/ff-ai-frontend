@@ -1,4 +1,4 @@
-import { format, isValid, parseISO } from 'date-fns'
+import dayjs from 'dayjs'
 import compact from 'lodash-es/compact'
 import isPlainObject from 'lodash-es/isPlainObject'
 import trim from 'lodash-es/trim'
@@ -15,11 +15,11 @@ import type { SkillFormValues } from './types'
 export function formatDateTime(value?: string) {
   if (!value) return '-'
 
-  const date = parseISO(value)
+  const date = dayjs(value)
 
-  if (!isValid(date)) return '-'
+  if (!date.isValid()) return '-'
 
-  return format(date, 'yyyy/MM/dd HH:mm')
+  return date.format('YYYY/MM/DD HH:mm')
 }
 
 export function formatCount(value?: number) {

@@ -1,4 +1,4 @@
-import { format, isValid } from 'date-fns'
+import dayjs from 'dayjs'
 
 import type { AdminTask, AdminTaskStatus } from '@/api/adminTasks'
 
@@ -27,11 +27,11 @@ export function groupTasksByLane(tasks: AdminTask[]) {
 export function formatDateTime(value?: string) {
   if (!value) return '-'
 
-  const date = new Date(value)
+  const date = dayjs(value)
 
-  if (!isValid(date)) return '-'
+  if (!date.isValid()) return '-'
 
-  return format(date, 'MM/dd HH:mm')
+  return date.format('MM/DD HH:mm')
 }
 
 export function formatCount(value?: number) {
