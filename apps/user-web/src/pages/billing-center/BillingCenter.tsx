@@ -2,7 +2,7 @@ import {
   BarChartOutlined,
   ClockCircleOutlined,
   CreditCardOutlined,
-  SearchOutlined,
+  ReloadOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
 import {
@@ -18,15 +18,19 @@ import {
   Typography,
 } from 'antd'
 import type { TableProps } from 'antd'
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import dayjs from 'dayjs'
+import { useEffect, useMemo } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { numberUtils } from '@ff-ai-frontend/utils'
 
 import {
+  tenantBillingKeys,
   tenantBilling_balance,
   tenantBilling_records,
   type BillingResourceType,
+  type TenantBillingQuery,
   type TenantBillingRecord,
-} from '@/api/billing'
+} from '@/api/billing-center'
 import { PageContainer } from '@/components/Container'
 import { PageHeader } from '@/components/Header'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
@@ -34,16 +38,7 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { BillingMetricCard } from './components/BillingMetricCard'
 import { ResourceTypeTag } from './components/ResourceTypeTag'
-import {
-  formatAmount,
-  formatBillingDateTime,
-  formatCurrency,
-} from './utils/billingFormat'
-import {
-  type BillingFilters,
-  type BillingFilterValues,
-  normalizeFilters,
-} from './utils/filters'
+import { type BillingFilterValues, normalizeFilters } from './utils/filters'
 
 const { RangePicker } = DatePicker
 
@@ -60,21 +55,10 @@ const billingResourceTypeOptions: {
 const mainMetricAccents = {
   balance: 'var(--admin-primary)',
   cost: 'var(--blue)',
-}
-
-const resourceMetricAccents = [
-  'var(--admin-primary)',
-  'var(--blue)',
-  'var(--green)',
-  'var(--orange)',
-]
-
-function formatNullableText(value: string | null | undefined): string {
-  const content = value?.trim()
-
-  if (content) return content
-
-  return '-'
+  compute_token: 'var(--admin-primary)',
+  storage_gb: 'var(--blue)',
+  network_egress_gb: 'var(--green)',
+  compute_hour: 'var(--orange)',
 }
 
 function getAgentDisplay(record: TenantBillingRecord) {
@@ -84,50 +68,94 @@ function getAgentDisplay(record: TenantBillingRecord) {
   return '租户级消费'
 }
 
+function formatBillingDateTime(value: string | null | undefined): string {
+  if (!value) return '-'
+
+  const date = dayjs(value)
+
+  if (!date.isValid()) return '-'
+
+  return date.format('YYYY年M月D日 HH:mm')
+}
+
 export function BillingCenter() {
   const [form] = Form.useForm<BillingFilterValues>()
-  const [filters, setFilters] = useState<BillingFilters>({})
   const pagination = usePaginationParams()
+  const filterValues = Form.useWatch([], form)
+
+  const paginationReset = pagination.reset
+
+  useEffect(() => {
+    paginationReset()
+  }, [filterValues, paginationReset])
+
+  const listParams = useMemo<TenantBillingQuery>(
+    () => ({
+      ...normalizeFilters(filterValues ?? {}),
+      ...pagination.query,
+    }),
+    [filterValues, pagination.query],
+  )
 
   const balanceQuery = useQuery({
-    queryKey: ['tenant-billing-balance'],
+    queryKey: tenantBillingKeys.balance(),
     queryFn: tenantBilling_balance,
   })
 
-  const recordsQuery = useQuery({
-    queryKey: [
-      'tenant-billing-records',
-      filters,
-      pagination.query.skip,
-      pagination.query.limit,
-    ],
-    queryFn: () =>
-      tenantBilling_records({
-        ...filters,
-        ...pagination.query,
-      }),
+  const {
+    data: recordsData,
+    isError: recordsIsError,
+    isFetching: recordsIsFetching,
+    refetch: refetchRecords,
+  } = useQuery({
+    queryKey: tenantBillingKeys.list(listParams),
+    queryFn: () => tenantBilling_records(listParams),
+    placeholderData: keepPreviousData,
   })
+  const isRefreshing = balanceQuery.isFetching || recordsIsFetching
+
+  const handleRefresh = () => {
+    void Promise.all([balanceQuery.refetch(), refetchRecords()])
+  }
 
   const columns = useMemo<TableProps<TenantBillingRecord>['columns']>(
     () => [
       {
+        title: '工单',
+        dataIndex: 'task_id',
+        width: 260,
+        render: (value: string | null) => (
+          <Typography.Text copyable={Boolean(value)}>
+            {value}
+          </Typography.Text>
+        ),
+      },
+      {
         title: '资源类型',
         dataIndex: 'resource_type',
-        width: 170,
+        width: 140,
         render: (_, record) => <ResourceTypeTag type={record.resource_type} />,
       },
       {
         title: '消费数量',
         dataIndex: 'amount',
         width: 150,
-        render: (_, record) => formatAmount(record.amount, record.unit),
+        render: (_, record) =>
+          numberUtils.formatNumber(record.amount, {
+            decimals: 4,
+            suffix: ' ' + record.unit,
+          }),
       },
       {
         title: '折算费用',
         dataIndex: 'cost',
         width: 130,
         render: (value: number) => (
-          <Typography.Text strong>{formatCurrency(value)}</Typography.Text>
+          <Typography.Text strong>
+            {numberUtils.formatCurrency(value, {
+              decimals: 2,
+            })}
+          </Typography.Text>
         ),
       },
       {
@@ -147,20 +175,9 @@ export function BillingCenter() {
         ),
       },
       {
-        title: '工单',
-        dataIndex: 'task_id',
-        width: 190,
-        render: (value: string | null) => (
-          <Typography.Text copyable={Boolean(value)} type="secondary">
-            {formatNullableText(value)}
-          </Typography.Text>
-        ),
-      },
-      {
         title: '描述',
         dataIndex: 'description',
-        ellipsis: true,
-        render: (value: string | null) => formatNullableText(value),
+        render: (value: string | null) => value,
       },
       {
         title: '消费时间',
@@ -173,7 +190,7 @@ export function BillingCenter() {
   )
 
   const balance = balanceQuery.data
-  const totalCost = recordsQuery.data?.total_cost
+  const totalCost = recordsData?.total_cost
 
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
@@ -192,45 +209,74 @@ export function BillingCenter() {
           accent={mainMetricAccents.balance}
           caption="可用额度"
           icon={<WalletOutlined />}
-          loading={balanceQuery.isLoading}
+          loading={balanceQuery.isFetching}
+          prefix="¥"
           title="租户总余额"
-          value={formatCurrency(balance?.balance)}
+          value={numberUtils.formatNumber(balance?.balance, {
+            decimals: 2,
+          })}
         />
         <BillingMetricCard
           accent={mainMetricAccents.cost}
           caption="筛选口径"
           icon={<BarChartOutlined />}
-          loading={recordsQuery.isLoading}
-          title="当前筛选消费"
-          value={formatCurrency(totalCost)}
+          loading={recordsIsFetching}
+          prefix="¥"
+          title="当前消费"
+          value={numberUtils.formatNumber(totalCost, {
+            decimals: 2,
+          })}
         />
         <BillingMetricCard
-          accent={resourceMetricAccents[0]}
+          accent={mainMetricAccents.compute_token}
           icon={<CreditCardOutlined />}
-          loading={balanceQuery.isLoading}
-          title="大模型推理 Token"
-          value={formatCurrency(balance?.balance_by_type.compute_token)}
+          loading={balanceQuery.isFetching}
+          prefix="¥"
+          title="Token 余额"
+          value={numberUtils.formatNumber(
+            balance?.balance_by_type.compute_token,
+            {
+              decimals: 2,
+            },
+          )}
         />
         <BillingMetricCard
-          accent={resourceMetricAccents[1]}
+          accent={mainMetricAccents.storage_gb}
           icon={<CreditCardOutlined />}
-          loading={balanceQuery.isLoading}
-          title="存储空间"
-          value={formatCurrency(balance?.balance_by_type.storage_gb)}
+          loading={balanceQuery.isFetching}
+          prefix="¥"
+          suffix="/ 月"
+          title="存储空间余额"
+          value={numberUtils.formatNumber(balance?.balance_by_type.storage_gb, {
+            decimals: 2,
+          })}
         />
         <BillingMetricCard
-          accent={resourceMetricAccents[2]}
+          accent={mainMetricAccents.network_egress_gb}
           icon={<CreditCardOutlined />}
-          loading={balanceQuery.isLoading}
-          title="网络出口流量"
-          value={formatCurrency(balance?.balance_by_type.network_egress_gb)}
+          loading={balanceQuery.isFetching}
+          prefix="¥"
+          suffix="/ GB"
+          title="网络出流量余额"
+          value={numberUtils.formatNumber(
+            balance?.balance_by_type.network_egress_gb,
+            {
+              decimals: 2,
+            },
+          )}
         />
         <BillingMetricCard
-          accent={resourceMetricAccents[3]}
+          accent={mainMetricAccents.compute_hour}
           icon={<CreditCardOutlined />}
-          loading={balanceQuery.isLoading}
-          title="计算核时"
-          value={formatCurrency(balance?.balance_by_type.compute_hour)}
+          loading={balanceQuery.isFetching}
+          suffix="核时"
+          title="计算核时余额"
+          value={numberUtils.formatNumber(
+            balance?.balance_by_type.compute_hour,
+            {
+              decimals: 2,
+            },
+          )}
         />
       </div>
 
@@ -254,15 +300,7 @@ export function BillingCenter() {
           ) : null}
 
           <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
-            <Form
-              form={form}
-              layout="inline"
-              className="flex-1"
-              onFinish={(values) => {
-                setFilters(normalizeFilters(values))
-                pagination.reset()
-              }}
-            >
+            <Form form={form} layout="inline" className="flex-1">
               <Form.Item name="resource_type">
                 <Select<BillingResourceType>
                   allowClear
@@ -286,33 +324,30 @@ export function BillingCenter() {
                   <Button
                     onClick={() => {
                       form.resetFields()
-                      setFilters({})
                       pagination.reset()
                     }}
                   >
                     重置
                   </Button>
                   <Button
-                    htmlType="submit"
-                    icon={<SearchOutlined />}
+                    icon={<ReloadOutlined />}
+                    loading={isRefreshing}
                     type="primary"
+                    onClick={handleRefresh}
                   >
-                    查询
+                    刷新
                   </Button>
                 </Space>
               </Form.Item>
             </Form>
           </div>
 
-          {recordsQuery.isError ? (
+          {recordsIsError ? (
             <Alert
               showIcon
               className="mx-5 mb-4"
               action={
-                <Button
-                  size="small"
-                  onClick={() => void recordsQuery.refetch()}
-                >
+                <Button size="small" onClick={() => void refetchRecords()}>
                   重试
                 </Button>
               }
@@ -324,12 +359,12 @@ export function BillingCenter() {
 
         <TableScrollYWrapper
           className="min-h-0 flex-1 border-t border-t-(--ant-color-border-secondary)"
-          refreshKey={`${recordsQuery.data?.data.length ?? 0}:${recordsQuery.isLoading}`}
+          refreshKey={`${recordsData?.data.length ?? 0}:${recordsIsFetching}`}
         >
           <Table<TenantBillingRecord>
             columns={columns}
-            dataSource={recordsQuery.data?.data ?? []}
-            loading={recordsQuery.isLoading}
+            dataSource={recordsData?.data ?? []}
+            loading={recordsIsFetching}
             pagination={false}
             rowKey="record_id"
             scroll={{ x: 1300 }}
@@ -338,12 +373,9 @@ export function BillingCenter() {
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
           <Typography.Text className="text-(--muted)!">
-            共 {recordsQuery.data?.count ?? 0} 条
+            共 {recordsData?.count ?? 0} 条
           </Typography.Text>
-          <Pagination
-            {...pagination.props}
-            total={recordsQuery.data?.count ?? 0}
-          />
+          <Pagination {...pagination.props} total={recordsData?.count ?? 0} />
         </div>
       </PageContainer>
     </div>

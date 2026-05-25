@@ -7,11 +7,23 @@ interface BillingMetricCardProps {
   className?: string
   icon?: ReactNode
   loading?: boolean
+  prefix?: string
+  suffix?: string
   title: string
   value: string
 }
 
-function MetricValue({ loading, value }: { loading?: boolean; value: string }) {
+function MetricValue({
+  loading,
+  prefix,
+  suffix,
+  value,
+}: {
+  loading?: boolean
+  prefix?: string
+  suffix?: string
+  value: string
+}) {
   if (loading) {
     return (
       <Skeleton.Input
@@ -28,12 +40,22 @@ function MetricValue({ loading, value }: { loading?: boolean; value: string }) {
   return (
     <strong
       className={[
-        'block truncate font-semibold leading-none tracking-normal text-(--text-strong) tabular-nums',
+        'flex min-w-0 items-end gap-1 truncate font-semibold leading-none tracking-normal text-(--text-strong) tabular-nums',
         'text-[24px] max-[640px]:text-[22px]',
       ].join(' ')}
-      title={value}
+      title={[prefix, value, suffix].filter(Boolean).join(' ')}
     >
-      {value}
+      {prefix ? (
+        <span className="shrink-0 text-[0.7em] leading-none text-(--muted)">
+          {prefix}
+        </span>
+      ) : null}
+      <span className="truncate">{value}</span>
+      {suffix ? (
+        <span className="shrink-0 text-[0.58em] leading-none text-(--muted)">
+          {suffix}
+        </span>
+      ) : null}
     </strong>
   )
 }
@@ -44,6 +66,8 @@ export function BillingMetricCard({
   className,
   icon,
   loading,
+  prefix,
+  suffix,
   title,
   value,
 }: BillingMetricCardProps) {
@@ -89,7 +113,12 @@ export function BillingMetricCard({
             {icon}
           </span>
         </div>
-        <MetricValue loading={loading} value={value} />
+        <MetricValue
+          loading={loading}
+          prefix={prefix}
+          suffix={suffix}
+          value={value}
+        />
       </div>
     </div>
   )

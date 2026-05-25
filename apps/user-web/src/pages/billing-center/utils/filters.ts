@@ -1,8 +1,11 @@
-import { format } from 'date-fns'
+import type { Dayjs } from 'dayjs'
 
-import type { BillingResourceType } from '@/api/billing'
+import type {
+  BillingResourceType,
+  TenantBillingQuery,
+} from '@/api/billing-center'
 
-type BillingDateRange = [Date | null, Date | null] | null
+type BillingDateRange = [Dayjs | null, Dayjs | null] | null
 
 export interface BillingFilterValues {
   agent_id?: string
@@ -10,18 +13,13 @@ export interface BillingFilterValues {
   resource_type?: BillingResourceType
 }
 
-export interface BillingFilters {
-  agent_id?: string
-  end_date?: string
-  resource_type?: BillingResourceType
-  start_date?: string
+function formatDateParam(value: Dayjs | null | undefined) {
+  return value?.format('YYYY-MM-DD')
 }
 
-function formatDateParam(value: Date | null | undefined) {
-  return value ? format(value, 'yyyy-MM-dd') : undefined
-}
-
-export function normalizeFilters(values: BillingFilterValues): BillingFilters {
+export function normalizeFilters(
+  values: BillingFilterValues,
+): Omit<TenantBillingQuery, 'skip' | 'limit'> {
   const agentId = values.agent_id?.trim()
   const [startDateValue, endDateValue] = values.date_range ?? []
 

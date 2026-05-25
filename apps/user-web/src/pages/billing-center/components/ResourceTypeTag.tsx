@@ -1,6 +1,6 @@
 import { Tag } from 'antd'
 
-import type { BillingResourceType } from '@/api/billing'
+import type { BillingResourceType } from '@/api/billing-center'
 
 const billingResourceTypeLabelMap: Record<BillingResourceType, string> = {
   compute_token: '大模型推理 Token',
