@@ -14,18 +14,21 @@ export const localeConfigs: Record<LocaleCode, LocaleConfig> = {
     label: '简体中文',
     direction: 'ltr',
     antdLocale: zhCN,
+    dayjsLocale: 'zh-cn',
   },
   'en-US': {
     code: 'en-US',
     label: 'English',
     direction: 'ltr',
     antdLocale: enUS,
+    dayjsLocale: 'en',
   },
   ar: {
     code: 'ar',
     label: 'العربية',
     direction: 'rtl',
     antdLocale: arEG,
+    dayjsLocale: 'ar',
   },
 }
 

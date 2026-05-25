@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import { defaultSettings } from '@/config/defaultSettings'
+import { syncDayjsLocale } from '@/i18n/dayjs'
 import { useLocale } from '@/i18n/useLocale'
 import { useAppStore } from '@/store/useApp'
 import { GlobalMessageRegister } from '@/utils/message'
@@ -54,6 +55,7 @@ export function AppProvider({ children }: Props) {
   useIsomorphicLayoutEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.dir = direction
+    syncDayjsLocale(locale)
   }, [direction, locale])
 
   // antd 主题配置
