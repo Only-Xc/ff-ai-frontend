@@ -3,8 +3,12 @@ import resourcesToBackend from 'i18next-resources-to-backend'
 import { initReactI18next } from 'react-i18next'
 
 import { SUPPORTED_LOCALES } from './constants'
-import { getSafeLocale, getInitialLocale, loadLangResources } from './helper'
-import { isLocaleCode } from './helper'
+import {
+  getSafeLocale,
+  getInitialLocale,
+  isLocaleCode,
+  loadLangResources,
+} from './helper'
 import type { LocaleCode } from './types'
 
 export function initI18next() {

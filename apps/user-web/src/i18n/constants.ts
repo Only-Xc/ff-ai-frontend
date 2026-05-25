@@ -21,8 +21,8 @@ export const localeConfigs: Record<LocaleCode, LocaleConfig> = {
     direction: 'ltr',
     antdLocale: enUS,
   },
-  'ar-SA': {
-    code: 'ar-SA',
+  ar: {
+    code: 'ar',
     label: 'العربية',
     direction: 'rtl',
     antdLocale: arEG,

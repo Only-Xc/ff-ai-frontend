@@ -1,6 +1,6 @@
 import type { Locale } from 'antd/es/locale'
 
-export type LocaleCode = 'zh-CN' | 'en-US' | 'ar-SA'
+export type LocaleCode = 'zh-CN' | 'en-US' | 'ar'
 
 export type LocaleDirection = 'ltr' | 'rtl'
 

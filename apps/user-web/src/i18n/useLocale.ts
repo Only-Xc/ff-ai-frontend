@@ -1,11 +1,10 @@
 import { useAppStore } from '@/store/useApp'
-import { localeOptions } from './constants'
-import { getLocaleConfig } from './helper'
+import { localeConfigs, localeOptions } from './constants'
 
 export function useLocale() {
   const locale = useAppStore((state) => state.locale)
   const setLocale = useAppStore((state) => state.setLocale)
-  const localeConfig = getLocaleConfig(locale)
+  const localeConfig = localeConfigs[locale]
 
   return {
     locale,

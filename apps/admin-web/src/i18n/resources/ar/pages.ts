@@ -4,6 +4,15 @@ export default {
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',
   'pages.notFound.subtitle': 'الصفحة غير موجودة أو تم نقلها.',
   'pages.notFound.backHome': 'العودة للرئيسية',
+  'pages.routeBoundary.loading': 'جار تحميل الصفحة',
+  'pages.routeBoundary.chunkLoadFailed': 'فشل تحميل موارد الصفحة',
+  'pages.routeBoundary.renderFailed': 'فشل عرض الصفحة',
+  'pages.routeBoundary.chunkLoadFailedSubtitle':
+    'قد تكون موارد الصفحة الحالية قد تم تحديثها. حدّث الصفحة وحاول مرة أخرى.',
+  'pages.routeBoundary.renderFailedSubtitle':
+    'تعذر عرض الصفحة الحالية. حدّث الصفحة وحاول مرة أخرى.',
+  'pages.routeBoundary.refreshPage': 'تحديث الصفحة',
+  'pages.routeBoundary.retryRefresh': 'تحديث وإعادة المحاولة',
   'pages.analysis.stats.callsToday': 'استدعاءات اليوم',
   'pages.analysis.stats.successRate': 'معدل النجاح',
   'pages.analysis.stats.averageLatency': 'متوسط التأخير',

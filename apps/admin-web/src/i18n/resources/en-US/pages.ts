@@ -5,6 +5,15 @@ export default {
     'Review platform tasks, apps, and resource status.',
   'pages.notFound.subtitle': 'The page does not exist or has been moved.',
   'pages.notFound.backHome': 'Back home',
+  'pages.routeBoundary.loading': 'Loading page',
+  'pages.routeBoundary.chunkLoadFailed': 'Page assets failed to load',
+  'pages.routeBoundary.renderFailed': 'Page render failed',
+  'pages.routeBoundary.chunkLoadFailedSubtitle':
+    'The current page assets may have been updated. Refresh and try again.',
+  'pages.routeBoundary.renderFailedSubtitle':
+    'The current page failed to render. Refresh and try again.',
+  'pages.routeBoundary.refreshPage': 'Refresh page',
+  'pages.routeBoundary.retryRefresh': 'Refresh and retry',
   'pages.analysis.stats.callsToday': 'Calls today',
   'pages.analysis.stats.successRate': 'Success rate',
   'pages.analysis.stats.averageLatency': 'Average latency',

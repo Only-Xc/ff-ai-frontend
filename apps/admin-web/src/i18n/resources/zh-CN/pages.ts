@@ -3,6 +3,15 @@ export default {
   'pages.shell.defaultSubtitle': '查看平台任务、应用和资源状态',
   'pages.notFound.subtitle': '页面不存在或已被移动',
   'pages.notFound.backHome': '返回首页',
+  'pages.routeBoundary.loading': '页面加载中',
+  'pages.routeBoundary.chunkLoadFailed': '页面资源加载失败',
+  'pages.routeBoundary.renderFailed': '页面渲染失败',
+  'pages.routeBoundary.chunkLoadFailedSubtitle':
+    '当前页面资源可能已更新，请刷新后重试。',
+  'pages.routeBoundary.renderFailedSubtitle':
+    '当前页面渲染出现异常，请刷新后重试。',
+  'pages.routeBoundary.refreshPage': '刷新页面',
+  'pages.routeBoundary.retryRefresh': '刷新重试',
   'pages.analysis.stats.callsToday': '今日调用',
   'pages.analysis.stats.successRate': '成功率',
   'pages.analysis.stats.averageLatency': '平均延迟',

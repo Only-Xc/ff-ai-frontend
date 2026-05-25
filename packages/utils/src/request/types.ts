@@ -77,6 +77,13 @@ export interface AuthPluginOptions {
   format?: (token: string) => string
 }
 
+export interface I18nPluginOptions {
+  getLocale: RequestTokenProvider
+  headerName?: string
+  format?: (token: string) => string
+}
+
+
 export type ResponseCode = number | string
 
 export interface UnwrapCodeDataPluginOptions {

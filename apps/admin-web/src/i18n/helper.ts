@@ -2,7 +2,6 @@ import { match } from '@formatjs/intl-localematcher'
 import { local } from '@ff-ai-frontend/utils'
 import {
   DEFAULT_LOCALE,
-  localeConfigs,
   SUPPORTED_LOCALES,
   LOCALE_STORAGE_KEY,
 } from './constants'
@@ -14,8 +13,16 @@ export function isLocaleCode(value: unknown): value is LocaleCode {
   )
 }
 
+function normalizeLegacyLocale(value: unknown) {
+  if (typeof value === 'string' && /^ar(?:[-_].+)?$/i.test(value)) return 'ar'
+
+  return value
+}
+
 export function getSafeLocale(value: unknown): LocaleCode {
-  return isLocaleCode(value) ? value : DEFAULT_LOCALE
+  const normalizedValue = normalizeLegacyLocale(value)
+
+  return isLocaleCode(normalizedValue) ? normalizedValue : DEFAULT_LOCALE
 }
 
 function getBrowserLocales() {
@@ -27,19 +34,18 @@ function getBrowserLocales() {
 }
 
 export function getInitialLocale() {
-  const storedLocale = local.get<LocaleCode>(LOCALE_STORAGE_KEY)
+  const storedLocale = local.get<string>(LOCALE_STORAGE_KEY)
+  const normalizedStoredLocale = normalizeLegacyLocale(storedLocale)
 
-  if (isLocaleCode(storedLocale)) return storedLocale
+  if (isLocaleCode(normalizedStoredLocale)) {
+    return normalizedStoredLocale
+  }
 
   return match(
-    getBrowserLocales(),
+    getBrowserLocales().map((locale) => normalizeLegacyLocale(locale) as string),
     SUPPORTED_LOCALES,
     DEFAULT_LOCALE,
   ) as LocaleCode
-}
-
-export function getLocaleConfig(locale: LocaleCode) {
-  return localeConfigs[locale]
 }
 
 interface LocaleResourceModule {

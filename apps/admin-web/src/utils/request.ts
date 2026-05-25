@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/store/useAuth'
 import {
   authPlugin,
+  i18nPlugin,
   createRequestClient,
   dedupePlugin,
   errorHandlerPlugin,
@@ -9,6 +10,7 @@ import {
 } from '@ff-ai-frontend/utils'
 import type { RequestConfig } from '@ff-ai-frontend/utils'
 import { globalMessage } from '@/utils/message'
+import { useAppStore } from '@/store/useApp'
 
 function shouldSkipGlobalErrorToast(config?: RequestConfig) {
   return config?.meta?.skipGlobalErrorToast === true
@@ -54,6 +56,9 @@ export const requestClient = createRequestClient({
       format: (token) => `Bearer ${token}`,
       getToken: () => useAuthStore.getState().accessToken,
       headerName: 'Authorization',
+    }),
+    i18nPlugin({
+      getLocale: () => useAppStore.getState().locale,
     }),
     restfulPlugin(),
     errorHandlerPlugin(handleRequestError),

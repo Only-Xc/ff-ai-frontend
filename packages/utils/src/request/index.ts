@@ -1,4 +1,5 @@
 export { authPlugin } from './plugin/auth.js'
+export { i18nPlugin } from './plugin/i18n.js'
 export {
   RequestError,
   isRequestError,
@@ -13,6 +14,7 @@ export { createRequestPlugin } from './core/plugin.js'
 export type { RequestErrorOptions } from './core/error.js'
 export type {
   AuthPluginOptions,
+  I18nPluginOptions,
   CreateRequestClientOptions,
   ErrorHandlerPluginOptions,
   MaybePromise,
