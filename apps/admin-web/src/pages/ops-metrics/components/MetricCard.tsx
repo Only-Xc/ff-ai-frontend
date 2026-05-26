@@ -18,9 +18,9 @@ export function MetricCard({
       className={`${styles.metricCard} h-full overflow-hidden rounded-xl! transition-[border-color,box-shadow,transform] duration-160 hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--admin-primary)_24%,var(--border))] hover:shadow-(--ops-shadow)`}
     >
       <Skeleton active loading={loading} paragraph={{ rows: 2 }} title={false}>
-        <div className="flex h-full flex-col justify-between gap-3">
+        <div className="flex h-full flex-col justify-between gap-0">
           <div className="flex items-center justify-between gap-3">
-            <Typography.Text className="text-[12px]! font-medium text-(--muted)!">
+            <Typography.Text className="text-[14px]! font-medium text-(--muted)!">
               {title}
             </Typography.Text>
             <span className="grid h-8 w-8 place-items-center rounded-[10px] border border-[color-mix(in_srgb,var(--admin-primary)_16%,transparent)] bg-[color-mix(in_srgb,var(--admin-primary)_9%,transparent)] text-[16px] text-(--admin-primary)">

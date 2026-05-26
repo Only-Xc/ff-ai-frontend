@@ -1,72 +1,36 @@
+import dayjs from 'dayjs'
+
 import type {
   OpsMetricsAgentSummary,
   OpsMetricsHotSkill,
   OpsMetricsLatency,
   OpsMetricsPeriod,
-} from '@/api/adminMetrics'
-
-export function formatNumber(value?: number | null) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return '-'
-
-  return new Intl.NumberFormat('zh-CN').format(value)
-}
-
-export function formatPercent(value?: number | null, precision = 1) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return '-'
-
-  return `${(value * 100).toFixed(precision)}%`
-}
-
-export function formatCurrency(value?: number | null) {
-  if (typeof value !== 'number' || Number.isNaN(value)) return '-'
-
-  return new Intl.NumberFormat('zh-CN', {
-    currency: 'CNY',
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    style: 'currency',
-  }).format(value)
-}
+} from '@/api/ops-metrics'
 
 export function formatDateTime(value?: string) {
   if (!value) return '-'
 
-  const date = new Date(value)
+  const date = dayjs(value)
 
-  if (Number.isNaN(date.getTime())) return '-'
+  if (!date.isValid()) return '-'
 
-  return new Intl.DateTimeFormat('zh-CN', {
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    month: '2-digit',
-    second: '2-digit',
-    year: 'numeric',
-  }).format(date)
+  return date.format('YYYY/MM/DD HH:mm:ss')
 }
 
 export function formatHourLabel(value: string, period: OpsMetricsPeriod) {
-  const date = new Date(value.replace(' ', 'T'))
+  const date = dayjs(value.replace(' ', 'T'))
 
-  if (Number.isNaN(date.getTime())) return value
+  if (!date.isValid()) return value
 
   if (period === 'today') {
-    return new Intl.DateTimeFormat('zh-CN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date)
+    return date.format('HH:mm')
   }
 
-  return new Intl.DateTimeFormat('zh-CN', {
-    day: '2-digit',
-    hour: '2-digit',
-    month: '2-digit',
-  }).format(date)
+  return date.format('MM/DD HH')
 }
 
 export function getLatestP95(latency?: OpsMetricsLatency) {
   const latest = latency?.data.at(-1)
-
   return latest?.p95
 }
 

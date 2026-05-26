@@ -1,9 +1,10 @@
 import { CloudServerOutlined } from '@ant-design/icons'
 import { Progress, Skeleton, Space, Statistic } from 'antd'
 
-import type { OpsMetricsAgentSummary } from '@/api/adminMetrics'
+import type { OpsMetricsAgentSummary } from '@/api/ops-metrics'
 
-import { formatNumber, getAgentSegments } from '../utils'
+import { numberUtils } from '@ff-ai-frontend/utils'
+import { getAgentSegments } from '../utils'
 import { EmptyBlock } from './EmptyBlock'
 
 interface AgentSummaryProps {
@@ -20,9 +21,11 @@ export function AgentSummary({ loading, summary }: AgentSummaryProps) {
         <Space className="w-full" orientation="vertical" size={14}>
           <Statistic
             title="智能体总数"
-            value={formatNumber(summary.total)}
+            value={numberUtils.formatNumber(summary.total)}
             prefix={<CloudServerOutlined />}
-            valueStyle={{ color: 'var(--text-strong)', fontSize: 26 }}
+            styles={{
+              content: { color: 'var(--text-strong)', fontSize: 26 },
+            }}
           />
           <Space className="w-full" orientation="vertical" size={10}>
             {segments.map((segment) => {
@@ -35,7 +38,7 @@ export function AgentSummary({ loading, summary }: AgentSummaryProps) {
                   <div className="mb-1 flex items-center justify-between gap-3 text-[12px]">
                     <span className="text-(--muted)">{segment.label}</span>
                     <span className="font-semibold text-(--text-strong) tabular-nums">
-                      {formatNumber(segment.value)}
+                      {numberUtils.formatNumber(segment.value)}
                     </span>
                   </div>
                   <Progress

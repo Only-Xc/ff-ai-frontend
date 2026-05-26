@@ -23,13 +23,15 @@ import {
   theme,
 } from 'antd'
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import {
+  adminMetricsKeys,
   adminMetrics_getOverview,
   type AdminMetricsOverview,
+  type AdminMetricsOverviewQuery,
   type OpsMetricsPeriod,
-} from '@/api/adminMetrics'
+} from '@/api/ops-metrics'
 
 import { AgentSummary } from './components/AgentSummary'
 import { BillingSummary } from './components/BillingSummary'
@@ -40,11 +42,9 @@ import { MetricCard } from './components/MetricCard'
 import { periodOptions } from './constants'
 import { useOpsMetricsStyles } from './styles'
 import type { ChartTheme } from './types'
+import { numberUtils } from '@ff-ai-frontend/utils'
 import {
-  formatCurrency,
   formatDateTime,
-  formatNumber,
-  formatPercent,
   getCssVariable,
   getErrorMessage,
   getLatestP95,
@@ -90,32 +90,44 @@ function buildMetrics(
       hint: '周期内创建与流转的工单',
       icon: <ToolOutlined />,
       title: '工单总量',
-      value: data ? formatNumber(data.factory_output.total_tasks) : '-',
+      value: data
+        ? numberUtils.formatNumber(data.factory_output.total_tasks)
+        : '-',
     },
     {
       hint: 'COMPLETED / total_tasks',
       icon: <CheckCircleOutlined />,
       title: '工单成功率',
-      value: data ? formatPercent(data.factory_output.success_rate) : '-',
+      value: data
+        ? numberUtils.formatPercent(data.factory_output.success_rate)
+        : '-',
       valueColor: 'var(--admin-success)',
     },
     {
       hint: '最新聚合点 P95',
       icon: <ClockCircleOutlined />,
       title: 'LLM P95 延迟',
-      value: latestP95 ? `${formatNumber(latestP95)}${unit}` : '-',
+      value: latestP95
+        ? numberUtils.formatNumber(latestP95, {
+            suffix: unit,
+          })
+        : '-',
     },
     {
       hint: 'Top Skill 调用汇总',
       icon: <ThunderboltOutlined />,
       title: 'Skill 调用量',
-      value: data ? formatNumber(getSkillCallTotal(data.hot_skills)) : '-',
+      value: data
+        ? numberUtils.formatNumber(getSkillCallTotal(data.hot_skills))
+        : '-',
     },
     {
       hint: '计费汇总 this_month',
       icon: <DollarOutlined />,
       title: '本月消费',
-      value: data ? formatCurrency(data.billing_summary.this_month) : '-',
+      value: data
+        ? numberUtils.formatCurrency(data.billing_summary.this_month)
+        : '-',
       valueColor: 'var(--admin-warning)',
     },
   ].map((item) => ({ ...item, loading }))
@@ -125,11 +137,15 @@ export function OpsMetrics() {
   const { styles } = useOpsMetricsStyles()
   const chartTheme = useChartTheme()
   const [period, setPeriod] = useState<OpsMetricsPeriod>('week')
+  const listParams = useMemo<AdminMetricsOverviewQuery>(
+    () => ({ period }),
+    [period],
+  )
 
   const metricsQuery = useQuery({
-    queryKey: ['adminMetricsOverview', period],
-    queryFn: () => adminMetrics_getOverview(period),
-    placeholderData: (previous) => previous,
+    queryKey: adminMetricsKeys.overview(listParams),
+    queryFn: () => adminMetrics_getOverview(listParams),
+    placeholderData: keepPreviousData,
     refetchInterval: 60 * 1000,
     staleTime: 30 * 1000,
   })
@@ -237,7 +253,8 @@ export function OpsMetrics() {
           extra={
             data ? (
               <Tag className="rounded-md!" color="green">
-                成功率 {formatPercent(data.factory_output.success_rate)}
+                成功率{' '}
+                {numberUtils.formatPercent(data.factory_output.success_rate)}
               </Tag>
             ) : null
           }

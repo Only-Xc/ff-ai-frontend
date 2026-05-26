@@ -1,8 +1,8 @@
 import { Skeleton, Tag, Typography } from 'antd'
 
-import type { OpsMetricsHotSkill } from '@/api/adminMetrics'
+import type { OpsMetricsHotSkill } from '@/api/ops-metrics'
 
-import { formatNumber, formatPercent } from '../utils'
+import { numberUtils } from '@ff-ai-frontend/utils'
 import { EmptyBlock } from './EmptyBlock'
 
 interface HotSkillsListProps {
@@ -53,10 +53,10 @@ export function HotSkillsList({ loading, skills }: HotSkillsListProps) {
           </div>
           <div className="min-w-27 text-right">
             <div className="font-semibold text-(--text-strong) tabular-nums">
-              {formatNumber(skill.call_count)}
+              {numberUtils.formatNumber(skill.call_count)}
             </div>
             <div className="text-[12px] text-(--muted)">
-              成功率 {formatPercent(skill.success_rate)}
+              成功率 {numberUtils.formatPercent(skill.success_rate)}
             </div>
           </div>
         </div>

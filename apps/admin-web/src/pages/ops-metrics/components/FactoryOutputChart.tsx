@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import type { EChartsOption } from 'echarts'
 import ReactECharts from 'echarts-for-react'
 
-import type { OpsMetricsFactoryOutput } from '@/api/adminMetrics'
+import type { OpsMetricsFactoryOutput } from '@/api/ops-metrics'
 
 import { statusColorMap, statusLabelMap, statusOrder } from '../constants'
 import type { ChartTheme } from '../types'
-import { formatNumber } from '../utils'
+import { numberUtils } from '@ff-ai-frontend/utils'
 import { EmptyBlock } from './EmptyBlock'
 
 interface FactoryOutputChartProps {
@@ -96,7 +96,7 @@ export function FactoryOutputChart({
           <div className="text-center">
             <div className="text-[11px] text-(--muted)">总工单</div>
             <div className="text-[24px] font-[680] text-(--text-strong) tabular-nums">
-              {formatNumber(total)}
+              {numberUtils.formatNumber(total)}
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export function FactoryOutputChart({
               <span className="truncate text-(--muted)">{item.name}</span>
             </span>
             <span className="font-semibold text-(--text-strong) tabular-nums">
-              {formatNumber(item.value)}
+              {numberUtils.formatNumber(item.value)}
             </span>
           </div>
         ))}

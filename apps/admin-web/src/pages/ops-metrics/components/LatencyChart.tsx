@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { EChartsOption } from 'echarts'
 import ReactECharts from 'echarts-for-react'
 
-import type { OpsMetricsLatency, OpsMetricsPeriod } from '@/api/adminMetrics'
+import type { OpsMetricsLatency, OpsMetricsPeriod } from '@/api/ops-metrics'
 
 import type { ChartTheme } from '../types'
 import { formatHourLabel } from '../utils'

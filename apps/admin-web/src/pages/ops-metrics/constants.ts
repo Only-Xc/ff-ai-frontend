@@ -1,7 +1,7 @@
 import type {
   OpsMetricsPeriod,
   OpsMetricsTaskStatus,
-} from '@/api/adminMetrics'
+} from '@/api/ops-metrics'
 
 export const periodOptions: { label: string; value: OpsMetricsPeriod }[] = [
   { label: '今日', value: 'today' },
