@@ -1,7 +1,7 @@
 import { BranchesOutlined } from '@ant-design/icons'
 import { Card, Empty, Space, Typography } from 'antd'
 
-import type { AdminTaskSourceCode } from '@/api/adminTasks'
+import type { AdminTaskSourceCode } from '@/api/ticket-kanban'
 
 import { CodeBlock } from './CodeBlock'
 
@@ -50,7 +50,7 @@ export function SourcePanel({
       }
     >
       {sourceCode ? (
-        <Space className="w-full" direction="vertical" size={12}>
+        <Space className="w-full" orientation="vertical" size={12}>
           <SourceField
             breakAll
             className={fieldClassName}

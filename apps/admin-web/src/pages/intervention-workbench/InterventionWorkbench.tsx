@@ -44,16 +44,14 @@ export function InterventionWorkbench() {
         className="rounded-lg!"
         showIcon
         type="error"
-        message="缺少工单 ID"
+        title="缺少工单 ID"
         action={<Button onClick={goBack}>返回工单</Button>}
       />
     )
   }
 
   return (
-    <div
-      className={`${styles.page} flex h-full w-full flex-1 flex-col gap-3`}
-    >
+    <div className={`${styles.page} flex h-full w-full flex-1 flex-col gap-3`}>
       <WorkbenchHeader
         actions={
           <ActionPanel
@@ -88,12 +86,17 @@ export function InterventionWorkbench() {
 
       <Spin
         spinning={isLoading}
-        wrapperClassName="flex min-h-0 flex-1 flex-col"
+        classNames={{
+          root: 'flex min-h-0 flex-1 flex-col',
+        }}
       >
         {snapshot ? (
           <div className="relative grid h-full min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-3">
             <div className="min-h-0">
-              <SnapshotPanel cardClassName={styles.card} items={snapshotItems} />
+              <SnapshotPanel
+                cardClassName={styles.card}
+                items={snapshotItems}
+              />
             </div>
 
             <div className="grid h-full min-h-0 grid-cols-[minmax(0,1.62fr)_minmax(560px,1fr)] gap-3 max-[1440px]:grid-cols-[minmax(0,1.45fr)_minmax(520px,1fr)] max-[1280px]:grid-cols-[minmax(0,1fr)_500px] max-[1180px]:grid-cols-1">

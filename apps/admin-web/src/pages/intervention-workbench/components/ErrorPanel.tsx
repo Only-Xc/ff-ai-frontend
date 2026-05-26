@@ -2,7 +2,7 @@ import { FileTextOutlined } from '@ant-design/icons'
 import { Alert, Card, Collapse, Descriptions, Empty, Space } from 'antd'
 import type { DescriptionsProps } from 'antd'
 
-import type { AdminTaskSnapshotError } from '@/api/adminTasks'
+import type { AdminTaskSnapshotError } from '@/api/ticket-kanban'
 
 import { CodeBlock } from './CodeBlock'
 
@@ -30,7 +30,7 @@ export function ErrorPanel({
       }
     >
       {error ? (
-        <Space className="w-full" direction="vertical" size={14}>
+        <Space className="w-full" orientation="vertical" size={14}>
           <Descriptions column={{ md: 2, xs: 1 }} items={items} size="small" />
           <Alert showIcon type="error" title={error.message || '执行异常'} />
           {contextText ? <CodeBlock text={contextText} /> : null}

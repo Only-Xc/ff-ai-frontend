@@ -8,7 +8,7 @@ import type {
   AdminTaskSnapshotContextLine,
   AdminTaskSnapshotError,
   AdminTaskStatus,
-} from '@/api/adminTasks'
+} from '@/api/ticket-kanban'
 
 export const statusLabelMap: Record<AdminTaskStatus, string> = {
   ANALYZING: '解析中',

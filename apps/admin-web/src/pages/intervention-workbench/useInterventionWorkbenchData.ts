@@ -5,9 +5,10 @@ import { useNavigate, useParams } from 'react-router'
 
 import {
   adminTasks_getSnapshot,
+  adminTasksKeys,
   adminTasks_reject,
   adminTasks_reprompt,
-} from '@/api/adminTasks'
+} from '@/api/ticket-kanban'
 import { useAuthStore } from '@/store/useAuth'
 
 import {
@@ -16,7 +17,6 @@ import {
   buildErrorItems,
   buildPayloadText,
   buildSnapshotItems,
-  getErrorMessage,
 } from './utils'
 
 export interface RepromptFormValues {
@@ -32,12 +32,13 @@ export function useInterventionWorkbenchData() {
   const queryClient = useQueryClient()
   const { message } = App.useApp()
   const { taskId = '' } = useParams<{ taskId: string }>()
+  const snapshotTaskId = taskId.trim()
   const operatorId = useAuthStore((state) => state.user?.id)
 
   const snapshotQuery = useQuery({
-    queryKey: ['admin-task-snapshot', taskId],
-    queryFn: () => adminTasks_getSnapshot(taskId),
-    enabled: Boolean(taskId),
+    queryKey: adminTasksKeys.snapshot(snapshotTaskId),
+    queryFn: () => adminTasks_getSnapshot(snapshotTaskId),
+    enabled: Boolean(snapshotTaskId),
   })
 
   const snapshot = snapshotQuery.data
@@ -62,22 +63,19 @@ export function useInterventionWorkbenchData() {
   )
 
   const invalidateTaskQueries = () => {
-    void queryClient.invalidateQueries({ queryKey: ['admin-tasks'] })
-    void queryClient.invalidateQueries({ queryKey: ['admin-tasks-count'] })
+    void queryClient.invalidateQueries({ queryKey: adminTasksKeys.lists() })
+    void queryClient.invalidateQueries({ queryKey: adminTasksKeys.stats() })
     void queryClient.invalidateQueries({
-      queryKey: ['admin-task-snapshot', taskId],
+      queryKey: adminTasksKeys.snapshot(snapshotTaskId),
     })
   }
 
   const repromptMutation = useMutation({
     mutationFn: (values: RepromptFormValues) =>
-      adminTasks_reprompt(taskId, {
+      adminTasks_reprompt(snapshotTaskId, {
         prompt_hint: values.prompt_hint.trim(),
         ...(operatorId ? { operator_id: operatorId } : {}),
       }),
-    onError: (error) => {
-      void message.error(getErrorMessage(error))
-    },
     onSuccess: (result) => {
       invalidateTaskQueries()
       void message.success(result.message || '已注入 Prompt')
@@ -87,13 +85,10 @@ export function useInterventionWorkbenchData() {
 
   const rejectMutation = useMutation({
     mutationFn: (values: RejectFormValues) =>
-      adminTasks_reject(taskId, {
+      adminTasks_reject(snapshotTaskId, {
         reason: values.reason.trim(),
         ...(operatorId ? { operator_id: operatorId } : {}),
       }),
-    onError: (error) => {
-      void message.error(getErrorMessage(error))
-    },
     onSuccess: (result) => {
       invalidateTaskQueries()
       void message.success(result.message || '已驳回工单')
@@ -123,6 +118,6 @@ export function useInterventionWorkbenchData() {
     submitReject: (values: RejectFormValues) => rejectMutation.mutate(values),
     submitReprompt: (values: RepromptFormValues) =>
       repromptMutation.mutate(values),
-    taskId,
+    taskId: snapshotTaskId,
   }
 }
