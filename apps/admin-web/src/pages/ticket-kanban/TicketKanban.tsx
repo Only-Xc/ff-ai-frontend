@@ -8,13 +8,13 @@ import { useTicketKanbanData } from './useTicketKanbanData'
 
 export function TicketKanban() {
   const {
-    countByKey,
     currentStatusValue,
     isError,
     isLoading,
     isRefreshing,
     refetch,
     setStatusValue,
+    stats,
     statsLoading,
     tasksByLane,
     total,
@@ -24,8 +24,8 @@ export function TicketKanban() {
     <div className="flex h-full min-h-0 w-full flex-col gap-3">
       <div className="grid min-w-330 grid-cols-5 gap-2.5">
         <TicketMetricCards
-          countByKey={countByKey}
           currentCount={total}
+          stats={stats}
           statsLoading={statsLoading}
         />
 

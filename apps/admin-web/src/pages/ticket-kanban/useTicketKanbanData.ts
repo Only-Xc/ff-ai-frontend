@@ -1,27 +1,29 @@
 import { useMemo, useState } from 'react'
-import { useQueries, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import {
+  adminTasks_getStats,
+  adminTasksKeys,
   adminTasks_list,
-  adminTasks_listAll,
+  type AdminTaskStats,
+  type AdminTaskQuery,
   type AdminTaskStatusFilter,
-} from '@/api/adminTasks'
+} from '@/api/ticket-kanban'
 
-import { countQueryConfigs, type MetricKey } from './constants'
 import { groupTasksByLane } from './utils'
 
 function normalizeStatusFilter(value: AdminTaskStatusFilter | 'all') {
   return value === 'all' ? undefined : value
 }
 
-function createEmptyCountByKey() {
-  return countQueryConfigs.reduce(
-    (result, item) => ({
-      ...result,
-      [item.key]: 0,
-    }),
-    {} as Record<MetricKey, number>,
-  )
+function createEmptyStats(): AdminTaskStats {
+  return {
+    total_count: 0,
+    active_count: 0,
+    failed_count: 0,
+    filtered_count: 0,
+    pending_approval_count: 0,
+  }
 }
 
 export function useTicketKanbanData() {
@@ -29,46 +31,43 @@ export function useTicketKanbanData() {
     'active',
   )
   const currentStatusValue: AdminTaskStatusFilter | 'all' = status ?? 'all'
+  const listParams = useMemo<AdminTaskQuery>(() => ({ status }), [status])
 
   const listQuery = useQuery({
-    queryKey: ['admin-tasks', status ?? 'all'],
-    queryFn: () => adminTasks_listAll({ status }),
+    queryKey: adminTasksKeys.list(listParams),
+    queryFn: () =>
+      adminTasks_list({
+        ...listParams,
+        skip: 0,
+        limit: 0,
+      }),
+    placeholderData: keepPreviousData,
   })
 
-  const countQueries = useQueries({
-    queries: countQueryConfigs.map((item) => ({
-      queryKey: ['admin-tasks-count', item.key],
-      queryFn: () =>
-        adminTasks_list({
-          status: item.status,
-          skip: 0,
-          limit: 1,
-        }),
-    })),
+  const statsQuery = useQuery({
+    queryKey: adminTasksKeys.stats(),
+    queryFn: () => adminTasks_getStats(),
   })
 
   const tasks = useMemo(() => listQuery.data?.data ?? [], [listQuery.data?.data])
   const tasksByLane = useMemo(() => groupTasksByLane(tasks), [tasks])
 
-  const countByKey = useMemo(() => {
-    return countQueryConfigs.reduce((result, item, index) => {
-      result[item.key] = countQueries[index]?.data?.count ?? 0
-
-      return result
-    }, createEmptyCountByKey())
-  }, [countQueries])
+  const stats = useMemo(
+    () => statsQuery.data ?? createEmptyStats(),
+    [statsQuery.data],
+  )
 
   return {
-    countByKey,
     currentStatusValue,
     isError: listQuery.isError,
     isLoading: listQuery.isLoading,
-    isRefreshing: listQuery.isFetching && !listQuery.isLoading,
-    refetch: listQuery.refetch,
+    isRefreshing: listQuery.isFetching || statsQuery.isFetching,
+    refetch: () => Promise.all([listQuery.refetch(), statsQuery.refetch()]),
     setStatusValue: (value: AdminTaskStatusFilter | 'all') => {
       setStatus(normalizeStatusFilter(value))
     },
-    statsLoading: countQueries.some((query) => query.isLoading),
+    stats,
+    statsLoading: statsQuery.isLoading,
     tasksByLane,
     total: listQuery.data?.count ?? 0,
   }

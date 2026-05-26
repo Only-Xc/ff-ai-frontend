@@ -2,7 +2,7 @@ import { Badge, Empty } from 'antd'
 import type { CSSProperties } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 
-import type { AdminTask } from '@/api/adminTasks'
+import type { AdminTask } from '@/api/ticket-kanban'
 
 import { laneColorMap, type LaneConfig } from '../constants'
 import { TaskCard } from './TaskCard'

@@ -13,7 +13,7 @@ import type { ReactNode } from 'react'
 import type {
   AdminTaskStatus,
   AdminTaskStatusFilter,
-} from '@/api/adminTasks'
+} from '@/api/ticket-kanban'
 
 export type LaneId = 'analysis' | 'coding' | 'testing' | 'blocked' | 'deploying'
 export type LaneColor = 'blue' | 'cyan' | 'gold' | 'purple' | 'red'
@@ -105,16 +105,6 @@ export const statusColorMap: Record<AdminTaskStatus, string> = {
   ROUTING: 'processing',
   TESTING: 'cyan',
 }
-
-export const countQueryConfigs: {
-  key: MetricKey
-  status?: AdminTaskStatusFilter
-}[] = [
-  { key: 'all' },
-  { key: 'active', status: 'active' },
-  { key: 'pending_approval', status: 'pending_approval' },
-  { key: 'failed', status: 'failed' },
-]
 
 export const metricCards = [
   {

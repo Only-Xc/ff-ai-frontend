@@ -1,13 +1,29 @@
 import type { CSSProperties } from 'react'
 
+import {numberUtils} from '@ff-ai-frontend/utils'
+import type { AdminTaskStats } from '@/api/ticket-kanban'
+
 import type { MetricKey } from '../constants'
 import { metricCards } from '../constants'
-import { formatCount, formatPercent, getMetricPercent } from '../utils'
+import { formatCount } from '../utils'
 
 interface TicketMetricCardsProps {
-  countByKey: Record<MetricKey, number>
   currentCount?: number
+  stats: AdminTaskStats
   statsLoading: boolean
+}
+
+function getMetricValue(stats: AdminTaskStats, key: MetricKey) {
+  switch (key) {
+    case 'all':
+      return stats.total_count
+    case 'active':
+      return stats.active_count
+    case 'failed':
+      return stats.failed_count
+    case 'pending_approval':
+      return stats.pending_approval_count
+  }
 }
 
 function getMetricDisplayMeta({
@@ -25,15 +41,15 @@ function getMetricDisplayMeta({
   if (key === 'failed' && value > 0) return '需复盘'
   if (key === 'all') return `当前筛选 ${formatCount(currentCount)} 条`
 
-  return `占全局 ${formatPercent(getMetricPercent(value, totalCount))}`
+  return `占全局 ${numberUtils.formatPercent(totalCount ? value / totalCount : 0)}`
 }
 
 export function TicketMetricCards({
-  countByKey,
   currentCount,
+  stats,
   statsLoading,
 }: TicketMetricCardsProps) {
-  const totalCount = formatCount(countByKey.all)
+  const totalCount = formatCount(stats.total_count)
 
   return (
     <div
@@ -42,7 +58,7 @@ export function TicketMetricCards({
       role="list"
     >
       {metricCards.map((item) => {
-        const value = formatCount(countByKey[item.key])
+        const value = formatCount(getMetricValue(stats, item.key))
         const assistText = getMetricDisplayMeta({
           currentCount,
           key: item.key,
@@ -67,7 +83,7 @@ export function TicketMetricCards({
               <div className="flex min-w-0 items-center gap-1.5 text-[11px] leading-4 text-(--muted)">
                 <span className="min-w-0 truncate">{item.caption}</span>
                 <span
-                  className={`relative truncate pl-[7px] before:absolute before:left-0 before:top-1/2 before:size-0.5 before:-translate-y-1/2 before:rounded-full before:bg-[color:color-mix(in_srgb,var(--muted)_56%,transparent)] before:content-[''] ${
+                  className={`relative truncate pl-1.75 before:absolute before:left-0 before:top-1/2 before:size-0.5 before:-translate-y-1/2 before:rounded-full before:bg-[color-mix(in_srgb,var(--muted)_56%,transparent)] before:content-[''] ${
                     item.key === 'pending_approval' && value > 0
                       ? 'shrink-0 font-medium text-(--admin-danger)'
                       : item.key === 'failed' && value > 0

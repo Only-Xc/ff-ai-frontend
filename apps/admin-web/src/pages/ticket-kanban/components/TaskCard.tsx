@@ -7,7 +7,7 @@ import { Button, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import type { AdminTask, AdminTaskStatus } from '@/api/adminTasks'
+import type { AdminTask, AdminTaskStatus } from '@/api/ticket-kanban'
 
 import { statusColorMap, statusLabelMap } from '../constants'
 import { formatDateTime } from '../utils'

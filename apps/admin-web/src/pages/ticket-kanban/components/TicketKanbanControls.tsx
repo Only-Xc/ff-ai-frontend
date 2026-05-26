@@ -1,7 +1,7 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Select, Tooltip, Typography } from 'antd'
 
-import type { AdminTaskStatusFilter } from '@/api/adminTasks'
+import type { AdminTaskStatusFilter } from '@/api/ticket-kanban'
 
 import { statusFilterOptions } from '../constants'
 
@@ -23,12 +23,12 @@ export function TicketKanbanControls({
   return (
     <div className="flex min-h-14.5 min-w-0 items-center gap-2 rounded-lg border border-(--border) bg-(--panel) px-2 py-2 shadow-[0_1px_2px_rgb(15_23_42/0.05)]">
       <Select
-        className="h-10 w-50"
+        className="h-10 flex-1"
         options={statusFilterOptions}
         value={value}
         onChange={onChange}
       />
-      <div className="flex h-10 min-w-0 flex-1 items-center justify-center">
+      <div className="flex h-10 w-20 items-center justify-center">
         <Typography.Text className="whitespace-nowrap text-[13px]! leading-5! text-(--muted)!">
           共 {total} 条
         </Typography.Text>

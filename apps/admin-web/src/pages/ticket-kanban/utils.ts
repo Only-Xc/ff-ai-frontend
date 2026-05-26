@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-import type { AdminTask, AdminTaskStatus } from '@/api/adminTasks'
+import type { AdminTask, AdminTaskStatus } from '@/api/ticket-kanban'
 
 import { lanes, type LaneId } from './constants'
 
@@ -36,16 +36,4 @@ export function formatDateTime(value?: string) {
 
 export function formatCount(value?: number) {
   return value ?? 0
-}
-
-export function formatPercent(value: number) {
-  if (!Number.isFinite(value)) return '0%'
-
-  return `${Math.round(value)}%`
-}
-
-export function getMetricPercent(value: number, total: number) {
-  if (!total) return 0
-
-  return Math.min(100, Math.max(0, (value / total) * 100))
 }
