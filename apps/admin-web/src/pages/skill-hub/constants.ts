@@ -1,4 +1,4 @@
-import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/adminSkills'
+import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/skill-hub'
 
 import type { SkillFormValues } from './types'
 

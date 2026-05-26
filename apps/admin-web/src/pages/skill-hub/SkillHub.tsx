@@ -4,7 +4,6 @@ import {
   EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
-  SearchOutlined,
 } from '@ant-design/icons'
 import {
   Alert,
@@ -21,20 +20,29 @@ import {
   Typography,
 } from 'antd'
 import type { TableProps } from 'antd'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDebounceCallback } from 'usehooks-ts'
 
 import {
   adminSkills_create,
   adminSkills_delete,
   adminSkills_get,
+  adminSkillsKeys,
   adminSkills_list,
   adminSkills_update,
   type AdminSkillEnvironment,
-  type AdminSkillListItem,
+  type AdminSkillListQuery,
+  type AdminSkill,
   type AdminSkillStatus,
   type AdminSkillUpdateBody,
-} from '@/api/adminSkills'
+} from '@/api/skill-hub'
+import { numberUtils } from '@ff-ai-frontend/utils'
 import { PageContainer } from '@/components/Container'
 import { PageHeader } from '@/components/Header'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
@@ -42,13 +50,9 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { globalMessage } from '@/utils/message'
 
 import { SkillDetailContent } from './components/SkillDetailContent'
-import { SkillForm } from './components/SkillForm'
+import { SkillForm, type SkillFormRef } from './components/SkillForm'
 import { EnvironmentTag, SkillStatusTag } from './components/SkillTags'
-import {
-  environmentOptions,
-  skillFormInitialValues,
-  statusOptions,
-} from './constants'
+import { environmentOptions, statusOptions } from './constants'
 import type {
   SkillDrawerMode,
   SkillFilterValues,
@@ -56,47 +60,41 @@ import type {
 } from './types'
 import {
   buildSubmitBody,
-  compactText,
-  formatCount,
   formatDateTime,
-  formatNullableText,
-  formatSuccessRate,
   getSkillFormValues,
+  normalizeSkillFilters,
 } from './utils'
 
 export function SkillHub() {
   const queryClient = useQueryClient()
   const [filterForm] = Form.useForm<SkillFilterValues>()
-  const [skillForm] = Form.useForm<SkillFormValues>()
   const pagination = usePaginationParams()
 
   const [filters, setFilters] = useState<SkillFilterValues>({})
   const [drawerSkillId, setDrawerSkillId] = useState<string>()
   const [formDrawer, setFormDrawer] = useState<{
+    initialValues: Partial<SkillFormValues>
     mode: SkillDrawerMode
     skillId?: string
   }>()
   const [editLoadingId, setEditLoadingId] = useState<string>()
+  const skillFormRef = useRef<SkillFormRef>(null)
+  const listParams = useMemo<AdminSkillListQuery>(
+    () => ({
+      ...filters,
+      ...pagination.query,
+    }),
+    [filters, pagination.query],
+  )
 
   const listQuery = useQuery({
-    queryKey: [
-      'admin-skills',
-      filters.category ?? '',
-      filters.environment ?? '',
-      filters.status ?? '',
-      filters.keyword ?? '',
-      pagination.query.skip,
-      pagination.query.limit,
-    ],
-    queryFn: () =>
-      adminSkills_list({
-        ...filters,
-        ...pagination.query,
-      }),
+    queryKey: adminSkillsKeys.list(listParams),
+    queryFn: () => adminSkills_list(listParams),
+    placeholderData: keepPreviousData,
   })
 
   const detailQuery = useQuery({
-    queryKey: ['admin-skill-detail', drawerSkillId],
+    queryKey: adminSkillsKeys.detail(drawerSkillId ?? ''),
     queryFn: () => adminSkills_get(drawerSkillId!),
     enabled: Boolean(drawerSkillId),
   })
@@ -108,9 +106,8 @@ export function SkillHub() {
     onSuccess: () => {
       globalMessage.success('Skill 创建成功')
       closeFormDrawer()
-      skillForm.resetFields()
       pagination.reset()
-      void queryClient.invalidateQueries({ queryKey: ['admin-skills'] })
+      void queryClient.invalidateQueries({ queryKey: adminSkillsKeys.lists() })
     },
   })
 
@@ -125,12 +122,11 @@ export function SkillHub() {
     onSuccess: (_, { skillId }) => {
       globalMessage.success('Skill 更新成功')
       closeFormDrawer()
-      skillForm.resetFields()
-      void queryClient.invalidateQueries({ queryKey: ['admin-skills'] })
+      void queryClient.invalidateQueries({ queryKey: adminSkillsKeys.lists() })
 
       if (drawerSkillId === skillId) {
         void queryClient.invalidateQueries({
-          queryKey: ['admin-skill-detail', skillId],
+          queryKey: adminSkillsKeys.detail(skillId),
         })
       }
     },
@@ -150,14 +146,12 @@ export function SkillHub() {
         return
       }
 
-      void queryClient.invalidateQueries({ queryKey: ['admin-skills'] })
+      void queryClient.invalidateQueries({ queryKey: adminSkillsKeys.lists() })
     },
   })
 
   const openCreateDrawer = () => {
-    setFormDrawer({ mode: 'create' })
-    skillForm.resetFields()
-    skillForm.setFieldsValue(skillFormInitialValues)
+    setFormDrawer({ initialValues: {}, mode: 'create' })
   }
 
   const openEditDrawer = async (skillId: string) => {
@@ -166,8 +160,11 @@ export function SkillHub() {
     try {
       const skill = await adminSkills_get(skillId)
 
-      setFormDrawer({ mode: 'edit', skillId })
-      skillForm.setFieldsValue(getSkillFormValues(skill))
+      setFormDrawer({
+        initialValues: getSkillFormValues(skill),
+        mode: 'edit',
+        skillId,
+      })
     } catch (error) {
       globalMessage.error(
         error instanceof Error ? error.message : 'Skill 详情加载失败',
@@ -177,15 +174,14 @@ export function SkillHub() {
     }
   }
 
-  const columns: TableProps<AdminSkillListItem>['columns'] = [
+  const columns: TableProps<AdminSkill>['columns'] = [
     {
       title: 'Skill 名称',
       dataIndex: 'name',
-      width: 280,
       ellipsis: true,
       render: (value: string, record) => (
-        <Space direction="vertical" size={2}>
-          <Typography.Text strong>{formatNullableText(value)}</Typography.Text>
+        <Space orientation="vertical" size={2}>
+          <Typography.Text strong>{value}</Typography.Text>
           <Typography.Text copyable type="secondary">
             {record.skill_id}
           </Typography.Text>
@@ -195,14 +191,13 @@ export function SkillHub() {
     {
       title: '分类',
       dataIndex: 'category',
-      width: 150,
+      width: 120,
       ellipsis: true,
-      render: (value: string) => formatNullableText(value),
     },
     {
       title: '环境',
       dataIndex: 'environment',
-      width: 110,
+      width: 100,
       render: (value: AdminSkillEnvironment) => (
         <EnvironmentTag environment={value} />
       ),
@@ -210,39 +205,38 @@ export function SkillHub() {
     {
       title: '状态',
       dataIndex: 'status',
-      width: 130,
+      width: 100,
       render: (value: AdminSkillStatus) => <SkillStatusTag status={value} />,
     },
     {
       title: '版本',
       dataIndex: 'version',
-      width: 120,
-      render: (value: string) => formatNullableText(value),
+      width: 100,
     },
     {
       title: '调用次数',
       dataIndex: 'call_count',
       width: 120,
-      align: 'right',
-      render: (value: number) => formatCount(value),
+      render: (value: number) => numberUtils.formatNumber(value),
     },
     {
       title: '成功率',
       dataIndex: 'success_rate',
       width: 120,
-      render: (value: number | null) => formatSuccessRate(value),
+      render: (value: number | null) =>
+        numberUtils.formatPercent(value, { decimals: 1 }),
     },
     {
       title: '更新时间',
       dataIndex: 'updated_at',
-      width: 180,
+      width: 160,
       render: (value: string) => formatDateTime(value),
     },
     {
       title: '操作',
       key: 'action',
       fixed: 'right',
-      width: 220,
+      width: 300,
       render: (_, record) => (
         <Space size={4}>
           <Button
@@ -282,30 +276,36 @@ export function SkillHub() {
     },
   ]
 
-  const handleFilterSubmit = (values: SkillFilterValues) => {
-    setFilters({
-      category: compactText(values.category),
-      environment: values.environment,
-      status: values.status,
-      keyword: compactText(values.keyword),
-    })
-    pagination.reset()
-  }
+  const handleFilterValuesChange = useDebounceCallback(
+    (_changedValues: SkillFilterValues, allValues: SkillFilterValues) => {
+      setFilters(normalizeSkillFilters(allValues))
+      pagination.reset()
+    },
+    300,
+  )
+
+  useEffect(() => {
+    return () => handleFilterValuesChange.cancel()
+  }, [handleFilterValuesChange])
 
   const handleFilterReset = () => {
+    handleFilterValuesChange.cancel()
     filterForm.resetFields()
     setFilters({})
     pagination.reset()
   }
 
   const handleSkillSubmit = async () => {
-    const values = await skillForm.validateFields()
+    const values = await skillFormRef.current?.validate()
+
+    if (!values) return
+
     let body: ReturnType<typeof buildSubmitBody>
 
     try {
       body = buildSubmitBody(values)
     } catch (error) {
-      skillForm.setFields([
+      skillFormRef.current?.setFields([
         {
           name: 'metadata',
           errors: [
@@ -342,7 +342,11 @@ export function SkillHub() {
         title="技能库"
         subtitle="维护平台 Skill，支持检索、创建、编辑、删除和详情查看。"
       >
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreateDrawer}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={openCreateDrawer}
+        >
           新建 Skill
         </Button>
       </PageHeader>
@@ -354,15 +358,15 @@ export function SkillHub() {
               form={filterForm}
               layout="inline"
               className="flex-1"
-              onFinish={handleFilterSubmit}
+              onValuesChange={handleFilterValuesChange}
             >
               <Form.Item name="category">
-                <Input allowClear className="w-40" placeholder="全部分类" />
+                <Input allowClear className="w-40!" placeholder="全部分类" />
               </Form.Item>
               <Form.Item name="environment">
                 <Select<AdminSkillEnvironment>
                   allowClear
-                  className="w-35"
+                  className="w-35!"
                   options={environmentOptions}
                   placeholder="全部环境"
                 />
@@ -370,7 +374,7 @@ export function SkillHub() {
               <Form.Item name="status">
                 <Select<AdminSkillStatus>
                   allowClear
-                  className="w-36"
+                  className="w-36!"
                   options={statusOptions}
                   placeholder="全部状态"
                 />
@@ -378,7 +382,7 @@ export function SkillHub() {
               <Form.Item name="keyword">
                 <Input
                   allowClear
-                  className="w-56"
+                  className="w-56!"
                   placeholder="搜索名称或描述"
                 />
               </Form.Item>
@@ -387,10 +391,11 @@ export function SkillHub() {
                   <Button onClick={handleFilterReset}>重置</Button>
                   <Button
                     type="primary"
-                    htmlType="submit"
-                    icon={<SearchOutlined />}
+                    icon={<ReloadOutlined />}
+                    loading={listQuery.isFetching}
+                    onClick={() => void listQuery.refetch()}
                   >
-                    查询
+                    刷新
                   </Button>
                 </Space>
               </Form.Item>
@@ -417,12 +422,12 @@ export function SkillHub() {
 
           <TableScrollYWrapper
             className="min-h-0 flex-1 border-t border-t-(--ant-color-border-secondary)"
-            refreshKey={`${listQuery.data?.data.length ?? 0}:${listQuery.isLoading}`}
+            refreshKey={`${listQuery.data?.data.length ?? 0}:${listQuery.isFetching}`}
           >
-            <Table<AdminSkillListItem>
+            <Table<AdminSkill>
               columns={columns}
               dataSource={skills}
-              loading={listQuery.isLoading}
+              loading={listQuery.isFetching}
               pagination={false}
               rowKey="skill_id"
               scroll={{ x: 1430 }}
@@ -492,7 +497,12 @@ export function SkillHub() {
           </Space>
         }
       >
-        <SkillForm form={skillForm} mode={formDrawer?.mode} />
+        <SkillForm
+          ref={skillFormRef}
+          initialValues={formDrawer?.initialValues ?? {}}
+          mode={formDrawer?.mode}
+          open={Boolean(formDrawer)}
+        />
       </Drawer>
     </div>
   )

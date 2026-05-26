@@ -8,9 +8,9 @@ import type {
   AdminSkillCreateBody,
   AdminSkillDetail,
   AdminSkillStatus,
-} from '@/api/adminSkills'
+} from '@/api/skill-hub'
 
-import type { SkillFormValues } from './types'
+import type { SkillFilterValues, SkillFormValues } from './types'
 
 export function formatDateTime(value?: string) {
   if (!value) return '-'
@@ -22,30 +22,23 @@ export function formatDateTime(value?: string) {
   return date.format('YYYY/MM/DD HH:mm')
 }
 
-export function formatCount(value?: number) {
-  return new Intl.NumberFormat('zh-CN').format(value ?? 0)
-}
-
-export function formatSuccessRate(value: number | null) {
-  if (value === null) return '-'
-
-  return `${(value * 100).toFixed(1)}%`
-}
-
-export function formatNullableText(value?: string) {
-  const text = trim(value)
-
-  if (text) return text
-
-  return '-'
-}
-
 export function compactText(value?: string) {
   const text = trim(value)
 
   if (text) return text
 
   return undefined
+}
+
+export function normalizeSkillFilters(
+  values: SkillFilterValues,
+): SkillFilterValues {
+  return {
+    category: compactText(values.category),
+    environment: values.environment,
+    status: values.status,
+    keyword: compactText(values.keyword),
+  }
 }
 
 function normalizeTags(tags?: string[]) {

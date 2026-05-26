@@ -1,12 +1,10 @@
 import { Descriptions, Divider, Space, Tag, Typography } from 'antd'
 
-import type { AdminSkillDetail } from '@/api/adminSkills'
+import type { AdminSkillDetail } from '@/api/skill-hub'
+import { numberUtils } from '@ff-ai-frontend/utils'
 
 import {
-  formatCount,
   formatDateTime,
-  formatNullableText,
-  formatSuccessRate,
   stringifyMetadata,
 } from '../utils'
 import { CodeBlock } from './CodeBlock'
@@ -27,7 +25,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
           {
             key: 'category',
             label: '分类',
-            children: formatNullableText(skill.category),
+            children: skill.category,
           },
           {
             key: 'environment',
@@ -42,17 +40,17 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
           {
             key: 'version',
             label: '版本',
-            children: formatNullableText(skill.version),
+            children: skill.version,
           },
           {
             key: 'call_count',
             label: '调用次数',
-            children: formatCount(skill.call_count),
+            children: numberUtils.formatNumber(skill.call_count),
           },
           {
             key: 'success_rate',
             label: '成功率',
-            children: formatSuccessRate(skill.success_rate),
+            children: numberUtils.formatPercent(skill.success_rate, { decimals: 1 }),
           },
           {
             key: 'created_at',
@@ -74,7 +72,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
           描述
         </Typography.Title>
         <Typography.Paragraph className="mb-0! text-(--text)">
-          {formatNullableText(skill.description)}
+          {skill.description}
         </Typography.Paragraph>
       </section>
 
@@ -97,9 +95,9 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
               >
                 <div className="mb-2 flex items-center gap-2">
                   <Typography.Text strong>
-                    {formatNullableText(snippet.filename)}
+                    {snippet.filename}
                   </Typography.Text>
-                  <Tag>{formatNullableText(snippet.language)}</Tag>
+                  <Tag>{snippet.language}</Tag>
                 </div>
                 <CodeBlock language={snippet.language}>{snippet.content}</CodeBlock>
               </div>

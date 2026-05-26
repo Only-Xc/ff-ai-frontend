@@ -1,7 +1,8 @@
 import { Button, Form, Input, Select, Space, Typography } from 'antd'
-import type { FormInstance } from 'antd'
+import { useEffect, useImperativeHandle } from 'react'
+import type { Ref } from 'react'
 
-import type { AdminSkillEnvironment } from '@/api/adminSkills'
+import type { AdminSkillEnvironment } from '@/api/skill-hub'
 
 import {
   createStatusOptions,
@@ -11,13 +12,62 @@ import {
 } from '../constants'
 import type { SkillDrawerMode, SkillFormValues } from '../types'
 
-export function SkillForm({
-  form,
-  mode,
-}: {
-  form: FormInstance<SkillFormValues>
+export interface SkillFormRef {
+  getValues: () => SkillFormValues
+  reset: () => void
+  setFields: (
+    fields: {
+      name: keyof SkillFormValues
+      errors: string[]
+    }[],
+  ) => void
+  setValues: (values: Partial<SkillFormValues>) => void
+  validate: () => Promise<SkillFormValues>
+}
+
+interface SkillFormProps {
+  initialValues: Partial<SkillFormValues>
+  open: boolean
   mode?: SkillDrawerMode
-}) {
+  ref?: Ref<SkillFormRef>
+}
+
+export function SkillForm({
+  initialValues,
+  open,
+  mode,
+  ref,
+}: SkillFormProps) {
+  const [form] = Form.useForm<SkillFormValues>()
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getValues: () => form.getFieldsValue(),
+      reset: () => {
+        form.resetFields()
+      },
+      setFields: (fields) => {
+        form.setFields(fields)
+      },
+      setValues: (values) => {
+        form.setFieldsValue(values)
+      },
+      validate: () => form.validateFields(),
+    }),
+    [form],
+  )
+
+  useEffect(() => {
+    if (!open) return
+
+    form.resetFields()
+    form.setFieldsValue({
+      ...skillFormInitialValues,
+      ...initialValues,
+    })
+  }, [form, initialValues, open])
+
   return (
     <Form<SkillFormValues>
       form={form}
@@ -93,7 +143,7 @@ export function SkillForm({
                 添加片段
               </Button>
             </div>
-            <Space className="w-full" direction="vertical" size={12}>
+            <Space className="w-full" orientation="vertical" size={12}>
               {fields.map((field) => (
                 <div
                   key={field.key}
@@ -101,7 +151,6 @@ export function SkillForm({
                 >
                   <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 max-[760px]:grid-cols-1">
                     <Form.Item
-                      {...field}
                       label="语言"
                       name={[field.name, 'language']}
                       rules={[{ required: true, message: '请输入代码语言' }]}
@@ -109,7 +158,6 @@ export function SkillForm({
                       <Input placeholder="python" />
                     </Form.Item>
                     <Form.Item
-                      {...field}
                       label="文件名"
                       name={[field.name, 'filename']}
                       rules={[{ required: true, message: '请输入文件名' }]}
@@ -123,7 +171,6 @@ export function SkillForm({
                     </Form.Item>
                   </div>
                   <Form.Item
-                    {...field}
                     label="代码内容"
                     name={[field.name, 'content']}
                     rules={[{ required: true, message: '请输入代码内容' }]}

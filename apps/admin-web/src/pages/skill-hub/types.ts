@@ -2,7 +2,7 @@ import type {
   AdminSkillCodeSnippet,
   AdminSkillEnvironment,
   AdminSkillStatus,
-} from '@/api/adminSkills'
+} from '@/api/skill-hub'
 
 export interface SkillFilterValues {
   category?: string

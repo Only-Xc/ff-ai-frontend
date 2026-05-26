@@ -1,6 +1,6 @@
 import { Tag } from 'antd'
 
-import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/adminSkills'
+import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/skill-hub'
 
 import { statusColorMap, statusLabelMap } from '../constants'
 
