@@ -11,11 +11,11 @@ import { useMemo } from 'react'
 import type {
   HotLifecycleCandidate,
   IdleLifecycleCandidate,
-} from '@/api/adminAgents'
+} from '@/api/lifecycle-ops'
 
 import type { FilterValues } from '../types'
-import { sumCost } from '../utils/lifecycleCandidates'
-import { formatCurrency, formatNumber } from '../utils/lifecycleFormatters'
+import { numberUtils } from '@ff-ai-frontend/utils'
+import { sumCost } from '../utils'
 
 interface SummaryCardProps {
   hint: string
@@ -26,7 +26,9 @@ interface SummaryCardProps {
 
 interface LifecycleSummaryProps {
   hotCandidates: HotLifecycleCandidate[]
+  hotTotal: number
   idleCandidates: IdleLifecycleCandidate[]
+  idleTotal: number
   queryParams: FilterValues
 }
 
@@ -55,39 +57,43 @@ function SummaryCard({ hint, icon, title, value }: SummaryCardProps) {
 
 export function LifecycleSummary({
   hotCandidates,
+  hotTotal,
   idleCandidates,
+  idleTotal,
   queryParams,
 }: LifecycleSummaryProps) {
   const summaryItems = useMemo(
     () => [
       {
         title: '沉寂候选',
-        value: formatNumber(idleCandidates.length),
+        value: numberUtils.formatNumber(idleTotal),
         hint: `连续 ${queryParams.idle_days} 天零调用`,
         icon: <SwapOutlined />,
       },
       {
         title: '火爆候选',
-        value: formatNumber(hotCandidates.length),
-        hint: `日均调用高于 ${formatNumber(queryParams.min_daily_invocations)}`,
+        value: numberUtils.formatNumber(hotTotal),
+        hint: `日均调用高于 ${numberUtils.formatNumber(queryParams.min_daily_invocations)}`,
         icon: <FireOutlined />,
       },
       {
         title: '可释放成本',
-        value: formatCurrency(sumCost(idleCandidates)),
-        hint: '沉寂候选日均运行成本',
+        value: numberUtils.formatCurrency(sumCost(idleCandidates)),
+        hint: '当前页沉寂候选日均运行成本',
         icon: <DollarOutlined />,
       },
       {
         title: '沙盒执行成本',
-        value: formatCurrency(sumCost(hotCandidates)),
-        hint: '火爆候选日均沙盒成本',
+        value: numberUtils.formatCurrency(sumCost(hotCandidates)),
+        hint: '当前页火爆候选日均沙盒成本',
         icon: <CheckCircleOutlined />,
       },
     ],
     [
       hotCandidates,
+      hotTotal,
       idleCandidates,
+      idleTotal,
       queryParams.idle_days,
       queryParams.min_daily_invocations,
     ],
@@ -97,7 +103,7 @@ export function LifecycleSummary({
     <div className="flex min-w-0 items-stretch gap-3 max-[1180px]:w-full">
       <div
         aria-label="生命周期指标"
-        className="grid min-w-[620px] flex-1 grid-cols-4 gap-2.5 max-[1180px]:min-w-0 max-[760px]:grid-cols-2 max-[520px]:grid-cols-1"
+        className="grid min-w-155 flex-1 grid-cols-4 gap-2.5 max-[1180px]:min-w-0 max-[760px]:grid-cols-2 max-[520px]:grid-cols-1"
       >
         {summaryItems.map((item) => (
           <SummaryCard

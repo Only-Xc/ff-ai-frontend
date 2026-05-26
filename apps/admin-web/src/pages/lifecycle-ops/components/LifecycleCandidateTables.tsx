@@ -6,15 +6,12 @@ import { useMemo } from 'react'
 import type {
   HotLifecycleCandidate,
   IdleLifecycleCandidate,
-} from '@/api/adminAgents'
+} from '@/api/lifecycle-ops'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 
 import type { CandidateTab } from '../types'
-import {
-  formatCurrency,
-  formatDateTime,
-  formatNumber,
-} from '../utils/lifecycleFormatters'
+import { numberUtils } from '@ff-ai-frontend/utils'
+import { formatDateTime } from '../utils'
 import { AgentCell } from './AgentCell'
 import { CopyableText } from './CopyableText'
 
@@ -87,7 +84,7 @@ export function LifecycleCandidateTables({
         title: '日均运行成本',
         dataIndex: 'daily_avg_cost',
         width: 150,
-        render: (value: number) => formatCurrency(value),
+        render: (value: number) => numberUtils.formatCurrency(value),
       },
       {
         title: '推荐动作',
@@ -135,19 +132,19 @@ export function LifecycleCandidateTables({
         title: '日均调用',
         dataIndex: 'daily_invocations',
         width: 140,
-        render: (value: number) => formatNumber(value),
+        render: (value: number) => numberUtils.formatNumber(value),
       },
       {
         title: '平均耗时',
         dataIndex: 'avg_duration_ms',
         width: 130,
-        render: (value: number) => `${formatNumber(value)} ms`,
+        render: (value: number) => `${numberUtils.formatNumber(value)} ms`,
       },
       {
         title: '日均沙盒成本',
         dataIndex: 'daily_avg_cost',
         width: 160,
-        render: (value: number) => formatCurrency(value),
+        render: (value: number) => numberUtils.formatCurrency(value),
       },
       {
         title: '推荐动作',

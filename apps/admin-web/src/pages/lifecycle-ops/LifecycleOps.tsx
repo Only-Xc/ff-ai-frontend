@@ -1,147 +1,94 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { Alert, App, Button, Form, Pagination, Tabs, Typography } from 'antd'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import pickBy from 'lodash-es/pickBy'
 import trim from 'lodash-es/trim'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useEventCallback } from 'usehooks-ts'
 
 import {
   adminAgents_demote,
-  adminAgents_getLifecycleCandidates,
   adminAgents_promote,
   type HotLifecycleCandidate,
   type IdleLifecycleCandidate,
   type PromoteAgentPayload,
-} from '@/api/adminAgents'
+} from '@/api/lifecycle-ops'
 import { PageContainer } from '@/components/Container'
 import { PageHeader } from '@/components/Header'
-import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { useAuthStore } from '@/store/useAuth'
 
-import { LifecycleActionModals } from './components/LifecycleActionModals'
+import { DemoteAgentModal } from './components/DemoteAgentModal'
 import { LifecycleCandidateTables } from './components/LifecycleCandidateTables'
 import { LifecycleFilterBar } from './components/LifecycleFilterBar'
 import { LifecycleSummary } from './components/LifecycleSummary'
-import { DEFAULT_FILTER_VALUES, DEFAULT_PROMOTE_VALUES } from './constants'
+import { PromoteAgentModal } from './components/PromoteAgentModal'
+import { DEFAULT_FILTER_VALUES } from './constants'
+import { useLifecycleCandidates } from './hooks/useLifecycleCandidates'
 import { useLifecycleOpsStyles } from './styles'
-import type {
-  CandidateTab,
-  DemoteFormValues,
-  FilterValues,
-  PromoteFormValues,
-} from './types'
-import {
-  getDemoteReason,
-  getPromoteReason,
-  slicePage,
-} from './utils/lifecycleCandidates'
-import { formatNumber, getErrorMessage } from './utils/lifecycleFormatters'
+import type { CandidateTab, DemoteFormValues, FilterValues, PromoteFormValues } from './types'
+import { numberUtils } from '@ff-ai-frontend/utils'
+import { getErrorMessage } from './utils'
 
 export function LifecycleOps() {
   const { styles } = useLifecycleOpsStyles()
   const { message } = App.useApp()
-  const queryClient = useQueryClient()
   const operatorId = useAuthStore((state) => state.user?.id)
   const [filterForm] = Form.useForm<FilterValues>()
-  const [demoteForm] = Form.useForm<DemoteFormValues>()
-  const [promoteForm] = Form.useForm<PromoteFormValues>()
-  const [activeTab, setActiveTab] = useState<CandidateTab>('idle')
-  const [queryParams, setQueryParams] = useState<FilterValues>(
-    DEFAULT_FILTER_VALUES,
-  )
-  const idlePagination = usePaginationParams({ defaultPageSize: 10 })
-  const hotPagination = usePaginationParams({ defaultPageSize: 10 })
   const [demoteCandidate, setDemoteCandidate] =
     useState<IdleLifecycleCandidate>()
   const [promoteCandidate, setPromoteCandidate] =
     useState<HotLifecycleCandidate>()
-
-  const candidatesQuery = useQuery({
-    queryKey: [
-      'adminAgentLifecycleCandidates',
-      queryParams.idle_days,
-      queryParams.min_daily_invocations,
-    ],
-    queryFn: () => adminAgents_getLifecycleCandidates(queryParams),
-    refetchInterval: 60 * 1000,
-    staleTime: 30 * 1000,
-  })
-
-  const idleCandidates = useMemo(
-    () => candidatesQuery.data?.pools.idle ?? [],
-    [candidatesQuery.data?.pools.idle],
-  )
-  const hotCandidates = useMemo(
-    () => candidatesQuery.data?.pools.hot ?? [],
-    [candidatesQuery.data?.pools.hot],
-  )
-  const pagedIdleCandidates = useMemo(
-    () =>
-      slicePage(
-        idleCandidates,
-        idlePagination.skip,
-        idlePagination.limit,
-      ),
-    [idleCandidates, idlePagination.limit, idlePagination.skip],
-  )
-  const pagedHotCandidates = useMemo(
-    () =>
-      slicePage(hotCandidates, hotPagination.skip, hotPagination.limit),
-    [hotCandidates, hotPagination.limit, hotPagination.skip],
-  )
-
-  const invalidateCandidates = useEventCallback(() => {
-    void queryClient.invalidateQueries({
-      queryKey: ['adminAgentLifecycleCandidates'],
-    })
-  })
-
-  const resetPaginations = useEventCallback(() => {
-    idlePagination.reset()
-    hotPagination.reset()
-  })
+  const {
+    activePagination,
+    activeTab,
+    activeTotal,
+    currentError,
+    handleFilterChange: updateFilterQuery,
+    handleFilterReset: resetFilterQuery,
+    hotCandidates,
+    hotListQuery,
+    idleCandidates,
+    idleListQuery,
+    invalidateCandidates,
+    isActiveTabLoading,
+    isRefreshing,
+    queryParams,
+    refetchAll,
+    setActiveTab,
+  } = useLifecycleCandidates()
 
   const closeDemoteModal = useEventCallback(() => {
     setDemoteCandidate(undefined)
-    demoteForm.resetFields()
   })
 
   const closePromoteModal = useEventCallback(() => {
     setPromoteCandidate(undefined)
-    promoteForm.resetFields()
   })
 
   const openDemoteModal = useEventCallback(
     (candidate: IdleLifecycleCandidate) => {
       setDemoteCandidate(candidate)
-      demoteForm.setFieldsValue({
-        reason: getDemoteReason(candidate),
-      })
     },
   )
 
   const openPromoteModal = useEventCallback(
     (candidate: HotLifecycleCandidate) => {
       setPromoteCandidate(candidate)
-      promoteForm.setFieldsValue({
-        ...DEFAULT_PROMOTE_VALUES,
-        reason: getPromoteReason(candidate),
-      })
     },
   )
 
   const demoteMutation = useMutation({
-    mutationFn: async (values: DemoteFormValues) => {
-      if (!demoteCandidate) throw new Error('请选择降级应用')
-
-      return adminAgents_demote(demoteCandidate.agent_id, {
+    mutationFn: async ({
+      candidate,
+      values,
+    }: {
+      candidate: IdleLifecycleCandidate
+      values: DemoteFormValues
+    }) => {
+      return adminAgents_demote(candidate.agent_id, {
         reason: trim(values.reason),
         ...(operatorId ? { operator_id: operatorId } : {}),
       })
-    },
-    onError: (error) => {
-      void message.error(getErrorMessage(error))
     },
     onSuccess: (result) => {
       invalidateCandidates()
@@ -151,23 +98,24 @@ export function LifecycleOps() {
   })
 
   const promoteMutation = useMutation({
-    mutationFn: async (values: PromoteFormValues) => {
-      if (!promoteCandidate) throw new Error('请选择晋升应用')
-
+    mutationFn: async ({
+      candidate,
+      values,
+    }: {
+      candidate: HotLifecycleCandidate
+      values: PromoteFormValues
+    }) => {
       const resources = pickBy({
         cpu: trim(values.cpu),
         memory: trim(values.memory),
       }) as NonNullable<PromoteAgentPayload['resources']>
 
-      return adminAgents_promote(promoteCandidate.agent_id, {
+      return adminAgents_promote(candidate.agent_id, {
         reason: trim(values.reason),
         replicas: values.replicas,
         ...(Object.keys(resources).length ? { resources } : {}),
         ...(operatorId ? { operator_id: operatorId } : {}),
       })
-    },
-    onError: (error) => {
-      void message.error(getErrorMessage(error))
     },
     onSuccess: (result) => {
       invalidateCandidates()
@@ -180,46 +128,22 @@ export function LifecycleOps() {
     },
   })
 
-  const handleFilterSubmit = useEventCallback((values: FilterValues) => {
-    setQueryParams({
-      idle_days: values.idle_days ?? DEFAULT_FILTER_VALUES.idle_days,
-      min_daily_invocations:
-        values.min_daily_invocations ??
-        DEFAULT_FILTER_VALUES.min_daily_invocations,
-    })
-    resetPaginations()
-  })
-
   const handleFilterReset = useEventCallback(() => {
     filterForm.setFieldsValue(DEFAULT_FILTER_VALUES)
-    setQueryParams(DEFAULT_FILTER_VALUES)
-    resetPaginations()
+    resetFilterQuery()
   })
-
-  const handleDemoteSubmit = useEventCallback(async () => {
-    const values = await demoteForm.validateFields()
-    demoteMutation.mutate(values)
-  })
-
-  const handlePromoteSubmit = useEventCallback(async () => {
-    const values = await promoteForm.validateFields()
-    promoteMutation.mutate(values)
-  })
-
-  const activePagination =
-    activeTab === 'idle' ? idlePagination : hotPagination
-  const activeTotal =
-    activeTab === 'idle' ? idleCandidates.length : hotCandidates.length
 
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
         title="生命周期调度"
-        subtitle={`当前阈值：沉寂 ${queryParams.idle_days} 天，日均调用 ${formatNumber(queryParams.min_daily_invocations)} 次。`}
+        subtitle={`当前阈值：沉寂 ${queryParams.idle_days} 天，日均调用 ${numberUtils.formatNumber(queryParams.min_daily_invocations)} 次。`}
       >
         <LifecycleSummary
           hotCandidates={hotCandidates}
+          hotTotal={hotListQuery.data?.count ?? 0}
           idleCandidates={idleCandidates}
+          idleTotal={idleListQuery.data?.count ?? 0}
           queryParams={queryParams}
         />
       </PageHeader>
@@ -230,12 +154,14 @@ export function LifecycleOps() {
             <LifecycleFilterBar
               form={filterForm}
               className={`${styles.filterBar} flex-1`}
+              isRefreshing={isRefreshing}
+              onChange={updateFilterQuery}
+              onRefresh={refetchAll}
               onReset={handleFilterReset}
-              onSubmit={handleFilterSubmit}
             />
           </div>
 
-          {candidatesQuery.isError ? (
+          {idleListQuery.isError || hotListQuery.isError ? (
             <Alert
               showIcon
               className="mx-5 mb-4 shrink-0"
@@ -243,13 +169,13 @@ export function LifecycleOps() {
                 <Button
                   icon={<ReloadOutlined />}
                   size="small"
-                  onClick={() => void candidatesQuery.refetch()}
+                  onClick={refetchAll}
                 >
                   重试
                 </Button>
               }
               title="生命周期候选池加载失败"
-              description={getErrorMessage(candidatesQuery.error)}
+              description={getErrorMessage(currentError)}
               type="error"
             />
           ) : null}
@@ -261,12 +187,12 @@ export function LifecycleOps() {
             items={[
               {
                 key: 'idle',
-                label: `沉寂应用 (${idleCandidates.length})`,
+                label: `沉寂应用 (${idleListQuery.data?.count ?? 0})`,
                 children: null,
               },
               {
                 key: 'hot',
-                label: `火爆应用 (${hotCandidates.length})`,
+                label: `火爆应用 (${hotListQuery.data?.count ?? 0})`,
                 children: null,
               },
             ]}
@@ -278,10 +204,10 @@ export function LifecycleOps() {
             activeTotal={activeTotal}
             demoteCandidateId={demoteCandidate?.agent_id}
             demotePending={demoteMutation.isPending}
-            hotCandidates={pagedHotCandidates}
-            idleCandidates={pagedIdleCandidates}
+            hotCandidates={hotCandidates}
+            idleCandidates={idleCandidates}
             idleDays={queryParams.idle_days}
-            isLoading={candidatesQuery.isLoading}
+            isLoading={isActiveTabLoading}
             promoteCandidateId={promoteCandidate?.agent_id}
             promotePending={promoteMutation.isPending}
             onOpenDemote={openDemoteModal}
@@ -297,17 +223,21 @@ export function LifecycleOps() {
         </div>
       </PageContainer>
 
-      <LifecycleActionModals
-        demoteCandidate={demoteCandidate}
-        demoteForm={demoteForm}
-        demotePending={demoteMutation.isPending}
-        promoteCandidate={promoteCandidate}
-        promoteForm={promoteForm}
-        promotePending={promoteMutation.isPending}
-        onCancelDemote={closeDemoteModal}
-        onCancelPromote={closePromoteModal}
-        onSubmitDemote={() => void handleDemoteSubmit()}
-        onSubmitPromote={() => void handlePromoteSubmit()}
+      <DemoteAgentModal
+        candidate={demoteCandidate}
+        pending={demoteMutation.isPending}
+        onCancel={closeDemoteModal}
+        onSubmit={(values, candidate) => {
+          demoteMutation.mutate({ values, candidate })
+        }}
+      />
+      <PromoteAgentModal
+        candidate={promoteCandidate}
+        pending={promoteMutation.isPending}
+        onCancel={closePromoteModal}
+        onSubmit={(values, candidate) => {
+          promoteMutation.mutate({ values, candidate })
+        }}
       />
     </div>
   )

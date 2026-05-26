@@ -1,4 +1,4 @@
-import { SearchOutlined } from '@ant-design/icons'
+import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Form, InputNumber, Space } from 'antd'
 import type { FormInstance } from 'antd'
 
@@ -8,15 +8,19 @@ import type { FilterValues } from '../types'
 interface LifecycleFilterBarProps {
   className?: string
   form: FormInstance<FilterValues>
+  isRefreshing: boolean
+  onChange: (values: FilterValues) => void
+  onRefresh: () => void
   onReset: () => void
-  onSubmit: (values: FilterValues) => void
 }
 
 export function LifecycleFilterBar({
   className,
   form,
+  isRefreshing,
+  onChange,
+  onRefresh,
   onReset,
-  onSubmit,
 }: LifecycleFilterBarProps) {
   return (
     <Form
@@ -24,7 +28,14 @@ export function LifecycleFilterBar({
       layout="inline"
       className={className}
       initialValues={DEFAULT_FILTER_VALUES}
-      onFinish={onSubmit}
+      onValuesChange={(_, values: FilterValues) => {
+        if (
+          typeof values.idle_days === 'number' &&
+          typeof values.min_daily_invocations === 'number'
+        ) {
+          onChange(values)
+        }
+      }}
     >
       <Form.Item
         name="idle_days"
@@ -43,8 +54,13 @@ export function LifecycleFilterBar({
       <Form.Item>
         <Space>
           <Button onClick={onReset}>重置</Button>
-          <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-            查询
+          <Button
+            icon={<ReloadOutlined />}
+            loading={isRefreshing}
+            type="primary"
+            onClick={onRefresh}
+          >
+            刷新
           </Button>
         </Space>
       </Form.Item>
