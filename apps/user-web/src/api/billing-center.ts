@@ -31,6 +31,8 @@ export interface TenantBillingListResult extends ListResult<TenantBillingRecord>
   total_cost: number
 }
 
+export type TenantBillingRecordDetail = TenantBillingRecord
+
 export interface TenantBillingBalance {
   tenant_id: string
   balance: number
@@ -43,6 +45,8 @@ export const tenantBillingKeys = {
   balance: () => [...tenantBillingKeys.all, 'balance'] as const,
   list: (params: TenantBillingQuery) =>
     [...tenantBillingKeys.all, 'list', params] as const,
+  detail: (recordId: string | undefined) =>
+    [...tenantBillingKeys.all, 'detail', recordId] as const,
 }
 
 export function tenantBilling_records(
@@ -65,6 +69,15 @@ export function tenantBilling_records(
 export function tenantBilling_balance(): Promise<TenantBillingBalance> {
   return requestClient({
     url: '/api/tenant/billing/balance',
+    method: 'GET',
+  })
+}
+
+export function tenantBilling_record(
+  recordId: string,
+): Promise<TenantBillingRecordDetail> {
+  return requestClient({
+    url: `/api/tenant/billing/records/${recordId}`,
     method: 'GET',
   })
 }

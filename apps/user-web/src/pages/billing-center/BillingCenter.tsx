@@ -19,7 +19,7 @@ import {
 } from 'antd'
 import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { numberUtils } from '@ff-ai-frontend/utils'
 
@@ -37,6 +37,7 @@ import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { BillingMetricCard } from './components/BillingMetricCard'
+import { BillingRecordDetailDrawer } from './components/BillingRecordDetailDrawer'
 import { ResourceTypeTag } from './components/ResourceTypeTag'
 import { type BillingFilterValues, normalizeFilters } from './utils/filters'
 
@@ -82,6 +83,7 @@ export function BillingCenter() {
   const [form] = Form.useForm<BillingFilterValues>()
   const pagination = usePaginationParams()
   const filterValues = Form.useWatch([], form)
+  const [selectedRecordId, setSelectedRecordId] = useState<string>()
 
   const paginationReset = pagination.reset
 
@@ -125,9 +127,7 @@ export function BillingCenter() {
         dataIndex: 'task_id',
         width: 260,
         render: (value: string | null) => (
-          <Typography.Text copyable={Boolean(value)}>
-            {value}
-          </Typography.Text>
+          <Typography.Text copyable={Boolean(value)}>{value}</Typography.Text>
         ),
       },
       {
@@ -184,6 +184,20 @@ export function BillingCenter() {
         dataIndex: 'created_at',
         width: 180,
         render: (value: string) => formatBillingDateTime(value),
+      },
+      {
+        title: '操作',
+        key: 'action',
+        fixed: 'right',
+        width: 96,
+        render: (_, record) => (
+          <Button
+            type="link"
+            onClick={() => setSelectedRecordId(record.record_id)}
+          >
+            详情
+          </Button>
+        ),
       },
     ],
     [],
@@ -367,7 +381,7 @@ export function BillingCenter() {
             loading={recordsIsFetching}
             pagination={false}
             rowKey="record_id"
-            scroll={{ x: 1300 }}
+            scroll={{ x: 1400 }}
           />
         </TableScrollYWrapper>
 
@@ -378,6 +392,13 @@ export function BillingCenter() {
           <Pagination {...pagination.props} total={recordsData?.count ?? 0} />
         </div>
       </PageContainer>
+
+      <BillingRecordDetailDrawer
+        formatDateTime={formatBillingDateTime}
+        open={Boolean(selectedRecordId)}
+        recordId={selectedRecordId}
+        onClose={() => setSelectedRecordId(undefined)}
+      />
     </div>
   )
 }
