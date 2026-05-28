@@ -1,0 +1,28 @@
+name: ff-ai-frontend
+
+services:
+  user-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: user-web
+    image: ff-ai-frontend-user-web:latest
+    ports:
+      - "8080:80"
+    environment:
+      BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
+    restart: unless-stopped
+
+  admin-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        APP_NAME: admin-web
+    image: ff-ai-frontend-admin-web:latest
+    ports:
+      - "8081:80"
+    environment:
+      BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
+    restart: unless-stopped
