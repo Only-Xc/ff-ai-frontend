@@ -77,7 +77,7 @@ case "$COMMAND" in
   update)
     ensure_env
     pull_latest_code
-    compose build --pull "$@"
+    compose build "$@"
     compose up -d
     compose ps
     ;;
