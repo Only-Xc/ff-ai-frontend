@@ -12,6 +12,8 @@ services:
       - "18080:80"
     environment:
       BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - ff-ai-backend-net
     restart: unless-stopped
@@ -27,6 +29,8 @@ services:
       - "18081:80"
     environment:
       BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - ff-ai-backend-net
     restart: unless-stopped
