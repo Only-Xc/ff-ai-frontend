@@ -20,6 +20,10 @@
       "types": "./src/storage/index.ts",
       "import": "./src/storage/index.ts"
     },
+    "./crypto": {
+      "types": "./src/crypto/index.ts",
+      "import": "./src/crypto/index.ts"
+    },
     "./websocket": {
       "types": "./src/websocket/index.ts",
       "import": "./src/websocket/index.ts"
@@ -39,10 +43,12 @@
   "dependencies": {
     "axios": "^1.15.2",
     "bignumber.js": "^9.3.1",
+    "crypto-js": "^4.2.0",
     "mitt": "^3.0.1"
   },
   "devDependencies": {
     "@ff-ai-frontend/tooling": "workspace:*",
+    "@types/crypto-js": "^4.2.2",
     "eslint": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
