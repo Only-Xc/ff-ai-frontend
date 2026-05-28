@@ -9,7 +9,7 @@ services:
         APP_NAME: user-web
     image: ff-ai-frontend-user-web:latest
     ports:
-      - "8080:80"
+      - "18080:80"
     environment:
       BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
     restart: unless-stopped
@@ -22,7 +22,7 @@ services:
         APP_NAME: admin-web
     image: ff-ai-frontend-admin-web:latest
     ports:
-      - "8081:80"
+      - "18081:80"
     environment:
       BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
     restart: unless-stopped
