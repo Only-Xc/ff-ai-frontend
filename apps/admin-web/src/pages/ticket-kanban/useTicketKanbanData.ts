@@ -31,7 +31,7 @@ export function useTicketKanbanData() {
     'active',
   )
   const currentStatusValue: AdminTaskStatusFilter | 'all' = status ?? 'all'
-  const listParams = useMemo<AdminTaskQuery>(() => ({ status }), [status])
+  const listParams = useMemo<AdminTaskQuery>(() => ({ status: status ?? "" }), [status])
 
   const listQuery = useQuery({
     queryKey: adminTasksKeys.list(listParams),

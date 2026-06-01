@@ -7,6 +7,7 @@ export type AdminTaskStatusFilter =
   | 'pending_approval'
   | 'completed'
   | 'failed'
+  | ''
 
 export type AdminTaskStatus =
   | 'CREATED'
