@@ -30,7 +30,7 @@ export interface InboundMessageEvent {
   button_prompt?: string
   /** Present when the frame is an agent breadcrumb (e.g. tool hint,
    * generic progress line) rather than a conversational reply. */
-  kind?: 'tool_hint' | 'progress' | 'task-created' | ''
+  kind?: 'tool_hint' | 'progress' | 'task-created' | 'task_confirmation' | ''
 }
 
 export interface InboundDeltaEvent {

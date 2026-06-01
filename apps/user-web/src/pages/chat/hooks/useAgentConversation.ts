@@ -246,8 +246,9 @@ export function useAgentConversation({
                 : event.media?.map((url) => toMediaAttachment({ url }))
               const hasMedia = !!media && media.length > 0
               const hasButtons = !!event.buttons?.length
+              const isTaskConfirmation = event.kind === 'task_confirmation'
 
-              if (!hasMedia && !hasButtons) {
+              if (!hasMedia && !hasButtons && !isTaskConfirmation) {
                 return state
               }
 
