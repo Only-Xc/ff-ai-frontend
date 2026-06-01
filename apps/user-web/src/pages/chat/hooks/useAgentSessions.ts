@@ -1,23 +1,33 @@
-import { useCallback } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useRef, useState } from 'react'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 
-import { conversations_delete, conversations_list } from '@/api/chat'
+import {
+  conversationKeys,
+  conversations_delete,
+  conversations_list,
+  splitSessionKey,
+} from '@/api/chat'
 
-import type { ChatSummary } from '@/api/types'
+import type { ChatSummary } from '@/pages/chat/types'
 import type { AgentClient } from '@/pages/chat/hooks/agentClient'
-
-const SESSION_QUERY_KEY = ['sessions'] as const
 
 export interface AgentSessionsState {
   // 侧边栏展示用的会话列表。
   sessions: ChatSummary[]
   loading: boolean
+  streamingChatIdSet: ReadonlySet<string>
 }
 
 export interface AgentSessionsActions {
   refresh: () => Promise<unknown>
   createChat: () => Promise<string>
   deleteChat: (key: string) => Promise<void>
+  setSessionStreaming: (chatId: string, isStreaming: boolean) => void
 }
 
 export function useAgentSessions(client: AgentClient): {
@@ -25,15 +35,20 @@ export function useAgentSessions(client: AgentClient): {
   actions: AgentSessionsActions
 } {
   const queryClient = useQueryClient()
+  const [streamingChatIdSet, setStreamingChatIdSet] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const streamingChatIdSetRef = useRef(streamingChatIdSet)
 
-  // 会话列表完全走 HTTP 查询；不混入 websocket live 状态。
+  // 会话列表来自 HTTP；运行态单独维护，避免列表刷新覆盖本地 streaming 状态。
   const {
     data: sessions = [],
     isLoading: loading,
     refetch: refresh,
   } = useQuery<ChatSummary[]>({
-    queryKey: SESSION_QUERY_KEY,
-    queryFn: conversations_list,
+    queryKey: conversationKeys.list(),
+    queryFn: () => conversations_list(),
+    placeholderData: keepPreviousData,
   })
 
   const createChatMutation = useMutation({
@@ -56,19 +71,29 @@ export function useAgentSessions(client: AgentClient): {
     },
     onSuccess: (session) => {
       // 立即把新会话插入列表顶部，避免用户等待下一次 refresh。
-      queryClient.setQueryData<ChatSummary[]>(SESSION_QUERY_KEY, (current) => [
-        session,
-        ...(current ?? []).filter((item) => item.key !== session.key),
-      ])
+      queryClient.setQueryData<ChatSummary[]>(
+        conversationKeys.list(),
+        (current) => [
+          session,
+          ...(current ?? []).filter((item) => item.key !== session.key),
+        ],
+      )
     },
   })
 
   const deleteChatMutation = useMutation({
     mutationFn: conversations_delete,
     onSuccess: (_deleted, key) => {
+      const deletedChatId = splitSessionKey(key).chatId
+
+      if (deletedChatId) {
+        setSessionStreaming(deletedChatId, false)
+      }
+
       // 删除成功后同步裁掉本地缓存里的会话行。
-      queryClient.setQueryData<ChatSummary[]>(SESSION_QUERY_KEY, (current) =>
-        (current ?? []).filter((session) => session.key !== key),
+      queryClient.setQueryData<ChatSummary[]>(
+        conversationKeys.list(),
+        (current) => (current ?? []).filter((session) => session.key !== key),
       )
     },
   })
@@ -86,15 +111,43 @@ export function useAgentSessions(client: AgentClient): {
     [deleteChatMutation],
   )
 
+  const setSessionStreaming = useCallback(
+    (chatId: string, isStreaming: boolean) => {
+      setStreamingChatIdSet(() => {
+        const current = streamingChatIdSetRef.current
+        const currentIsStreaming = current.has(chatId)
+
+        if (currentIsStreaming === isStreaming) {
+          return current
+        }
+
+        const next = new Set(current)
+
+        if (isStreaming) {
+          next.add(chatId)
+        } else {
+          next.delete(chatId)
+        }
+
+        streamingChatIdSetRef.current = next
+
+        return next
+      })
+    },
+    [],
+  )
+
   return {
     state: {
       sessions,
       loading,
+      streamingChatIdSet,
     },
     actions: {
       refresh,
       createChat,
       deleteChat,
+      setSessionStreaming,
     },
   }
 }

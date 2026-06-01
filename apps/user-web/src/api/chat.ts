@@ -1,6 +1,6 @@
 import { requestClient } from '@/utils/request'
 
-import type { ChatSummary } from './types'
+import type { ChatSummary } from '@/pages/chat/types'
 import { useAuthStore } from '@/store/useAuth'
 
 interface SessionRow {
@@ -11,12 +11,12 @@ interface SessionRow {
   preview?: string
 }
 
-interface CreateSessionData {
+export interface CreateSessionData {
   project_id?: string
   title: string
 }
 
-export interface SessionDetailResponse {
+export interface SessionDetail {
   key: string
   created_at: string | null
   updated_at: string | null
@@ -27,19 +27,30 @@ export interface SessionMediaUrl {
   name?: string
 }
 
-export interface SessionMessagesResponse {
+export interface SessionMessageItem {
+  role: string // 角色
+  content: string // 内容
+  timestamp?: string // 时间
+  tool_calls?: unknown
+  tool_call_id?: string
+  name?: string
+  media_urls?: SessionMediaUrl[]
+}
+
+export interface SessionMessages {
   key: string
   created_at: string | null
   updated_at: string | null
-  messages: {
-    role: string
-    content: string
-    timestamp?: string
-    tool_calls?: unknown
-    tool_call_id?: string
-    name?: string
-    media_urls?: SessionMediaUrl[]
-  }[]
+  messages: SessionMessageItem[]
+}
+
+export const conversationKeys = {
+  all: ['conversations'] as const,
+  list: () => [...conversationKeys.all, 'list'] as const,
+  detail: (conversationId: string | null | undefined) =>
+    [...conversationKeys.all, 'detail', conversationId] as const,
+  messages: (conversationId: string | null | undefined) =>
+    [...conversationKeys.all, 'messages', conversationId] as const,
 }
 
 export function splitSessionKey(key: string | null): {
@@ -90,7 +101,7 @@ export function conversations_create(data: CreateSessionData) {
 
 export function conversations_detail(
   conversationId: string,
-): Promise<SessionDetailResponse> {
+): Promise<SessionDetail> {
   return requestClient({
     url: `/api/conversations/${conversationId}`,
     method: 'GET',
@@ -99,7 +110,7 @@ export function conversations_detail(
 
 export function conversations_message(
   conversationId: string,
-): Promise<SessionMessagesResponse> {
+): Promise<SessionMessages> {
   return requestClient({
     url: `/api/conversations/${conversationId}/messages`,
     method: 'GET',

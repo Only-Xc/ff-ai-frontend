@@ -40,6 +40,13 @@ export interface NumberFormatOptions {
 export type PercentFormatOptions = NumberFormatOptions
 
 /**
+ * 百分比计算配置。
+ */
+export interface PercentCalculateOptions {
+  decimals?: number
+}
+
+/**
  * 货币格式化配置。
  */
 export interface CurrencyFormatOptions {
@@ -191,6 +198,32 @@ export function toBigNumber(value: NumberInput) {
 }
 
 export const numberUtils = {
+  /**
+   * 按分子和分母计算百分比数值。
+   *
+   * @example
+   * numberUtils.calculatePercent(1, 4) // 25
+   * numberUtils.calculatePercent(1, 3, { decimals: 2 }) // 33.33
+   */
+  calculatePercent(
+    value: NumberInput,
+    total: NumberInput,
+    { decimals = DEFAULT_DECIMALS }: PercentCalculateOptions = {},
+  ) {
+    const totalValue = toBigNumber(total)
+
+    if (totalValue.isZero()) {
+      return 0
+    }
+
+    const percent = toBigNumber(value)
+      .dividedBy(totalValue)
+      .multipliedBy(100)
+      .decimalPlaces(normalizeDecimals(decimals))
+
+    return percent.toNumber()
+  },
+
   /**
    * 将数字按指定小数位向上取整。
    *

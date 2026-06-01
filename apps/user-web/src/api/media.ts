@@ -1,4 +1,4 @@
-import type { UIMediaAttachment, UIMediaKind } from './types'
+import type { UIMediaAttachment, UIMediaKind } from '@/pages/chat/types'
 
 const IMAGE_EXTENSIONS = new Set([
   '.png',

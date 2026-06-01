@@ -111,6 +111,7 @@ function ChatWorkspace(agentClient: AgentClientValue) {
             activeKey={agent.sessions.activeKey}
             loading={agent.sessions.loading}
             sessions={agent.sessions.items}
+            streamingChatIdSet={agent.sessions.streamingChatIdSet}
             onDelete={agent.actions.deleteSession}
             onNewChat={agent.actions.startNewChat}
             onSelect={agent.actions.selectSession}

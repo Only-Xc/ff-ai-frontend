@@ -1,18 +1,5 @@
-import { toMediaAttachment } from '../../../api/media.ts'
-import type { InboundEvent, UIMessage } from '../../../api/types.ts'
-
-const EMPTY_MESSAGES: UIMessage[] = []
-
-interface ConversationStreamError {
-  kind: 'message_too_big'
-}
-
-export interface LiveState {
-  // Live 状态只关心当前页面内这次会话的 websocket 增量。
-  messages: UIMessage[]
-  isStreaming: boolean
-  streamError: ConversationStreamError | null
-}
+import type { UIMessage } from '@/pages/chat/types'
+import type { SessionHistoryData } from '@/pages/chat/hooks/useConversationHistory'
 
 interface StreamBuffer {
   messageId: string
@@ -24,22 +11,9 @@ export interface ConversationRuntime {
   buffer: StreamBuffer | null
   // 当前正在运行的 run_id，用于 stop 时优先发送 cancel。
   currentRunId: string | null
-  // 草稿会话发送后，等待页面切到正式 chatId 的过渡标记。
-  pendingChatId: string | null
 }
 
 export type LiveAction =
-  | { type: 'chat_reset' }
-  | {
-      type: 'state_restored'
-      messages: UIMessage[]
-      isStreaming: boolean
-    }
-  | {
-      type: 'turn_started'
-      userMessage: UIMessage
-      assistantMessage: UIMessage
-    }
   | {
       type: 'delta_received'
       messageId: string
@@ -59,20 +33,11 @@ export type LiveAction =
     }
   | { type: 'stream_finished' }
   | { type: 'stream_ended' }
-  | { type: 'stream_error'; error: ConversationStreamError }
-  | { type: 'error_dismissed' }
-
-export const INITIAL_LIVE_STATE: LiveState = {
-  messages: EMPTY_MESSAGES,
-  isStreaming: false,
-  streamError: null,
-}
 
 export function createConversationRuntime(): ConversationRuntime {
   return {
     buffer: null,
     currentRunId: null,
-    pendingChatId: null,
   }
 }
 
@@ -165,109 +130,16 @@ function appendOrReplaceMessage(
   )
 }
 
-function clearRuntimeBuffer(runtime: ConversationRuntime): void {
-  runtime.buffer = null
-}
-
-function clearRuntimeStreamingState(runtime: ConversationRuntime): void {
-  runtime.currentRunId = null
-  runtime.buffer = null
-}
-
-function ensureRuntimeBuffer(
-  runtime: ConversationRuntime,
-  createMessageId: () => string,
-): StreamBuffer {
-  const messageId = runtime.buffer?.messageId ?? createMessageId()
-
-  runtime.buffer ??= {
-    messageId,
-    parts: [],
-  }
-
-  return runtime.buffer
-}
-
-function restoreRuntimeBufferFromState(
-  state: LiveState,
-  runtime: ConversationRuntime,
-): void {
-  if (runtime.buffer) return
-
-  for (let index = state.messages.length - 1; index >= 0; index -= 1) {
-    const message = state.messages[index]
-
-    if (message.role !== 'assistant' || !message.isStreaming) {
-      continue
-    }
-
-    runtime.buffer = {
-      messageId: message.id,
-      parts: message.content ? [message.content] : [],
-    }
-    return
-  }
-}
-
-function createStructuredMessage(
-  event: Extract<InboundEvent, { event: 'message' }>,
-  createMessageId: () => string,
-  now: number,
-): UIMessage | null {
-  const media = event.media_urls?.length
-    ? event.media_urls.map((item) => toMediaAttachment(item))
-    : event.media?.map((url) => toMediaAttachment({ url }))
-  const hasMedia = !!media && media.length > 0
-  const hasButtons = !!event.buttons?.length
-
-  // 纯文本 message 仅作为协议兼容帧保留，不参与正文展示。
-  if (!hasMedia && !hasButtons) {
-    return null
-  }
-
-  return {
-    id: createMessageId(),
-    role: 'assistant',
-    content: hasButtons ? (event.button_prompt ?? event.text) : event.text,
-    createdAt: now,
-    ...(hasButtons ? { buttons: event.buttons } : {}),
-    ...(hasMedia ? { media } : {}),
-  }
-}
-
-export function liveReducer(state: LiveState, action: LiveAction): LiveState {
-  if (action.type === 'chat_reset') {
-    return INITIAL_LIVE_STATE
-  }
-
-  if (action.type === 'state_restored') {
-    return {
-      messages: action.messages,
-      isStreaming: action.isStreaming,
-      streamError: null,
-    }
-  }
-
-  if (action.type === 'turn_started') {
-    // 用户发送后立刻插入 user + assistant 占位，形成 optimistic UI。
-
-    return {
-      messages: [
-        ...state.messages,
-        action.userMessage,
-        action.assistantMessage,
-      ],
-      isStreaming: true,
-      streamError: null,
-    }
-  }
-
+export function liveReducer(
+  state: SessionHistoryData,
+  action: LiveAction,
+): SessionHistoryData {
   if (action.type === 'delta_received') {
     // delta 只负责更新一条流式 assistant 消息，不做最终汇总。
     return {
       ...state,
-      isStreaming: true,
       messages: upsertStreamingMessage(state.messages, action),
+      hasPendingToolCalls: false,
     }
   }
 
@@ -276,14 +148,15 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
     // 如果本轮没有 delta，直接替换 optimistic assistant 占位。
     return {
       ...state,
-      isStreaming: true,
       messages: appendOrReplaceMessage(state.messages, action),
+      hasPendingToolCalls: false,
     }
   }
 
   if (action.type === 'stream_canceled') {
     // canceled 会结束 streaming，并额外插入一条可见的取消痕迹消息。
     return {
+      ...state,
       messages: [
         ...stopStreamingMessages(state.messages),
         {
@@ -295,8 +168,7 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
           createdAt: action.createdAt,
         },
       ],
-      isStreaming: false,
-      streamError: state.streamError,
+      hasPendingToolCalls: false,
     }
   }
 
@@ -310,206 +182,9 @@ export function liveReducer(state: LiveState, action: LiveAction): LiveState {
     return {
       ...state,
       messages: stopStreamingMessages(state.messages),
-      isStreaming: false,
+      hasPendingToolCalls: false,
     }
   }
 
-  if (action.type === 'stream_error') {
-    return {
-      ...state,
-      streamError: action.error,
-    }
-  }
-
-  return {
-    ...state,
-    streamError: null,
-  }
-}
-
-interface HandleConversationEventOptions {
-  event: InboundEvent
-  runtime: ConversationRuntime
-  dispatch: (action: LiveAction) => void
-  createMessageId: () => string
-  now: number
-}
-
-function handleConversationEvent({
-  event,
-  runtime,
-  dispatch,
-  createMessageId,
-  now,
-}: HandleConversationEventOptions): void {
-  if (event.event === 'attached' || event.event === 'error') {
-    return
-  }
-
-  if (event.event === 'delta') {
-    // delta 是流式正文的唯一来源。
-    if (event.run_id) {
-      runtime.currentRunId = event.run_id
-    }
-
-    const buffer = ensureRuntimeBuffer(runtime, createMessageId)
-    buffer.parts.push(event.text)
-
-    dispatch({
-      type: 'delta_received',
-      messageId: buffer.messageId,
-      content: buffer.parts.join(''),
-      createdAt: now,
-    })
-    return
-  }
-
-  if (event.event === 'stream_end') {
-    runtime.currentRunId = event.run_id ?? runtime.currentRunId
-    clearRuntimeBuffer(runtime)
-    dispatch({ type: 'stream_finished' })
-    return
-  }
-
-  if (event.event === 'turn_end') {
-    clearRuntimeStreamingState(runtime)
-    dispatch({ type: 'stream_ended' })
-    return
-  }
-
-  if (event.event === 'canceled') {
-    clearRuntimeStreamingState(runtime)
-    dispatch({
-      type: 'stream_canceled',
-      messageId: createMessageId(),
-      content: '此条消息已取消',
-      createdAt: now,
-    })
-    return
-  }
-
-  if (event.event !== 'message') {
-    return
-  }
-
-  runtime.currentRunId = event.run_id ?? runtime.currentRunId
-
-  if (event.kind === 'tool_hint' || event.kind === 'progress') {
-    return
-  }
-
-  const message = createStructuredMessage(event, createMessageId, now)
-  const shouldReplacePlaceholder = !!runtime.buffer && runtime.buffer.parts.length === 0
-
-  if (!message) {
-    return
-  }
-
-  dispatch({
-    type: 'message_received',
-    message,
-    ...(shouldReplacePlaceholder
-      ? { replaceMessageId: runtime.buffer?.messageId }
-      : {}),
-  })
-
-  if (shouldReplacePlaceholder) {
-    clearRuntimeBuffer(runtime)
-  }
-}
-
-interface ConversationEventOptions {
-  state: LiveState
-  event: InboundEvent
-  runtime: ConversationRuntime
-  createMessageId: () => string
-  now: number
-}
-
-function collectConversationActions({
-  state,
-  event,
-  runtime,
-  createMessageId,
-  now,
-}: ConversationEventOptions): LiveAction[] {
-  const actions: LiveAction[] = []
-
-  if (event.event === 'delta') {
-    restoreRuntimeBufferFromState(state, runtime)
-  }
-
-  handleConversationEvent({
-    event,
-    runtime,
-    dispatch: (action) => {
-      actions.push(action)
-    },
-    createMessageId,
-    now,
-  })
-
-  return actions
-}
-
-interface ApplyConversationEventOptions extends ConversationEventOptions {
-  dispatch: (action: LiveAction) => void
-}
-
-export function applyConversationEvent({
-  dispatch,
-  ...options
-}: ApplyConversationEventOptions): void {
-  for (const action of collectConversationActions(options)) {
-    dispatch(action)
-  }
-}
-
-export function syncConversationRuntimeFromState(
-  state: LiveState,
-  runtime: ConversationRuntime,
-): void {
-  restoreRuntimeBufferFromState(state, runtime)
-}
-
-export function reduceConversationEvent({
-  state,
-  ...options
-}: ConversationEventOptions): LiveState {
-  return collectConversationActions({
-    state,
-    ...options,
-  }).reduce(liveReducer, state)
-}
-
-interface StopConversationClient {
-  cancelRun: (runId: string) => void
-  sendMessage: (chatId: string, content: string) => void
-}
-
-interface StopConversationOptions {
-  chatId: string | null
-  runtime: ConversationRuntime
-  dispatch: (action: LiveAction) => void
-  client: StopConversationClient
-}
-
-export function stopConversation({
-  chatId,
-  runtime,
-  dispatch,
-  client,
-}: StopConversationOptions): void {
-  if (!chatId) return
-
-  // 先在本地把 streaming 收口，再尝试终止服务端当前 run。
-  dispatch({ type: 'stream_ended' })
-
-  if (runtime.currentRunId) {
-    client.cancelRun(runtime.currentRunId)
-    runtime.currentRunId = null
-    return
-  }
-
-  client.sendMessage(chatId, '/stop')
+  return state
 }

@@ -1,21 +1,23 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { BubbleItemType } from '@ant-design/x'
 
-import type { ChatSummary, UIMessage } from '@/api/types'
+import type { ChatSummary, UIMessage } from '@/pages/chat/types'
 import { useAgentConversation } from '@/pages/chat/hooks/useAgentConversation'
 import { useAgentSender } from '@/pages/chat/hooks/useAgentSender'
 import type {
-  AgentClientValue,
-  StreamError,
-} from '@/pages/chat/hooks/agentClient'
+  AgentSubmitPayload,
+  UseAgentSenderResult,
+} from '@/pages/chat/hooks/useAgentSender'
+import type { AgentClientValue } from '@/pages/chat/hooks/agentClient'
 import { useAgentSessions } from '@/pages/chat/hooks/useAgentSessions'
 
 interface AgentSenderState {
+  attachments: UseAgentSenderResult['attachments']
   loading: boolean
   value: string
   onChange: (value: string) => void
-  onSubmit: (content: string) => void
+  onSubmit: (message: string) => void
   onCancel: () => void
 }
 
@@ -24,14 +26,13 @@ export interface AgentConversationState {
   loading: boolean
   messages: UIMessage[]
   bubbleItems: BubbleItemType[]
-  streamError: StreamError | null
-  dismissStreamError: () => void
   sender: AgentSenderState
 }
 
 export interface AgentSessionsView {
   items: ChatSummary[]
   loading: boolean
+  streamingChatIdSet: ReadonlySet<string>
   activeKey: string | null
 }
 
@@ -70,14 +71,15 @@ function toBubbleItem(message: UIMessage): BubbleItemType {
 export function useAgent(agentClient: AgentClientValue) {
   // 会话列表相关逻辑固定收敛在 sessions hook 内部。
   const {
-    state: { loading: sessionsLoading, sessions },
-    actions: { createChat, deleteChat, refresh },
+    state: { loading: sessionsLoading, sessions, streamingChatIdSet },
+    actions: { createChat, deleteChat, refresh, setSessionStreaming },
   } = useAgentSessions(agentClient.client)
 
   // undefined：默认跟随列表第一项
   // null：明确进入“新建对话草稿态”
   const [selectedKey, setSelectedKey] = useState<string | null | undefined>()
-  const activeKey = selectedKey === undefined ? (sessions[0]?.key ?? null) : selectedKey
+  const activeKey =
+    selectedKey === undefined ? (sessions[0]?.key ?? null) : selectedKey
 
   // 先解出当前激活的会话对象，后续页面状态都从它派生。
   const activeSession = useMemo<ChatSummary | null>(() => {
@@ -86,7 +88,7 @@ export function useAgent(agentClient: AgentClientValue) {
     return sessions.find((session) => session.key === activeKey) ?? null
   }, [activeKey, sessions])
 
-  const sessionKey = activeSession?.key ?? null
+  const conversationId = activeSession?.key ?? null
 
   const selectSession = useCallback((key: string) => {
     setSelectedKey(key)
@@ -137,65 +139,77 @@ export function useAgent(agentClient: AgentClientValue) {
     void refresh()
   }, [refresh])
 
+  // 草稿态首条消息会在新会话创建后立即发送，期间跳过空历史加载。
+  const [creatingChat, setCreatingChat] = useState(false)
+  const pendingFirstRef = useRef<AgentSubmitPayload | null>(null)
+
   // 当前会话的历史加载和 websocket 实时事件都由 conversation hook 承接。
   const {
-    actions: {
-      dismissStreamError,
-      send,
-      sendToChat,
-      stop,
-    },
+    actions: { send, stop },
     state: {
       isStreaming,
       loading: detailLoading,
       messages: detailMessages,
-      streamingByChatId,
-      streamError,
     },
   } = useAgentConversation({
     client: agentClient.client,
-    key: sessionKey,
+    conversationId,
+    streamingChatIdSet,
+    skipInitialHistoryLoadRef: pendingFirstRef,
     onSessionUpdated: handleSessionUpdated,
+    onSessionStreamingChange: setSessionStreaming,
   })
 
   const bubbleItems = useMemo<BubbleItemType[]>(
     () => detailMessages.map((message) => toBubbleItem(message)),
     [detailMessages],
   )
-  const sessionItems = useMemo<ChatSummary[]>(
-    () =>
-      sessions.map((session) => ({
-        ...session,
-        isStreaming: streamingByChatId[session.chatId] ?? false,
-      })),
-    [sessions, streamingByChatId],
-  )
+  useEffect(() => {
+    if (!activeSession) return
 
-  // “正在创建会话”和“正在流式回复”是两类不同的阻塞状态：
-  // 前者解决草稿态重复点发送，后者解决一轮消息未结束前再次提交。
-  const [creatingChat, setCreatingChat] = useState(false)
+    const pending = pendingFirstRef.current
+
+    if (!pending) return
+
+    pendingFirstRef.current = null
+
+    const options = pending.attachmentIds?.length
+      ? { attachmentIds: pending.attachmentIds }
+      : undefined
+
+    send(pending.content, options)
+    setCreatingChat(false)
+  }, [activeSession, send])
+
   const submitMessage = useCallback(
-    async (content: string) => {
+    async (payload: AgentSubmitPayload) => {
+      const options = payload.attachmentIds?.length
+        ? { attachmentIds: payload.attachmentIds }
+        : undefined
+
       if (activeSession) {
-        send(content)
+        send(payload.content, options)
         return
       }
 
       if (creatingChat) return
 
       setCreatingChat(true)
+      pendingFirstRef.current = payload
 
       try {
         const createdChatId = await createActiveChat()
 
-        if (createdChatId) {
-          sendToChat(createdChatId, content)
+        if (!createdChatId) {
+          pendingFirstRef.current = null
+          setCreatingChat(false)
         }
-      } finally {
+      } catch {
+        pendingFirstRef.current = null
         setCreatingChat(false)
       }
     },
-    [activeSession, creatingChat, createActiveChat, send, sendToChat],
+    [activeSession, creatingChat, createActiveChat, send],
   )
   const senderDisabled = detailLoading || isStreaming || creatingChat
   const senderLoading = isStreaming || creatingChat
@@ -212,34 +226,33 @@ export function useAgent(agentClient: AgentClientValue) {
       loading: detailLoading,
       messages: detailMessages,
       bubbleItems,
-      streamError,
-      dismissStreamError,
       sender: {
+        attachments: agentSender.attachments,
         loading: senderLoading,
         value: agentSender.inputValue,
         onChange: agentSender.setInputValue,
-        onSubmit: agentSender.submit,
+        onSubmit: agentSender.submitWithAttachments,
         onCancel: agentSender.cancel,
       },
     }),
     [
       agentSender.cancel,
+      agentSender.attachments,
       agentSender.inputValue,
       agentSender.setInputValue,
-      agentSender.submit,
+      agentSender.submitWithAttachments,
       bubbleItems,
       detailLoading,
       detailMessages,
-      dismissStreamError,
       senderLoading,
-      streamError,
     ],
   )
 
   return {
     sessions: {
-      items: sessionItems,
+      items: sessions,
       loading: sessionsLoading,
+      streamingChatIdSet,
       activeKey,
     } satisfies AgentSessionsView,
     conversation,

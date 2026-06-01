@@ -1,4 +1,4 @@
-import { WebSocketWrapper } from '@ff-ai-frontend/utils'
+import { EventEmitter, WebSocketWrapper } from '@ff-ai-frontend/utils'
 import type { WebSocketWrapperState } from '@ff-ai-frontend/utils'
 
 import type {
@@ -6,24 +6,28 @@ import type {
   InboundEvent,
   Outbound,
   OutboundImageGeneration,
-  OutboundMedia,
-  UIImage,
-} from '@/api/types'
+  OutboundMessage,
+  InboundAttachedEvent,
+  OutboundTaskConfirm,
+} from '@/pages/chat/hooks/agentTypes'
 import { ExecutableQueue } from '@/utils/executableQueue'
-
-const NEW_CHAT_TIMEOUT_MS = 5_000
-const RECONNECT_INTERVAL_MS = 500
-const MAX_RECONNECT_INTERVAL_MS = 15_000
-const MESSAGE_TOO_BIG_CODE = 1009
+import { globalNotification } from '@/utils/message'
 
 type Unsubscribe = () => void
 type EventHandler = (ev: InboundEvent) => void
-type StatusHandler = (status: ConnectionStatus) => void
-type ReadyEvent = Extract<InboundEvent, { event: 'ready' }>
-type AttachedEvent = Extract<InboundEvent, { event: 'attached' }>
 
-export interface StreamError {
-  kind: 'message_too_big'
+interface AgentChatListenerOptions {
+  chatId: string
+  handler: EventHandler
+}
+
+interface AgentChatEvent {
+  chatId: string
+  event: InboundEvent
+}
+
+interface AgentClientEventMap {
+  chat: AgentChatEvent
 }
 
 interface PendingNewChat {
@@ -32,95 +36,95 @@ interface PendingNewChat {
   timer: ReturnType<typeof setTimeout>
 }
 
-export interface AgentClientOptions {
+interface AgentClientOptions {
   url: string
-  reconnect?: boolean
-  maxBackoffMs?: number
 }
 
 export interface AgentClient {
-  readonly status: ConnectionStatus
-  readonly defaultChatId: string | null
   attach: (chatId: string) => void
   close: () => void
   connect: () => void
   cancelRun: (runId: string) => void
+  detach: (chatId: string) => void
   newChat: (timeoutMs?: number) => Promise<string>
-  onChat: (chatId: string, handler: EventHandler) => Unsubscribe
-  onError: (handler: (error: StreamError) => void) => Unsubscribe
-  onStatus: (handler: StatusHandler) => Unsubscribe
-  sendMessage: (
-    chatId: string,
-    content: string,
-    media?: OutboundMedia[],
-    options?: { imageGeneration?: OutboundImageGeneration },
-  ) => void
+  on: (type: 'chat', options: AgentChatListenerOptions) => Unsubscribe
+  sendMessage: (chatId: string, content: string, options?: SendOptions) => void
+  taskConfirm: (confirmationId: string) => void
 }
 
-// 这一层只负责 websocket 协议抽象：
-// 1. 管理连接和重连
-// 2. 把服务端事件路由到具体 chat_id
-// 3. 暴露 newChat / attach / sendMessage / cancelRun 等能力
+const NEW_CHAT_TIMEOUT_MS = 5_000 // new-chat 到 attached 的超时时间
+const RECONNECT_INTERVAL_MS = 500 // 初始重连间隔
+const MAX_RECONNECT_INTERVAL_MS = 15_000 // 最大重连间隔
+
+function removeEmptyFields<T extends object>(payload: T): T {
+  const cleaned: Partial<T> = {}
+
+  for (const key of Object.keys(payload) as (keyof T)[]) {
+    const value = payload[key]
+
+    if (value == null || (Array.isArray(value) && value.length === 0)) {
+      continue
+    }
+
+    cleaned[key] = value
+  }
+
+  return cleaned as T
+}
+
+function parseInboundEvent(data: MessageEvent['data']): InboundEvent | null {
+  if (typeof data !== 'string') return null
+
+  try {
+    return JSON.parse(data) as InboundEvent
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Agent WebSocket 客户端。
+ *
+ * 职责：
+ * 1. 对外提供 newChat / attach / detach / sendMessage / cancelRun 等通信能力。
+ * 2. 维护连接状态、重连后的会话恢复和待发送队列。
+ * 3. 识别 attached 回执的来源，并按 chat_id 分发服务端事件。
+ */
 class WebSocketAgentClient implements AgentClient {
-  // 每个 chat_id 可以有多个订阅方，但当前页面通常只会有一个消费 hook。
-  private readonly chatHandlers = new Map<string, Set<EventHandler>>()
-  private readonly errorHandlers = new Set<(error: StreamError) => void>()
-  // 已知会话会在重连成功后自动补发 attach。
-  private readonly knownChats = new Set<string>()
-  // attach 回执和 new_chat 回执都长成 attached，需要单独跟踪显式 attach。
-  private readonly pendingAttachAcks = new Set<string>()
-  private readonly reconnect: boolean
+  private readonly emitter = new EventEmitter<AgentClientEventMap>() // 负责管理agent服务端事件（或内部事件）
+  private readonly subscribedChatIds = new Set<string>() // 当chat激活时将进行记录，方便后期如果断网重连之后的处理
+  private readonly pendingAttachAckChatIds = new Set<string>() // 区分 attach 和 new_chat 的逻辑
   private readonly sendQueue = new ExecutableQueue<Outbound>()
   private readonly socket: WebSocketWrapper
-  private readonly statusHandlers = new Set<StatusHandler>()
   private closedByUser = false
-  private pendingNewChat: PendingNewChat | null = null
-  private readyChatId: string | null = null
-  private status_: ConnectionStatus = 'idle'
+  private pendingNewChat: PendingNewChat | null = null // new-chat 到 attached 之间的状态管理（因为new-chat没有id，防止匹配不到attached传回来的chatId）
+  private _status: ConnectionStatus = 'idle'
 
   constructor(options: AgentClientOptions) {
-    this.reconnect = options.reconnect ?? true
     this.socket = new WebSocketWrapper(options.url, {
       autoConnect: false,
       heartbeatInterval: 0,
-      maxReconnectAttempts: this.reconnect ? Number.POSITIVE_INFINITY : 0,
-      maxReconnectInterval: options.maxBackoffMs ?? MAX_RECONNECT_INTERVAL_MS,
+      maxReconnectAttempts: Number.POSITIVE_INFINITY,
+      maxReconnectInterval: MAX_RECONNECT_INTERVAL_MS,
       reconnectInterval: RECONNECT_INTERVAL_MS,
-      shouldReconnect: () => !this.closedByUser && this.reconnect,
+      shouldReconnect: () => !this.closedByUser,
     })
     this.bindSocket()
   }
 
-  get status(): ConnectionStatus {
-    return this.status_
-  }
-
-  get defaultChatId(): string | null {
-    return this.readyChatId
-  }
-
   attach(chatId: string): void {
     // attach 的语义是“订阅这个会话的后续事件”，不是拉历史消息。
-    this.rememberKnownChat(chatId)
-    this.attachIfOpen(chatId)
+    this.subscribedChatIds.add(chatId)
+
+    if (this._status !== 'open') return
+
+    this.pendingAttachAckChatIds.add(chatId)
+    this.queueSend({ type: 'attach', chat_id: chatId })
   }
 
-  close(): void {
-    this.closedByUser = true
-    this.rejectPendingNewChat(new Error('socket closed'))
-    this.pendingAttachAcks.clear()
-    this.sendQueue.clear()
-    this.socket.destroy()
-    this.setStatus('closed')
-  }
-
-  connect(): void {
-    this.closedByUser = false
-    this.socket.connect()
-  }
-
-  cancelRun(runId: string): void {
-    this.queueSend({ type: 'cancel', run_id: runId })
+  detach(chatId: string): void {
+    this.subscribedChatIds.delete(chatId)
+    this.pendingAttachAckChatIds.delete(chatId)
   }
 
   newChat(timeoutMs = NEW_CHAT_TIMEOUT_MS): Promise<string> {
@@ -130,7 +134,7 @@ class WebSocketAgentClient implements AgentClient {
     }
 
     // new_chat 需要和本次连接上的 attached 一一对应。
-    if (this.status_ !== 'open') {
+    if (this._status !== 'open') {
       return Promise.reject(new Error('socket not open'))
     }
 
@@ -142,71 +146,64 @@ class WebSocketAgentClient implements AgentClient {
 
       this.pendingNewChat = { resolve, reject, timer }
 
-      if (!this.sendFrame({ type: 'new_chat' })) {
+      if (!this.socket.sendJson({ type: 'new_chat' })) {
         this.rejectPendingNewChat(new Error('socket not open'))
       }
     })
   }
 
-  onChat(chatId: string, handler: EventHandler): Unsubscribe {
-    let handlers = this.chatHandlers.get(chatId)
-
-    if (!handlers) {
-      handlers = new Set<EventHandler>()
-      this.chatHandlers.set(chatId, handlers)
-    }
-
-    handlers.add(handler)
-    // 订阅 chat 的同时立刻确保服务端已 attach。
-    this.attach(chatId)
-
-    return () => {
-      const current = this.chatHandlers.get(chatId)
-
-      if (!current) return
-
-      current.delete(handler)
-
-      if (current.size === 0) {
-        this.chatHandlers.delete(chatId)
-      }
-    }
-  }
-
-  onError(handler: (error: StreamError) => void): Unsubscribe {
-    this.errorHandlers.add(handler)
-
-    return () => {
-      this.errorHandlers.delete(handler)
-    }
-  }
-
-  onStatus(handler: StatusHandler): Unsubscribe {
-    this.statusHandlers.add(handler)
-    handler(this.status_)
-
-    return () => {
-      this.statusHandlers.delete(handler)
-    }
-  }
-
-  sendMessage(
-    chatId: string,
-    content: string,
-    media?: OutboundMedia[],
-    options?: { imageGeneration?: OutboundImageGeneration },
-  ): void {
-    // 消息发送同样会把 chat 记入 knownChats，防止断线后漏掉重订阅。
-    this.rememberKnownChat(chatId)
-    this.queueSend({
+  sendMessage(chatId: string, content: string, options?: SendOptions): void {
+    // 消息发送同样会把 chat 记入订阅集合，防止断线后漏掉重订阅。
+    this.subscribedChatIds.add(chatId)
+    const frame = removeEmptyFields<OutboundMessage>({
       type: 'message',
       chat_id: chatId,
       content,
-      ...(media && media.length > 0 ? { media } : {}),
-      ...(options?.imageGeneration
-        ? { image_generation: options.imageGeneration }
-        : {}),
+      attachment_ids: options?.attachmentIds,
+      image_generation: options?.imageGeneration,
       webui: true,
+    })
+
+    this.queueSend(frame)
+  }
+
+  cancelRun(runId: string): void {
+    this.queueSend({ type: 'cancel', run_id: runId })
+  }
+
+  taskConfirm(confirmationId: string): void {
+    const frame: OutboundTaskConfirm = {
+      type: 'task_confirmation',
+      confirmation_id: confirmationId,
+    }
+
+    this.queueSend(frame)
+  }
+
+  connect(): void {
+    this.closedByUser = false
+    this.socket.connect()
+  }
+
+  close(): void {
+    this.closedByUser = true
+    this.rejectPendingNewChat(new Error('socket closed'))
+    this.pendingAttachAckChatIds.clear()
+    this.sendQueue.clear()
+    this.socket.destroy()
+    this._status = 'closed'
+  }
+
+  on(_type: 'chat', options: AgentChatListenerOptions): Unsubscribe {
+    const { chatId, handler } = options
+
+    // 订阅 chat 的同时立刻确保服务端已 attach。
+    this.attach(chatId)
+
+    return this.emitter.on('chat', (payload) => {
+      if (payload.chatId === chatId) {
+        handler(payload.event)
+      }
     })
   }
 
@@ -216,99 +213,115 @@ class WebSocketAgentClient implements AgentClient {
       this.handleSocketOpen()
     })
     this.socket.on('message', (event) => {
-      this.handleMessage(event)
+      this.handleSocketMessage(event)
     })
     this.socket.on('error', () => {
-      this.setStatus('error')
+      this._status = 'error'
     })
     this.socket.on('close', (event) => {
       this.handleSocketClose(event)
     })
     this.socket.on('stateChange', ({ current }) => {
-      this.syncStatusFromSocketState(current)
+      this.handleSocketStateChange(current)
     })
   }
 
-  private attachIfOpen(chatId: string): void {
-    if (this.status_ !== 'open') return
-
-    this.markAttachPending(chatId)
-    this.queueSend({ type: 'attach', chat_id: chatId })
-  }
-
-  private consumePendingAttachAck(chatId: string): boolean {
-    return this.pendingAttachAcks.delete(chatId)
-  }
-
-  private dispatch(chatId: string, event: InboundEvent): void {
-    const handlers = this.chatHandlers.get(chatId)
-
-    if (!handlers) return
-
-    for (const handler of handlers) {
-      handler(event)
+  private handleSocketOpen(): void {
+    // 重连后先恢复订阅，再把断线期间缓存的帧一次性发出去。
+    for (const chatId of this.subscribedChatIds) {
+      this.pendingAttachAckChatIds.add(chatId)
+      this.socket.sendJson({ type: 'attach', chat_id: chatId })
     }
-  }
 
-  private emitError(error: StreamError): void {
-    for (const handler of this.errorHandlers) {
-      try {
-        handler(error)
-      } catch {
-        // 错误通知不影响连接维护。
-      }
-    }
-  }
-
-  private flushQueue(): void {
-    this.sendQueue.flush((frame) => this.sendFrame(frame))
+    this.flushQueue()
   }
 
   private handleSocketClose(event: CloseEvent): void {
     // 连接断掉时，正在等待的新会话创建也要立即失败返回。
     this.rejectPendingNewChat(new Error('socket closed'))
-    this.pendingAttachAcks.clear()
+    this.pendingAttachAckChatIds.clear()
 
-    if (event.code === MESSAGE_TOO_BIG_CODE) {
-      this.emitError({ kind: 'message_too_big' })
+    if (event.code === 1009) {
+      globalNotification.error({
+        message: '发送内容过大',
+        description: '发送内容超过服务端限制，请减少内容大小后重试。',
+        placement: 'topRight',
+      })
     }
   }
 
-  private handleMessage(event: MessageEvent): void {
-    const parsed = this.parseInboundEvent(event.data)
+  private handleSocketMessage(event: MessageEvent): void {
+    const parsed = parseInboundEvent(event.data)
 
     if (!parsed) return
 
-    if (parsed.event === 'ready') {
-      this.handleReadyEvent(parsed)
-      return
+    const eventHandlers: Partial<
+      Record<InboundEvent['event'], (event: InboundEvent) => void>
+    > = {
+      attached: (event) =>
+        this.handleAttachedEvent(event as InboundAttachedEvent),
     }
+    const handler = eventHandlers[parsed.event]
 
-    if (parsed.event === 'attached') {
-      this.handleAttachedEvent(parsed)
+    if (handler) {
+      handler(parsed)
       return
     }
 
     this.dispatchChatEvent(parsed)
   }
 
-  private handleSocketOpen(): void {
-    // 重连后先恢复订阅，再把断线期间缓存的帧一次性发出去。
-    for (const chatId of this.knownChats) {
-      this.markAttachPending(chatId)
-      this.sendFrame({ type: 'attach', chat_id: chatId })
+  private handleSocketStateChange(state: WebSocketWrapperState): void {
+    if (state === 'connecting') {
+      this._status = 'connecting'
+      return
     }
 
-    this.flushQueue()
-  }
+    if (state === 'reconnecting') {
+      this._status = 'reconnecting'
+      return
+    }
 
-  private hasKnownChat(chatId: string): boolean {
-    return this.knownChats.has(chatId)
+    if (state === 'open') {
+      this._status = 'open'
+      return
+    }
+
+    if (state === 'closed' || state === 'closing') {
+      this._status = 'closed'
+    }
   }
 
   private queueSend(frame: Outbound): void {
     // 队列负责把“连接未就绪”的发送请求转成“连接恢复后补发”。
-    this.sendQueue.executeOrEnqueue(frame, (item) => this.sendFrame(item))
+    this.sendQueue.executeOrEnqueue(frame, (item) => this.socket.sendJson(item))
+  }
+
+  private flushQueue(): void {
+    this.sendQueue.flush((frame) => this.socket.sendJson(frame))
+  }
+
+  private handleAttachedEvent(event: InboundAttachedEvent): void {
+    const wasSubscribedChat = this.subscribedChatIds.has(event.chat_id)
+    const isAttachAck = this.pendingAttachAckChatIds.delete(event.chat_id)
+
+    this.subscribedChatIds.add(event.chat_id)
+
+    // new_chat 成功后的首次确认
+    if (!wasSubscribedChat && !isAttachAck) {
+      this.resolvePendingNewChat(event.chat_id)
+    }
+
+    this.dispatchChatEvent(event)
+  }
+
+  private dispatchChatEvent(event: InboundEvent): void {
+    const chatId = 'chat_id' in event ? event.chat_id : null
+
+    if (!chatId) return
+
+    // 带 chat_id 的事件统一按会话路由分发。
+    this.emitter.emit('chat', { chatId, event })
   }
 
   private rejectPendingNewChat(error: Error): void {
@@ -317,88 +330,6 @@ class WebSocketAgentClient implements AgentClient {
     clearTimeout(this.pendingNewChat.timer)
     this.pendingNewChat.reject(error)
     this.pendingNewChat = null
-  }
-
-  private sendFrame(frame: Outbound): boolean {
-    return this.socket.sendJson(frame)
-  }
-
-  private parseInboundEvent(data: MessageEvent['data']): InboundEvent | null {
-    if (typeof data !== 'string') return null
-
-    try {
-      return JSON.parse(data) as InboundEvent
-    } catch {
-      return null
-    }
-  }
-
-  private handleReadyEvent(event: ReadyEvent): void {
-    // ready 只声明“默认 chat 路由键已经可用”。
-    this.readyChatId = event.chat_id
-    this.rememberKnownChat(event.chat_id)
-  }
-
-  private handleAttachedEvent(event: AttachedEvent): void {
-    // attached 既可能来自显式 attach，也可能来自 new_chat 成功后的首次确认。
-    const wasKnownChat = this.hasKnownChat(event.chat_id)
-    const isAttachAck = this.consumePendingAttachAck(event.chat_id)
-
-    this.rememberKnownChat(event.chat_id)
-
-    if (!wasKnownChat && !isAttachAck) {
-      this.resolvePendingNewChat(event.chat_id)
-    }
-
-    this.dispatch(event.chat_id, event)
-  }
-
-  private dispatchChatEvent(event: InboundEvent): void {
-    const chatId = 'chat_id' in event ? event.chat_id : null
-
-    if (!chatId) return
-
-    // 除 ready 之外，其余带 chat_id 的事件统一按会话路由分发。
-    this.dispatch(chatId, event)
-  }
-
-  private syncStatusFromSocketState(state: WebSocketWrapperState): void {
-    if (state === 'connecting') {
-      this.setStatus('connecting')
-      return
-    }
-
-    if (state === 'reconnecting') {
-      this.setStatus('reconnecting')
-      return
-    }
-
-    if (state === 'open') {
-      this.setStatus('open')
-      return
-    }
-
-    if (state === 'closed' || state === 'closing') {
-      this.setStatus('closed')
-    }
-  }
-
-  private setStatus(status: ConnectionStatus): void {
-    if (this.status_ === status) return
-
-    this.status_ = status
-
-    for (const handler of this.statusHandlers) {
-      handler(status)
-    }
-  }
-
-  private markAttachPending(chatId: string): void {
-    this.pendingAttachAcks.add(chatId)
-  }
-
-  private rememberKnownChat(chatId: string): void {
-    this.knownChats.add(chatId)
   }
 
   private resolvePendingNewChat(chatId: string): void {
@@ -418,11 +349,7 @@ export function createAgentClient(options: AgentClientOptions): AgentClient {
   return new WebSocketAgentClient(options)
 }
 
-export interface SendImage {
-  media: OutboundMedia
-  preview: UIImage
-}
-
 export interface SendOptions {
+  attachmentIds?: string[]
   imageGeneration?: OutboundImageGeneration
 }

@@ -5,11 +5,12 @@ import type { GetProp, MenuProps } from 'antd'
 import { Empty, Spin, theme } from 'antd'
 import dayjs from 'dayjs'
 
-import type { ChatSummary } from '@/api/types'
+import type { ChatSummary } from '@/pages/chat/types'
 import { sessionTitle } from '@/pages/chat/hooks/useAgentSessions'
 
 interface AgentMsgHistoryProps {
   sessions: ChatSummary[]
+  streamingChatIdSet: ReadonlySet<string>
   activeKey: string | null
   loading: boolean
   onNewChat: () => void
@@ -43,6 +44,7 @@ export function AgentMsgHistory({
   onNewChat,
   onSelect,
   sessions,
+  streamingChatIdSet,
 }: AgentMsgHistoryProps) {
   const { token } = theme.useToken()
   const style = {
@@ -58,7 +60,7 @@ export function AgentMsgHistory({
       label: (
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate">{sessionTitle(session)}</span>
-          {session.isStreaming ? (
+          {streamingChatIdSet.has(session.chatId) ? (
             <span className="inline-flex shrink-0 items-center gap-1 text-xs text-(--ant-color-text-description)">
               <Spin size="small" />
               <span>生成中</span>

@@ -1,4 +1,4 @@
-import type { UIMessage } from '@/api/types'
+import type { UIMessage } from '@/pages/chat/types'
 
 export function canUseTypingEffect(
   message: UIMessage & { id: `hist-${string}` },

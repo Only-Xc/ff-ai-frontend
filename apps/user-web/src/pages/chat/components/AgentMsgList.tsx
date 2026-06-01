@@ -10,7 +10,12 @@ import {
   Think,
   CodeHighlighter,
 } from '@ant-design/x'
-import { GlobalOutlined, RedoOutlined, RobotOutlined } from '@ant-design/icons'
+import {
+  ExclamationCircleOutlined,
+  GlobalOutlined,
+  RedoOutlined,
+  RobotOutlined,
+} from '@ant-design/icons'
 import { XMarkdown } from '@ant-design/x-markdown'
 import type { ComponentProps } from '@ant-design/x-markdown'
 import '@/assets/x-markdown-light.css'
@@ -162,7 +167,7 @@ const CodeComponent = memo((props: ComponentProps) => {
 })
 
 export function AgentMsgList({ items }: AgentMsgListProps) {
-  const { theme: antdTheme } = theme.useToken()
+  const { theme: antdTheme, token } = theme.useToken()
   const isDark = antdTheme.id !== 0
 
   const aiActionItems = (content: string) => [
@@ -242,11 +247,40 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
       },
       extra: (content: string) => <Actions items={userActionItems(content)} />,
     },
+    error: {
+      placement: 'start',
+      variant: 'outlined',
+      avatar: <ExclamationCircleOutlined />,
+      style: {
+        maxWidth: '760px',
+        margin: '0 auto',
+        paddingInline: '8px 0',
+      },
+      header: () => (
+        <div
+          className="mb-2 text-sm font-medium"
+          style={{ color: token.colorError }}
+        >
+          执行失败
+        </div>
+      ),
+      footer: (content: string) => <Actions items={userActionItems(content)} />,
+      styles: {
+        body: {
+          background: token.colorErrorBg,
+          borderColor: token.colorErrorBorder,
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderRadius: token.borderRadiusLG,
+        },
+        content: {
+          color: token.colorErrorText,
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+        },
+      },
+    },
   })
-
-
-  console.log('msg-list-comp', items);
-  
 
   return (
     <div className="min-h-0">

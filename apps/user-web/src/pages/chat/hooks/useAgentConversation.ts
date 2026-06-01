@@ -1,740 +1,433 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import { v4 as uuidV4 } from 'uuid'
 
-import { conversations_message, splitSessionKey } from '@/api/chat'
+import { splitSessionKey } from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
-import type { SessionMessagesResponse } from '@/api/chat'
-import type { InboundEvent, UIMessage } from '@/api/types'
-import type {
-  AgentClient,
-  SendImage,
-  SendOptions,
-  StreamError,
-} from '@/pages/chat/hooks/agentClient'
+import type { UIMessage } from '@/pages/chat/types'
+import type { InboundEvent } from '@/pages/chat/hooks/agentTypes'
+import type { AgentClient, SendOptions } from '@/pages/chat/hooks/agentClient'
 import {
-  applyConversationEvent,
   createConversationRuntime,
-  INITIAL_LIVE_STATE,
   liveReducer,
-  reduceConversationEvent,
-  stopConversation,
   type ConversationRuntime,
 } from '@/pages/chat/hooks/agentConversationRuntime'
-import { RequestError } from '@ff-ai-frontend/utils'
+import { useConversationHistory } from '@/pages/chat/hooks/useConversationHistory'
+import type { SessionHistoryData } from '@/pages/chat/hooks/useConversationHistory'
 
-const EMPTY_MESSAGES: UIMessage[] = []
-type MessageIdPrefix = 'hist' | 'msg'
-type UIMessageDraft = Omit<UIMessage, 'id'>
-type ChatEvent = InboundEvent
-
-interface SessionHistoryData {
-  messages: UIMessage[]
-  hasPendingToolCalls: boolean
-}
-
-interface CachedConversationState {
-  messages: UIMessage[]
-  isStreaming: boolean
-}
-
-interface OptimisticTurn {
-  userMessage: UIMessage
-  assistantMessage: UIMessage
-}
-
-const CONVERSATION_MESSAGES_QUERY_KEY = ['conversation-messages'] as const
-
-function createMessageId(prefix: MessageIdPrefix): string {
-  return `${prefix}-${uuidV4()}`
-}
-
-function assignHistoryMessageIds(messages: UIMessageDraft[]): UIMessage[] {
-  return messages.map((message) => ({
-    ...message,
-    id: createMessageId('hist'),
-  }))
-}
-
-function createCachedConversationState(
-  messages: UIMessage[],
-  isStreaming: boolean,
-): CachedConversationState {
-  return {
-    messages,
-    isStreaming,
-  }
-}
-
-function createOptimisticTurn(
-  content: string,
-  images?: SendImage[],
-): OptimisticTurn {
-  const now = Date.now()
-  const hasImages = !!images && images.length > 0
-
-  return {
-    userMessage: {
-      id: createMessageId('msg'),
-      role: 'user',
-      content,
-      createdAt: now,
-      ...(hasImages ? { images: images.map((image) => image.preview) } : {}),
-    },
-    assistantMessage: {
-      id: createMessageId('msg'),
-      role: 'assistant',
-      content: '',
-      isStreaming: true,
-      createdAt: now,
-    },
-  }
-}
-
-function shouldRestoreOptimisticConversation(
-  currentChatId: string | null,
-  pendingChatId: string | null,
-  snapshot: CachedConversationState | null,
-): currentChatId is string {
-  return !!currentChatId && pendingChatId === currentChatId && !!snapshot
-}
-
-function shouldPreserveCurrentConversation(
-  currentChatId: string | null,
-  ownerChatId: string | null,
-  messages: UIMessage[],
-): currentChatId is string {
-  return !!currentChatId && ownerChatId === currentChatId && messages.length > 0
-}
-
-function shouldKeepLiveStateDuringHistoryHydration(
-  currentChatId: string,
-  messagesFromHistory: UIMessage[],
-  liveMessages: UIMessage[],
-  hydratingChatId: string | null,
-): boolean {
-  return (
-    messagesFromHistory.length === 0 &&
-    liveMessages.length > 0 &&
-    hydratingChatId !== currentChatId
-  )
-}
-
-async function fetchSessionHistory(
-  key: string,
-): Promise<SessionHistoryData> {
-  try {
-    const body = await conversations_message(key)
-
-    return mapSessionHistory(body)
-  } catch (error) {
-    if (error instanceof RequestError && error.status === 404) {
-      return {
-        messages: EMPTY_MESSAGES,
-        hasPendingToolCalls: false,
-      }
-    }
-
-    throw error
-  }
-}
-
-function shouldPreserveSnapshotOnSessionUpdated(
-  targetChatId: string,
-  ownerChatId: string | null,
-  liveState: AgentConversationViewStateLike,
-  cachedState: CachedConversationState | null,
-): boolean {
-  if (ownerChatId === targetChatId && liveState.isStreaming) {
-    return true
-  }
-
-  return cachedState?.isStreaming === true
-}
-
-interface AgentConversationViewStateLike {
-  messages: UIMessage[]
-  isStreaming: boolean
+function createMessageId(): string {
+  return `msg-${uuidV4()}`
 }
 
 export interface AgentConversationViewState {
-  // 页面最终消费的是当前会话的单一内存消息列表。
+  // 页面最终消费的是当前会话消息 store。
   messages: UIMessage[]
   loading: boolean
   isStreaming: boolean
-  streamingByChatId: Record<string, boolean>
-  streamError: StreamError | null
   hasPendingToolCalls: boolean
 }
 
 export interface AgentConversationActions {
-  send: (content: string, images?: SendImage[], options?: SendOptions) => void
-  sendToChat: (
-    targetChatId: string,
-    content: string,
-    images?: SendImage[],
-    options?: SendOptions,
-  ) => void
+  send: (content: string, options?: SendOptions) => void
   stop: () => void
-  dismissStreamError: () => void
 }
 
 export interface UseAgentConversationOptions {
   client: AgentClient
-  key: string | null
+  conversationId: string | null
+  streamingChatIdSet: ReadonlySet<string>
+  skipInitialHistoryLoadRef?: RefObject<unknown>
   // 首次对话结束后的 session_updated 用它触发列表元数据刷新。
   onSessionUpdated?: () => void
-}
-
-function mapSessionHistory(body: SessionMessagesResponse): SessionHistoryData {
-  // 服务端历史消息先映射成统一的 UIMessage，方便页面和 live 消息共用同一套渲染。
-  const messageDrafts: UIMessageDraft[] = body.messages.flatMap((message) => {
-    if (message.role !== 'user' && message.role !== 'assistant') {
-      return []
-    }
-
-    if (typeof message.content !== 'string') {
-      return []
-    }
-
-    const media =
-      Array.isArray(message.media_urls) && message.media_urls.length > 0
-        ? message.media_urls.map((item) => toMediaAttachment(item))
-        : undefined
-    const images =
-      message.role === 'user' && media?.every((item) => item.kind === 'image')
-        ? media.map((item) => ({ url: item.url, name: item.name }))
-        : undefined
-
-    return [
-      {
-        role: message.role,
-        content: message.content,
-        createdAt: message.timestamp
-          ? Date.parse(message.timestamp)
-          : Date.now(),
-        ...(images ? { images } : {}),
-        ...(media ? { media } : {}),
-      },
-    ]
-  })
-  const messages = assignHistoryMessageIds(messageDrafts)
-
-  const lastConversationMessage = [...body.messages]
-    .reverse()
-    .find((message) => message.role === 'user' || message.role === 'assistant')
-  const hasPendingToolCalls =
-    lastConversationMessage?.role === 'assistant' &&
-    Array.isArray(lastConversationMessage.tool_calls) &&
-    lastConversationMessage.tool_calls.length > 0
-
-  return {
-    messages,
-    hasPendingToolCalls,
-  }
+  onSessionStreamingChange?: (chatId: string, isStreaming: boolean) => void
 }
 
 export function useAgentConversation({
   client,
-  key,
+  conversationId,
+  streamingChatIdSet,
+  skipInitialHistoryLoadRef,
   onSessionUpdated,
+  onSessionStreamingChange,
 }: UseAgentConversationOptions): {
   state: AgentConversationViewState
   actions: AgentConversationActions
 } {
-  const chatId = splitSessionKey(key).chatId || null
-  const queryClient = useQueryClient()
-  // 历史消息
-  const historyQuery = useQuery<SessionHistoryData>({
-    queryKey: [...CONVERSATION_MESSAGES_QUERY_KEY, key],
-    queryFn: () => fetchSessionHistory(key!),
-    enabled: !!key,
+  const chatId = splitSessionKey(conversationId).chatId || null
+  const conversationHistory = useConversationHistory({
+    conversationId,
+    skipInitialLoadRef: skipInitialHistoryLoadRef,
   })
-  const [liveState, dispatch] = useReducer(liveReducer, INITIAL_LIVE_STATE)
-  const liveStateRef = useRef(liveState)
-  const conversationCacheRef = useRef<Map<string, CachedConversationState>>(new Map())
-  const runtimeCacheRef = useRef<Map<string, ConversationRuntime>>(new Map())
-  const sessionKeyByChatIdRef = useRef<Map<string, string>>(new Map())
-  const chatSubscriptionRef = useRef<Map<string, () => void>>(new Map())
-  const runtimeRef = useRef<ConversationRuntime>(createConversationRuntime())
-  const hydratingChatIdRef = useRef<string | null>(chatId)
-  const stateOwnerChatIdRef = useRef<string | null>(chatId)
-  const [streamingByChatId, setStreamingByChatId] = useState<Record<string, boolean>>({})
-  const historyMessages = historyQuery.data?.messages ?? EMPTY_MESSAGES
 
-  const setSessionStreaming = useCallback((targetChatId: string, isStreaming: boolean) => {
-    setStreamingByChatId((current) => {
-      if (isStreaming) {
-        if (current[targetChatId] === true) return current
+  const runtimeMapRef = useRef<Map<string, ConversationRuntime>>(new Map()) // delta 的缓冲区
+  const subscriptionMapRef = useRef<Map<string, () => void>>(new Map()) // 记录会话的订阅
 
-        return {
-          ...current,
-          [targetChatId]: true,
-        }
+  const curHistory = conversationHistory.curHistory
+  const currentMessages = curHistory.messages
+  const currentIsStreaming = chatId ? streamingChatIdSet.has(chatId) : false
+
+  const getConversationRuntime = useCallback(
+    (targetConversationId: string): ConversationRuntime => {
+      let runtime = runtimeMapRef.current.get(targetConversationId)
+
+      if (!runtime) {
+        runtime = createConversationRuntime()
+        runtimeMapRef.current.set(targetConversationId, runtime)
       }
 
-      if (!(targetChatId in current)) return current
-
-      const next = { ...current }
-      delete next[targetChatId]
-      return next
-    })
-  }, [])
-
-  const persistConversationSnapshot = useCallback(
-    (
-      targetChatId: string,
-      snapshot: CachedConversationState,
-      runtime: ConversationRuntime,
-    ) => {
-      conversationCacheRef.current.set(targetChatId, snapshot)
-      runtimeCacheRef.current.set(targetChatId, runtime)
-      setSessionStreaming(targetChatId, snapshot.isStreaming)
-    },
-    [setSessionStreaming],
-  )
-
-  const clearConversationSnapshot = useCallback(
-    (targetChatId: string) => {
-      conversationCacheRef.current.delete(targetChatId)
-      runtimeCacheRef.current.delete(targetChatId)
-      setSessionStreaming(targetChatId, false)
-    },
-    [setSessionStreaming],
-  )
-
-  const restoreConversationSnapshot = useCallback(
-    (snapshot: CachedConversationState, runtime?: ConversationRuntime) => {
-      dispatch({
-        type: 'state_restored',
-        messages: snapshot.messages,
-        isStreaming: snapshot.isStreaming,
-      })
-
-      if (runtime) {
-        runtimeRef.current = runtime
-      }
+      return runtime
     },
     [],
   )
 
-  const getConversationMessages = useCallback((targetChatId: string): UIMessage[] => {
-    const cachedState = conversationCacheRef.current.get(targetChatId)
+  useEffect(() => {
+    const subscriptionMap = subscriptionMapRef.current
 
-    if (cachedState) {
-      return cachedState.messages
+    return () => {
+      for (const [subscribedConversationId, unsubscribe] of subscriptionMap) {
+        const subscribedChatId = splitSessionKey(subscribedConversationId).chatId
+
+        unsubscribe()
+
+        if (subscribedChatId) {
+          client.detach(subscribedChatId)
+        }
+      }
+      subscriptionMap.clear()
     }
+  }, [client])
 
-    return stateOwnerChatIdRef.current === targetChatId
-      ? liveStateRef.current.messages
-      : EMPTY_MESSAGES
-  }, [])
+  const ensureChatSubscription = useCallback(
+    (targetConversationId: string) => {
+      const targetChatId = splitSessionKey(targetConversationId).chatId
 
-  const handleSessionUpdatedEvent = useCallback(
-    (targetChatId: string) => {
-      const cachedState = conversationCacheRef.current.get(targetChatId) ?? null
-      const shouldPreserveSnapshot = shouldPreserveSnapshotOnSessionUpdated(
-        targetChatId,
-        stateOwnerChatIdRef.current,
-        liveStateRef.current,
-        cachedState,
-      )
+      if (!targetChatId) return
 
-      if (!shouldPreserveSnapshot) {
-        clearConversationSnapshot(targetChatId)
-      }
+      if (subscriptionMapRef.current.has(targetConversationId)) return
 
-      if (!shouldPreserveSnapshot && stateOwnerChatIdRef.current === targetChatId) {
-        hydratingChatIdRef.current = targetChatId
-        runtimeRef.current = createConversationRuntime()
-      }
+      const unsubscribe = client.on('chat', {
+        chatId: targetChatId,
+        handler: (event) => {
+          const eventChatId = 'chat_id' in event ? event.chat_id : targetChatId
 
-      const sessionKey = sessionKeyByChatIdRef.current.get(targetChatId)
+          if (!eventChatId) {
+            return
+          }
 
-      if (sessionKey) {
-        void queryClient.invalidateQueries({
-          queryKey: [...CONVERSATION_MESSAGES_QUERY_KEY, sessionKey],
-        })
-      }
+          const eventConversationId =
+            eventChatId === targetChatId
+              ? targetConversationId
+              : `websocket:${eventChatId}`
+          const now = Date.now()
+          const eventStrategies: Partial<
+            Record<InboundEvent['event'], () => void | SessionHistoryData>
+          > = {
+            session_updated: () => {
+              onSessionStreamingChange?.(eventChatId, false)
+              runtimeMapRef.current.delete(eventConversationId)
+              onSessionUpdated?.()
+            },
+            attached: () => conversationHistory.getHistory(eventConversationId),
+            delta: () => {
+              if (event.event !== 'delta') return
 
-      onSessionUpdated?.()
-    },
-    [clearConversationSnapshot, onSessionUpdated, queryClient],
-  )
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
 
-  const resetConversationForChat = useCallback((targetChatId: string | null) => {
-    hydratingChatIdRef.current = targetChatId
-    stateOwnerChatIdRef.current = targetChatId
-    runtimeRef.current = createConversationRuntime()
-    dispatch({ type: 'chat_reset' })
-  }, [])
+              if (event.run_id) {
+                strategyRuntime.currentRunId = event.run_id
+              }
+              onSessionStreamingChange?.(eventChatId, true)
 
-  const restoreOptimisticConversation = useCallback(
-    (targetChatId: string, snapshot: CachedConversationState) => {
-      hydratingChatIdRef.current = null
-      stateOwnerChatIdRef.current = targetChatId
-      const cachedRuntime = runtimeCacheRef.current.get(targetChatId)
-      runtimeRef.current.pendingChatId = null
-      restoreConversationSnapshot(snapshot, cachedRuntime)
-    },
-    [restoreConversationSnapshot],
-  )
+              if (!strategyRuntime.buffer) {
+                for (
+                  let index = state.messages.length - 1;
+                  index >= 0;
+                  index -= 1
+                ) {
+                  const message = state.messages[index]
 
-  const restoreConversationFromCache = useCallback(
-    (targetChatId: string, snapshot: CachedConversationState) => {
-      hydratingChatIdRef.current = null
+                  if (message.role !== 'assistant' || !message.isStreaming) {
+                    continue
+                  }
 
-      const currentState = liveStateRef.current
+                  strategyRuntime.buffer = {
+                    messageId: message.id,
+                    parts: message.content ? [message.content] : [],
+                  }
+                  break
+                }
+              }
 
-      if (
-        currentState.messages !== snapshot.messages ||
-        currentState.isStreaming !== snapshot.isStreaming
-      ) {
-        restoreConversationSnapshot(snapshot)
-      }
+              const messageId =
+                strategyRuntime.buffer?.messageId ?? createMessageId()
 
-      const cachedRuntime = runtimeCacheRef.current.get(targetChatId)
+              strategyRuntime.buffer ??= {
+                messageId,
+                parts: [],
+              }
+              strategyRuntime.buffer.parts.push(event.text)
 
-      if (cachedRuntime) {
-        runtimeRef.current = cachedRuntime
-      }
-    },
-    [restoreConversationSnapshot],
-  )
+              return liveReducer(state, {
+                type: 'delta_received',
+                messageId: strategyRuntime.buffer.messageId,
+                content: strategyRuntime.buffer.parts.join(''),
+                createdAt: now,
+              })
+            },
+            stream_end: () => {
+              if (event.event !== 'stream_end') return
 
-  const restoreConversationFromHistory = useCallback(
-    (messages: UIMessage[], isStreaming: boolean) => {
-      hydratingChatIdRef.current = null
-      restoreConversationSnapshot(
-        createCachedConversationState(messages, isStreaming),
-      )
-      runtimeRef.current = createConversationRuntime()
-    },
-    [restoreConversationSnapshot],
-  )
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
 
-  const cacheCurrentConversationIfNeeded = useCallback(() => {
-    const ownerChatId = stateOwnerChatIdRef.current
-    const currentState = liveStateRef.current
+              strategyRuntime.currentRunId =
+                event.run_id ?? strategyRuntime.currentRunId
+              strategyRuntime.buffer = null
 
-    if (!ownerChatId || currentState.messages.length === 0) {
-      return {
-        ownerChatId,
-        currentState,
-      }
-    }
+              return liveReducer(state, { type: 'stream_finished' })
+            },
+            turn_end: () => {
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
 
-    persistConversationSnapshot(
-      ownerChatId,
-      createCachedConversationState(
-        currentState.messages,
-        currentState.isStreaming,
-      ),
-      runtimeRef.current,
-    )
+              strategyRuntime.currentRunId = null
+              strategyRuntime.buffer = null
+              onSessionStreamingChange?.(eventChatId, false)
 
-    return {
-      ownerChatId,
-      currentState,
-    }
-  }, [persistConversationSnapshot])
+              return liveReducer(state, { type: 'stream_ended' })
+            },
+            canceled: () => {
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
 
-  const applyEventToCurrentConversation = useCallback((event: ChatEvent) => {
-    applyConversationEvent({
-      state: liveStateRef.current,
-      event,
-      runtime: runtimeRef.current,
-      dispatch,
-      createMessageId: () => createMessageId('msg'),
-      now: Date.now(),
-    })
-  }, [])
+              strategyRuntime.currentRunId = null
+              strategyRuntime.buffer = null
+              onSessionStreamingChange?.(eventChatId, false)
 
-  const applyEventToCachedConversation = useCallback(
-    (
-      targetChatId: string,
-      event: ChatEvent,
-    ) => {
-      const cachedRuntime =
-        runtimeCacheRef.current.get(targetChatId) ?? createConversationRuntime()
-      const cachedState =
-        conversationCacheRef.current.get(targetChatId) ?? INITIAL_LIVE_STATE
-      const nextState = reduceConversationEvent({
-        state: {
-          ...cachedState,
-          streamError: null,
+              return liveReducer(state, {
+                type: 'stream_canceled',
+                messageId: createMessageId(),
+                content: '此条消息已取消',
+                createdAt: now,
+              })
+            },
+            error: () => {
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
+
+              strategyRuntime.currentRunId = null
+              strategyRuntime.buffer = null
+              onSessionStreamingChange?.(eventChatId, false)
+
+              return liveReducer(state, { type: 'stream_ended' })
+            },
+            message: () => {
+              if (event.event !== 'message') return
+
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const state = conversationHistory.getHistory(eventConversationId)
+
+              strategyRuntime.currentRunId =
+                event.run_id ?? strategyRuntime.currentRunId
+              onSessionStreamingChange?.(eventChatId, true)
+
+              if (event.kind === 'tool_hint' || event.kind === 'progress') {
+                return state
+              }
+
+              const media = event.media_urls?.length
+                ? event.media_urls.map((item) => toMediaAttachment(item))
+                : event.media?.map((url) => toMediaAttachment({ url }))
+              const hasMedia = !!media && media.length > 0
+              const hasButtons = !!event.buttons?.length
+
+              if (!hasMedia && !hasButtons) {
+                return state
+              }
+
+              const shouldReplacePlaceholder =
+                !!strategyRuntime.buffer &&
+                strategyRuntime.buffer.parts.length === 0
+              const nextState = liveReducer(state, {
+                type: 'message_received',
+                message: {
+                  id: createMessageId(),
+                  role: 'assistant',
+                  content: hasButtons
+                    ? (event.button_prompt ?? event.text)
+                    : event.text,
+                  createdAt: now,
+                  ...(hasButtons ? { buttons: event.buttons } : {}),
+                  ...(hasMedia ? { media } : {}),
+                },
+                ...(shouldReplacePlaceholder
+                  ? { replaceMessageId: strategyRuntime.buffer?.messageId }
+                  : {}),
+              })
+
+              if (shouldReplacePlaceholder) {
+                strategyRuntime.buffer = null
+              }
+
+              return nextState
+            },
+          }
+          const nextConversation = eventStrategies[event.event]?.()
+
+          if (nextConversation) {
+            conversationHistory.setHistory(eventConversationId, nextConversation)
+          }
         },
-        event,
-        runtime: cachedRuntime,
-        createMessageId: () => createMessageId('msg'),
-        now: Date.now(),
       })
 
-      if (nextState.messages.length === 0 && !nextState.isStreaming) {
-        clearConversationSnapshot(targetChatId)
-        return
-      }
-
-      persistConversationSnapshot(
-        targetChatId,
-        createCachedConversationState(
-          nextState.messages,
-          nextState.isStreaming,
-        ),
-        cachedRuntime,
-      )
-    },
-    [clearConversationSnapshot, persistConversationSnapshot],
-  )
-
-  const handleSubscribedChatEvent = useCallback(
-    (
-      subscribedChatId: string,
-      event: ChatEvent,
-    ) => {
-      const eventChatId = 'chat_id' in event ? event.chat_id : subscribedChatId
-
-      if (!eventChatId) {
-        return
-      }
-
-      if (event.event === 'session_updated') {
-        handleSessionUpdatedEvent(eventChatId)
-        return
-      }
-
-      if (eventChatId === stateOwnerChatIdRef.current) {
-        applyEventToCurrentConversation(event)
-        return
-      }
-
-      applyEventToCachedConversation(eventChatId, event)
+      subscriptionMapRef.current.set(targetConversationId, unsubscribe)
     },
     [
-      applyEventToCachedConversation,
-      applyEventToCurrentConversation,
-      handleSessionUpdatedEvent,
+      client,
+      conversationHistory,
+      getConversationRuntime,
+      onSessionStreamingChange,
+      onSessionUpdated,
     ],
   )
 
   useEffect(() => {
-    liveStateRef.current = liveState
-  }, [liveState])
+    if (!conversationId) return
+
+    ensureChatSubscription(conversationId)
+  }, [conversationId, ensureChatSubscription])
 
   useEffect(() => {
-    const { ownerChatId: currentOwnerChatId, currentState } =
-      cacheCurrentConversationIfNeeded()
-    const optimisticTargetChatId = runtimeRef.current.pendingChatId
-    const optimisticCachedState = optimisticTargetChatId
-      ? (conversationCacheRef.current.get(optimisticTargetChatId) ?? null)
-      : null
+    if (!chatId || !curHistory.hasPendingToolCalls) return
 
-    // 新会话首条消息发送后，优先恢复刚刚同步写入的 optimistic 会话缓存。
-    if (
-      shouldRestoreOptimisticConversation(
-        chatId,
-        optimisticTargetChatId,
-        optimisticCachedState,
-      )
-    ) {
-      restoreOptimisticConversation(chatId, optimisticCachedState!)
-      return
-    }
-
-    if (
-      shouldPreserveCurrentConversation(
-        chatId,
-        currentOwnerChatId,
-        currentState.messages,
-      )
-    ) {
-      hydratingChatIdRef.current = null
-      runtimeRef.current.pendingChatId = null
-      return
-    }
-
-    resetConversationForChat(chatId)
-  }, [
-    cacheCurrentConversationIfNeeded,
-    chatId,
-    resetConversationForChat,
-    restoreOptimisticConversation,
-  ])
+    onSessionStreamingChange?.(chatId, true)
+  }, [chatId, curHistory.hasPendingToolCalls, onSessionStreamingChange])
 
   useEffect(() => {
-    const currentChatId = chatId
+    for (const subscribedConversationId of Array.from(
+      subscriptionMapRef.current.keys(),
+    )) {
+      if (subscribedConversationId === conversationId) continue
 
-    if (!currentChatId || historyQuery.isLoading) return
+      const subscribedChatId = splitSessionKey(subscribedConversationId).chatId
 
-    const cachedState = conversationCacheRef.current.get(currentChatId)
-    const currentState = liveStateRef.current
-
-    if (cachedState && cachedState.messages.length > 0) {
-      restoreConversationFromCache(currentChatId, cachedState)
-
-      return
-    }
-
-    if (
-      shouldKeepLiveStateDuringHistoryHydration(
-        currentChatId,
-        historyMessages,
-        currentState.messages,
-        hydratingChatIdRef.current,
-      )
-    ) {
-      return
-    }
-
-    restoreConversationFromHistory(
-      historyMessages,
-      historyQuery.data?.hasPendingToolCalls ?? false,
-    )
-  }, [
-    chatId,
-    historyMessages,
-    historyQuery.data?.hasPendingToolCalls,
-    historyQuery.isLoading,
-    restoreConversationFromCache,
-    restoreConversationFromHistory,
-  ])
-
-  useEffect(() => {
-    const ownerChatId = stateOwnerChatIdRef.current
-
-    if (!ownerChatId || liveState.messages.length === 0) return
-
-    persistConversationSnapshot(
-      ownerChatId,
-      createCachedConversationState(
-        liveState.messages,
-        liveState.isStreaming,
-      ),
-      runtimeRef.current,
-    )
-  }, [liveState.isStreaming, liveState.messages, persistConversationSnapshot])
-
-  useEffect(() => {
-    if (!chatId || !key) return
-
-    sessionKeyByChatIdRef.current.set(chatId, key)
-  }, [chatId, key])
-
-  useEffect(() => {
-    return client.onError((error) => {
-      // websocket 层错误不改消息列表，只更新错误提示状态。
-      dispatch({ type: 'stream_error', error })
-    })
-  }, [client])
-
-  useEffect(() => {
-    const subscriptions = chatSubscriptionRef.current
-
-    return () => {
-      for (const unsubscribe of subscriptions.values()) {
-        unsubscribe()
+      if (subscribedChatId && streamingChatIdSet.has(subscribedChatId)) {
+        continue
       }
-      subscriptions.clear()
+
+      const unsubscribe = subscriptionMapRef.current.get(
+        subscribedConversationId,
+      )
+
+      if (!unsubscribe) continue
+
+      unsubscribe()
+      subscriptionMapRef.current.delete(subscribedConversationId)
+
+      if (subscribedChatId) {
+        client.detach(subscribedChatId)
+      }
     }
-  }, [client])
+  }, [client, conversationId, streamingChatIdSet])
 
-  useEffect(() => {
-    if (!chatId) return
+  const send = useCallback<AgentConversationActions['send']>(
+    (content, options) => {
+      if (!conversationId || !chatId) return
 
-    if (!chatSubscriptionRef.current.has(chatId)) {
-      const unsubscribe = client.onChat(chatId, (event) => {
-        handleSubscribedChatEvent(chatId, event)
-      })
-
-      chatSubscriptionRef.current.set(chatId, unsubscribe)
-    }
-  }, [
-    chatId,
-    client,
-    handleSubscribedChatEvent,
-  ])
-
-  const sendToChat = useCallback<AgentConversationActions['sendToChat']>(
-    (targetChatId, content, images, options) => {
-      const hasImages = !!images && images.length > 0
+      const hasAttachments = !!options?.attachmentIds?.length
       const text = content.trim()
 
-      if (!hasImages && !text) return
+      if (!hasAttachments && !text) return
 
-      const baseMessages = getConversationMessages(targetChatId)
-      const { userMessage, assistantMessage } = createOptimisticTurn(
+      const baseMessages =
+        conversationHistory.getHistory(conversationId).messages
+      const now = Date.now()
+      const userMessage: UIMessage = {
+        id: createMessageId(),
+        role: 'user',
         content,
-        images,
-      )
+        createdAt: now,
+      }
+      const assistantMessage: UIMessage = {
+        id: createMessageId(),
+        role: 'assistant',
+        content: '',
+        isStreaming: true,
+        createdAt: now,
+      }
+      const runtime = getConversationRuntime(conversationId)
 
-      runtimeRef.current.buffer = {
+      runtime.buffer = {
         messageId: assistantMessage.id,
         parts: [],
       }
-      runtimeRef.current.pendingChatId = targetChatId
-      stateOwnerChatIdRef.current = targetChatId
-      persistConversationSnapshot(
-        targetChatId,
-        createCachedConversationState(
-          [...baseMessages, userMessage, assistantMessage],
-          true,
-        ),
-        runtimeRef.current,
-      )
-
-      dispatch({
-        type: 'turn_started',
-        userMessage,
-        assistantMessage,
+      conversationHistory.setHistory(conversationId, {
+        messages: [...baseMessages, userMessage, assistantMessage],
+        hasPendingToolCalls: false,
       })
-
-      const media = hasImages ? images.map((image) => image.media) : undefined
+      onSessionStreamingChange?.(chatId, true)
 
       // 真正的消息发送仍然走 AgentClient，对话 hook 只负责页面状态。
-      client.sendMessage(targetChatId, content, media, options)
+      client.sendMessage(chatId, content, options)
     },
-    [client, getConversationMessages, persistConversationSnapshot],
-  )
-
-  const send = useCallback<AgentConversationActions['send']>(
-    (content, images, options) => {
-      if (!chatId) return
-
-      sendToChat(chatId, content, images, options)
-    },
-    [chatId, sendToChat],
+    [
+      chatId,
+      client,
+      conversationId,
+      conversationHistory,
+      getConversationRuntime,
+      onSessionStreamingChange,
+    ],
   )
 
   const stop = useCallback(() => {
-    stopConversation({
-      chatId,
-      runtime: runtimeRef.current,
-      dispatch,
-      client,
-    })
-  }, [chatId, client])
+    if (!conversationId || !chatId) return
 
-  const dismissStreamError = useCallback(() => {
-    dispatch({ type: 'error_dismissed' })
-  }, [])
+    const runtime = getConversationRuntime(conversationId)
+    const nextConversation = liveReducer(
+      conversationHistory.getHistory(conversationId),
+      { type: 'stream_ended' },
+    )
+
+    conversationHistory.setHistory(conversationId, nextConversation)
+    onSessionStreamingChange?.(chatId, false)
+
+    if (runtime.currentRunId) {
+      client.cancelRun(runtime.currentRunId)
+      runtime.currentRunId = null
+      return
+    }
+
+    client.sendMessage(chatId, '/stop')
+  }, [
+    chatId,
+    client,
+    conversationId,
+    conversationHistory,
+    getConversationRuntime,
+    onSessionStreamingChange,
+  ])
 
   return {
     state: {
-      messages: liveState.messages,
-      loading:
-        key ? historyQuery.isLoading && liveState.messages.length === 0 : false,
-      isStreaming: liveState.isStreaming,
-      streamingByChatId,
-      streamError: liveState.streamError,
-      hasPendingToolCalls: key
-        ? (historyQuery.data?.hasPendingToolCalls ?? false)
+      messages: currentMessages,
+      loading: conversationId
+        ? conversationHistory.loading && currentMessages.length === 0
+        : false,
+      isStreaming: currentIsStreaming,
+      hasPendingToolCalls: conversationId
+        ? conversationHistory.curHistory.hasPendingToolCalls
         : false,
     },
     actions: {
       send,
-      sendToChat,
       stop,
-      dismissStreamError,
     },
   }
 }
