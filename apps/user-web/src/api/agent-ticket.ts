@@ -36,7 +36,9 @@ export type TenantTaskQuery = {
   status?: TaskStatusFilter
 } & PaginationQuery
 
-export type AgentStatus = 'running' | 'stopped' | 'sandbox' | ''
+export type AgentStatus = 'running' | 'stopped' | 'sandbox'
+
+export type AgentStatusFilter = AgentStatus | ''
 
 export interface TenantAgent {
   name: string
@@ -50,7 +52,7 @@ export interface TenantAgent {
 }
 
 export type TenantAgentQuery = {
-  status?: AgentStatus
+  status?: AgentStatusFilter
 } & PaginationQuery
 
 export interface TenantAgentDetail extends TenantAgent {

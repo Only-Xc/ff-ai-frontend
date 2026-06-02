@@ -1,5 +1,6 @@
 import type {
   AgentStatus,
+  AgentStatusFilter,
   TaskStatus,
   TaskStatusFilter,
   TaskType,
@@ -28,7 +29,7 @@ export const taskStatusFilterOptions: {
 
 export const agentStatusFilterOptions: {
   label: string
-  value: AgentStatus
+  value: AgentStatusFilter
 }[] = [
   { label: '运行中', value: 'running' },
   { label: '已停止', value: 'stopped' },

@@ -18,7 +18,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   tenantAgentKeys,
   tenantAgents_list,
-  type AgentStatus,
+  type AgentStatusFilter,
   type TenantAgent,
 } from '@/api/agent-ticket'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
@@ -30,13 +30,13 @@ import { formatDateTime } from './utils/format'
 import { openEndpointUrl } from './utils/openEndpointUrl'
 
 type AgentFilterValues = {
-  status?: AgentStatus
+  status?: AgentStatusFilter
 }
 
 export function AgentList() {
   const navigate = useNavigate()
   const [form] = Form.useForm<AgentFilterValues>()
-  const [status, setStatus] = useState<AgentStatus>()
+  const [status, setStatus] = useState<AgentStatusFilter>()
   const pagination = usePaginationParams()
   const listParams = {
     status: status ?? '',
@@ -129,7 +129,7 @@ export function AgentList() {
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
         <Form className="flex-1" form={form} layout="inline">
           <Form.Item name="status">
-            <Select<AgentStatus>
+            <Select<AgentStatusFilter>
               allowClear
               className="w-35!"
               options={agentStatusFilterOptions}
