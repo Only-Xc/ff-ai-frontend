@@ -32,7 +32,7 @@ import { globalMessage } from '@/utils/message'
 
 import { DetailPageShell } from './components/DetailPageShell'
 import { AgentStatusTag } from './components/status'
-import { formatDateTime, formatNullableText } from './utils/format'
+import { formatDateTime } from './utils/format'
 import { openEndpointUrl } from './utils/openEndpointUrl'
 
 const useStyles = createStyles(() => ({
@@ -296,10 +296,12 @@ export function AgentDetail() {
   })
 
   useEffect(() => {
+    if (!query.data) return
+
     form.setFieldsValue({
-      runtimeTokenBudget: query.data?.runtime_token_budget ?? null,
+      runtimeTokenBudget: query.data.runtime_token_budget ?? null,
     })
-  }, [form, query.data?.runtime_token_budget])
+  }, [form, query.data])
 
   if (!agentId) {
     return (
@@ -339,23 +341,23 @@ export function AgentDetail() {
 
   return (
     <DetailPageShell>
-      <Space className={`${styles.page} w-full`} direction="vertical" size={16}>
+      <Space className={`${styles.page} w-full`} orientation="vertical" size={16}>
         <section className={styles.header}>
           <div className="flex flex-wrap items-start justify-between gap-5">
             <Space align="start" size={14}>
               <span className={styles.appIcon}>
                 <AppstoreOutlined />
               </span>
-              <Space direction="vertical" size={10}>
+              <Space orientation="vertical" size={10}>
                 <span className={styles.metaLabel}>Agent</span>
                 <Space wrap size={8}>
                   <Typography.Title className={styles.title} level={4}>
-                    {formatNullableText(detail.name)}
+                    {detail.name}
                   </Typography.Title>
                   <AgentStatusTag status={detail.status} />
                 </Space>
                 <Typography.Text className={styles.description}>
-                  {formatNullableText(detail.description)}
+                  {detail.description}
                 </Typography.Text>
                 <Typography.Text className={styles.idText} copyable>
                   {detail.agent_id}
@@ -436,7 +438,7 @@ export function AgentDetail() {
               <AgentStatusTag status={detail.status} />
             </Descriptions.Item>
             <Descriptions.Item label="来源工单">
-              {formatNullableText(detail.task_id)}
+              {detail.task_id}
             </Descriptions.Item>
             <Descriptions.Item label="创建时间">
               <Space>
@@ -445,7 +447,7 @@ export function AgentDetail() {
               </Space>
             </Descriptions.Item>
             <Descriptions.Item label="外发 API 地址" span={2}>
-              {formatNullableText(detail.endpoint_url)}
+              {detail.endpoint_url}
             </Descriptions.Item>
           </Descriptions>
         </section>

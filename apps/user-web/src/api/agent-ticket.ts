@@ -6,6 +6,7 @@ export type TaskStatusFilter =
   | 'pending_approval'
   | 'completed'
   | 'failed'
+  | ''
 
 export type TaskStatus =
   | 'CREATED'
@@ -28,13 +29,14 @@ export interface TenantTask {
   task_type: TaskType
   created_at: string
   updated_at: string
+  web_url?: string
 }
 
 export type TenantTaskQuery = {
   status?: TaskStatusFilter
 } & PaginationQuery
 
-export type AgentStatus = 'running' | 'stopped' | 'sandbox'
+export type AgentStatus = 'running' | 'stopped' | 'sandbox' | ''
 
 export interface TenantAgent {
   name: string

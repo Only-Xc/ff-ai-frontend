@@ -26,7 +26,7 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { agentStatusFilterOptions } from './constants'
 import { AgentStatusTag } from './components/status'
-import { formatDateTime, formatNullableText } from './utils/format'
+import { formatDateTime } from './utils/format'
 import { openEndpointUrl } from './utils/openEndpointUrl'
 
 type AgentFilterValues = {
@@ -39,7 +39,7 @@ export function AgentList() {
   const [status, setStatus] = useState<AgentStatus>()
   const pagination = usePaginationParams()
   const listParams = {
-    status,
+    status: status ?? '',
     ...pagination.query,
   }
 
@@ -57,9 +57,9 @@ export function AgentList() {
         width: 300,
         ellipsis: true,
         render: (value: string, record) => (
-          <Space direction="vertical" size={2}>
+          <Space orientation="vertical" size={2}>
             <Typography.Text strong>
-              {formatNullableText(value)}
+              {value}
             </Typography.Text>
             <Typography.Text copyable type="secondary">
               {record.agent_id}
@@ -89,7 +89,7 @@ export function AgentList() {
         title: '操作',
         key: 'action',
         fixed: 'right',
-        width: 220,
+        width: 120,
         render: (_, record) => (
           <Space size={4}>
             <Button
@@ -99,7 +99,7 @@ export function AgentList() {
                 void navigate(`/agent-ticket/agents/${record.agent_id}`)
               }
             >
-              查看应用
+              详情
             </Button>
             <Tooltip title={record.endpoint_url ? undefined : '无可用地址'}>
               <span>
@@ -131,7 +131,7 @@ export function AgentList() {
           <Form.Item name="status">
             <Select<AgentStatus>
               allowClear
-              className="w-40"
+              className="w-35!"
               options={agentStatusFilterOptions}
               placeholder="全部状态"
               onChange={(value) => {

@@ -3,7 +3,7 @@ import {
   ExclamationCircleOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
-import { Button, Tag, Typography } from 'antd'
+import { Button, Tag, Typography, Tooltip } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
@@ -72,7 +72,7 @@ export function TaskCard({ task }: { task: AdminTask }) {
         <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="line-clamp-1 text-[14px] font-semibold leading-5 text-(--text-strong)">
-              {task.title || task.task_id}
+              {task.web_url ? <Tooltip placement="top" title="点击预览"><Typography.Link href={task.web_url} target="_blank">{task.title || '--'}</Typography.Link></Tooltip> : task.title || '--'}
             </div>
             <Typography.Text
               copyable

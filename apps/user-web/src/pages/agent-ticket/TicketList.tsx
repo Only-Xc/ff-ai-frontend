@@ -8,6 +8,7 @@ import {
   Space,
   Table,
   Typography,
+  Tooltip
 } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
@@ -24,7 +25,7 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { TaskStatusTag, TaskTypeTag } from './components/status'
 import { taskStatusFilterOptions } from './constants'
-import { formatDateTime, formatNullableText } from './utils/format'
+import { formatDateTime } from './utils/format'
 
 type TicketFilterValues = {
   status?: TaskStatusFilter
@@ -36,7 +37,7 @@ export function TicketList() {
   const pagination = usePaginationParams()
 
   const listParams = {
-    status,
+    status: status ?? '',
     ...pagination.query,
   }
 
@@ -54,7 +55,7 @@ export function TicketList() {
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             <span className="text-(--text) font-medium">
-              {formatNullableText(value)}
+              {record.web_url ? <Tooltip placement="top" title="点击预览"><Typography.Link href={record.web_url} target="_blank">{value}</Typography.Link></Tooltip> : value}
             </span>
             <Typography.Text copyable className="text-(--muted)! text-[13px]!">
               {record.task_id}
@@ -105,7 +106,7 @@ export function TicketList() {
           <Form.Item name="status">
             <Select<TaskStatusFilter>
               allowClear
-              className="w-35"
+              className="w-35!"
               options={taskStatusFilterOptions}
               placeholder="全部状态"
               onChange={(value) => {

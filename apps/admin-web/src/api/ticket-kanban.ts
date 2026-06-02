@@ -87,6 +87,7 @@ export interface AdminTask {
   last_error: AdminTaskError | null
   retry_count: number
   current_node: string
+  web_url?: string
 }
 
 export interface AdminTaskQuery {

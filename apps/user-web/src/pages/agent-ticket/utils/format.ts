@@ -1,20 +1,11 @@
+import dayjs from 'dayjs'
+
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '-'
 
-  const date = new Date(value)
+  const date = dayjs(value)
 
-  if (Number.isNaN(date.getTime())) return '-'
+  if (!date.isValid()) return '-'
 
-  return new Intl.DateTimeFormat('zh-CN', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(date)
-}
-
-export function formatNullableText(value: string | null | undefined): string {
-  const content = value?.trim()
-
-  if (content) return content
-
-  return '-'
+  return date.format('YYYY年M月D日 HH:mm')
 }
