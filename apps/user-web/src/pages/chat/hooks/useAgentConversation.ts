@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { v4 as uuidV4 } from 'uuid'
 
 import { splitSessionKey } from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
-import type { UIMessage } from '@/pages/chat/types'
+import type { TaskConfirmationViewState, UIMessage } from '@/pages/chat/types'
 import type { InboundEvent } from '@/pages/chat/hooks/agentTypes'
 import type { AgentClient, SendOptions } from '@/pages/chat/hooks/agentClient'
 import {
@@ -24,11 +24,15 @@ export interface AgentConversationViewState {
   loading: boolean
   isStreaming: boolean
   hasPendingToolCalls: boolean
+  taskConfirmation: TaskConfirmationViewState
 }
 
 export interface AgentConversationActions {
   send: (content: string, options?: SendOptions) => void
   stop: () => void
+  confirmTask: () => void
+  openTaskConfirmationModal: () => void
+  closeTaskConfirmationModal: () => void
 }
 
 export interface UseAgentConversationOptions {
@@ -60,10 +64,19 @@ export function useAgentConversation({
 
   const runtimeMapRef = useRef<Map<string, ConversationRuntime>>(new Map()) // delta 的缓冲区
   const subscriptionMapRef = useRef<Map<string, () => void>>(new Map()) // 记录会话的订阅
+  const [taskConfirmationModalOpen, setTaskConfirmationModalOpen] =
+    useState(false)
+  const [taskConfirmationSubmitting, setTaskConfirmationSubmitting] =
+    useState(false)
 
   const curHistory = conversationHistory.curHistory
   const currentMessages = curHistory.messages
   const currentIsStreaming = chatId ? streamingChatIdSet.has(chatId) : false
+  const currentTaskConfirmation: TaskConfirmationViewState = {
+    pendingTask: curHistory.pendingTask,
+    submitting: taskConfirmationSubmitting,
+    modalOpen: taskConfirmationModalOpen,
+  }
 
   const getConversationRuntime = useCallback(
     (targetConversationId: string): ConversationRuntime => {
@@ -127,6 +140,37 @@ export function useAgentConversation({
               onSessionUpdated?.()
             },
             attached: () => conversationHistory.getHistory(eventConversationId),
+            task_confirmation_required: () => {
+              if (event.event !== 'task_confirmation_required') return
+
+              const strategyRuntime =
+                getConversationRuntime(eventConversationId)
+              const streamingMessageId =
+                strategyRuntime.buffer?.messageId ?? null
+              const pendingTask: SessionHistoryData['pendingTask'] = {
+                confirmation_id: event.confirmation_id,
+                title: event.title,
+                task_type: event.task_type,
+                markdown: event.markdown,
+              }
+              const state = conversationHistory.getHistory(eventConversationId)
+
+              strategyRuntime.currentRunId = null
+              strategyRuntime.buffer = null
+              onSessionStreamingChange?.(eventChatId, false)
+              if (eventConversationId === conversationId) {
+                setTaskConfirmationSubmitting(false)
+                setTaskConfirmationModalOpen(false)
+              }
+
+              return {
+                ...liveReducer(state, {
+                  type: 'discard_empty_streaming_message',
+                  messageId: streamingMessageId,
+                }),
+                pendingTask,
+              }
+            },
             delta: () => {
               if (event.event !== 'delta') return
 
@@ -247,8 +291,14 @@ export function useAgentConversation({
               const hasMedia = !!media && media.length > 0
               const hasButtons = !!event.buttons?.length
               const isTaskConfirmation = event.kind === 'task_confirmation'
+              const isTaskCreated = event.kind === 'task-created'
 
-              if (!hasMedia && !hasButtons && !isTaskConfirmation) {
+              if (
+                !hasMedia &&
+                !hasButtons &&
+                !isTaskConfirmation &&
+                !isTaskCreated
+              ) {
                 return state
               }
 
@@ -263,6 +313,7 @@ export function useAgentConversation({
                   content: hasButtons
                     ? (event.button_prompt ?? event.text)
                     : event.text,
+                  ...(isTaskCreated ? { kind: 'task-created' as const } : {}),
                   createdAt: now,
                   ...(hasButtons ? { buttons: event.buttons } : {}),
                   ...(hasMedia ? { media } : {}),
@@ -275,8 +326,17 @@ export function useAgentConversation({
               if (shouldReplacePlaceholder) {
                 strategyRuntime.buffer = null
               }
+              if (isTaskCreated && eventConversationId === conversationId) {
+                setTaskConfirmationSubmitting(false)
+                setTaskConfirmationModalOpen(false)
+              }
 
-              return nextState
+              return isTaskCreated
+                ? {
+                    ...nextState,
+                    pendingTask: null,
+                  }
+                : nextState
             },
           }
           const nextConversation = eventStrategies[event.event]?.()
@@ -291,8 +351,11 @@ export function useAgentConversation({
     },
     [
       client,
+      conversationId,
       conversationHistory,
       getConversationRuntime,
+      setTaskConfirmationModalOpen,
+      setTaskConfirmationSubmitting,
       onSessionStreamingChange,
       onSessionUpdated,
     ],
@@ -303,6 +366,15 @@ export function useAgentConversation({
 
     ensureChatSubscription(conversationId)
   }, [conversationId, ensureChatSubscription])
+
+  useEffect(() => {
+    setTaskConfirmationSubmitting(false)
+    setTaskConfirmationModalOpen(false)
+  }, [
+    conversationId,
+    setTaskConfirmationModalOpen,
+    setTaskConfirmationSubmitting,
+  ])
 
   useEffect(() => {
     if (!chatId || !curHistory.hasPendingToolCalls) return
@@ -346,8 +418,7 @@ export function useAgentConversation({
 
       if (!hasAttachments && !text) return
 
-      const baseMessages =
-        conversationHistory.getHistory(conversationId).messages
+      const baseHistory = conversationHistory.getHistory(conversationId)
       const now = Date.now()
       const userMessage: UIMessage = {
         id: createMessageId(),
@@ -369,7 +440,8 @@ export function useAgentConversation({
         parts: [],
       }
       conversationHistory.setHistory(conversationId, {
-        messages: [...baseMessages, userMessage, assistantMessage],
+        ...baseHistory,
+        messages: [...baseHistory.messages, userMessage, assistantMessage],
         hasPendingToolCalls: false,
       })
       onSessionStreamingChange?.(chatId, true)
@@ -391,9 +463,15 @@ export function useAgentConversation({
     if (!conversationId || !chatId) return
 
     const runtime = getConversationRuntime(conversationId)
+    const now = Date.now()
     const nextConversation = liveReducer(
       conversationHistory.getHistory(conversationId),
-      { type: 'stream_ended' },
+      {
+        type: 'stream_canceled',
+        messageId: createMessageId(),
+        content: '此条消息已取消',
+        createdAt: now,
+      },
     )
 
     conversationHistory.setHistory(conversationId, nextConversation)
@@ -405,7 +483,7 @@ export function useAgentConversation({
       return
     }
 
-    client.sendMessage(chatId, '/stop')
+    client.cancelChat(chatId)
   }, [
     chatId,
     client,
@@ -414,6 +492,42 @@ export function useAgentConversation({
     getConversationRuntime,
     onSessionStreamingChange,
   ])
+
+  const openTaskConfirmationModal = useCallback(() => {
+    if (!conversationId) return
+
+    setTaskConfirmationModalOpen(
+      !!conversationHistory.getHistory(conversationId).pendingTask,
+    )
+  }, [
+    conversationHistory,
+    conversationId,
+    setTaskConfirmationModalOpen,
+  ])
+
+  const closeTaskConfirmationModal = useCallback(() => {
+    setTaskConfirmationModalOpen(false)
+  }, [setTaskConfirmationModalOpen])
+
+  const confirmTask = useCallback<AgentConversationActions['confirmTask']>(
+    () => {
+      if (!conversationId) return
+
+      const pendingTask =
+        conversationHistory.getHistory(conversationId).pendingTask
+
+      if (!pendingTask) return
+
+      setTaskConfirmationSubmitting(true)
+
+      try {
+        client.taskConfirm(pendingTask.confirmation_id)
+      } catch {
+        setTaskConfirmationSubmitting(false)
+      }
+    },
+    [client, conversationHistory, conversationId, setTaskConfirmationSubmitting],
+  )
 
   return {
     state: {
@@ -425,10 +539,14 @@ export function useAgentConversation({
       hasPendingToolCalls: conversationId
         ? conversationHistory.curHistory.hasPendingToolCalls
         : false,
+      taskConfirmation: currentTaskConfirmation,
     },
     actions: {
       send,
       stop,
+      confirmTask,
+      openTaskConfirmationModal,
+      closeTaskConfirmationModal,
     },
   }
 }

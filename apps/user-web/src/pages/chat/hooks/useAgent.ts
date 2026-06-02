@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { BubbleItemType } from '@ant-design/x'
 
-import type { ChatSummary, UIMessage } from '@/pages/chat/types'
+import type {
+  ChatSummary,
+  TaskConfirmationViewState,
+  UIMessage,
+} from '@/pages/chat/types'
 import { useAgentConversation } from '@/pages/chat/hooks/useAgentConversation'
 import { useAgentSender } from '@/pages/chat/hooks/useAgentSender'
 import type {
@@ -21,12 +25,19 @@ interface AgentSenderState {
   onCancel: () => void
 }
 
+export interface AgentTaskConfirmationView extends TaskConfirmationViewState {
+  onConfirm: () => void
+  onOpenModal: () => void
+  onCloseModal: () => void
+}
+
 // 提供给页面组件直接消费的对话视图模型。
 export interface AgentConversationState {
   loading: boolean
   messages: UIMessage[]
   bubbleItems: BubbleItemType[]
   sender: AgentSenderState
+  taskConfirmation: AgentTaskConfirmationView
 }
 
 export interface AgentSessionsView {
@@ -47,7 +58,7 @@ function canUseTypingEffect(message: UIMessage): boolean {
   return (
     message.role === 'assistant' &&
     !message.isStreaming &&
-    message.kind !== 'trace' &&
+    (!message.kind || message.kind === 'message') &&
     !message.id.startsWith('hist-')
   )
 }
@@ -55,7 +66,12 @@ function canUseTypingEffect(message: UIMessage): boolean {
 function toBubbleItem(message: UIMessage): BubbleItemType {
   return {
     key: message.id,
-    role: message.role === 'user' ? 'user' : 'ai',
+    role:
+      message.kind === 'task-created'
+        ? 'taskCreated'
+        : message.role === 'user'
+          ? 'user'
+          : 'ai',
     content:
       message.kind === 'trace'
         ? (message.traces ?? [message.content]).join('\n')
@@ -145,11 +161,18 @@ export function useAgent(agentClient: AgentClientValue) {
 
   // 当前会话的历史加载和 websocket 实时事件都由 conversation hook 承接。
   const {
-    actions: { send, stop },
+    actions: {
+      closeTaskConfirmationModal,
+      confirmTask,
+      openTaskConfirmationModal,
+      send,
+      stop,
+    },
     state: {
       isStreaming,
       loading: detailLoading,
       messages: detailMessages,
+      taskConfirmation,
     },
   } = useAgentConversation({
     client: agentClient.client,
@@ -226,6 +249,12 @@ export function useAgent(agentClient: AgentClientValue) {
       loading: detailLoading,
       messages: detailMessages,
       bubbleItems,
+      taskConfirmation: {
+        ...taskConfirmation,
+        onConfirm: confirmTask,
+        onOpenModal: openTaskConfirmationModal,
+        onCloseModal: closeTaskConfirmationModal,
+      },
       sender: {
         attachments: agentSender.attachments,
         loading: senderLoading,
@@ -242,9 +271,13 @@ export function useAgent(agentClient: AgentClientValue) {
       agentSender.setInputValue,
       agentSender.submitWithAttachments,
       bubbleItems,
+      closeTaskConfirmationModal,
+      confirmTask,
       detailLoading,
       detailMessages,
+      openTaskConfirmationModal,
       senderLoading,
+      taskConfirmation,
     ],
   )
 

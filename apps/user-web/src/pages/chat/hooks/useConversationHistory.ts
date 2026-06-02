@@ -8,9 +8,17 @@ import {
 } from 'react'
 import { v4 as uuidV4 } from 'uuid'
 
-import { conversations_message, type SessionMessages } from '@/api/chat'
+import {
+  conversations_message,
+  conversations_pending_task,
+  type SessionMessages,
+} from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
-import type { UIMessage } from '@/pages/chat/types'
+import type {
+  MessageKind,
+  TaskConfirmationViewState,
+  UIMessage,
+} from '@/pages/chat/types'
 import { RequestError } from '@ff-ai-frontend/utils'
 
 const EMPTY_MESSAGES: UIMessage[] = []
@@ -18,14 +26,20 @@ const EMPTY_MESSAGES: UIMessage[] = []
 export interface SessionHistoryData {
   messages: UIMessage[]
   hasPendingToolCalls: boolean
+  pendingTask: TaskConfirmationViewState['pendingTask']
 }
 
 export const EMPTY_HISTORY: SessionHistoryData = {
   messages: EMPTY_MESSAGES,
   hasPendingToolCalls: false,
+  pendingTask: null,
 }
 
 type UIMessageDraft = Omit<UIMessage, 'id'>
+
+function normalizeMessageKind(kind: string | undefined): MessageKind | null {
+  return kind === 'task-created' ? 'task-created' : null
+}
 
 interface UseConversationHistoryOptions {
   conversationId: string | null
@@ -37,6 +51,10 @@ export interface ConversationHistoryApi {
   loading: boolean
   loadHistory: (targetConversationId: string) => Promise<SessionHistoryData>
   getHistory: (targetConversationId: string) => SessionHistoryData
+  setPendingTask: (
+    targetConversationId: string,
+    pendingTask: SessionHistoryData['pendingTask'],
+  ) => void
   setHistory: (
     targetConversationId: string,
     history: SessionHistoryData,
@@ -71,6 +89,7 @@ export function mapSessionMessagesToHistory(
       message.role === 'user' && media?.every((item) => item.kind === 'image')
         ? media.map((item) => ({ url: item.url, name: item.name }))
         : undefined
+    const kind = normalizeMessageKind(message.kind)
 
     return [
       {
@@ -81,6 +100,7 @@ export function mapSessionMessagesToHistory(
           : Date.now(),
         ...(images ? { images } : {}),
         ...(media ? { media } : {}),
+        ...(kind ? { kind } : {}),
       },
     ]
   })
@@ -100,6 +120,7 @@ export function mapSessionMessagesToHistory(
   return {
     messages,
     hasPendingToolCalls,
+    pendingTask: null,
   }
 }
 
@@ -155,6 +176,27 @@ export function useConversationHistory({
     [commitHistory],
   )
 
+  const setPendingTask = useCallback<ConversationHistoryApi['setPendingTask']>(
+    (targetConversationId, pendingTask) => {
+      updateHistory(targetConversationId, (current) => ({
+        ...current,
+        pendingTask,
+      }))
+    },
+    [updateHistory],
+  )
+
+  const loadPendingTask = useCallback(
+    async (targetConversationId: string) => {
+      const pendingTask = await conversations_pending_task(targetConversationId)
+
+      setPendingTask(targetConversationId, pendingTask)
+
+      return pendingTask
+    },
+    [setPendingTask],
+  )
+
   const loadHistory = useCallback(
     async (targetConversationId: string) => {
       if (targetConversationId in chatHistoryMapRef.current) {
@@ -168,9 +210,18 @@ export function useConversationHistory({
 
       try {
         const history = await requestSessionHistory(targetConversationId)
+        const currentPendingTask =
+          chatHistoryMapRef.current[targetConversationId]?.pendingTask
 
-        commitHistory(targetConversationId, history)
-        return history
+        const nextHistory = currentPendingTask
+          ? {
+              ...history,
+              pendingTask: currentPendingTask,
+            }
+          : history
+
+        commitHistory(targetConversationId, nextHistory)
+        return nextHistory
       } finally {
         setLoadingMap((currentLoadingMap) => ({
           ...currentLoadingMap,
@@ -181,11 +232,19 @@ export function useConversationHistory({
     [commitHistory],
   )
 
+  const loadConversationDetail = useCallback(
+    async (targetConversationId: string) => {
+      await loadHistory(targetConversationId)
+      await loadPendingTask(targetConversationId)
+    },
+    [loadHistory, loadPendingTask],
+  )
+
   useEffect(() => {
     if (!conversationId || skipInitialLoadRef?.current) return
 
-    void loadHistory(conversationId)
-  }, [conversationId, loadHistory, skipInitialLoadRef])
+    void loadConversationDetail(conversationId)
+  }, [conversationId, loadConversationDetail, skipInitialLoadRef])
 
   const getHistory = useCallback<ConversationHistoryApi['getHistory']>(
     (targetConversationId) =>
@@ -206,6 +265,7 @@ export function useConversationHistory({
       loading,
       loadHistory,
       getHistory,
+      setPendingTask,
       setHistory: commitHistory,
       updateHistory,
     }),
@@ -215,6 +275,7 @@ export function useConversationHistory({
       getHistory,
       loadHistory,
       loading,
+      setPendingTask,
       updateHistory,
     ],
   )

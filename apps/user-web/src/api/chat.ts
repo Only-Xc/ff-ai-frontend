@@ -30,6 +30,7 @@ export interface SessionMediaUrl {
 export interface SessionMessageItem {
   role: string // 角色
   content: string // 内容
+  kind?: string
   timestamp?: string // 时间
   tool_calls?: unknown
   tool_call_id?: string
@@ -42,6 +43,17 @@ export interface SessionMessages {
   created_at: string | null
   updated_at: string | null
   messages: SessionMessageItem[]
+}
+
+export interface PendingTaskConfirmation {
+  conversation_id: string
+  chat_id: string
+  pending_task_confirmation: {
+    confirmation_id: string
+    title: string
+    task_type: 'process' | 'container' | 'direct_result'
+    markdown: string
+  } | null
 }
 
 export const conversationKeys = {
@@ -122,6 +134,15 @@ export function conversations_delete(conversationId: string): Promise<boolean> {
     url: `/api/conversations/${conversationId}`,
     method: 'DELETE',
   }).then((res) => res.deleted)
+}
+
+export function conversations_pending_task(
+  conversationId: string,
+): Promise<PendingTaskConfirmation['pending_task_confirmation']> {
+  return requestClient<PendingTaskConfirmation>({
+    url: `/api/conversations/${conversationId}/pending-task-confirmation`,
+    method: 'GET',
+  }).then((res) => res.pending_task_confirmation)
 }
 
 export function deriveWsUrl(

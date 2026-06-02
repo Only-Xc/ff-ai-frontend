@@ -2,7 +2,7 @@ export type Role = 'user' | 'assistant' | 'tool' | 'system'
 
 /** "trace" rows are intermediate agent breadcrumbs (tool-call hints,
  * progress pings) that should not be rendered as conversational replies. */
-export type MessageKind = 'message' | 'trace' | 'error'
+export type MessageKind = 'message' | 'trace' | 'error' | 'task-created'
 
 /** One image attached to a UIMessage.
  *
@@ -58,4 +58,17 @@ export interface ChatSummary {
   updatedAt: string | null
   title?: string
   preview: string
+}
+
+export interface TaskConfirmationViewState {
+  pendingTask:
+    | {
+        confirmation_id: string
+        title: string
+        task_type: 'process' | 'container' | 'direct_result'
+        markdown: string
+      }
+    | null
+  submitting: boolean
+  modalOpen: boolean
 }

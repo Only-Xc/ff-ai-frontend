@@ -44,6 +44,7 @@ export interface AgentClient {
   attach: (chatId: string) => void
   close: () => void
   connect: () => void
+  cancelChat: (chatId: string) => void
   cancelRun: (runId: string) => void
   detach: (chatId: string) => void
   newChat: (timeoutMs?: number) => Promise<string>
@@ -86,7 +87,7 @@ function parseInboundEvent(data: MessageEvent['data']): InboundEvent | null {
  * Agent WebSocket 客户端。
  *
  * 职责：
- * 1. 对外提供 newChat / attach / detach / sendMessage / cancelRun 等通信能力。
+ * 1. 对外提供 newChat / attach / detach / sendMessage / cancelRun / cancelChat 等通信能力。
  * 2. 维护连接状态、重连后的会话恢复和待发送队列。
  * 3. 识别 attached 回执的来源，并按 chat_id 分发服务端事件。
  */
@@ -169,6 +170,10 @@ class WebSocketAgentClient implements AgentClient {
 
   cancelRun(runId: string): void {
     this.queueSend({ type: 'cancel', run_id: runId })
+  }
+
+  cancelChat(chatId: string): void {
+    this.queueSend({ type: 'cancel', chat_id: chatId })
   }
 
   taskConfirm(confirmationId: string): void {

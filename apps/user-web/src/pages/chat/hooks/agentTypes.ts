@@ -1,3 +1,5 @@
+import type { PendingTaskConfirmation } from '@/api/chat'
+
 export type ConnectionStatus =
   | 'idle'
   | 'connecting'
@@ -74,7 +76,12 @@ export interface InboundErrorEvent {
 export interface InboundTaskConfirmEvent {
   event: 'task_confirmation_required'
   chat_id?: string
+  conversation_id?: string
   confirmation_id: string
+  title: string
+  task_type: NonNullable<PendingTaskConfirmation['pending_task_confirmation']>['task_type']
+  markdown: string
+  'message-type'?: string
 }
 
 export type InboundEvent =
@@ -103,10 +110,15 @@ export interface OutboundAttach {
   chat_id: string
 }
 
-export interface OutboundCancel {
-  type: 'cancel'
-  run_id: string
-}
+export type OutboundCancel =
+  | {
+      type: 'cancel'
+      run_id: string
+    }
+  | {
+      type: 'cancel'
+      chat_id: string
+    }
 
 export interface OutboundTaskConfirm {
   type: 'task_confirmation'

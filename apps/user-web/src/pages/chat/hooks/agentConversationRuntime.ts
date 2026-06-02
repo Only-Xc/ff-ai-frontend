@@ -31,6 +31,10 @@ export type LiveAction =
       content: string
       createdAt: number
     }
+  | {
+      type: 'discard_empty_streaming_message'
+      messageId: string | null
+    }
   | { type: 'stream_finished' }
   | { type: 'stream_ended' }
 
@@ -45,6 +49,18 @@ function stopStreamingMessages(messages: UIMessage[]): UIMessage[] {
   return messages.map((message) =>
     message.isStreaming ? { ...message, isStreaming: false } : message,
   )
+}
+
+function cancelStreamingMessages(messages: UIMessage[]): UIMessage[] {
+  return messages.flatMap((message) => {
+    if (!message.isStreaming) return [message]
+
+    if (message.role === 'assistant' && message.content.trim() === '') {
+      return []
+    }
+
+    return [{ ...message, isStreaming: false }]
+  })
 }
 
 function replaceMessageById(
@@ -130,6 +146,55 @@ function appendOrReplaceMessage(
   )
 }
 
+function discardEmptyStreamingMessage(
+  messages: UIMessage[],
+  messageId: string | null,
+): UIMessage[] {
+  if (!messageId) return stopStreamingMessages(messages)
+
+  return messages.flatMap((message) => {
+    if (message.id !== messageId) return [message]
+
+    if (
+      message.role === 'assistant' &&
+      message.isStreaming &&
+      message.content.trim() === ''
+    ) {
+      return []
+    }
+
+    return [{ ...message, isStreaming: false }]
+  })
+}
+
+function appendCancellationTrace(
+  messages: UIMessage[],
+  action: Extract<LiveAction, { type: 'stream_canceled' }>,
+): UIMessage[] {
+  const stoppedMessages = cancelStreamingMessages(messages)
+  const lastMessage = stoppedMessages[stoppedMessages.length - 1]
+
+  if (
+    lastMessage?.role === 'tool' &&
+    lastMessage.kind === 'trace' &&
+    lastMessage.content === action.content
+  ) {
+    return stoppedMessages
+  }
+
+  return [
+    ...stoppedMessages,
+    {
+      id: action.messageId,
+      role: 'tool',
+      kind: 'trace',
+      content: action.content,
+      traces: [action.content],
+      createdAt: action.createdAt,
+    },
+  ]
+}
+
 export function liveReducer(
   state: SessionHistoryData,
   action: LiveAction,
@@ -157,17 +222,15 @@ export function liveReducer(
     // canceled 会结束 streaming，并额外插入一条可见的取消痕迹消息。
     return {
       ...state,
-      messages: [
-        ...stopStreamingMessages(state.messages),
-        {
-          id: action.messageId,
-          role: 'tool',
-          kind: 'trace',
-          content: action.content,
-          traces: [action.content],
-          createdAt: action.createdAt,
-        },
-      ],
+      messages: appendCancellationTrace(state.messages, action),
+      hasPendingToolCalls: false,
+    }
+  }
+
+  if (action.type === 'discard_empty_streaming_message') {
+    return {
+      ...state,
+      messages: discardEmptyStreamingMessage(state.messages, action.messageId),
       hasPendingToolCalls: false,
     }
   }

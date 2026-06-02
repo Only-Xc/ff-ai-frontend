@@ -205,7 +205,7 @@ flowchart TD
 | `delta` | 追加到 `runtime.buffer.parts`，更新同一条 assistant streaming 消息 |
 | `stream_end` | 清空 buffer，本轮 streaming 状态继续等待 `turn_end` |
 | `turn_end` | 清理 run 和 buffer，所有 streaming 消息收口 |
-| `canceled` | 清理运行时，追加一条取消 trace |
+| `canceled` | 清理运行时，确认取消 trace |
 | `error` | 清理运行时并结束 streaming |
 | `message` | 有媒体或按钮时创建结构化 assistant 消息 |
 
@@ -267,11 +267,11 @@ sequenceDiagram
     alt 有 currentRunId
         Runtime->>Client: cancelRun(runId)
     else 无 currentRunId
-        Runtime->>Client: sendMessage(chatId, /stop)
+        Runtime->>Client: cancelChat(chatId)
     end
 ```
 
-停止时先本地收口 streaming，再通知服务端。已有 `run_id` 时发送 `cancel`，缺少 `run_id` 时发送 `/stop` 作为兜底指令。
+停止时先本地收口 streaming。已有 `run_id` 时发送携带 `run_id` 的 `cancel`，缺少 `run_id` 时发送携带 `chat_id` 的 `cancel`。
 
 ## 11. session_updated 的意义
 
@@ -307,7 +307,7 @@ sequenceDiagram
 4. A 后台回复完成后再切回 A，消息内容完整。
 5. 新建会话首条消息发送后，页面切到正式会话，optimistic 消息保留。
 6. `session_updated` 后会话列表刷新，详情保留正在显示的 live 消息。
-7. 停止回复时本地立刻收口，服务端确认后追加取消痕迹。
+7. 停止回复时本地立刻收口并追加取消痕迹，服务端确认后避免重复追加。
 
 ## 14. 记忆模型
 
