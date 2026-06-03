@@ -10,10 +10,7 @@ import {
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 
-import type {
-  AdminTaskStatus,
-  AdminTaskStatusFilter,
-} from '@/api/ticket-kanban'
+import type { AdminTaskStatus } from '@/api/ticket-kanban'
 
 export type LaneId = 'analysis' | 'coding' | 'testing' | 'blocked' | 'deploying'
 export type LaneColor = 'blue' | 'cyan' | 'gold' | 'purple' | 'red'
@@ -27,17 +24,6 @@ export interface LaneConfig {
   color: LaneColor
   icon: ReactNode
 }
-
-export const statusFilterOptions: {
-  label: string
-  value: AdminTaskStatusFilter | 'all'
-}[] = [
-  { label: '流转中', value: 'active' },
-  { label: '待审批', value: 'pending_approval' },
-  { label: '失败', value: 'failed' },
-  { label: '完成', value: 'completed' },
-  { label: '全部', value: 'all' },
-]
 
 export const lanes: LaneConfig[] = [
   {
@@ -81,30 +67,6 @@ export const lanes: LaneConfig[] = [
     icon: <DeploymentUnitOutlined />,
   },
 ]
-
-export const statusLabelMap: Record<AdminTaskStatus, string> = {
-  ANALYZING: '解析中',
-  CODING: '编码中',
-  COMPLETED: '已完成',
-  CREATED: '已创建',
-  DEPLOYING: '打包中',
-  FAILED: '失败',
-  PENDING_APPROVAL: '待审批',
-  ROUTING: '路由中',
-  TESTING: '测试中',
-}
-
-export const statusColorMap: Record<AdminTaskStatus, string> = {
-  ANALYZING: 'blue',
-  CODING: 'purple',
-  COMPLETED: 'success',
-  CREATED: 'geekblue',
-  DEPLOYING: 'gold',
-  FAILED: 'error',
-  PENDING_APPROVAL: 'red',
-  ROUTING: 'processing',
-  TESTING: 'cyan',
-}
 
 export const metricCards = [
   {

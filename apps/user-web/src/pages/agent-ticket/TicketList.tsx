@@ -4,11 +4,10 @@ import {
   Button,
   Form,
   Pagination,
-  Select,
   Space,
   Table,
   Typography,
-  Tooltip
+  Tooltip,
 } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
@@ -20,11 +19,11 @@ import {
   type TaskStatusFilter,
   type TenantTask,
 } from '@/api/agent-ticket'
+import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { TaskStatusTag, TaskTypeTag } from './components/status'
-import { taskStatusFilterOptions } from './constants'
 import { formatDateTime } from './utils/format'
 
 type TicketFilterValues = {
@@ -55,7 +54,15 @@ export function TicketList() {
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             <span className="text-(--text) font-medium">
-              {record.web_url ? <Tooltip placement="top" title="点击预览"><Typography.Link href={record.web_url} target="_blank">{value}</Typography.Link></Tooltip> : value}
+              {record.web_url ? (
+                <Tooltip placement="top" title="点击预览">
+                  <Typography.Link href={record.web_url} target="_blank">
+                    {value}
+                  </Typography.Link>
+                </Tooltip>
+              ) : (
+                value
+              )}
             </span>
             <Typography.Text copyable className="text-(--muted)! text-[13px]!">
               {record.task_id}
@@ -104,13 +111,14 @@ export function TicketList() {
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
         <Form className="flex-1" form={form} layout="inline">
           <Form.Item name="status">
-            <Select<TaskStatusFilter>
+            <DictSelect<TaskStatusFilter | 'all'>
               allowClear
               className="w-35!"
-              options={taskStatusFilterOptions}
+              excludeValues={['all']}
               placeholder="全部状态"
+              type="task_status_filter"
               onChange={(value) => {
-                setStatus(value)
+                setStatus(value === 'all' ? undefined : value)
                 pagination.reset()
               }}
             />

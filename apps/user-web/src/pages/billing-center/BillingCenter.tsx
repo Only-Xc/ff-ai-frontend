@@ -12,7 +12,6 @@ import {
   Form,
   Input,
   Pagination,
-  Select,
   Space,
   Table,
   Typography,
@@ -32,6 +31,7 @@ import {
   type TenantBillingRecord,
 } from '@/api/billing-center'
 import { PageContainer } from '@/components/Container'
+import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { PageHeader } from '@/components/Header'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
@@ -42,16 +42,6 @@ import { ResourceTypeTag } from './components/ResourceTypeTag'
 import { type BillingFilterValues, normalizeFilters } from './utils/filters'
 
 const { RangePicker } = DatePicker
-
-const billingResourceTypeOptions: {
-  label: string
-  value: BillingResourceType
-}[] = [
-  { label: '大模型推理 Token', value: 'compute_token' },
-  { label: '存储空间', value: 'storage_gb' },
-  { label: '网络出口流量', value: 'network_egress_gb' },
-  { label: '计算核时', value: 'compute_hour' },
-]
 
 const mainMetricAccents = {
   balance: 'var(--admin-primary)',
@@ -316,11 +306,11 @@ export function BillingCenter() {
           <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
             <Form form={form} layout="inline" className="flex-1">
               <Form.Item name="resource_type">
-                <Select<BillingResourceType>
+                <DictSelect<BillingResourceType>
                   allowClear
                   className="w-46"
-                  options={billingResourceTypeOptions}
                   placeholder="全部资源类型"
+                  type="billing_resource_type"
                 />
               </Form.Item>
               <Form.Item name="agent_id">

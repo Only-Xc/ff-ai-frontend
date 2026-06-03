@@ -2,14 +2,10 @@ import { Button, Form, Input, Select, Space, Typography } from 'antd'
 import { useEffect, useImperativeHandle } from 'react'
 import type { Ref } from 'react'
 
-import type { AdminSkillEnvironment } from '@/api/skill-hub'
+import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/skill-hub'
+import { DictSelect } from '@ff-ai-frontend/dictionaries'
 
-import {
-  createStatusOptions,
-  environmentOptions,
-  skillFormInitialValues,
-  statusOptions,
-} from '../constants'
+import { skillFormInitialValues } from '../constants'
 import type { SkillDrawerMode, SkillFormValues } from '../types'
 
 export interface SkillFormRef {
@@ -32,12 +28,7 @@ interface SkillFormProps {
   ref?: Ref<SkillFormRef>
 }
 
-export function SkillForm({
-  initialValues,
-  open,
-  mode,
-  ref,
-}: SkillFormProps) {
+export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
   const [form] = Form.useForm<SkillFormValues>()
 
   useImperativeHandle(
@@ -95,15 +86,16 @@ export function SkillForm({
           name="environment"
           rules={[{ required: true, message: '请选择环境' }]}
         >
-          <Select<AdminSkillEnvironment> options={environmentOptions} />
+          <DictSelect<AdminSkillEnvironment> type="admin_skill_environment" />
         </Form.Item>
         <Form.Item
           label="状态"
           name="status"
           rules={[{ required: true, message: '请选择状态' }]}
         >
-          <Select
-            options={mode === 'edit' ? statusOptions : createStatusOptions}
+          <DictSelect<AdminSkillStatus>
+            excludeValues={mode === 'edit' ? undefined : ['deprecated']}
+            type="admin_skill_status"
           />
         </Form.Item>
       </div>

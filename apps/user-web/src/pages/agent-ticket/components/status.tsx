@@ -1,20 +1,14 @@
-import { Tag } from 'antd'
-
 import type { AgentStatus, TaskStatus, TaskType } from '@/api/agent-ticket'
-import { agentStatusMeta, taskStatusMeta, taskTypeMeta } from '../constants'
+import { DictTag } from '@ff-ai-frontend/dictionaries'
 
 export function TaskStatusTag({ status }: { status: TaskStatus }) {
-  const meta = taskStatusMeta[status]
-
-  return <Tag color={meta.color}>{meta.label}</Tag>
+  return <DictTag type="task_status" value={status} />
 }
 
 export function TaskTypeTag({ type }: { type: TaskType }) {
-  return <Tag>{taskTypeMeta[type]}</Tag>
+  return <DictTag type="task_type" value={type} />
 }
 
 export function AgentStatusTag({ status }: { status: AgentStatus }) {
-  const meta = agentStatusMeta[status]
-
-  return <Tag color={meta.color}>{meta.label}</Tag>
+  return <DictTag type="agent_status" value={status} />
 }

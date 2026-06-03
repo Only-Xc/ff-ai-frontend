@@ -4,7 +4,6 @@ import {
   Button,
   Form,
   Pagination,
-  Select,
   Space,
   Table,
   Tooltip,
@@ -21,10 +20,10 @@ import {
   type AgentStatusFilter,
   type TenantAgent,
 } from '@/api/agent-ticket'
+import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
-import { agentStatusFilterOptions } from './constants'
 import { AgentStatusTag } from './components/status'
 import { formatDateTime } from './utils/format'
 import { openEndpointUrl } from './utils/openEndpointUrl'
@@ -58,9 +57,7 @@ export function AgentList() {
         ellipsis: true,
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
-            <Typography.Text strong>
-              {value}
-            </Typography.Text>
+            <Typography.Text strong>{value}</Typography.Text>
             <Typography.Text copyable type="secondary">
               {record.agent_id}
             </Typography.Text>
@@ -129,11 +126,11 @@ export function AgentList() {
       <div className="mb-4 flex shrink-0 flex-wrap items-center justify-between gap-4 px-5">
         <Form className="flex-1" form={form} layout="inline">
           <Form.Item name="status">
-            <Select<AgentStatusFilter>
+            <DictSelect<AgentStatusFilter>
               allowClear
               className="w-35!"
-              options={agentStatusFilterOptions}
               placeholder="全部状态"
+              type="agent_status"
               onChange={(value) => {
                 setStatus(value)
                 pagination.reset()

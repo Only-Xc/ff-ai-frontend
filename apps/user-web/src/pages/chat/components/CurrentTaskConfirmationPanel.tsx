@@ -1,5 +1,6 @@
-import { Button, Tag, theme } from 'antd'
+import { Button, theme } from 'antd'
 import { CheckOutlined, FileTextOutlined } from '@ant-design/icons'
+import { DictTag } from '@ff-ai-frontend/dictionaries'
 
 import type { TaskConfirmationViewState } from '@/pages/chat/types'
 
@@ -11,12 +12,6 @@ export interface CurrentTaskConfirmationPanelProps {
   pending: PendingTaskConfirmation
   submitting: boolean
   onRequestConfirm: () => void
-}
-
-const TASK_TYPE_LABELS: Record<PendingTaskConfirmation['task_type'], string> = {
-  process: '流程工单',
-  container: '容器工单',
-  direct_result: '直接结果',
 }
 
 export function CurrentTaskConfirmationPanel({
@@ -50,9 +45,11 @@ export function CurrentTaskConfirmationPanel({
               <span className="shrink-0 text-sm font-semibold text-(--text-strong)">
                 当前待确认工单
               </span>
-              <Tag className="shrink-0" color="processing">
-                {TASK_TYPE_LABELS[pending.task_type]}
-              </Tag>
+              <DictTag
+                className="shrink-0"
+                type="pending_task_type"
+                value={pending.task_type}
+              />
               <span className="truncate text-sm text-(--text)">
                 {pending.title}
               </span>
@@ -73,7 +70,6 @@ export function CurrentTaskConfirmationPanel({
           </Button>
         </div>
       </div>
-
     </div>
   )
 }

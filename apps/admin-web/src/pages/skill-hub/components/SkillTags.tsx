@@ -1,11 +1,8 @@
-import { Tag } from 'antd'
-
 import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/skill-hub'
-
-import { statusColorMap, statusLabelMap } from '../constants'
+import { DictTag } from '@ff-ai-frontend/dictionaries'
 
 export function SkillStatusTag({ status }: { status: AdminSkillStatus }) {
-  return <Tag color={statusColorMap[status]}>{statusLabelMap[status]}</Tag>
+  return <DictTag type="admin_skill_status" value={status} />
 }
 
 export function EnvironmentTag({
@@ -13,5 +10,5 @@ export function EnvironmentTag({
 }: {
   environment: AdminSkillEnvironment
 }) {
-  return <Tag color={environment === 'PROD' ? 'blue' : 'cyan'}>{environment}</Tag>
+  return <DictTag type="admin_skill_environment" value={environment} />
 }

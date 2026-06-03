@@ -8,18 +8,14 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import type { AdminTask, AdminTaskStatus } from '@/api/ticket-kanban'
+import { DictTag } from '@ff-ai-frontend/dictionaries'
 
-import { statusColorMap, statusLabelMap } from '../constants'
 import { formatDateTime } from '../utils'
 
 type TaskError = NonNullable<AdminTask['last_error']>
 
 function TaskStatusTag({ status }: { status: AdminTaskStatus }) {
-  return (
-    <Tag className="m-0! shrink-0" color={statusColorMap[status]}>
-      {statusLabelMap[status]}
-    </Tag>
-  )
+  return <DictTag className="m-0! shrink-0" type="task_status" value={status} />
 }
 
 function TaskErrorSummary({ error }: { error: TaskError }) {
@@ -72,7 +68,15 @@ export function TaskCard({ task }: { task: AdminTask }) {
         <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="line-clamp-1 text-[14px] font-semibold leading-5 text-(--text-strong)">
-              {task.web_url ? <Tooltip placement="top" title="点击预览"><Typography.Link href={task.web_url} target="_blank">{task.title || '--'}</Typography.Link></Tooltip> : task.title || '--'}
+              {task.web_url ? (
+                <Tooltip placement="top" title="点击预览">
+                  <Typography.Link href={task.web_url} target="_blank">
+                    {task.title || '--'}
+                  </Typography.Link>
+                </Tooltip>
+              ) : (
+                task.title || '--'
+              )}
             </div>
             <Typography.Text
               copyable

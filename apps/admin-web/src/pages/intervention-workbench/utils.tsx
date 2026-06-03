@@ -7,32 +7,7 @@ import type {
   AdminTaskSnapshot,
   AdminTaskSnapshotContextLine,
   AdminTaskSnapshotError,
-  AdminTaskStatus,
 } from '@/api/ticket-kanban'
-
-export const statusLabelMap: Record<AdminTaskStatus, string> = {
-  ANALYZING: '解析中',
-  CODING: '编码中',
-  COMPLETED: '已完成',
-  CREATED: '已创建',
-  DEPLOYING: '打包中',
-  FAILED: '失败',
-  PENDING_APPROVAL: '待审批',
-  ROUTING: '路由中',
-  TESTING: '测试中',
-}
-
-export const statusColorMap: Record<AdminTaskStatus, string> = {
-  ANALYZING: 'blue',
-  CODING: 'purple',
-  COMPLETED: 'success',
-  CREATED: 'geekblue',
-  DEPLOYING: 'gold',
-  FAILED: 'error',
-  PENDING_APPROVAL: 'red',
-  ROUTING: 'processing',
-  TESTING: 'cyan',
-}
 
 export function formatDateTime(value?: string) {
   if (!value) return '-'

@@ -32,6 +32,7 @@ import {
   type AdminMetricsOverviewQuery,
   type OpsMetricsPeriod,
 } from '@/api/ops-metrics'
+import { useDict } from '@ff-ai-frontend/dictionaries'
 
 import { AgentSummary } from './components/AgentSummary'
 import { BillingSummary } from './components/BillingSummary'
@@ -39,7 +40,6 @@ import { FactoryOutputChart } from './components/FactoryOutputChart'
 import { HotSkillsList } from './components/HotSkillsList'
 import { LatencyChart } from './components/LatencyChart'
 import { MetricCard } from './components/MetricCard'
-import { periodOptions } from './constants'
 import { useOpsMetricsStyles } from './styles'
 import type { ChartTheme } from './types'
 import { numberUtils } from '@ff-ai-frontend/utils'
@@ -136,6 +136,7 @@ function buildMetrics(
 export function OpsMetrics() {
   const { styles } = useOpsMetricsStyles()
   const chartTheme = useChartTheme()
+  const periodDict = useDict('ops_metrics_period')
   const [period, setPeriod] = useState<OpsMetricsPeriod>('week')
   const listParams = useMemo<AdminMetricsOverviewQuery>(
     () => ({ period }),
@@ -172,7 +173,7 @@ export function OpsMetrics() {
                 className="rounded-md! border-0! bg-[color-mix(in_srgb,var(--admin-primary)_10%,transparent)]! px-2! text-(--admin-primary)!"
                 icon={<ApiOutlined />}
               >
-                {periodOptions.find((item) => item.value === period)?.label}
+                {periodDict.label(period)}
               </Tag>
             </div>
             <Typography.Text className="mt-1 block text-[12px]! text-(--muted)!">
@@ -181,9 +182,9 @@ export function OpsMetrics() {
           </div>
           <Space wrap>
             <Segmented
-              options={periodOptions}
+              options={periodDict.options}
               value={period}
-              onChange={(value) => setPeriod(value)}
+              onChange={(value) => setPeriod(value as OpsMetricsPeriod)}
             />
             <Tooltip title="刷新">
               <Button

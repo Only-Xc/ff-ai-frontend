@@ -1,10 +1,9 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Button, Space, Tag, Typography } from 'antd'
+import { Button, Space, Typography } from 'antd'
 import type { ReactNode } from 'react'
 
 import type { AdminTaskStatus } from '@/api/ticket-kanban'
-
-import { statusColorMap, statusLabelMap } from '../utils'
+import { DictTag } from '@ff-ai-frontend/dictionaries'
 
 interface WorkbenchHeaderProps {
   actions?: ReactNode
@@ -17,7 +16,7 @@ interface WorkbenchHeaderProps {
 }
 
 function StatusTag({ status }: { status: AdminTaskStatus }) {
-  return <Tag color={statusColorMap[status]}>{statusLabelMap[status]}</Tag>
+  return <DictTag type="task_status" value={status} />
 }
 
 export function WorkbenchHeader({

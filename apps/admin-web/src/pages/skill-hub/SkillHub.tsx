@@ -13,7 +13,6 @@ import {
   Input,
   Pagination,
   Popconfirm,
-  Select,
   Space,
   Spin,
   Table,
@@ -44,6 +43,7 @@ import {
 } from '@/api/skill-hub'
 import { numberUtils } from '@ff-ai-frontend/utils'
 import { PageContainer } from '@/components/Container'
+import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { PageHeader } from '@/components/Header'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
@@ -52,7 +52,6 @@ import { globalMessage } from '@/utils/message'
 import { SkillDetailContent } from './components/SkillDetailContent'
 import { SkillForm, type SkillFormRef } from './components/SkillForm'
 import { EnvironmentTag, SkillStatusTag } from './components/SkillTags'
-import { environmentOptions, statusOptions } from './constants'
 import type {
   SkillDrawerMode,
   SkillFilterValues,
@@ -364,19 +363,19 @@ export function SkillHub() {
                 <Input allowClear className="w-40!" placeholder="全部分类" />
               </Form.Item>
               <Form.Item name="environment">
-                <Select<AdminSkillEnvironment>
+                <DictSelect<AdminSkillEnvironment>
                   allowClear
                   className="w-35!"
-                  options={environmentOptions}
                   placeholder="全部环境"
+                  type="admin_skill_environment"
                 />
               </Form.Item>
               <Form.Item name="status">
-                <Select<AdminSkillStatus>
+                <DictSelect<AdminSkillStatus>
                   allowClear
                   className="w-36!"
-                  options={statusOptions}
                   placeholder="全部状态"
+                  type="admin_skill_status"
                 />
               </Form.Item>
               <Form.Item name="keyword">

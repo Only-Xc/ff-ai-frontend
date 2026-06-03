@@ -3,8 +3,9 @@ import type { EChartsOption } from 'echarts'
 import ReactECharts from 'echarts-for-react'
 
 import type { OpsMetricsFactoryOutput } from '@/api/ops-metrics'
+import { useDict } from '@ff-ai-frontend/dictionaries'
 
-import { statusColorMap, statusLabelMap, statusOrder } from '../constants'
+import { statusColorMap, statusOrder } from '../constants'
 import type { ChartTheme } from '../types'
 import { numberUtils } from '@ff-ai-frontend/utils'
 import { EmptyBlock } from './EmptyBlock'
@@ -18,6 +19,7 @@ export function FactoryOutputChart({
   chartTheme,
   output,
 }: FactoryOutputChartProps) {
+  const statusDict = useDict('task_status')
   const chartData = useMemo(
     () =>
       statusOrder
@@ -25,12 +27,12 @@ export function FactoryOutputChart({
           itemStyle: {
             color: statusColorMap[status],
           },
-          name: statusLabelMap[status],
+          name: statusDict.label(status),
           status,
           value: output?.by_status?.[status] ?? 0,
         }))
         .filter((item) => item.value > 0),
-    [output?.by_status],
+    [output?.by_status, statusDict],
   )
 
   const total = output?.total_tasks ?? 0
