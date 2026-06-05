@@ -17,7 +17,7 @@ export function createTypeScriptEslintConfig({ tsconfigRootDir }) {
       languageOptions: {
         globals: globals.browser,
         parserOptions: {
-          project: ['./tsconfig.json'],
+          projectService: true,
           tsconfigRootDir,
         },
       },
