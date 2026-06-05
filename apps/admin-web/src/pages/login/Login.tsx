@@ -4,11 +4,11 @@ import {
   SafetyCertificateOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Button, Form, Input, Space, Spin, Typography } from 'antd'
-import { useEffect, useState } from 'react'
+import { Button, Form, Input, Space, Typography } from 'antd'
+import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router'
 
-import { loginWithPassword, testAccessToken } from '@/api/auth'
+import { loginWithPassword } from '@/api/auth'
 import { useAuthStore } from '@/store/useAuth'
 
 import { globalMessage } from '@/utils/message'
@@ -29,51 +29,16 @@ export function LoginPage() {
   const [form] = Form.useForm<LoginFormValues>()
 
   const [submitting, setSubmitting] = useState(false)
-  const accessToken = useAuthStore((state) => state.accessToken)
-  const status = useAuthStore((state) => state.status)
-  const setAuthenticated = useAuthStore((state) => state.setAuthenticated)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
-  const checkingToken = Boolean(accessToken) && status !== 'authenticated'
-
-  useEffect(() => {
-    if (!checkingToken) {
-      return
-    }
-
-    let canceled = false
-
-    void testAccessToken(accessToken)
-      .then((user) => {
-        if (canceled) return
-
-        setAuthenticated(accessToken, user)
-        void navigate('/', { replace: true })
-      })
-      .catch(() => {
-        if (canceled) return
-
-        clearAuth()
-      })
-
-    return () => {
-      canceled = true
-    }
-  }, [
-    accessToken,
-    clearAuth,
-    checkingToken,
-    navigate,
-    setAuthenticated,
-  ])
+  const setToken = useAuthStore((state) => state.setToken)
+  const initialAccessToken = useAuthStore.getState().accessToken
 
   const handleSubmit = async (values: LoginFormValues) => {
     setSubmitting(true)
 
     try {
       const result = await loginWithPassword(values)
-      const user = await testAccessToken(result.accessToken)
 
-      setAuthenticated(result.accessToken, user)
+      setToken(result.accessToken)
       void globalMessage.success('登录成功')
       void navigate('/', { replace: true })
     } finally {
@@ -81,16 +46,8 @@ export function LoginPage() {
     }
   }
 
-  if (status === 'authenticated') {
+  if (initialAccessToken) {
     return <Navigate replace to="/" />
-  }
-
-  if (checkingToken) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-(--bg) text-(--text)">
-        <Spin size="large" description="正在校验登录状态" />
-      </main>
-    )
   }
 
   return (
@@ -142,7 +99,7 @@ export function LoginPage() {
               layout="vertical"
               initialValues={initialValues}
               requiredMark={false}
-              disabled={checkingToken || submitting}
+              disabled={submitting}
               onFinish={(values) => void handleSubmit(values)}
             >
               <Form.Item
@@ -179,7 +136,7 @@ export function LoginPage() {
                   block
                   htmlType="submit"
                   icon={<LoginOutlined />}
-                  loading={checkingToken || submitting}
+                  loading={submitting}
                   size="large"
                   type="primary"
                 >

@@ -1,8 +1,9 @@
-import { BrowserRouter, useRoutes, type RouteObject } from 'react-router'
+import { createBrowserRouter, type RouteObject } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
 
 import { AppLayout } from '@/layouts/AppLayout'
 import { BareLayout } from '@/layouts/BareLayout'
-import { AuthGuard } from './guards/AuthGuard'
+import { authMiddleware } from './middleware/auth'
 import { RouteOutletBoundary } from './runtime/RouteBoundary'
 import { appRoutes } from './routes'
 
@@ -10,37 +11,28 @@ const bareRoutes = appRoutes.filter((route) => route.handle?.layout === false)
 
 const layoutRoutes = appRoutes.filter((route) => route.handle?.layout !== false)
 
-function RouteViews() {
-  return useRoutes([
-    {
-      element: <BareLayout />,
-      children: [
-        {
-          element: <RouteOutletBoundary />,
-          children: bareRoutes as RouteObject[],
-        },
-      ],
-    },
-    {
-      element: (
-        <AuthGuard>
-          <AppLayout />
-        </AuthGuard>
-      ),
-      children: [
-        {
-          element: <RouteOutletBoundary />,
-          children: layoutRoutes as RouteObject[],
-        },
-      ],
-    },
-  ])
-}
+const router = createBrowserRouter([
+  {
+    element: <BareLayout />,
+    children: [
+      {
+        element: <RouteOutletBoundary />,
+        children: bareRoutes as RouteObject[],
+      },
+    ],
+  },
+  {
+    element: <AppLayout />,
+    middleware: [authMiddleware],
+    children: [
+      {
+        element: <RouteOutletBoundary />,
+        children: layoutRoutes as RouteObject[],
+      },
+    ],
+  },
+])
 
 export function AppRouter() {
-  return (
-    <BrowserRouter>
-      <RouteViews />
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />
 }
