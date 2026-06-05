@@ -1,4 +1,9 @@
-import { ApiOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons'
+import {
+  EyeOutlined,
+  ReloadOutlined,
+  StarFilled,
+  StarOutlined,
+} from '@ant-design/icons'
 import {
   Alert,
   Button,
@@ -10,9 +15,9 @@ import {
   Typography,
 } from 'antd'
 import type { TableProps } from 'antd'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 
 import {
   tenantAgentKeys,
@@ -20,15 +25,21 @@ import {
   type AgentStatusFilter,
   type TenantAgent,
 } from '@/api/agent-ticket'
+import {
+  tenantApps_add,
+  tenantApps_delete,
+  type TenantAppQuery,
+} from '@/api/tenant-apps'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useMenuStore } from '@/store/useMenu'
 
 import { AgentStatusTag } from './components/status'
 import { formatDateTime } from './utils/format'
-import { openEndpointUrl } from './utils/openEndpointUrl'
+import { globalMessage } from '@/utils/message'
 
-type AgentFilterValues = {
+interface AgentFilterValues {
   status?: AgentStatusFilter
 }
 
@@ -37,6 +48,7 @@ export function AgentList() {
   const [form] = Form.useForm<AgentFilterValues>()
   const [status, setStatus] = useState<AgentStatusFilter>()
   const pagination = usePaginationParams()
+  const retryMenu = useMenuStore((state) => state.retryMenu)
   const listParams = {
     status: status ?? '',
     ...pagination.query,
@@ -48,16 +60,59 @@ export function AgentList() {
     placeholderData: keepPreviousData,
   })
 
+  const collectMutation = useMutation({
+    mutationFn: (data: TenantAppQuery) => tenantApps_add(data),
+    onSuccess: (_) => {
+      globalMessage.success('收藏成功')
+      void refetch()
+      void retryMenu()
+    },
+  })
+
+  const cancelCollectMutation = useMutation({
+    mutationFn: (id: string) => tenantApps_delete(id),
+    onSuccess: (_) => {
+      globalMessage.success('取消收藏成功')
+      void refetch()
+      void retryMenu()
+    },
+  })
+
+  const collectToggle = useCallback((record: TenantAgent) => {
+    if (record.is_favorited) {
+      cancelCollectMutation.mutate(record.agent_id)
+    } else {
+      collectMutation.mutate({
+        title: record.name,
+        type: 'app',
+        order: 0,
+        agent_id: record.agent_id,
+        icon_url: '',
+      })
+    }
+  }, [cancelCollectMutation, collectMutation])
+
   const columns = useMemo<TableProps<TenantAgent>['columns']>(
     () => [
       {
         title: '应用名称',
         dataIndex: 'name',
-        width: 300,
         ellipsis: true,
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
-            <Typography.Text strong>{value}</Typography.Text>
+            {record.endpoint_url ? (
+              <Tooltip placement="top" title="点击预览">
+                <Typography.Link
+                  href={record.endpoint_url}
+                  target="_blank"
+                  strong
+                >
+                  {value}
+                </Typography.Link>
+              </Tooltip>
+            ) : (
+              <Typography.Text strong>{value}</Typography.Text>
+            )}
             <Typography.Text copyable type="secondary">
               {record.agent_id}
             </Typography.Text>
@@ -67,7 +122,7 @@ export function AgentList() {
       {
         title: '运行状态',
         dataIndex: 'status',
-        width: 120,
+        width: 100,
         render: (_, record) => <AgentStatusTag status={record.status} />,
       },
       {
@@ -85,8 +140,7 @@ export function AgentList() {
       {
         title: '操作',
         key: 'action',
-        fixed: 'right',
-        width: 120,
+        width: 240,
         render: (_, record) => (
           <Space size={4}>
             <Button
@@ -98,27 +152,18 @@ export function AgentList() {
             >
               详情
             </Button>
-            <Tooltip title={record.endpoint_url ? undefined : '无可用地址'}>
-              <span>
-                <Button
-                  disabled={!record.endpoint_url}
-                  icon={<ApiOutlined />}
-                  type="link"
-                  onClick={() => {
-                    if (record.endpoint_url) {
-                      openEndpointUrl(record.endpoint_url)
-                    }
-                  }}
-                >
-                  API 文档
-                </Button>
-              </span>
-            </Tooltip>
+            <Button
+              icon={record.is_favorited ? <StarFilled /> : <StarOutlined />}
+              type="link"
+              onClick={() => collectToggle(record)}
+            >
+              {record.is_favorited ? '取消收藏' : '收藏'}
+            </Button>
           </Space>
         ),
       },
     ],
-    [navigate],
+    [collectToggle, navigate],
   )
 
   return (
@@ -185,7 +230,6 @@ export function AgentList() {
           loading={isFetching}
           pagination={false}
           rowKey="agent_id"
-          scroll={{ x: 1000 }}
         />
       </TableScrollYWrapper>
 

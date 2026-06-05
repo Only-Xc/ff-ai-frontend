@@ -10,6 +10,8 @@ export interface NavTreeItem {
   kind: 'group' | 'submenu' | 'menu'
   path?: string
   icon?: ReactNode
+  disabled?: boolean
+  onClick?: () => void
   children?: NavTreeItem[]
 }
 
@@ -49,6 +51,8 @@ function stripOrder(item: NavTreeItemWithOrder): NavTreeItem {
     kind: item.kind,
     path: item.path,
     icon: item.icon,
+    disabled: item.disabled,
+    onClick: item.onClick,
     children: item.children?.map(stripOrder),
   }
 }
@@ -64,9 +68,7 @@ function collectNavItems(
   function flushSortableItems() {
     if (!sortableItems.length) return
 
-    items.push(
-      ...sortableItems.sort((left, right) => left.order - right.order),
-    )
+    items.push(...sortableItems.sort((left, right) => left.order - right.order))
     sortableItems = []
   }
 
@@ -127,6 +129,21 @@ export function getPathByNavKey(navItems: NavTreeItem[]) {
   return pathByKey
 }
 
+export function getActionByNavKey(navItems: NavTreeItem[]) {
+  const actionByKey = new Map<string, () => void>()
+
+  function collect(items: NavTreeItem[]) {
+    for (const item of items) {
+      if (item.onClick) actionByKey.set(item.key, item.onClick)
+      if (item.children) collect(item.children)
+    }
+  }
+
+  collect(navItems)
+
+  return actionByKey
+}
+
 export function getActiveNavKey(pathname: string, navItems: NavTreeItem[]) {
   const pathEntries = Array.from(getPathByNavKey(navItems).entries())
   const exactMatch = pathEntries.find(([, path]) => path === pathname)
@@ -151,7 +168,10 @@ export function getOpenNavKeys(activeKey: string, navItems: NavTreeItem[]) {
         return true
       }
 
-      if (item.children && findParents(item.children, [...ancestors, item.key])) {
+      if (
+        item.children &&
+        findParents(item.children, [...ancestors, item.key])
+      ) {
         return true
       }
     }

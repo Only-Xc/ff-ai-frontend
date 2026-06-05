@@ -8,6 +8,10 @@ import { Outlet, useLocation } from 'react-router'
 import { useLocale } from '@/i18n/useLocale'
 import { appRoutes } from '@/router/routes'
 import { useAppStore } from '@/store/useApp'
+import {
+  buildSidebarNavItemsWithAppMenu,
+  useMenuStore,
+} from '@/store/useMenu'
 import { getCurrentRouteMeta, getRouteTitle } from '@/utils/routeMeta'
 import { Header } from './components/Header'
 import { buildNavItems, getActiveNavKey } from './components/Sidebar/layoutNav'
@@ -75,7 +79,21 @@ export function AppLayout() {
   const toggleSidebarCollapsed = useAppStore(
     (state) => state.toggleSidebarCollapsed,
   )
-  const navItems = useMemo(() => buildNavItems(appRoutes, t), [t])
+  const menuStatus = useMenuStore((state) => state.status)
+  const appMenuNodes = useMenuStore((state) => state.appMenuNodes)
+  const retryMenu = useMenuStore((state) => state.retryMenu)
+  const staticNavItems = useMemo(() => buildNavItems(appRoutes, t), [t])
+  const navItems = useMemo(
+    () =>
+      buildSidebarNavItemsWithAppMenu(staticNavItems, {
+        appMenuNodes,
+        onRetry: () => {
+          void retryMenu()
+        },
+        status: menuStatus,
+      }),
+    [appMenuNodes, menuStatus, retryMenu, staticNavItems],
+  )
   const activeKey = useMemo(
     () => getActiveNavKey(location.pathname, navItems),
     [location.pathname, navItems],

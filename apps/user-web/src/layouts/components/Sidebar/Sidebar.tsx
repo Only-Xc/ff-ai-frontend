@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import {
+  getActionByNavKey,
   getOpenNavKeys,
   getPathByNavKey,
   type NavTreeItem,
@@ -260,6 +261,7 @@ function toMenuItems(
       key: item.key,
       label: item.label,
       icon: item.icon,
+      disabled: item.disabled,
       children,
       popupClassName: children ? submenuPopupClassName : undefined,
     }
@@ -291,6 +293,10 @@ export function Sidebar({
 
   const pathByKey = useMemo(() => {
     return getPathByNavKey(navItems)
+  }, [navItems])
+
+  const actionByKey = useMemo(() => {
+    return getActionByNavKey(navItems)
   }, [navItems])
 
   return (
@@ -327,6 +333,14 @@ export function Sidebar({
         theme="light"
         onOpenChange={setManualOpenKeys}
         onClick={({ key }) => {
+          const action = actionByKey.get(key)
+
+          if (action) {
+            action()
+            onNavigate?.()
+            return
+          }
+
           const path = pathByKey.get(key)
 
           if (path) {

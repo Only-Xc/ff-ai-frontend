@@ -1,5 +1,4 @@
 import {
-  CodeOutlined,
   DesktopOutlined,
   ProjectOutlined,
   WalletOutlined,
@@ -118,6 +117,17 @@ export const appRoutes: AppRouteObject[] = [
         ],
       },
       {
+        path: '/apps/:taskId',
+        element: lazyLoad(
+          () => import('@/pages/iframe-container/IframeContainerPage'),
+        ),
+        handle: {
+          title: '应用预览',
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
         path: '/billing-center',
         element: lazyLoad(() => import('@/pages/billing-center/BillingCenter')),
         handle: {
@@ -149,10 +159,10 @@ export const appRoutes: AppRouteObject[] = [
         ),
         handle: {
           title: 'SchemaRender 示例',
-          icon: <CodeOutlined />,
           menuType: 'menu',
           navKey: 'schemaRendererDemo',
           navOrder: 3,
+          hideInMenu: true,
           hideInBreadcrumb: true,
         },
       },

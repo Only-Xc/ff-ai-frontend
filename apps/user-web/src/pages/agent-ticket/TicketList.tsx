@@ -26,7 +26,7 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { TaskStatusTag, TaskTypeTag } from './components/status'
 import { formatDateTime } from './utils/format'
 
-type TicketFilterValues = {
+interface TicketFilterValues {
   status?: TaskStatusFilter
 }
 
@@ -56,12 +56,12 @@ export function TicketList() {
             <span className="text-(--text) font-medium">
               {record.web_url ? (
                 <Tooltip placement="top" title="点击预览">
-                  <Typography.Link href={record.web_url} target="_blank">
+                  <Typography.Link href={record.web_url} target="_blank" strong>
                     {value}
                   </Typography.Link>
                 </Tooltip>
               ) : (
-                value
+                <Typography.Text strong>{value}</Typography.Text>
               )}
             </span>
             <Typography.Text copyable className="text-(--muted)! text-[13px]!">

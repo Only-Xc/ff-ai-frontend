@@ -49,6 +49,7 @@ export interface TenantAgent {
   description: string
   endpoint_url: string | null
   last_invoked_at: string | null
+  is_favorited: boolean
 }
 
 export type TenantAgentQuery = {
