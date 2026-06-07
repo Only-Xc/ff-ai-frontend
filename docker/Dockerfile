@@ -3,7 +3,8 @@ FROM node:22-alpine AS base
 ENV TURBO_TELEMETRY_DISABLED=1
 
 RUN npm config set registry https://registry.npmmirror.com
-RUN corepack enable && corepack prepare pnpm@11.3.0 --activate
+RUN npm install -g turbo@2.9.14 && \
+    npm install -g pnpm@11.5.2
 
 FROM base AS pruner
 
@@ -13,7 +14,7 @@ ARG APP_NAME
 
 COPY . .
 
-RUN pnpm turbo prune @ff-ai-frontend/${APP_NAME} --docker
+RUN turbo prune @ff-ai-frontend/${APP_NAME} --docker
 
 FROM base AS builder
 
@@ -21,10 +22,11 @@ WORKDIR /app
 
 ARG APP_NAME
 
+RUN pnpm config set store-dir /pnpm/store
+
 COPY --from=pruner /app/out/json/ .
 
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-  pnpm config set store-dir /pnpm/store && \
   pnpm install --frozen-lockfile --prefer-offline
 
 COPY --from=pruner /app/out/full/ .
