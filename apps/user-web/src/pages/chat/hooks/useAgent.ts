@@ -4,6 +4,7 @@ import type { BubbleItemType } from '@ant-design/x'
 
 import type {
   ChatSummary,
+  ChatTask,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
@@ -25,17 +26,19 @@ interface AgentSenderState {
   onCancel: () => void
 }
 
+export type AgentBubbleItem = BubbleItemType & {
+  task?: ChatTask
+}
+
 export interface AgentTaskConfirmationView extends TaskConfirmationViewState {
   onConfirm: () => void
-  onOpenModal: () => void
-  onCloseModal: () => void
 }
 
 // 提供给页面组件直接消费的对话视图模型。
 export interface AgentConversationState {
   loading: boolean
   messages: UIMessage[]
-  bubbleItems: BubbleItemType[]
+  bubbleItems: AgentBubbleItem[]
   sender: AgentSenderState
   taskConfirmation: AgentTaskConfirmationView
 }
@@ -63,15 +66,14 @@ function canUseTypingEffect(message: UIMessage): boolean {
   )
 }
 
-function toBubbleItem(message: UIMessage): BubbleItemType {
-  return {
+function toBubbleItem(message: UIMessage): AgentBubbleItem {
+  const item: AgentBubbleItem = {
     key: message.id,
-    role:
-      message.kind === 'task-created'
-        ? 'taskCreated'
-        : message.role === 'user'
-          ? 'user'
-          : 'ai',
+    role: message.task
+      ? 'taskCreated'
+      : message.role === 'user'
+        ? 'user'
+        : 'ai',
     content:
       message.kind === 'trace'
         ? (message.traces ?? [message.content]).join('\n')
@@ -81,7 +83,10 @@ function toBubbleItem(message: UIMessage): BubbleItemType {
     typing: canUseTypingEffect(message)
       ? { effect: 'typing', step: 4, interval: 24 }
       : false,
+    ...(message.task ? { task: message.task } : {}),
   }
+
+  return item
 }
 
 export function useAgent(agentClient: AgentClientValue) {
@@ -162,9 +167,7 @@ export function useAgent(agentClient: AgentClientValue) {
   // 当前会话的历史加载和 websocket 实时事件都由 conversation hook 承接。
   const {
     actions: {
-      closeTaskConfirmationModal,
       confirmTask,
-      openTaskConfirmationModal,
       send,
       stop,
     },
@@ -183,7 +186,7 @@ export function useAgent(agentClient: AgentClientValue) {
     onSessionStreamingChange: setSessionStreaming,
   })
 
-  const bubbleItems = useMemo<BubbleItemType[]>(
+  const bubbleItems = useMemo<AgentBubbleItem[]>(
     () => detailMessages.map((message) => toBubbleItem(message)),
     [detailMessages],
   )
@@ -252,8 +255,6 @@ export function useAgent(agentClient: AgentClientValue) {
       taskConfirmation: {
         ...taskConfirmation,
         onConfirm: confirmTask,
-        onOpenModal: openTaskConfirmationModal,
-        onCloseModal: closeTaskConfirmationModal,
       },
       sender: {
         attachments: agentSender.attachments,
@@ -271,11 +272,9 @@ export function useAgent(agentClient: AgentClientValue) {
       agentSender.setInputValue,
       agentSender.submitWithAttachments,
       bubbleItems,
-      closeTaskConfirmationModal,
       confirmTask,
       detailLoading,
       detailMessages,
-      openTaskConfirmationModal,
       senderLoading,
       taskConfirmation,
     ],

@@ -15,7 +15,6 @@ import {
 } from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
 import type {
-  MessageKind,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
@@ -36,10 +35,6 @@ export const EMPTY_HISTORY: SessionHistoryData = {
 }
 
 type UIMessageDraft = Omit<UIMessage, 'id'>
-
-function normalizeMessageKind(kind: string | undefined): MessageKind | null {
-  return kind === 'task-created' ? 'task-created' : null
-}
 
 interface UseConversationHistoryOptions {
   conversationId: string | null
@@ -89,8 +84,6 @@ export function mapSessionMessagesToHistory(
       message.role === 'user' && media?.every((item) => item.kind === 'image')
         ? media.map((item) => ({ url: item.url, name: item.name }))
         : undefined
-    const kind = normalizeMessageKind(message.kind)
-
     return [
       {
         role: message.role,
@@ -100,7 +93,6 @@ export function mapSessionMessagesToHistory(
           : Date.now(),
         ...(images ? { images } : {}),
         ...(media ? { media } : {}),
-        ...(kind ? { kind } : {}),
       },
     ]
   })

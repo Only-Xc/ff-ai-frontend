@@ -2,7 +2,36 @@ export type Role = 'user' | 'assistant' | 'tool' | 'system'
 
 /** "trace" rows are intermediate agent breadcrumbs (tool-call hints,
  * progress pings) that should not be rendered as conversational replies. */
-export type MessageKind = 'message' | 'trace' | 'error' | 'task-created'
+export type MessageKind = 'message' | 'trace' | 'error'
+
+export type ChatTaskStatus =
+  | 'CREATED'
+  | 'ANALYZING'
+  | 'ROUTING'
+  | 'CODING'
+  | 'TESTING'
+  | 'DEPLOYING'
+  | 'COMPLETED'
+  | 'PENDING_APPROVAL'
+  | 'FAILED'
+
+export interface ChatTaskError {
+  stage: string
+  message: string
+}
+
+export interface ChatTask {
+  title: string
+  status: ChatTaskStatus
+  task_id: string
+  tenant_id: string
+  created_at: string
+  updated_at: string
+  last_error: ChatTaskError | null
+  retry_count: number
+  current_node: string
+  web_url?: string | null
+}
 
 /** One image attached to a UIMessage.
  *
@@ -46,6 +75,8 @@ export interface UIMessage {
   media?: UIMediaAttachment[]
   /** Optional answer choices for a pending ask_user question. */
   buttons?: string[][]
+  /** Task-processing bubble payload, keyed by websocket bubbleId. */
+  task?: ChatTask
 }
 
 export interface ChatSummary {
@@ -70,5 +101,4 @@ export interface TaskConfirmationViewState {
       }
     | null
   submitting: boolean
-  modalOpen: boolean
 }

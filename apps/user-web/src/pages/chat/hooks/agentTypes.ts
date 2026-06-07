@@ -1,4 +1,5 @@
 import type { PendingTaskConfirmation } from '@/api/chat'
+import type { ChatTask } from '@/pages/chat/types'
 
 export type ConnectionStatus =
   | 'idle'
@@ -32,7 +33,16 @@ export interface InboundMessageEvent {
   button_prompt?: string
   /** Present when the frame is an agent breadcrumb (e.g. tool hint,
    * generic progress line) rather than a conversational reply. */
-  kind?: 'tool_hint' | 'progress' | 'task-created' | 'task_confirmation' | ''
+  kind?: 'tool_hint' | 'progress' | 'task_confirmation' | ''
+}
+
+export interface InboundTaskProcessingEvent extends ChatTask {
+  event: 'task-created' | 'task-info-update'
+  chat_id: string
+  conversation_id?: string
+  'message-type'?: string
+  bubbleId: string
+  text: string
 }
 
 export interface InboundDeltaEvent {
@@ -88,6 +98,7 @@ export type InboundEvent =
   | InboundRuntimeModelUpdatedEvent
   | InboundAttachedEvent
   | InboundMessageEvent
+  | InboundTaskProcessingEvent
   | InboundDeltaEvent
   | InboundStreamEndEvent
   | InboundTurnEndEvent

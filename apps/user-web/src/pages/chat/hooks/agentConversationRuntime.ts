@@ -26,6 +26,10 @@ export type LiveAction =
       replaceMessageId?: string
     }
   | {
+      type: 'task_message_upserted'
+      message: UIMessage
+    }
+  | {
       type: 'stream_canceled'
       messageId: string
       content: string
@@ -146,6 +150,23 @@ function appendOrReplaceMessage(
   )
 }
 
+function upsertTaskMessage(
+  messages: UIMessage[],
+  action: Extract<LiveAction, { type: 'task_message_upserted' }>,
+): UIMessage[] {
+  const targetIndex = messages.findIndex(
+    (message) => message.id === action.message.id,
+  )
+
+  if (targetIndex === -1) {
+    return [...messages, action.message]
+  }
+
+  return messages.map((message, index) =>
+    index === targetIndex ? action.message : message,
+  )
+}
+
 function discardEmptyStreamingMessage(
   messages: UIMessage[],
   messageId: string | null,
@@ -215,6 +236,15 @@ export function liveReducer(
       ...state,
       messages: appendOrReplaceMessage(state.messages, action),
       hasPendingToolCalls: false,
+    }
+  }
+
+  if (action.type === 'task_message_upserted') {
+    return {
+      ...state,
+      messages: upsertTaskMessage(state.messages, action),
+      hasPendingToolCalls: false,
+      pendingTask: null,
     }
   }
 

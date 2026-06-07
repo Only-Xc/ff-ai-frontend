@@ -5,6 +5,7 @@ import { Result, Spin } from 'antd'
 import { PageContainer } from '@/components/Container'
 import { AgentMsgHistory } from './components/AgentMsgHistory'
 import { AgentConversation } from './components/AgentConversation'
+import { TaskConfirmationSidebar } from './components/TaskConfirmationSidebar'
 
 import { deriveWsUrl } from '@/api/chat'
 import { useAgent } from '@/pages/chat/hooks/useAgent'
@@ -117,8 +118,8 @@ function ChatWorkspace(agentClient: AgentClientValue) {
             onSelect={agent.actions.selectSession}
           />
         </div>
-        <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
-          <div className="overflow-hidden flex-1 min-h-0">
+        <div className="flex flex-1 min-w-0 min-h-0 overflow-hidden">
+          <div className="overflow-hidden flex-1 min-w-0 min-h-0">
             <AgentConversation conversation={agent.conversation} />
             {/* <Splitter
               className="h-full"
@@ -155,6 +156,11 @@ function ChatWorkspace(agentClient: AgentClientValue) {
               </Splitter.Panel>
             </Splitter> */}
           </div>
+          <TaskConfirmationSidebar
+            pending={agent.conversation.taskConfirmation.pendingTask}
+            submitting={agent.conversation.taskConfirmation.submitting}
+            onConfirm={agent.conversation.taskConfirmation.onConfirm}
+          />
         </div>
       </div>
     </PageContainer>

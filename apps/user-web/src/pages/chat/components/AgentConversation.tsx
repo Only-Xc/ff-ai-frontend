@@ -2,8 +2,6 @@ import { Spin } from 'antd'
 import { AgentWelcome } from './AgentWelcome'
 import { AgentMsgList } from './AgentMsgList'
 import { AgentSender } from './AgentSender'
-import { CurrentTaskConfirmationPanel } from './CurrentTaskConfirmationPanel'
-import { TaskConfirmationModal } from './TaskConfirmationModal'
 
 import type { AgentConversationState } from '@/pages/chat/hooks/useAgent'
 
@@ -12,8 +10,7 @@ interface AgentConversationProps {
 }
 
 export function AgentConversation({ conversation }: AgentConversationProps) {
-  const { bubbleItems, loading, messages, sender, taskConfirmation } =
-    conversation
+  const { bubbleItems, loading, messages, sender } = conversation
 
   return (
     <div className="h-full min-h-0 flex flex-col">
@@ -32,13 +29,6 @@ export function AgentConversation({ conversation }: AgentConversationProps) {
       </div>
       <div className="p-2 pt-1">
         <div className="max-w-190 mx-auto">
-          {taskConfirmation.pendingTask ? (
-            <CurrentTaskConfirmationPanel
-              pending={taskConfirmation.pendingTask}
-              submitting={taskConfirmation.submitting}
-              onRequestConfirm={taskConfirmation.onOpenModal}
-            />
-          ) : null}
           <AgentSender
             attachments={sender.attachments}
             loading={sender.loading}
@@ -49,13 +39,6 @@ export function AgentConversation({ conversation }: AgentConversationProps) {
           ></AgentSender>
         </div>
       </div>
-      <TaskConfirmationModal
-        open={taskConfirmation.modalOpen}
-        pending={taskConfirmation.pendingTask}
-        submitting={taskConfirmation.submitting}
-        onConfirm={taskConfirmation.onConfirm}
-        onClose={taskConfirmation.onCloseModal}
-      />
     </div>
   )
 }

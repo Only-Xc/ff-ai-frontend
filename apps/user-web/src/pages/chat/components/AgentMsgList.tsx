@@ -2,7 +2,6 @@ import { memo, useState, useEffect, useMemo, useRef } from 'react'
 import { theme } from 'antd'
 import {
   Bubble,
-  type BubbleItemType,
   Actions,
   type BubbleListProps,
   ThoughtChain,
@@ -11,7 +10,6 @@ import {
   CodeHighlighter,
 } from '@ant-design/x'
 import {
-  CheckCircleOutlined,
   ExclamationCircleOutlined,
   GlobalOutlined,
   RedoOutlined,
@@ -20,6 +18,8 @@ import {
 import { XMarkdown } from '@ant-design/x-markdown'
 import type { ComponentProps } from '@ant-design/x-markdown'
 import { Virtuoso } from 'react-virtuoso'
+import { TaskCard } from './TaskCard'
+import type { AgentBubbleItem } from '@/pages/chat/hooks/useAgent'
 import '@/assets/x-markdown-light.css'
 import '@/assets/x-markdown-dark.css'
 
@@ -178,33 +178,38 @@ type AgentBubbleRole = NonNullable<BubbleListProps['role']>
 type AgentBubbleRoleConfig = AgentBubbleRole[string]
 
 export interface AgentMsgListProps {
-  items: BubbleItemType[]
+  items: AgentBubbleItem[]
 }
 
 interface AgentMessageBubbleProps {
-  item: BubbleItemType
+  item: AgentBubbleItem
   role: AgentBubbleRole
 }
 
 interface RenderedBubbleProps {
-  item: BubbleItemType
+  item: AgentBubbleItem
   roleConfig?: AgentBubbleRoleConfig
 }
 
-function getTypingKey(typing: BubbleItemType['typing']) {
+function getTypingKey(typing: AgentBubbleItem['typing']) {
   if (!typing || typeof typing !== 'object') return String(typing)
 
   return JSON.stringify(typing) ?? ''
 }
 
-function isSameBubbleItem(prev: BubbleItemType, next: BubbleItemType) {
+function getTaskKey(item: AgentBubbleItem) {
+  return item.task ? JSON.stringify(item.task) : ''
+}
+
+function isSameBubbleItem(prev: AgentBubbleItem, next: AgentBubbleItem) {
   return (
     prev.key === next.key &&
     prev.role === next.role &&
     prev.content === next.content &&
     prev.loading === next.loading &&
     prev.streaming === next.streaming &&
-    getTypingKey(prev.typing) === getTypingKey(next.typing)
+    getTypingKey(prev.typing) === getTypingKey(next.typing) &&
+    getTaskKey(prev) === getTaskKey(next)
   )
 }
 
@@ -302,19 +307,18 @@ const AgentMessageBubble = memo(function AgentMessageBubble({
 
   if (bubbleItem.role === 'taskCreated') {
     return (
-      <div className="py-1 text-base">
-        <Bubble.System
-          content={
-            <span className="inline-flex items-center gap-2">
-              <CheckCircleOutlined />
-              <span>{content}</span>
-            </span>
-          }
-          style={{
-            maxWidth: '760px',
-            margin: '0 auto',
-          }}
-        />
+      <div className="mx-auto max-w-100 py-1 text-base">
+        {bubbleItem.task ? (
+          <TaskCard task={bubbleItem.task} />
+        ) : (
+          <Bubble.System
+            content={content}
+            style={{
+              maxWidth: '760px',
+              margin: '0 auto',
+            }}
+          />
+        )}
       </div>
     )
   }
@@ -470,12 +474,12 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
     <div className="min-h-0 flex-1 py-2">
       <Virtuoso
         className="h-full [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--scrollbar-thumb) [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-thumb-hover)"
-        computeItemKey={(_, item: BubbleItemType) => item.key}
+        computeItemKey={(_, item: AgentBubbleItem) => item.key}
         data={items}
         defaultItemHeight={VIRTUOSO_DEFAULT_ITEM_HEIGHT}
         followOutput={(isAtBottom) => (isAtBottom ? 'smooth' : false)}
         increaseViewportBy={VIRTUOSO_VIEWPORT_PRELOAD}
-        itemContent={(_, item: BubbleItemType) => (
+        itemContent={(_, item: AgentBubbleItem) => (
           <AgentMessageBubble item={item} role={role} />
         )}
         overscan={VIRTUOSO_OVERSCAN}
