@@ -20,6 +20,7 @@ import type { ComponentProps } from '@ant-design/x-markdown'
 import { Virtuoso } from 'react-virtuoso'
 import { TaskCard } from './TaskCard'
 import type { AgentBubbleItem } from '@/pages/chat/hooks/useAgent'
+import type { ChatTask } from '@/pages/chat/types'
 import '@/assets/x-markdown-light.css'
 import '@/assets/x-markdown-dark.css'
 
@@ -305,24 +306,6 @@ const AgentMessageBubble = memo(function AgentMessageBubble({
   const roleConfig =
     typeof bubbleItem.role === 'string' ? role[bubbleItem.role] : undefined
 
-  if (bubbleItem.role === 'taskCreated') {
-    return (
-      <div className="mx-auto max-w-100 py-1 text-base">
-        {bubbleItem.task ? (
-          <TaskCard task={bubbleItem.task} />
-        ) : (
-          <Bubble.System
-            content={content}
-            style={{
-              maxWidth: '760px',
-              margin: '0 auto',
-            }}
-          />
-        )}
-      </div>
-    )
-  }
-
   return (
     <div className="py-1 text-base">
       <RenderedBubble item={bubbleItem} roleConfig={roleConfig} />
@@ -423,6 +406,21 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
         },
         extra: (content: string) => (
           <Actions items={userActionItems(content)} />
+        ),
+      },
+      task: {
+        placement: 'start',
+        variant: 'borderless',
+        avatar: <RobotOutlined />,
+        style: {
+          maxWidth: '760px',
+          margin: '0 auto',
+          paddingInline: '8px 0',
+        },
+        contentRender: (content: ChatTask) => (
+          <div className="w-full min-w-90">
+            <TaskCard task={content} />
+          </div>
         ),
       },
       error: {

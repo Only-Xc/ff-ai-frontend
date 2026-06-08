@@ -6,7 +6,6 @@ import {
   useState,
   type RefObject,
 } from 'react'
-import { v4 as uuidV4 } from 'uuid'
 
 import {
   conversations_message,
@@ -15,6 +14,7 @@ import {
 } from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
 import type {
+  ChatTask,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
@@ -33,8 +33,6 @@ export const EMPTY_HISTORY: SessionHistoryData = {
   hasPendingToolCalls: false,
   pendingTask: null,
 }
-
-type UIMessageDraft = Omit<UIMessage, 'id'>
 
 interface UseConversationHistoryOptions {
   conversationId: string | null
@@ -60,14 +58,10 @@ export interface ConversationHistoryApi {
   ) => void
 }
 
-function createHistoryMessageId(): string {
-  return `hist-${uuidV4()}`
-}
-
 export function mapSessionMessagesToHistory(
   body: SessionMessages,
 ): SessionHistoryData {
-  const messageDrafts: UIMessageDraft[] = body.messages.flatMap((message) => {
+  const messages: UIMessage[] = body.messages.flatMap((message) => {
     if (message.role !== 'user' && message.role !== 'assistant') {
       return []
     }
@@ -84,22 +78,25 @@ export function mapSessionMessagesToHistory(
       message.role === 'user' && media?.every((item) => item.kind === 'image')
         ? media.map((item) => ({ url: item.url, name: item.name }))
         : undefined
+    const task =
+      message.role === 'assistant' && message.kind === 'task-created'
+        ? (message.metadata as ChatTask)
+        : null
+
     return [
       {
+        id: message.bubble_id,
         role: message.role,
         content: message.content,
         createdAt: message.timestamp
           ? Date.parse(message.timestamp)
           : Date.now(),
+        ...(task ? { task } : {}),
         ...(images ? { images } : {}),
         ...(media ? { media } : {}),
       },
     ]
   })
-  const messages = messageDrafts.map((message) => ({
-    ...message,
-    id: createHistoryMessageId(),
-  }))
 
   const lastConversationMessage = [...body.messages]
     .reverse()

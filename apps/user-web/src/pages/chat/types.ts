@@ -75,7 +75,7 @@ export interface UIMessage {
   media?: UIMediaAttachment[]
   /** Optional answer choices for a pending ask_user question. */
   buttons?: string[][]
-  /** Task-processing bubble payload, keyed by websocket bubbleId. */
+  /** Task-processing bubble payload, keyed by websocket bubble_id. */
   task?: ChatTask
 }
 

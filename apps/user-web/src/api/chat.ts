@@ -28,14 +28,18 @@ export interface SessionMediaUrl {
 }
 
 export interface SessionMessageItem {
+  bubble_id: string
   role: string // 角色
   content: string // 内容
-  kind?: string
+  metadata?: unknown
+  kind?: string | null
   timestamp?: string // 时间
   tool_calls?: unknown
-  tool_call_id?: string
-  name?: string
-  media_urls?: SessionMediaUrl[]
+  tool_call_id?: string | null
+  name?: string | null
+  reply_to?: string | null
+  media?: string[] | null
+  media_urls?: SessionMediaUrl[] | null
 }
 
 export interface SessionMessages {

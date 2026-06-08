@@ -62,22 +62,19 @@ function canUseTypingEffect(message: UIMessage): boolean {
     message.role === 'assistant' &&
     !message.isStreaming &&
     (!message.kind || message.kind === 'message') &&
-    !message.id.startsWith('hist-')
+    message.id.startsWith('msg-')
   )
 }
 
 function toBubbleItem(message: UIMessage): AgentBubbleItem {
   const item: AgentBubbleItem = {
     key: message.id,
-    role: message.task
-      ? 'taskCreated'
-      : message.role === 'user'
-        ? 'user'
-        : 'ai',
+    role: message.task ? 'task' : message.role === 'user' ? 'user' : 'ai',
     content:
-      message.kind === 'trace'
+      message.task ??
+      (message.kind === 'trace'
         ? (message.traces ?? [message.content]).join('\n')
-        : message.content,
+        : message.content),
     loading: !!message.isStreaming,
     streaming: !!message.isStreaming,
     typing: canUseTypingEffect(message)

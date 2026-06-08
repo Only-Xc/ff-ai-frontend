@@ -220,7 +220,7 @@ export function useAgentConversation({
               }
 
               const messageId =
-                strategyRuntime.buffer?.messageId ?? createMessageId()
+                strategyRuntime.buffer?.messageId ?? event.bubble_id
 
               strategyRuntime.buffer ??= {
                 messageId,
@@ -322,7 +322,7 @@ export function useAgentConversation({
               const nextState = liveReducer(state, {
                 type: 'message_received',
                 message: {
-                  id: createMessageId(),
+                  id: event.bubble_id,
                   role: 'assistant',
                   content: hasButtons
                     ? (event.button_prompt ?? event.text)
@@ -348,6 +348,8 @@ export function useAgentConversation({
               const strategyRuntime =
                 getConversationRuntime(eventConversationId)
               const state = conversationHistory.getHistory(eventConversationId)
+              const streamingMessageId =
+                strategyRuntime.buffer?.messageId ?? null
 
               strategyRuntime.currentRunId = null
               strategyRuntime.buffer = null
@@ -357,10 +359,15 @@ export function useAgentConversation({
                 setTaskConfirmationSubmitting(false)
               }
 
-              return liveReducer(state, {
+              const nextState = liveReducer(state, {
+                type: 'discard_empty_streaming_message',
+                messageId: streamingMessageId,
+              })
+
+              return liveReducer(nextState, {
                 type: 'task_message_upserted',
                 message: {
-                  id: event.bubbleId,
+                  id: event.bubble_id,
                   role: 'assistant',
                   content: event.text,
                   createdAt: Date.parse(event.created_at) || now,
@@ -376,7 +383,7 @@ export function useAgentConversation({
               return liveReducer(state, {
                 type: 'task_message_upserted',
                 message: {
-                  id: event.bubbleId,
+                  id: event.bubble_id,
                   role: 'assistant',
                   content: event.text,
                   createdAt: Date.parse(event.created_at) || now,

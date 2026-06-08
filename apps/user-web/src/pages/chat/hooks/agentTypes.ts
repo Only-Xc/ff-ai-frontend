@@ -23,6 +23,7 @@ export interface InboundAttachedEvent {
 export interface InboundMessageEvent {
   event: 'message'
   chat_id: string
+  bubble_id: string
   run_id?: string
   text: string
   reply_to?: string
@@ -41,13 +42,14 @@ export interface InboundTaskProcessingEvent extends ChatTask {
   chat_id: string
   conversation_id?: string
   'message-type'?: string
-  bubbleId: string
+  bubble_id: string
   text: string
 }
 
 export interface InboundDeltaEvent {
   event: 'delta'
   chat_id: string
+  bubble_id: string
   run_id?: string
   text: string
   stream_id?: string

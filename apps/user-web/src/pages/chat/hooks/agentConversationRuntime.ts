@@ -138,6 +138,16 @@ function appendOrReplaceMessage(
   messages: UIMessage[],
   action: Extract<LiveAction, { type: 'message_received' }>,
 ): UIMessage[] {
+  const matchingIdMessages = replaceMessageById(
+    messages,
+    action.message.id,
+    action.message,
+  )
+
+  if (matchingIdMessages) {
+    return matchingIdMessages
+  }
+
   if (!action.replaceMessageId) {
     return [...messages, action.message]
   }
