@@ -22,13 +22,15 @@ export function TaskConfirmationSidebar({
 }: TaskConfirmationSidebarProps) {
   const { theme: antdTheme, token } = theme.useToken()
   const markdownClassName =
-    antdTheme.id === 0 ? 'x-markdown-light' : 'x-markdown-dark'
+    antdTheme.id === 0
+      ? 'x-markdown-light x-markdown-compact'
+      : 'x-markdown-dark x-markdown-compact'
 
   if (!pending) return null
 
   return (
     <aside
-      className="flex h-full w-96 shrink-0 flex-col border-l border-l-(--ant-color-border-secondary)"
+      className="flex h-full w-120 shrink-0 flex-col border-l border-l-(--ant-color-border-secondary)"
       style={{ background: token.colorBgContainer }}
     >
       <div className="flex shrink-0 items-start gap-3 border-b border-b-(--ant-color-border-secondary) px-4 py-3">
@@ -55,11 +57,9 @@ export function TaskConfirmationSidebar({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto px-4 py-3">
-        <div className="rounded-md border border-(--border) bg-(--panel) px-4 py-3">
-          <XMarkdown paragraphTag="div" className={markdownClassName}>
-            {pending.markdown}
-          </XMarkdown>
-        </div>
+        <XMarkdown paragraphTag="div" className={markdownClassName}>
+          {pending.markdown}
+        </XMarkdown>
       </div>
 
       <div className="flex shrink-0 justify-end border-t border-t-(--ant-color-border-secondary) px-4 py-3">
