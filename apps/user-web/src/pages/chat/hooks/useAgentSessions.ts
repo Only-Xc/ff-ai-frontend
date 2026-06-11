@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
+import type { TFunction } from 'i18next'
 import {
   keepPreviousData,
   useMutation,
@@ -152,12 +153,14 @@ export function useAgentSessions(client: AgentClient): {
   }
 }
 
-export function sessionTitle(session: ChatSummary): string {
+export function sessionTitle(session: ChatSummary, t: TFunction): string {
   // 标题为空时退化成 chatId 短码，保证侧边栏始终有可见标签。
   const content = (session.title ?? session.preview).replace(/\s+/g, ' ').trim()
 
   if (!content) {
-    return `会话 ${session.chatId?.slice(0, 6)}`
+    return t('pages.chat.history.sessionFallback', {
+      id: session.chatId?.slice(0, 6),
+    })
   }
 
   return content.length > 48 ? `${content.slice(0, 45)}...` : content

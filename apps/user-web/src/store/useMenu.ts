@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { tenantApps_menu, type TenantAppMenuNode } from '@/api/tenant-apps'
+import { i18n } from '@/i18n'
 import type { NavTreeItem } from '@/layouts/components/Sidebar/layoutNav'
 
 export type MenuLoadStatus = 'idle' | 'loading' | 'success' | 'error'
@@ -90,7 +91,7 @@ function withWorkspaceNavChildren(
     ...nextItems,
     {
       key: WORKSPACE_NAV_KEY,
-      label: '应用列表',
+      label: i18n.t('pages.menu.appList'),
       kind: 'group',
       children,
     },
@@ -146,7 +147,7 @@ export function buildSidebarNavItemsWithAppMenu(
       : [
           {
             key: APP_MENU_EMPTY_KEY,
-            label: '暂无应用',
+            label: i18n.t('pages.menu.empty'),
             kind: 'menu',
             disabled: true,
           },
@@ -155,7 +156,7 @@ export function buildSidebarNavItemsWithAppMenu(
     appMenuNavItems = [
       {
         key: APP_MENU_RETRY_KEY,
-        label: '加载失败，点击重试',
+        label: i18n.t('pages.menu.retry'),
         kind: 'menu',
         onClick: onRetry,
       },
@@ -164,7 +165,7 @@ export function buildSidebarNavItemsWithAppMenu(
     appMenuNavItems = [
       {
         key: APP_MENU_LOADING_KEY,
-        label: '应用加载中',
+        label: i18n.t('pages.menu.loading'),
         kind: 'menu',
         disabled: true,
       },

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import { v4 as uuidV4 } from 'uuid'
 
 import { splitSessionKey } from '@/api/chat'
+import { i18n } from '@/i18n'
 import { toMediaAttachment } from '@/api/media'
 import type {
   ChatTask,
@@ -271,7 +272,7 @@ export function useAgentConversation({
               return liveReducer(state, {
                 type: 'stream_canceled',
                 messageId: createMessageId(),
-                content: '此条消息已取消',
+                content: i18n.t('pages.chat.message.canceled'),
                 createdAt: now,
               })
             },
@@ -516,7 +517,7 @@ export function useAgentConversation({
       {
         type: 'stream_canceled',
         messageId: createMessageId(),
-        content: '此条消息已取消',
+        content: i18n.t('pages.chat.message.canceled'),
         createdAt: now,
       },
     )

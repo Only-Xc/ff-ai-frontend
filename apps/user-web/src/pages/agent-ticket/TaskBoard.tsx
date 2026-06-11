@@ -16,6 +16,7 @@ import {
   Typography,
 } from 'antd'
 import { createStyles } from 'antd-style'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import type { TaskStatus } from '@/api/agent-ticket'
@@ -78,6 +79,7 @@ const useStyles = createStyles(() => ({
 }))
 
 export function TaskBoard() {
+  const { t } = useTranslation()
   const { styles } = useStyles()
   const screens = Grid.useBreakpoint()
   const navigate = useNavigate()
@@ -87,7 +89,10 @@ export function TaskBoard() {
   if (!taskId) {
     return (
       <DetailPageShell>
-        <Result status="warning" title="缺少工单 ID" />
+        <Result
+          status="warning"
+          title={t('pages.agentTicket.board.missingTaskId')}
+        />
       </DetailPageShell>
     )
   }
@@ -103,10 +108,10 @@ export function TaskBoard() {
               </span>
               <Space direction="vertical" size={8}>
                 <Typography.Title className="!mb-0" level={4}>
-                  动态看板
+                  {t('pages.agentTicket.board.title')}
                 </Typography.Title>
                 <Typography.Text type="secondary">
-                  查看工单从需求分析到交付应用的流转进度。
+                  {t('pages.agentTicket.board.subtitle')}
                 </Typography.Text>
                 <Typography.Text copyable type="secondary">
                   {taskId}
@@ -117,16 +122,18 @@ export function TaskBoard() {
               icon={<ArrowLeftOutlined />}
               onClick={() => void navigate('/agent-ticket/tickets')}
             >
-              返回工单列表
+              {t('pages.agentTicket.board.back')}
             </Button>
           </div>
         </section>
 
         <section className={styles.sectionPanel}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>流转进度</div>
+            <div className={styles.sectionTitle}>
+              {t('pages.agentTicket.board.progress')}
+            </div>
             <div className={styles.sectionSubtitle}>
-              展示需求分析、任务编排、构建交付与完成交付节点。
+              {t('pages.agentTicket.board.progressDescription')}
             </div>
           </div>
           <Steps
@@ -134,23 +141,33 @@ export function TaskBoard() {
             direction={screens.md ? 'horizontal' : 'vertical'}
             items={[
               {
-                title: '需求分析',
-                description: '解析用户目标和交付形态',
+                title: t('pages.agentTicket.board.steps.analysis.title'),
+                description: t(
+                  'pages.agentTicket.board.steps.analysis.description',
+                ),
                 icon: <FileSearchOutlined />,
               },
               {
-                title: '任务编排',
-                description: '匹配执行策略与资源',
+                title: t(
+                  'pages.agentTicket.board.steps.orchestration.title',
+                ),
+                description: t(
+                  'pages.agentTicket.board.steps.orchestration.description',
+                ),
                 icon: <BuildOutlined />,
               },
               {
-                title: '构建交付',
-                description: '生成、测试并部署智能体',
+                title: t('pages.agentTicket.board.steps.delivery.title'),
+                description: t(
+                  'pages.agentTicket.board.steps.delivery.description',
+                ),
                 icon: <CodeOutlined />,
               },
               {
-                title: '完成交付',
-                description: '提供应用入口和 API 文档',
+                title: t('pages.agentTicket.board.steps.complete.title'),
+                description: t(
+                  'pages.agentTicket.board.steps.complete.description',
+                ),
                 icon: <CheckCircleOutlined />,
               },
             ]}
@@ -159,10 +176,15 @@ export function TaskBoard() {
 
         <section className={styles.sectionPanel}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>工单信息</div>
+            <div className={styles.sectionTitle}>
+              {t('pages.agentTicket.board.info')}
+            </div>
           </div>
           <Descriptions bordered column={{ xs: 1, md: 2 }}>
-            <Descriptions.Item label="工单 ID" span={2}>
+            <Descriptions.Item
+              label={t('pages.agentTicket.board.taskId')}
+              span={2}
+            >
               {taskId}
             </Descriptions.Item>
           </Descriptions>

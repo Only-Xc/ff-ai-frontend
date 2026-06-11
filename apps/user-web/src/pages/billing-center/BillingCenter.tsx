@@ -21,6 +21,8 @@ import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { numberUtils } from '@ff-ai-frontend/utils'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 
 import {
   tenantBillingKeys,
@@ -35,6 +37,7 @@ import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { PageHeader } from '@/components/Header'
 import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { i18n } from '@/i18n'
 
 import { BillingMetricCard } from './components/BillingMetricCard'
 import { BillingRecordDetailDrawer } from './components/BillingRecordDetailDrawer'
@@ -52,11 +55,11 @@ const mainMetricAccents = {
   compute_hour: 'var(--orange)',
 }
 
-function getAgentDisplay(record: TenantBillingRecord) {
+function getAgentDisplay(record: TenantBillingRecord, t: TFunction) {
   if (record.agent_name) return record.agent_name
   if (record.agent_id) return record.agent_id
 
-  return '租户级消费'
+  return t('pages.billing.tenantLevelCost')
 }
 
 function formatBillingDateTime(value: string | null | undefined): string {
@@ -66,10 +69,11 @@ function formatBillingDateTime(value: string | null | undefined): string {
 
   if (!date.isValid()) return '-'
 
-  return date.format('YYYY年M月D日 HH:mm')
+  return date.format(i18n.t('common.dateTime.longFormat'))
 }
 
 export function BillingCenter() {
+  const { t } = useTranslation()
   const [form] = Form.useForm<BillingFilterValues>()
   const pagination = usePaginationParams()
   const filterValues = Form.useWatch([], form)
@@ -113,7 +117,7 @@ export function BillingCenter() {
   const columns = useMemo<TableProps<TenantBillingRecord>['columns']>(
     () => [
       {
-        title: '工单',
+        title: t('pages.billing.columns.task'),
         dataIndex: 'task_id',
         width: 260,
         render: (value: string | null) => (
@@ -121,13 +125,13 @@ export function BillingCenter() {
         ),
       },
       {
-        title: '资源类型',
+        title: t('pages.billing.columns.resourceType'),
         dataIndex: 'resource_type',
         width: 140,
         render: (_, record) => <ResourceTypeTag type={record.resource_type} />,
       },
       {
-        title: '消费数量',
+        title: t('pages.billing.columns.amount'),
         dataIndex: 'amount',
         width: 150,
         render: (_, record) =>
@@ -137,7 +141,7 @@ export function BillingCenter() {
           }),
       },
       {
-        title: '折算费用',
+        title: t('pages.billing.columns.cost'),
         dataIndex: 'cost',
         width: 130,
         render: (value: number) => (
@@ -149,13 +153,15 @@ export function BillingCenter() {
         ),
       },
       {
-        title: '智能体',
+        title: t('pages.billing.columns.agent'),
         dataIndex: 'agent_name',
         width: 260,
         ellipsis: true,
         render: (_, record) => (
           <Space orientation="vertical" size={2}>
-            <Typography.Text strong>{getAgentDisplay(record)}</Typography.Text>
+            <Typography.Text strong>
+              {getAgentDisplay(record, t)}
+            </Typography.Text>
             {record.agent_id ? (
               <Typography.Text copyable type="secondary">
                 {record.agent_id}
@@ -165,18 +171,18 @@ export function BillingCenter() {
         ),
       },
       {
-        title: '描述',
+        title: t('pages.billing.columns.description'),
         dataIndex: 'description',
         render: (value: string | null) => value,
       },
       {
-        title: '消费时间',
+        title: t('pages.billing.columns.createdAt'),
         dataIndex: 'created_at',
         width: 180,
         render: (value: string) => formatBillingDateTime(value),
       },
       {
-        title: '操作',
+        title: t('pages.billing.columns.action'),
         key: 'action',
         fixed: 'right',
         width: 96,
@@ -185,12 +191,12 @@ export function BillingCenter() {
             type="link"
             onClick={() => setSelectedRecordId(record.record_id)}
           >
-            详情
+            {t('common.actions.detail')}
           </Button>
         ),
       },
     ],
-    [],
+    [t],
   )
 
   const balance = balanceQuery.data
@@ -199,34 +205,36 @@ export function BillingCenter() {
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
-        subtitle="查看资源余额、分项额度、消费总额和消费明细。"
-        title="账单中心"
+        subtitle={t('pages.billing.subtitle')}
+        title={t('pages.billing.title')}
       >
         <span className="inline-flex min-h-7 w-fit items-center gap-1.5 whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--border)_74%,transparent)] bg-[color-mix(in_srgb,var(--panel)_78%,transparent)] px-2.5 py-1 text-xs leading-tight text-(--muted) shadow-[0_1px_0_rgb(15_23_42/0.03)] backdrop-blur-md">
           <ClockCircleOutlined className="text-[12px]" />
-          余额更新时间：{formatBillingDateTime(balance?.updated_at)}
+          {t('pages.billing.balanceUpdatedAt', {
+            time: formatBillingDateTime(balance?.updated_at),
+          })}
         </span>
       </PageHeader>
 
       <div className="mb-3 grid grid-cols-6 gap-3 max-[1280px]:grid-cols-3 max-[768px]:grid-cols-2 max-[640px]:grid-cols-1">
         <BillingMetricCard
           accent={mainMetricAccents.balance}
-          caption="可用额度"
+          caption={t('pages.billing.metrics.availableBalance')}
           icon={<WalletOutlined />}
           loading={balanceQuery.isFetching}
           prefix="¥"
-          title="租户总余额"
+          title={t('pages.billing.metrics.tenantBalance')}
           value={numberUtils.formatNumber(balance?.balance, {
             decimals: 2,
           })}
         />
         <BillingMetricCard
           accent={mainMetricAccents.cost}
-          caption="筛选口径"
+          caption={t('pages.billing.metrics.filterScope')}
           icon={<BarChartOutlined />}
           loading={recordsIsFetching}
           prefix="¥"
-          title="当前消费"
+          title={t('pages.billing.metrics.currentCost')}
           value={numberUtils.formatNumber(totalCost, {
             decimals: 2,
           })}
@@ -236,7 +244,7 @@ export function BillingCenter() {
           icon={<CreditCardOutlined />}
           loading={balanceQuery.isFetching}
           prefix="¥"
-          title="Token 余额"
+          title={t('pages.billing.metrics.tokenBalance')}
           value={numberUtils.formatNumber(
             balance?.balance_by_type.compute_token,
             {
@@ -249,8 +257,8 @@ export function BillingCenter() {
           icon={<CreditCardOutlined />}
           loading={balanceQuery.isFetching}
           prefix="¥"
-          suffix="/ 月"
-          title="存储空间余额"
+          suffix={t('pages.billing.units.perMonth')}
+          title={t('pages.billing.metrics.storageBalance')}
           value={numberUtils.formatNumber(balance?.balance_by_type.storage_gb, {
             decimals: 2,
           })}
@@ -261,7 +269,7 @@ export function BillingCenter() {
           loading={balanceQuery.isFetching}
           prefix="¥"
           suffix="/ GB"
-          title="网络出流量余额"
+          title={t('pages.billing.metrics.networkBalance')}
           value={numberUtils.formatNumber(
             balance?.balance_by_type.network_egress_gb,
             {
@@ -273,8 +281,8 @@ export function BillingCenter() {
           accent={mainMetricAccents.compute_hour}
           icon={<CreditCardOutlined />}
           loading={balanceQuery.isFetching}
-          suffix="核时"
-          title="计算核时余额"
+          suffix={t('pages.billing.units.coreHour')}
+          title={t('pages.billing.metrics.computeHourBalance')}
           value={numberUtils.formatNumber(
             balance?.balance_by_type.compute_hour,
             {
@@ -295,10 +303,10 @@ export function BillingCenter() {
                   size="small"
                   onClick={() => void balanceQuery.refetch()}
                 >
-                  重试
+                  {t('common.actions.retry')}
                 </Button>
               }
-              title="租户余额加载失败"
+              title={t('pages.billing.errors.balanceLoadFailed')}
               type="error"
             />
           ) : null}
@@ -309,7 +317,7 @@ export function BillingCenter() {
                 <DictSelect<BillingResourceType>
                   allowClear
                   className="w-46"
-                  placeholder="全部资源类型"
+                  placeholder={t('pages.billing.filters.allResourceTypes')}
                   type="billing_resource_type"
                 />
               </Form.Item>
@@ -317,7 +325,7 @@ export function BillingCenter() {
                 <Input
                   allowClear
                   className="w-56"
-                  placeholder="智能体应用 ID"
+                  placeholder={t('pages.billing.filters.agentId')}
                 />
               </Form.Item>
               <Form.Item name="date_range">
@@ -331,7 +339,7 @@ export function BillingCenter() {
                       pagination.reset()
                     }}
                   >
-                    重置
+                    {t('common.actions.reset')}
                   </Button>
                   <Button
                     icon={<ReloadOutlined />}
@@ -339,7 +347,7 @@ export function BillingCenter() {
                     type="primary"
                     onClick={handleRefresh}
                   >
-                    刷新
+                    {t('common.actions.refresh')}
                   </Button>
                 </Space>
               </Form.Item>
@@ -352,10 +360,10 @@ export function BillingCenter() {
               className="mx-5 mb-4"
               action={
                 <Button size="small" onClick={() => void refetchRecords()}>
-                  重试
+                  {t('common.actions.retry')}
                 </Button>
               }
-              title="消费明细加载失败"
+              title={t('pages.billing.errors.recordsLoadFailed')}
               type="error"
             />
           ) : null}
@@ -377,7 +385,9 @@ export function BillingCenter() {
 
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
           <Typography.Text className="text-(--muted)!">
-            共 {recordsData?.count ?? 0} 条
+            {t('common.labels.totalCount', {
+              total: recordsData?.count ?? 0,
+            })}
           </Typography.Text>
           <Pagination {...pagination.props} total={recordsData?.count ?? 0} />
         </div>

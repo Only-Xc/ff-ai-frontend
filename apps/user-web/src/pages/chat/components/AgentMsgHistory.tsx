@@ -4,6 +4,8 @@ import { Conversations } from '@ant-design/x'
 import type { GetProp, MenuProps } from 'antd'
 import { Empty, Spin, theme } from 'antd'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 import type { ChatSummary } from '@/pages/chat/types'
 import { sessionTitle } from '@/pages/chat/hooks/useAgentSessions'
@@ -18,23 +20,23 @@ interface AgentMsgHistoryProps {
   onDelete: (key: string) => void
 }
 
-function groupLabel(session: ChatSummary): string {
+function groupLabel(session: ChatSummary, t: TFunction): string {
   const dateText = session.updatedAt ?? session.createdAt
   const date = dateText ? dayjs(dateText) : null
 
   if (!date?.isValid()) {
-    return '更早'
+    return t('pages.chat.history.older')
   }
 
   if (date.isSame(dayjs(), 'day')) {
-    return '今天'
+    return t('pages.chat.history.today')
   }
 
   if (date.isSame(dayjs().subtract(1, 'day'), 'day')) {
-    return '昨天'
+    return t('pages.chat.history.yesterday')
   }
 
-  return '更早'
+  return t('pages.chat.history.older')
 }
 
 export function AgentMsgHistory({
@@ -46,6 +48,7 @@ export function AgentMsgHistory({
   sessions,
   streamingChatIdSet,
 }: AgentMsgHistoryProps) {
+  const { t } = useTranslation()
   const { token } = theme.useToken()
   const style = {
     width: '100%',
@@ -59,16 +62,16 @@ export function AgentMsgHistory({
       key: session.key,
       label: (
         <span className="flex min-w-0 items-center gap-2">
-          <span className="truncate">{sessionTitle(session)}</span>
+          <span className="truncate">{sessionTitle(session, t)}</span>
           {streamingChatIdSet.has(session.chatId) ? (
             <span className="inline-flex shrink-0 items-center gap-1 text-xs text-(--ant-color-text-description)">
               <Spin size="small" />
-              <span>生成中</span>
+              <span>{t('pages.chat.history.generating')}</span>
             </span>
           ) : null}
         </span>
       ),
-      group: groupLabel(session),
+      group: groupLabel(session, t),
     }),
   )
 
@@ -78,7 +81,7 @@ export function AgentMsgHistory({
         key: 'delete',
         danger: true,
         icon: <DeleteOutlined />,
-        label: '删除',
+        label: t('pages.chat.history.delete'),
       },
     ],
     onClick: (info) => {
@@ -96,7 +99,7 @@ export function AgentMsgHistory({
       </>
     ),
     collapsible: (group) => {
-      return group !== '今天'
+      return group !== t('pages.chat.history.today')
     },
   }
 
@@ -107,7 +110,7 @@ export function AgentMsgHistory({
       <Conversations
         activeKey={activeKey ?? undefined}
         creation={{
-          label: '新建对话',
+          label: t('pages.chat.history.newChat'),
           align: 'start',
           icon: <FormOutlined />,
           onClick: onNewChat,
@@ -128,9 +131,9 @@ export function AgentMsgHistory({
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 <span>
-                  暂无会话
+                  {t('pages.chat.history.empty')}
                   <br />
-                  （请点击新建）
+                  {t('pages.chat.history.emptyHint')}
                 </span>
               }
               className="mt-8"

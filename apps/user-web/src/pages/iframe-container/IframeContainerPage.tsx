@@ -3,6 +3,7 @@ import { Button, Result, Spin } from 'antd'
 import { createStyles } from 'antd-style'
 import { PageContainer } from '@/components/Container'
 import WujieReact from '@/components/WujieReact'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import { useMenuStore } from '@/store/useMenu'
@@ -43,6 +44,7 @@ function getLocalApiPreviewUrl(previewUrl: string) {
 }
 
 export function IframeContainerPage() {
+  const { t } = useTranslation()
   const { styles } = useStyles()
   const navigate = useNavigate()
   const { taskId } = useParams()
@@ -60,10 +62,10 @@ export function IframeContainerPage() {
     return (
       <Result
         status="warning"
-        title="缺少应用 ID"
+        title={t('pages.iframe.missingAppId')}
         extra={
           <Button type="primary" onClick={() => void navigate('/chat')}>
-            返回工作台
+            {t('pages.iframe.backToWorkspace')}
           </Button>
         }
       />
@@ -74,14 +76,14 @@ export function IframeContainerPage() {
     return (
       <Result
         status="error"
-        title="应用菜单加载失败"
+        title={t('pages.iframe.menuLoadFailed')}
         extra={
           <Button
             icon={<ReloadOutlined />}
             type="primary"
             onClick={() => void retryMenu()}
           >
-            重试
+            {t('common.actions.retry')}
           </Button>
         }
       />
@@ -92,7 +94,7 @@ export function IframeContainerPage() {
     return (
       <div className={styles.root}>
         <div className={styles.loading}>
-          <Spin description="应用加载中" />
+          <Spin description={t('pages.iframe.loading')} />
         </div>
       </div>
     )
@@ -102,11 +104,11 @@ export function IframeContainerPage() {
     return (
       <Result
         status="404"
-        title="应用不存在"
-        subTitle="当前应用未出现在应用菜单中。"
+        title={t('pages.iframe.notFound')}
+        subTitle={t('pages.iframe.notFoundSubtitle')}
         extra={
           <Button type="primary" onClick={() => void navigate('/chat')}>
-            返回工作台
+            {t('pages.iframe.backToWorkspace')}
           </Button>
         }
       />

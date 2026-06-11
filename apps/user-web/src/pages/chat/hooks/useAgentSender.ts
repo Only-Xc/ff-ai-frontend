@@ -5,6 +5,7 @@ import type { AxiosProgressEvent } from 'axios'
 
 import { v4 as uuidV4 } from 'uuid'
 import { fileUpload, type FileUploadResponse } from '@/api/file'
+import { i18n } from '@/i18n'
 import { globalMessage } from '@/utils/message'
 
 export interface AgentSubmitPayload {
@@ -96,13 +97,18 @@ export function useAgentSender(
       const file = uploadOptions.file
 
       if (!(file instanceof File)) {
-        uploadOptions.onError?.(new Error('请选择有效文件'))
+        uploadOptions.onError?.(
+          new Error(i18n.t('pages.chat.sender.errors.invalidFile')),
+        )
         return
       }
 
       if (!isAllowedAttachmentFile(file)) {
+        const separator = i18n.language.startsWith('zh') ? '、' : ', '
         const error = new Error(
-          `仅支持上传 ${ALLOWED_ATTACHMENT_EXTENSIONS.join('、')} 格式的文件`,
+          i18n.t('pages.chat.sender.errors.allowedFiles', {
+            extensions: ALLOWED_ATTACHMENT_EXTENSIONS.join(separator),
+          }),
         )
 
         globalMessage.warning(error.message)
@@ -164,7 +170,9 @@ export function useAgentSender(
         uploadOptions.onSuccess?.(response)
       } catch (error) {
         const uploadError =
-          error instanceof Error ? error : new Error('附件上传失败')
+          error instanceof Error
+            ? error
+            : new Error(i18n.t('pages.chat.sender.errors.uploadFailed'))
 
         setAttachedFiles((files) =>
           upsertAttachmentFile(files, {
@@ -177,7 +185,7 @@ export function useAgentSender(
           }),
         )
         uploadOptions.onError?.(uploadError)
-        globalMessage.error('附件上传失败')
+        globalMessage.error(i18n.t('pages.chat.sender.errors.uploadFailed'))
       }
     },
     [],
@@ -214,12 +222,14 @@ export function useAgentSender(
   const submitWithAttachments = useCallback(
     (message: string) => {
       if (uploading) {
-        globalMessage.warning('附件上传中，请稍后再发送')
+        globalMessage.warning(i18n.t('pages.chat.sender.errors.uploading'))
         return
       }
 
       if (hasUploadError) {
-        globalMessage.warning('请移除上传失败的附件后再发送')
+        globalMessage.warning(
+          i18n.t('pages.chat.sender.errors.removeFailedBeforeSend'),
+        )
         return
       }
 

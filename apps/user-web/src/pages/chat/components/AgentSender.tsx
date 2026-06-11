@@ -1,5 +1,6 @@
 import { PaperClipOutlined } from '@ant-design/icons'
 import { Attachments, Sender, type SenderProps } from '@ant-design/x'
+import { useTranslation } from 'react-i18next'
 
 import type { UseAgentSenderResult } from '@/pages/chat/hooks/useAgentSender'
 
@@ -9,6 +10,7 @@ type AgentSenderProps = Omit<SenderProps, 'onSubmit'> & {
 }
 
 export function AgentSender({ attachments, ...props }: AgentSenderProps) {
+  const { t } = useTranslation()
   const {
     accept,
     files,
@@ -22,12 +24,21 @@ export function AgentSender({ attachments, ...props }: AgentSenderProps) {
   const hasAttachments = attachedCount > 0
   const attachmentActive = open || hasAttachments || uploading
   const attachmentButtonLabel = hasAttachments
-    ? `${open ? '收起' : '展开'}附件，已添加 ${attachedCount} 个`
-    : `${open ? '收起' : '添加'}附件`
+    ? t('pages.chat.sender.attachmentsAdded', {
+        action: open
+          ? t('pages.chat.sender.actions.collapse')
+          : t('pages.chat.sender.actions.expand'),
+        count: attachedCount,
+      })
+    : t('pages.chat.sender.attachmentsToggle', {
+        action: open
+          ? t('pages.chat.sender.actions.collapse')
+          : t('pages.chat.sender.actions.add'),
+      })
 
   const senderHeader = (
     <Sender.Header
-      title="附件"
+      title={t('pages.chat.sender.attachments')}
       open={open}
       onOpenChange={setOpen}
       styles={{ content: { padding: 0 } }}
@@ -41,11 +52,11 @@ export function AgentSender({ attachments, ...props }: AgentSenderProps) {
         onRemove={onRemove}
         placeholder={(type) =>
           type === 'drop'
-            ? { title: '拖拽文件到这里' }
+            ? { title: t('pages.chat.sender.dropHere') }
             : {
                 icon: <PaperClipOutlined />,
-                title: '上传文件',
-                description: '点击或拖拽文件到这里',
+                title: t('pages.chat.sender.uploadFile'),
+                description: t('pages.chat.sender.uploadDescription'),
               }
         }
       />
@@ -70,7 +81,7 @@ export function AgentSender({ attachments, ...props }: AgentSenderProps) {
           ].join(' ')}
         >
           <PaperClipOutlined className="text-[15px]" />
-          <span>附件</span>
+          <span>{t('pages.chat.sender.attachments')}</span>
           {uploading ? (
             <span
               aria-hidden
@@ -85,7 +96,9 @@ export function AgentSender({ attachments, ...props }: AgentSenderProps) {
         </button>
       </div>
       <div className="flex items-center gap-1">
-        <span className="text-[11px] text-(--muted)">⌘/Ctrl + Enter 发送</span>
+        <span className="text-[11px] text-(--muted)">
+          {t('pages.chat.sender.shortcut')}
+        </span>
         {actionNode}
       </div>
     </div>
@@ -97,7 +110,7 @@ export function AgentSender({ attachments, ...props }: AgentSenderProps) {
         header={senderHeader}
         footer={senderFooter}
         allowSpeech
-        placeholder="提问或输入..."
+        placeholder={t('pages.chat.sender.placeholder')}
         suffix={false}
         {...props}
         loading={uploading ? true : props.loading}

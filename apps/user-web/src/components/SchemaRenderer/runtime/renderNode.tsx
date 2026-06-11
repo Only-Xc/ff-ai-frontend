@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import { i18n } from '@/i18n'
+
 import { RenderErrorBlock } from '../components/RenderErrorBlock'
 import { componentRegistry } from '../registry/componentRegistry'
 import { normalizeProps } from './normalizeProps'
@@ -15,7 +17,7 @@ export function renderNode(
     return (
       <RenderErrorBlock
         key={node.id}
-        title={`节点渲染失败：${node.id}`}
+        title={i18n.t('pages.schema.nodeRenderFailed', { id: node.id })}
         errors={nodeErrors}
       />
     )
@@ -31,7 +33,9 @@ export function renderNode(
           {
             scope: 'node',
             code: 'node.component',
-            message: `组件未注册：${node.component}`,
+            message: i18n.t('pages.schema.componentUnregistered', {
+              component: node.component,
+            }),
             path: `node.${node.id}.component`,
             nodeId: node.id,
           },

@@ -1,4 +1,4 @@
-import { memo, useState, useEffect, useMemo, useRef } from 'react'
+import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { theme } from 'antd'
 import {
   Bubble,
@@ -18,6 +18,7 @@ import {
 import { XMarkdown } from '@ant-design/x-markdown'
 import type { ComponentProps } from '@ant-design/x-markdown'
 import { Virtuoso } from 'react-virtuoso'
+import { useTranslation } from 'react-i18next'
 import { TaskCard } from './TaskCard'
 import type { AgentBubbleItem } from '@/pages/chat/hooks/useAgent'
 import type { ChatTask } from '@/pages/chat/types'
@@ -92,37 +93,44 @@ const DARK_CODE_HIGHLIGHTER_STYLE = {
 
 const THOUGHT_CHAIN_CONFIG = {
   loading: {
-    title: '正在调用模型',
+    titleKey: 'pages.chat.message.thought.loading',
     status: 'loading',
   },
   updating: {
-    title: '正在调用模型',
+    titleKey: 'pages.chat.message.thought.loading',
     status: 'loading',
   },
   success: {
-    title: '大模型执行完成',
+    titleKey: 'pages.chat.message.thought.success',
     status: 'success',
   },
   error: {
-    title: '执行失败',
+    titleKey: 'pages.chat.message.thought.error',
     status: 'error',
   },
   abort: {
-    title: '已经终止',
+    titleKey: 'pages.chat.message.thought.abort',
     status: 'abort',
   },
 }
 
 const ThinkComponent = memo((props: ComponentProps) => {
-  const [title, setTitle] = useState(`'深度思考中'...`)
+  const { t } = useTranslation()
+  const [title, setTitle] = useState(() =>
+    t('pages.chat.message.think.loading'),
+  )
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (props.streamStatus === 'done') {
-      setTitle('深度思考完成')
+      setTitle(t('pages.chat.message.think.done'))
       setLoading(false)
+      return
     }
-  }, [props.streamStatus])
+
+    setTitle(t('pages.chat.message.think.loading'))
+    setLoading(true)
+  }, [props.streamStatus, t])
 
   return (
     <Think title={title} loading={loading}>
@@ -321,31 +329,38 @@ function areMessageBubblePropsEqual(
 }
 
 export function AgentMsgList({ items }: AgentMsgListProps) {
+  const { t } = useTranslation()
   const { theme: antdTheme, token } = theme.useToken()
   const isDark = antdTheme.id !== 0
 
-  const aiActionItems = (content: string) => [
-    {
-      key: 'copy',
-      actionRender: () => {
-        return <Actions.Copy text={content} />
+  const aiActionItems = useCallback(
+    (content: string) => [
+      {
+        key: 'copy',
+        actionRender: () => {
+          return <Actions.Copy text={content} />
+        },
       },
-    },
-    {
-      key: 'retry',
-      icon: <RedoOutlined />,
-      label: '刷新',
-    },
-  ]
+      {
+        key: 'retry',
+        icon: <RedoOutlined />,
+        label: t('common.actions.refresh'),
+      },
+    ],
+    [t],
+  )
 
-  const userActionItems = (content: string) => [
-    {
-      key: 'copy',
-      actionRender: () => {
-        return <Actions.Copy text={content} />
+  const userActionItems = useCallback(
+    (content: string) => [
+      {
+        key: 'copy',
+        actionRender: () => {
+          return <Actions.Copy text={content} />
+        },
       },
-    },
-  ]
+    ],
+    [],
+  )
 
   const role = useMemo<AgentBubbleRole>(() => {
     const className = isDark ? 'x-markdown-dark' : 'x-markdown-light'
@@ -371,7 +386,7 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
               status={config.status as ThoughtChainItemProps['status']}
               variant="solid"
               icon={<GlobalOutlined />}
-              title={config.title}
+              title={t(config.titleKey)}
             />
           ) : null
         },
@@ -437,7 +452,7 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
             className="mb-2 text-sm font-medium"
             style={{ color: token.colorError }}
           >
-            执行失败
+            {t('pages.chat.message.errorHeader')}
           </div>
         ),
         footer: (content: string) => (
@@ -461,11 +476,14 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
     }
   }, [
     isDark,
+    aiActionItems,
+    t,
     token.borderRadiusLG,
     token.colorError,
     token.colorErrorBg,
     token.colorErrorBorder,
     token.colorErrorText,
+    userActionItems,
   ])
 
   return (

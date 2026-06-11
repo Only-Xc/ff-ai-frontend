@@ -1,5 +1,18 @@
 export default {
   'common.appTitle': 'AI 应用平台',
   'common.appSubtitle': 'AI APP PLATFORM',
+  'common.actions.refresh': '刷新',
+  'common.actions.retry': '重试',
+  'common.actions.reset': '重置',
+  'common.actions.save': '保存',
+  'common.actions.detail': '详情',
+  'common.actions.delete': '删除',
+  'common.labels.totalCount': '共 {{total}} 条',
+  'common.errors.noPermission': '无权限访问',
+  'common.errors.serverError': '服务异常，请稍后重试',
+  'common.errors.requestFailed': '请求失败，请稍后重试',
+  'common.errors.authMissingToken': '登录响应缺少 access_token',
+  'common.empty.chartData': '暂无图表数据',
+  'common.dateTime.longFormat': 'YYYY年M月D日 HH:mm',
   'common.user.logout': '退出登录',
 }

@@ -1,3 +1,5 @@
+import { i18n } from '@/i18n'
+
 import { isRecord } from '../runtime/normalizeProps'
 import type { SchemaComponentValidateContext } from '../types'
 
@@ -8,14 +10,14 @@ export function validateGridLayoutProps(
   if (props.columns !== undefined && !isGridColumns(props.columns)) {
     context.addError(
       'props.columns',
-      'columns 必须是 1 到 24 之间的数字',
+      i18n.t('pages.schema.errors.gridColumns'),
       'columns',
     )
   }
   if (props.gutter !== undefined && !isGutter(props.gutter)) {
     context.addError(
       'props.gutter',
-      'gutter 必须是数字或两个数字组成的数组',
+      i18n.t('pages.schema.errors.gutter'),
       'gutter',
     )
   }
@@ -23,7 +25,11 @@ export function validateGridLayoutProps(
     props.span !== undefined &&
     (!Array.isArray(props.span) || !props.span.every(isPositiveNumber))
   ) {
-    context.addError('props.span', 'span 必须是数字数组', 'span')
+    context.addError(
+      'props.span',
+      i18n.t('pages.schema.errors.span'),
+      'span',
+    )
   }
 }
 
@@ -32,7 +38,11 @@ export function validateHeaderProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (typeof props.title !== 'string') {
-    context.addError('props.title', 'title 必须是字符串', 'title')
+    context.addError(
+      'props.title',
+      i18n.t('pages.schema.errors.string', { field: 'title' }),
+      'title',
+    )
   }
   if (
     props.description !== undefined &&
@@ -40,12 +50,16 @@ export function validateHeaderProps(
   ) {
     context.addError(
       'props.description',
-      'description 必须是字符串',
+      i18n.t('pages.schema.errors.string', { field: 'description' }),
       'description',
     )
   }
   if (props.level !== undefined && !isHeadingLevel(props.level)) {
-    context.addError('props.level', 'level 必须是 1 到 5 之间的数字', 'level')
+    context.addError(
+      'props.level',
+      i18n.t('pages.schema.errors.headingLevel'),
+      'level',
+    )
   }
 }
 
@@ -54,10 +68,18 @@ export function validatePanelCardProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (props.title !== undefined && typeof props.title !== 'string') {
-    context.addError('props.title', 'title 必须是字符串', 'title')
+    context.addError(
+      'props.title',
+      i18n.t('pages.schema.errors.string', { field: 'title' }),
+      'title',
+    )
   }
   if (props.bordered !== undefined && typeof props.bordered !== 'boolean') {
-    context.addError('props.bordered', 'bordered 必须是布尔值', 'bordered')
+    context.addError(
+      'props.bordered',
+      i18n.t('pages.schema.errors.boolean', { field: 'bordered' }),
+      'bordered',
+    )
   }
   if (
     props.size !== undefined &&
@@ -67,7 +89,7 @@ export function validatePanelCardProps(
   ) {
     context.addError(
       'props.size',
-      'size 必须是 default、medium 或 small',
+      i18n.t('pages.schema.errors.panelSize'),
       'size',
     )
   }
@@ -78,7 +100,11 @@ export function validateMarkdownBlockProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (typeof props.content !== 'string') {
-    context.addError('props.content', 'content 必须是字符串', 'content')
+    context.addError(
+      'props.content',
+      i18n.t('pages.schema.errors.string', { field: 'content' }),
+      'content',
+    )
   }
 }
 
@@ -87,13 +113,25 @@ export function validateMetricStatisticProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (typeof props.title !== 'string') {
-    context.addError('props.title', 'title 必须是字符串', 'title')
+    context.addError(
+      'props.title',
+      i18n.t('pages.schema.errors.string', { field: 'title' }),
+      'title',
+    )
   }
   if (typeof props.value !== 'string' && typeof props.value !== 'number') {
-    context.addError('props.value', 'value 必须是字符串或数字', 'value')
+    context.addError(
+      'props.value',
+      i18n.t('pages.schema.errors.value'),
+      'value',
+    )
   }
   if (props.precision !== undefined && !isFiniteNumber(props.precision)) {
-    context.addError('props.precision', 'precision 必须是数字', 'precision')
+    context.addError(
+      'props.precision',
+      i18n.t('pages.schema.errors.number', { field: 'precision' }),
+      'precision',
+    )
   }
   if (
     props.status !== undefined &&
@@ -102,7 +140,11 @@ export function validateMetricStatisticProps(
     props.status !== 'error' &&
     props.status !== 'default'
   ) {
-    context.addError('props.status', 'status 不在允许范围内', 'status')
+    context.addError(
+      'props.status',
+      i18n.t('pages.schema.errors.metricStatus'),
+      'status',
+    )
   }
 }
 
@@ -111,15 +153,23 @@ export function validateDataTableProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (!Array.isArray(props.columns) || !props.columns.every(isTableColumn)) {
-    context.addError('props.columns', 'columns 必须是表格列配置数组', 'columns')
+    context.addError(
+      'props.columns',
+      i18n.t('pages.schema.errors.tableColumns'),
+      'columns',
+    )
   }
   if (!Array.isArray(props.data) || !props.data.every(isRecord)) {
-    context.addError('props.data', 'data 必须是对象数组', 'data')
+    context.addError(
+      'props.data',
+      i18n.t('pages.schema.errors.objectArray', { field: 'data' }),
+      'data',
+    )
   }
   if (props.pagination !== undefined && !isPagination(props.pagination)) {
     context.addError(
       'props.pagination',
-      'pagination 必须是布尔值或分页配置对象',
+      i18n.t('pages.schema.errors.pagination'),
       'pagination',
     )
   }
@@ -130,16 +180,32 @@ export function validateLineChartProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (!Array.isArray(props.data) || !props.data.every(isRecord)) {
-    context.addError('props.data', 'data 必须是对象数组', 'data')
+    context.addError(
+      'props.data',
+      i18n.t('pages.schema.errors.objectArray', { field: 'data' }),
+      'data',
+    )
   }
   if (typeof props.xAxisKey !== 'string') {
-    context.addError('props.xAxisKey', 'xAxisKey 必须是字符串', 'xAxisKey')
+    context.addError(
+      'props.xAxisKey',
+      i18n.t('pages.schema.errors.string', { field: 'xAxisKey' }),
+      'xAxisKey',
+    )
   }
   if (!Array.isArray(props.series) || !props.series.every(isLineSeries)) {
-    context.addError('props.series', 'series 必须是折线配置数组', 'series')
+    context.addError(
+      'props.series',
+      i18n.t('pages.schema.errors.lineSeries'),
+      'series',
+    )
   }
   if (props.height !== undefined && !isPositiveNumber(props.height)) {
-    context.addError('props.height', 'height 必须是正数', 'height')
+    context.addError(
+      'props.height',
+      i18n.t('pages.schema.errors.positiveNumber', { field: 'height' }),
+      'height',
+    )
   }
 }
 
@@ -148,10 +214,18 @@ export function validatePieChartProps(
   context: SchemaComponentValidateContext,
 ): void {
   if (!Array.isArray(props.data) || !props.data.every(isPieDatum)) {
-    context.addError('props.data', 'data 必须是 { name, value } 数组', 'data')
+    context.addError(
+      'props.data',
+      i18n.t('pages.schema.errors.pieData'),
+      'data',
+    )
   }
   if (props.height !== undefined && !isPositiveNumber(props.height)) {
-    context.addError('props.height', 'height 必须是正数', 'height')
+    context.addError(
+      'props.height',
+      i18n.t('pages.schema.errors.positiveNumber', { field: 'height' }),
+      'height',
+    )
   }
 }
 

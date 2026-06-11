@@ -11,6 +11,7 @@ import {
 import type { RequestConfig } from '@ff-ai-frontend/utils'
 import { globalMessage } from '@/utils/message'
 import { useAppStore } from '@/store/useApp'
+import { i18n } from '@/i18n'
 
 function shouldSkipGlobalErrorToast(config?: RequestConfig) {
   return config?.meta?.skipGlobalErrorToast === true
@@ -30,7 +31,7 @@ function handleRequestError(error: unknown, config?: RequestConfig) {
       return
 
     case 403:
-      globalMessage.error('无权限访问')
+      globalMessage.error(i18n.t('common.errors.noPermission'))
       return
 
     case 500:
@@ -38,12 +39,12 @@ function handleRequestError(error: unknown, config?: RequestConfig) {
     case 503:
     case 504:
       if (!skipToast) {
-        globalMessage.error(message || '服务异常，请稍后重试')
+        globalMessage.error(message || i18n.t('common.errors.serverError'))
       }
       return
     default: {
       if (!skipToast) {
-        globalMessage.error(message || '请求失败，请稍后重试')
+        globalMessage.error(message || i18n.t('common.errors.requestFailed'))
       }
     }
   }

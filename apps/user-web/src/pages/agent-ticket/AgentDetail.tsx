@@ -20,6 +20,7 @@ import {
 } from 'antd'
 import { createStyles } from 'antd-style'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 
@@ -272,6 +273,7 @@ const useStyles = createStyles(() => ({
 }))
 
 export function AgentDetail() {
+  const { t } = useTranslation()
   const { styles } = useStyles()
   const navigate = useNavigate()
   const { agentId } = useParams()
@@ -291,7 +293,7 @@ export function AgentDetail() {
       await queryClient.invalidateQueries({
         queryKey: tenantAgentKeys.detail(agentId),
       })
-      globalMessage.success('预算阈值已保存')
+      globalMessage.success(t('pages.agentTicket.detail.budgetSaved'))
     },
   })
 
@@ -306,7 +308,10 @@ export function AgentDetail() {
   if (!agentId) {
     return (
       <DetailPageShell>
-        <Result status="warning" title="缺少智能体 ID" />
+        <Result
+          status="warning"
+          title={t('pages.agentTicket.detail.missingAgentId')}
+        />
       </DetailPageShell>
     )
   }
@@ -315,7 +320,7 @@ export function AgentDetail() {
     return (
       <DetailPageShell>
         <div className="flex min-h-80 items-center justify-center">
-          <Spin description="正在加载智能体详情" />
+          <Spin description={t('pages.agentTicket.detail.loading')} />
         </div>
       </DetailPageShell>
     )
@@ -326,10 +331,10 @@ export function AgentDetail() {
       <DetailPageShell>
         <Result
           status="error"
-          title="智能体详情加载失败"
+          title={t('pages.agentTicket.detail.loadFailed')}
           extra={
             <Button type="primary" onClick={() => void query.refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
         />
@@ -369,7 +374,7 @@ export function AgentDetail() {
                 icon={<ArrowLeftOutlined />}
                 onClick={() => void navigate('/agent-ticket/agents')}
               >
-                返回列表
+                {t('pages.agentTicket.detail.back')}
               </Button>
               <Button
                 disabled={!detail.endpoint_url}
@@ -379,14 +384,18 @@ export function AgentDetail() {
                   if (detail.endpoint_url) openEndpointUrl(detail.endpoint_url)
                 }}
               >
-                API 文档
+                {t('pages.agentTicket.detail.apiDocs')}
               </Button>
             </Space>
           </div>
         </section>
 
         {mutation.isError ? (
-          <Alert showIcon message="预算阈值保存失败" type="error" />
+          <Alert
+            showIcon
+            title={t('pages.agentTicket.detail.budgetSaveFailed')}
+            type="error"
+          />
         ) : null}
 
         <div className="grid gap-4 lg:grid-cols-3">
@@ -394,18 +403,21 @@ export function AgentDetail() {
             <Statistic
               precision={2}
               prefix="¥"
-              title="本月已消耗"
+              title={t('pages.agentTicket.detail.currentMonthUsage')}
               value={detail.current_usage}
             />
           </div>
           <div className={styles.metricPanel}>
             {detail.runtime_token_budget === null ? (
-              <Statistic title="运行时预算上限" value="无上限" />
+              <Statistic
+                title={t('pages.agentTicket.detail.runtimeBudgetLimit')}
+                value={t('pages.agentTicket.detail.unlimited')}
+              />
             ) : (
               <Statistic
                 precision={2}
                 prefix="¥"
-                title="运行时预算上限"
+                title={t('pages.agentTicket.detail.runtimeBudgetLimit')}
                 value={detail.runtime_token_budget}
               />
             )}
@@ -413,7 +425,7 @@ export function AgentDetail() {
           <div className={styles.metricPanel}>
             <Statistic
               prefix={<FieldTimeOutlined />}
-              title="最近一次调用"
+              title={t('pages.agentTicket.detail.lastInvokedAt')}
               value={formatDateTime(detail.last_invoked_at)}
             />
           </div>
@@ -421,9 +433,11 @@ export function AgentDetail() {
 
         <section className={styles.sectionPanel}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>应用信息</div>
+            <div className={styles.sectionTitle}>
+              {t('pages.agentTicket.detail.appInfo')}
+            </div>
             <div className={styles.sectionSubtitle}>
-              查看智能体来源、运行状态和外发服务地址。
+              {t('pages.agentTicket.detail.appInfoDescription')}
             </div>
           </div>
           <Descriptions
@@ -431,22 +445,31 @@ export function AgentDetail() {
             className={styles.descriptions}
             column={{ xs: 1, md: 2 }}
           >
-            <Descriptions.Item label="应用 ID">
+            <Descriptions.Item label={t('pages.agentTicket.detail.appId')}>
               {detail.agent_id}
             </Descriptions.Item>
-            <Descriptions.Item label="运行状态">
+            <Descriptions.Item
+              label={t('pages.agentTicket.columns.runStatus')}
+            >
               <AgentStatusTag status={detail.status} />
             </Descriptions.Item>
-            <Descriptions.Item label="来源工单">
+            <Descriptions.Item
+              label={t('pages.agentTicket.detail.sourceTask')}
+            >
               {detail.task_id}
             </Descriptions.Item>
-            <Descriptions.Item label="创建时间">
+            <Descriptions.Item
+              label={t('pages.agentTicket.columns.createdAt')}
+            >
               <Space>
                 <CalendarOutlined />
                 {formatDateTime(detail.created_at)}
               </Space>
             </Descriptions.Item>
-            <Descriptions.Item label="外发 API 地址" span={2}>
+            <Descriptions.Item
+              label={t('pages.agentTicket.detail.endpointUrl')}
+              span={2}
+            >
               {detail.endpoint_url}
             </Descriptions.Item>
           </Descriptions>
@@ -454,9 +477,11 @@ export function AgentDetail() {
 
         <section className={`${styles.sectionPanel} ${styles.budgetPanel}`}>
           <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitle}>预算阈值</div>
+            <div className={styles.sectionTitle}>
+              {t('pages.agentTicket.detail.budget')}
+            </div>
             <div className={styles.sectionSubtitle}>
-              配置智能体运行时每月 Token 费用上限。
+              {t('pages.agentTicket.detail.budgetDescription')}
             </div>
           </div>
           <Form
@@ -470,12 +495,17 @@ export function AgentDetail() {
               mutation.mutate(values.runtimeTokenBudget ?? null)
             }
           >
-            <Form.Item label="每月预算上限" name="runtimeTokenBudget">
+            <Form.Item
+              label={t('pages.agentTicket.detail.monthlyBudgetLimit')}
+              name="runtimeTokenBudget"
+            >
               <InputNumber<number>
                 min={0}
                 precision={2}
                 prefix="¥"
-                placeholder="不设置则表示无上限"
+                placeholder={t(
+                  'pages.agentTicket.detail.monthlyBudgetPlaceholder',
+                )}
                 style={{ width: 240 }}
               />
             </Form.Item>
@@ -486,7 +516,7 @@ export function AgentDetail() {
                 loading={mutation.isPending}
                 type="primary"
               >
-                保存
+                {t('common.actions.save')}
               </Button>
             </Form.Item>
           </Form>

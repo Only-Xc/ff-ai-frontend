@@ -8,9 +8,11 @@ import {
   useSyncExternalStore,
 } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation } from 'react-router'
 import { useTimeout } from 'usehooks-ts'
 
+import { i18n } from '@/i18n'
 import {
   getRouteChunkLoadingSnapshot,
   subscribeRouteChunkLoading,
@@ -38,6 +40,7 @@ interface RouteResolvedOutletProps {
 }
 
 function RouteChunkLoadingBar() {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
 
   useTimeout(() => {
@@ -63,7 +66,9 @@ function RouteChunkLoadingBar() {
             }}
           />
         </span>
-        <span className="text-xs font-medium text-(--muted)">页面加载中</span>
+        <span className="text-xs font-medium text-(--muted)">
+          {t('pages.routeBoundary.loading')}
+        </span>
       </div>
     </div>
   )
@@ -141,11 +146,15 @@ export class RouteChunkErrorBoundary extends Component<
   render() {
     if (this.state.error) {
       const isChunkLoadError = isRouteChunkLoadError(this.state.error)
-      const title = isChunkLoadError ? '页面资源加载失败' : '页面渲染失败'
+      const title = isChunkLoadError
+        ? i18n.t('pages.routeBoundary.chunkLoadFailed')
+        : i18n.t('pages.routeBoundary.renderFailed')
       const subTitle = isChunkLoadError
-        ? '当前页面资源可能已更新，请刷新后重试。'
-        : '当前页面渲染出现异常，请刷新后重试。'
-      const buttonText = isChunkLoadError ? '刷新页面' : '刷新重试'
+        ? i18n.t('pages.routeBoundary.chunkLoadFailedSubtitle')
+        : i18n.t('pages.routeBoundary.renderFailedSubtitle')
+      const buttonText = isChunkLoadError
+        ? i18n.t('pages.routeBoundary.refreshPage')
+        : i18n.t('pages.routeBoundary.retryRefresh')
 
       return (
         <Result

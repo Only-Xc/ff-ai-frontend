@@ -3,11 +3,11 @@ import type { TaskStatus } from '@/api/agent-ticket'
 export const agentTicketTabs = [
   {
     key: 'tickets',
-    label: '工单列表',
+    labelKey: 'pages.agentTicket.tabs.tickets',
   },
   {
     key: 'agents',
-    label: '智能体列表',
+    labelKey: 'pages.agentTicket.tabs.agents',
   },
 ]
 

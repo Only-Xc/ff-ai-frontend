@@ -1,5 +1,6 @@
 import { Tabs } from 'antd'
 import { createStyles } from 'antd-style'
+import { useTranslation } from 'react-i18next'
 
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router'
 
@@ -43,6 +44,7 @@ function getActiveTab(pathname: string) {
 }
 
 export function AgentTicketPage() {
+  const { t } = useTranslation()
   const { styles } = useStyles()
   const location = useLocation()
   const navigate = useNavigate()
@@ -51,15 +53,18 @@ export function AgentTicketPage() {
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
-        subtitle="查看工单与智能体执行状态，支持筛选、分页和详情处理。"
-        title="智能体与工单"
+        subtitle={t('pages.agentTicket.subtitle')}
+        title={t('pages.agentTicket.title')}
       />
 
       <PageContainer className="flex min-h-0 flex-1 flex-col overflow-hidden shadow-[0_1px_0_rgb(15_23_42/0.03)]">
         <Tabs
           activeKey={activeKey}
           className={styles.tabs}
-          items={agentTicketTabs}
+          items={agentTicketTabs.map((item) => ({
+            key: item.key,
+            label: t(item.labelKey),
+          }))}
           tabBarGutter={20}
           onChange={(key) => void navigate(`/agent-ticket/${key}`)}
         />

@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { i18n } from '@/i18n'
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '-'
@@ -7,5 +8,5 @@ export function formatDateTime(value: string | null | undefined): string {
 
   if (!date.isValid()) return '-'
 
-  return date.format('YYYY年M月D日 HH:mm')
+  return date.format(i18n.t('common.dateTime.longFormat'))
 }

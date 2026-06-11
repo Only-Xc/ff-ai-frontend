@@ -4,6 +4,7 @@ import {
   SCHEMA_VERSION,
   UNSAFE_SCHEMA_KEYS,
 } from '../constants'
+import { i18n } from '@/i18n'
 import { componentRegistry } from '../registry/componentRegistry'
 import { isRecord, normalizeProps } from './normalizeProps'
 import type {
@@ -24,7 +25,11 @@ export function validateSchema(schema: unknown): SchemaValidationResult {
     return {
       schema: null,
       errors: [
-        createSchemaError('schema.invalid', 'schema 必须是对象', 'schema'),
+        createSchemaError(
+          'schema.invalid',
+          i18n.t('pages.schema.errors.schemaInvalid'),
+          'schema',
+        ),
       ],
     }
   }
@@ -33,7 +38,7 @@ export function validateSchema(schema: unknown): SchemaValidationResult {
     errors.push(
       createSchemaError(
         'schema.version',
-        `schemaVersion 必须是 ${SCHEMA_VERSION}`,
+        i18n.t('pages.schema.errors.version', { version: SCHEMA_VERSION }),
         'schema.schemaVersion',
       ),
     )
@@ -41,7 +46,11 @@ export function validateSchema(schema: unknown): SchemaValidationResult {
 
   if (!isRecord(schema.page)) {
     errors.push(
-      createSchemaError('schema.page', 'page 必须是对象', 'schema.page'),
+      createSchemaError(
+        'schema.page',
+        i18n.t('pages.schema.errors.page'),
+        'schema.page',
+      ),
     )
     return { schema: null, errors }
   }
@@ -50,7 +59,7 @@ export function validateSchema(schema: unknown): SchemaValidationResult {
     errors.push(
       createSchemaError(
         'schema.children',
-        'page.children 必须是数组',
+        i18n.t('pages.schema.errors.children'),
         'schema.page.children',
       ),
     )
@@ -80,7 +89,9 @@ function validateNode(
     state.errors.push(
       createSchemaError(
         'schema.nodes.limit',
-        `节点数量不能超过 ${MAX_SCHEMA_NODES}`,
+        i18n.t('pages.schema.errors.nodesLimit', {
+          limit: MAX_SCHEMA_NODES,
+        }),
         path,
       ),
     )
@@ -92,7 +103,9 @@ function validateNode(
       createNodeError(
         node,
         'node.depth.limit',
-        `节点深度不能超过 ${MAX_SCHEMA_DEPTH}`,
+        i18n.t('pages.schema.errors.depthLimit', {
+          limit: MAX_SCHEMA_DEPTH,
+        }),
         path,
       ),
     )
@@ -101,7 +114,12 @@ function validateNode(
 
   if (!isRecord(node)) {
     state.errors.push(
-      createNodeError(node, 'node.invalid', '节点必须是对象', path),
+      createNodeError(
+        node,
+        'node.invalid',
+        i18n.t('pages.schema.errors.nodeInvalid'),
+        path,
+      ),
     )
     return
   }
@@ -113,7 +131,7 @@ function validateNode(
       createNodeError(
         node,
         'node.id',
-        '节点 id 必须是非空字符串',
+        i18n.t('pages.schema.errors.nodeId'),
         `${path}.id`,
       ),
     )
@@ -128,7 +146,9 @@ function validateNode(
       createNodeError(
         node,
         'node.component',
-        `组件未注册：${String(component)}`,
+        i18n.t('pages.schema.componentUnregistered', {
+          component: String(component),
+        }),
         `${path}.component`,
       ),
     )
@@ -159,7 +179,7 @@ function validateNode(
         createNodeError(
           node,
           'node.children',
-          'children 必须是数组',
+          i18n.t('pages.schema.errors.nodeChildren'),
           `${path}.children`,
         ),
       )
@@ -171,7 +191,7 @@ function validateNode(
         createNodeError(
           node,
           'node.children.container',
-          'children 只允许用于容器组件',
+          i18n.t('pages.schema.errors.nodeChildrenContainer'),
           `${path}.children`,
         ),
       )
@@ -206,7 +226,7 @@ function validateUnsafeKeys(
       state.errors.push({
         scope: 'node',
         code: 'node.props.unsafe',
-        message: `props 中不允许使用 ${key}`,
+        message: i18n.t('pages.schema.errors.unsafeProp', { key }),
         path: currentPath,
         nodeId,
       })

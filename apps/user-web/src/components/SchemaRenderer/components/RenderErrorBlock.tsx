@@ -1,4 +1,5 @@
 import { Alert } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { SchemaRenderError } from '../types'
 
@@ -8,9 +9,10 @@ interface RenderErrorBlockProps {
 }
 
 export function RenderErrorBlock({
-  title = 'Schema 渲染失败',
+  title,
   errors,
 }: RenderErrorBlockProps) {
+  const { t } = useTranslation()
   const description =
     errors.length === 0
       ? undefined
@@ -20,7 +22,7 @@ export function RenderErrorBlock({
     <Alert
       showIcon
       type="error"
-      message={title}
+      title={title ?? t('pages.schema.renderFailed')}
       description={
         description ? (
           <pre className="m-0 whitespace-pre-wrap font-mono text-xs">

@@ -11,6 +11,7 @@ import {
 } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import {
@@ -31,6 +32,7 @@ interface TicketFilterValues {
 }
 
 export function TicketList() {
+  const { t } = useTranslation()
   const [form] = Form.useForm<TicketFilterValues>()
   const [status, setStatus] = useState<TaskStatusFilter>()
   const pagination = usePaginationParams()
@@ -48,14 +50,17 @@ export function TicketList() {
   const columns = useMemo<TableProps<TenantTask>['columns']>(
     () => [
       {
-        title: '需求标题',
+        title: t('pages.agentTicket.columns.requirementTitle'),
         dataIndex: 'title',
         ellipsis: true,
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             <span className="text-(--text) font-medium">
               {record.web_url ? (
-                <Tooltip placement="top" title="点击预览">
+                <Tooltip
+                  placement="top"
+                  title={t('pages.agentTicket.preview')}
+                >
                   <Typography.Link href={record.web_url} target="_blank" strong>
                     {value}
                   </Typography.Link>
@@ -71,19 +76,19 @@ export function TicketList() {
         ),
       },
       {
-        title: '工单状态',
+        title: t('pages.agentTicket.columns.ticketStatus'),
         dataIndex: 'status',
         width: 130,
         render: (_, record) => <TaskStatusTag status={record.status} />,
       },
       {
-        title: '任务类型',
+        title: t('pages.agentTicket.columns.taskType'),
         dataIndex: 'task_type',
         width: 150,
         render: (_, record) => <TaskTypeTag type={record.task_type} />,
       },
       {
-        title: '创建时间',
+        title: t('pages.agentTicket.columns.createdAt'),
         dataIndex: 'created_at',
         width: 180,
         render: (value: string) => (
@@ -93,7 +98,7 @@ export function TicketList() {
         ),
       },
       {
-        title: '更新时间',
+        title: t('pages.agentTicket.columns.updatedAt'),
         dataIndex: 'updated_at',
         width: 180,
         render: (value: string) => (
@@ -103,7 +108,7 @@ export function TicketList() {
         ),
       },
     ],
-    [],
+    [t],
   )
 
   return (
@@ -115,7 +120,7 @@ export function TicketList() {
               allowClear
               className="w-35!"
               excludeValues={['all']}
-              placeholder="全部状态"
+              placeholder={t('pages.agentTicket.filters.allStatus')}
               type="task_status_filter"
               onChange={(value) => {
                 setStatus(value === 'all' ? undefined : value)
@@ -133,7 +138,7 @@ export function TicketList() {
                   pagination.reset()
                 }}
               >
-                重置
+                {t('common.actions.reset')}
               </Button>
               <Button
                 icon={<ReloadOutlined />}
@@ -141,7 +146,7 @@ export function TicketList() {
                 type="primary"
                 onClick={() => void refetch()}
               >
-                刷新
+                {t('common.actions.refresh')}
               </Button>
             </Space>
           </Form.Item>
@@ -154,10 +159,10 @@ export function TicketList() {
           className="mb-4 shrink-0"
           action={
             <Button size="small" onClick={() => void refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
-          title="工单列表加载失败"
+          title={t('pages.agentTicket.ticketListLoadFailed')}
           type="error"
         />
       ) : null}
@@ -177,7 +182,7 @@ export function TicketList() {
 
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-t-(--ant-color-border-secondary)">
         <Typography.Text className="text-(--muted)!">
-          共 {data?.count ?? 0} 条
+          {t('common.labels.totalCount', { total: data?.count ?? 0 })}
         </Typography.Text>
         <Pagination {...pagination.props} total={data?.count ?? 0} />
       </div>

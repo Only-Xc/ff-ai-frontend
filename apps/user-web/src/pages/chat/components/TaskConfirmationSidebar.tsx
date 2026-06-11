@@ -2,6 +2,7 @@ import { Button, theme } from 'antd'
 import { CheckOutlined, FileTextOutlined } from '@ant-design/icons'
 import { XMarkdown } from '@ant-design/x-markdown'
 import { DictTag } from '@ff-ai-frontend/dictionaries'
+import { useTranslation } from 'react-i18next'
 
 import type { TaskConfirmationViewState } from '@/pages/chat/types'
 import '@/assets/x-markdown-light.css'
@@ -20,6 +21,7 @@ export function TaskConfirmationSidebar({
   submitting,
   onConfirm,
 }: TaskConfirmationSidebarProps) {
+  const { t } = useTranslation()
   const { theme: antdTheme, token } = theme.useToken()
   const markdownClassName =
     antdTheme.id === 0
@@ -46,7 +48,7 @@ export function TaskConfirmationSidebar({
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
             <span className="text-sm font-semibold text-(--text-strong)">
-              待确认工单
+              {t('pages.chat.taskConfirmation.title')}
             </span>
             <DictTag type="pending_task_type" value={pending.task_type} />
           </div>
@@ -70,7 +72,7 @@ export function TaskConfirmationSidebar({
           disabled={submitting}
           onClick={onConfirm}
         >
-          确认创建
+          {t('pages.chat.taskConfirmation.confirm')}
         </Button>
       </div>
     </aside>

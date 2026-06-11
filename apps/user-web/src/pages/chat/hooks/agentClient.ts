@@ -11,6 +11,7 @@ import type {
   OutboundTaskConfirm,
 } from '@/pages/chat/hooks/agentTypes'
 import { ExecutableQueue } from '@/utils/executableQueue'
+import { i18n } from '@/i18n'
 import { globalNotification } from '@/utils/message'
 
 type Unsubscribe = () => void
@@ -248,8 +249,10 @@ class WebSocketAgentClient implements AgentClient {
 
     if (event.code === 1009) {
       globalNotification.error({
-        message: '发送内容过大',
-        description: '发送内容超过服务端限制，请减少内容大小后重试。',
+        message: i18n.t('pages.chat.agentClient.payloadTooLarge.title'),
+        description: i18n.t(
+          'pages.chat.agentClient.payloadTooLarge.description',
+        ),
         placement: 'topRight',
       })
     }

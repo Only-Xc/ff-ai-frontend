@@ -16,6 +16,7 @@ import {
 } from 'antd'
 import type { TableProps } from 'antd'
 import { useCallback, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 
@@ -44,6 +45,7 @@ interface AgentFilterValues {
 }
 
 export function AgentList() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [form] = Form.useForm<AgentFilterValues>()
   const [status, setStatus] = useState<AgentStatusFilter>()
@@ -63,7 +65,7 @@ export function AgentList() {
   const collectMutation = useMutation({
     mutationFn: (data: TenantAppQuery) => tenantApps_add(data),
     onSuccess: (_) => {
-      globalMessage.success('收藏成功')
+      globalMessage.success(t('pages.agentTicket.favorite.success'))
       void refetch()
       void retryMenu()
     },
@@ -72,7 +74,7 @@ export function AgentList() {
   const cancelCollectMutation = useMutation({
     mutationFn: (id: string) => tenantApps_delete(id),
     onSuccess: (_) => {
-      globalMessage.success('取消收藏成功')
+      globalMessage.success(t('pages.agentTicket.favorite.cancelSuccess'))
       void refetch()
       void retryMenu()
     },
@@ -95,13 +97,16 @@ export function AgentList() {
   const columns = useMemo<TableProps<TenantAgent>['columns']>(
     () => [
       {
-        title: '应用名称',
+        title: t('pages.agentTicket.columns.appName'),
         dataIndex: 'name',
         ellipsis: true,
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             {record.endpoint_url ? (
-              <Tooltip placement="top" title="点击预览">
+              <Tooltip
+                placement="top"
+                title={t('pages.agentTicket.preview')}
+              >
                 <Typography.Link
                   href={record.endpoint_url}
                   target="_blank"
@@ -120,25 +125,25 @@ export function AgentList() {
         ),
       },
       {
-        title: '运行状态',
+        title: t('pages.agentTicket.columns.runStatus'),
         dataIndex: 'status',
         width: 100,
         render: (_, record) => <AgentStatusTag status={record.status} />,
       },
       {
-        title: '创建时间',
+        title: t('pages.agentTicket.columns.createdAt'),
         dataIndex: 'created_at',
         width: 180,
         render: (value: string) => formatDateTime(value),
       },
       {
-        title: '最近一次调用时间',
+        title: t('pages.agentTicket.columns.lastInvokedAt'),
         dataIndex: 'last_invoked_at',
         width: 180,
         render: (value: string | null) => formatDateTime(value),
       },
       {
-        title: '操作',
+        title: t('pages.agentTicket.columns.action'),
         key: 'action',
         width: 240,
         render: (_, record) => (
@@ -150,20 +155,22 @@ export function AgentList() {
                 void navigate(`/agent-ticket/agents/${record.agent_id}`)
               }
             >
-              详情
+              {t('common.actions.detail')}
             </Button>
             <Button
               icon={record.is_favorited ? <StarFilled /> : <StarOutlined />}
               type="link"
               onClick={() => collectToggle(record)}
             >
-              {record.is_favorited ? '取消收藏' : '收藏'}
+              {record.is_favorited
+                ? t('pages.agentTicket.favorite.cancel')
+                : t('pages.agentTicket.favorite.add')}
             </Button>
           </Space>
         ),
       },
     ],
-    [collectToggle, navigate],
+    [collectToggle, navigate, t],
   )
 
   return (
@@ -174,7 +181,7 @@ export function AgentList() {
             <DictSelect<AgentStatusFilter>
               allowClear
               className="w-35!"
-              placeholder="全部状态"
+              placeholder={t('pages.agentTicket.filters.allStatus')}
               type="agent_status"
               onChange={(value) => {
                 setStatus(value)
@@ -191,7 +198,7 @@ export function AgentList() {
                   pagination.reset()
                 }}
               >
-                重置
+                {t('common.actions.reset')}
               </Button>
               <Button
                 icon={<ReloadOutlined />}
@@ -199,7 +206,7 @@ export function AgentList() {
                 type="primary"
                 onClick={() => void refetch()}
               >
-                刷新
+                {t('common.actions.refresh')}
               </Button>
             </Space>
           </Form.Item>
@@ -212,10 +219,10 @@ export function AgentList() {
           className="mb-4 shrink-0"
           action={
             <Button size="small" onClick={() => void refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
-          title="智能体列表加载失败"
+          title={t('pages.agentTicket.agentListLoadFailed')}
           type="error"
         />
       ) : null}
@@ -235,7 +242,7 @@ export function AgentList() {
 
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-t-(--ant-color-border-secondary)">
         <Typography.Text className="text-(--muted)!">
-          共 {data?.count ?? 0} 条
+          {t('common.labels.totalCount', { total: data?.count ?? 0 })}
         </Typography.Text>
         <Pagination {...pagination.props} total={data?.count ?? 0} />
       </div>

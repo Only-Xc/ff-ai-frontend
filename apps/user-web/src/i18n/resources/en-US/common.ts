@@ -1,5 +1,18 @@
 export default {
   'common.appTitle': 'AI App Platform',
   'common.appSubtitle': 'AI APP PLATFORM',
+  'common.actions.refresh': 'Refresh',
+  'common.actions.retry': 'Retry',
+  'common.actions.reset': 'Reset',
+  'common.actions.save': 'Save',
+  'common.actions.detail': 'Details',
+  'common.actions.delete': 'Delete',
+  'common.labels.totalCount': 'Total {{total}}',
+  'common.errors.noPermission': 'Access denied',
+  'common.errors.serverError': 'Service error. Try again later.',
+  'common.errors.requestFailed': 'Request failed. Try again later.',
+  'common.errors.authMissingToken': 'Login response is missing access_token',
+  'common.empty.chartData': 'No chart data',
+  'common.dateTime.longFormat': 'MMM D, YYYY HH:mm',
   'common.user.logout': 'Sign out',
 }

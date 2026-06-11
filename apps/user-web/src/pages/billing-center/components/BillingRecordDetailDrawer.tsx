@@ -10,6 +10,8 @@ import {
 } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { numberUtils } from '@ff-ai-frontend/utils'
+import type { TFunction } from 'i18next'
+import { useTranslation } from 'react-i18next'
 
 import {
   tenantBillingKeys,
@@ -26,11 +28,14 @@ interface BillingRecordDetailDrawerProps {
   formatDateTime: (value: string | null | undefined) => string
 }
 
-function getAgentDisplay(record: TenantBillingRecordDetail): string {
+function getAgentDisplay(
+  record: TenantBillingRecordDetail,
+  t: TFunction,
+): string {
   if (record.agent_name) return record.agent_name
   if (record.agent_id) return record.agent_id
 
-  return '租户级消费'
+  return t('pages.billing.tenantLevelCost')
 }
 
 export function BillingRecordDetailDrawer({
@@ -39,6 +44,7 @@ export function BillingRecordDetailDrawer({
   onClose,
   formatDateTime,
 }: BillingRecordDetailDrawerProps) {
+  const { t } = useTranslation()
   const query = useQuery({
     queryKey: tenantBillingKeys.detail(recordId),
     queryFn: () => tenantBilling_record(recordId ?? ''),
@@ -52,13 +58,13 @@ export function BillingRecordDetailDrawer({
       destroyOnHidden
       open={open}
       placement="right"
-      title="消费记录详情"
+      title={t('pages.billing.drawer.title')}
       width={520}
       onClose={onClose}
     >
       {!recordId ? (
         <Empty
-          description="请选择消费记录"
+          description={t('pages.billing.drawer.empty')}
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       ) : null}
@@ -72,10 +78,10 @@ export function BillingRecordDetailDrawer({
           showIcon
           action={
             <Button size="small" onClick={() => void query.refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
-          message="消费记录详情加载失败"
+          message={t('pages.billing.drawer.loadFailed')}
           type="error"
         />
       ) : null}
@@ -84,7 +90,7 @@ export function BillingRecordDetailDrawer({
         <Space className="w-full" direction="vertical" size={18}>
           <div className="rounded-2xl border border-(--ant-color-border-secondary) bg-[color-mix(in_srgb,var(--panel)_86%,transparent)] p-4">
             <Typography.Text className="text-xs text-(--muted)!">
-              折算费用
+              {t('pages.billing.columns.cost')}
             </Typography.Text>
             <div className="mt-1 text-3xl font-semibold tracking-tight text-(--foreground)">
               {numberUtils.formatCurrency(detail.cost, {
@@ -108,24 +114,24 @@ export function BillingRecordDetailDrawer({
             items={[
               {
                 key: 'record_id',
-                label: '记录 ID',
+                label: t('pages.billing.drawer.recordId'),
                 children: (
                   <Typography.Text copyable>{detail.record_id}</Typography.Text>
                 ),
               },
               {
                 key: 'created_at',
-                label: '创建时间',
+                label: t('pages.billing.drawer.createdAt'),
                 children: formatDateTime(detail.created_at),
               },
               {
                 key: 'agent',
-                label: '智能体',
-                children: getAgentDisplay(detail),
+                label: t('pages.billing.columns.agent'),
+                children: getAgentDisplay(detail, t),
               },
               {
                 key: 'agent_id',
-                label: '智能体 ID',
+                label: t('pages.billing.drawer.agentId'),
                 children: detail.agent_id ? (
                   <Typography.Text copyable>{detail.agent_id}</Typography.Text>
                 ) : (
@@ -134,7 +140,7 @@ export function BillingRecordDetailDrawer({
               },
               {
                 key: 'task_id',
-                label: '工单 ID',
+                label: t('pages.billing.drawer.taskId'),
                 children: detail.task_id ? (
                   <Typography.Text copyable>{detail.task_id}</Typography.Text>
                 ) : (
@@ -143,7 +149,7 @@ export function BillingRecordDetailDrawer({
               },
               {
                 key: 'description',
-                label: '描述',
+                label: t('pages.billing.columns.description'),
                 children: detail.description,
               },
             ]}

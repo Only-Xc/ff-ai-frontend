@@ -33,7 +33,8 @@ export const appRoutes: AppRouteObject[] = [
     path: '/login',
     element: lazyLoad(() => import('@/pages/login/Login')),
     handle: {
-      title: '登录',
+      title: 'Login',
+      titleKey: 'routes.login.title',
       layout: false,
       hideInMenu: true,
       hideInBreadcrumb: true,
@@ -45,8 +46,8 @@ export const appRoutes: AppRouteObject[] = [
         path: '/chat',
         element: lazyLoad(() => import('@/pages/chat/Chat')),
         handle: {
-          title: '工作台',
-          // titleKey: 'routes.chat.title',
+          title: 'Dashboard',
+          titleKey: 'routes.chat.title',
           icon: <DesktopOutlined />,
           // subtitleKey: 'pages.shell.usageSubtitle',
           menuType: 'menu',
@@ -57,8 +58,8 @@ export const appRoutes: AppRouteObject[] = [
       {
         path: '/agent-ticket',
         handle: {
-          title: '智能体与工单',
-          // titleKey: 'routes.settings.title',
+          title: 'Agents & Tickets',
+          titleKey: 'routes.agentTicket.title',
           icon: <ProjectOutlined />,
           menuType: 'menu',
           navKey: 'todo',
@@ -82,7 +83,8 @@ export const appRoutes: AppRouteObject[] = [
                   () => import('@/pages/agent-ticket/TicketList'),
                 ),
                 handle: {
-                  title: '工单列表',
+                  title: 'Ticket List',
+                  titleKey: 'routes.agentTicket.tickets.title',
                   hideInMenu: true,
                 },
               },
@@ -92,7 +94,8 @@ export const appRoutes: AppRouteObject[] = [
                   () => import('@/pages/agent-ticket/AgentList'),
                 ),
                 handle: {
-                  title: '智能体列表',
+                  title: 'Agent List',
+                  titleKey: 'routes.agentTicket.agents.title',
                   hideInMenu: true,
                 },
               },
@@ -102,7 +105,8 @@ export const appRoutes: AppRouteObject[] = [
             path: 'tasks/:taskId/board',
             element: lazyLoad(() => import('@/pages/agent-ticket/TaskBoard')),
             handle: {
-              title: '动态看板',
+              title: 'Live Board',
+              titleKey: 'routes.agentTicket.taskBoard.title',
               hideInMenu: true,
             },
           },
@@ -110,7 +114,8 @@ export const appRoutes: AppRouteObject[] = [
             path: 'agents/:agentId',
             element: lazyLoad(() => import('@/pages/agent-ticket/AgentDetail')),
             handle: {
-              title: '智能体详情',
+              title: 'Agent Details',
+              titleKey: 'routes.agentTicket.agentDetail.title',
               hideInMenu: true,
             },
           },
@@ -122,7 +127,8 @@ export const appRoutes: AppRouteObject[] = [
           () => import('@/pages/iframe-container/IframeContainerPage'),
         ),
         handle: {
-          title: '应用预览',
+          title: 'App Preview',
+          titleKey: 'routes.appPreview.title',
           hideInMenu: true,
           hideInBreadcrumb: true,
         },
@@ -131,7 +137,8 @@ export const appRoutes: AppRouteObject[] = [
         path: '/billing-center',
         element: lazyLoad(() => import('@/pages/billing-center/BillingCenter')),
         handle: {
-          title: '账单中心',
+          title: 'Billing Center',
+          titleKey: 'routes.billingCenter.title',
           icon: <WalletOutlined />,
           menuType: 'menu',
           navKey: 'billingCenter',
@@ -143,8 +150,8 @@ export const appRoutes: AppRouteObject[] = [
   },
   {
     handle: {
-      title: '应用列表',
-      // titleKey: 'routes.groups.workspace',
+      title: 'App List',
+      titleKey: 'routes.appList.title',
       menuType: 'catalog',
       menuMode: 'group',
       navKey: 'workspace',
@@ -158,7 +165,8 @@ export const appRoutes: AppRouteObject[] = [
           () => import('@/pages/schema-renderer/SchemaRendererDemo'),
         ),
         handle: {
-          title: 'SchemaRender 示例',
+          title: 'SchemaRender Demo',
+          titleKey: 'routes.schemaRendererDemo.title',
           menuType: 'menu',
           navKey: 'schemaRendererDemo',
           navOrder: 3,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Result, Spin } from 'antd'
 
@@ -22,6 +23,7 @@ type BootState =
   | { status: 'ready'; client: AgentClient }
 
 export function ChatPage() {
+  const { t } = useTranslation()
   const [state, setState] = useState<BootState>({ status: 'loading' })
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function ChatPage() {
   if (state.status === 'loading') {
     return (
       <div className="flex h-full items-center justify-center">
-        <Spin description="正在连接 Agent 服务" />
+        <Spin description={t('pages.chat.connecting')} />
       </div>
     )
   }
@@ -76,8 +78,8 @@ export function ChatPage() {
       <div className="flex h-full items-center justify-center p-6">
         <Result
           status="warning"
-          title="Agent 服务认证失败"
-          subTitle="请尝试刷新页面，刷新之后继续报错请联系管理员。"
+          title={t('pages.chat.authFailed.title')}
+          subTitle={t('pages.chat.authFailed.subtitle')}
         />
       </div>
     )
@@ -88,8 +90,8 @@ export function ChatPage() {
       <div className="flex h-full items-center justify-center p-6">
         <Result
           status="error"
-          title="Agent 服务连接失败"
-          subTitle="请联系管理员。"
+          title={t('pages.chat.connectionFailed.title')}
+          subTitle={t('pages.chat.connectionFailed.subtitle')}
         />
       </div>
     )
