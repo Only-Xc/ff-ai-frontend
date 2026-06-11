@@ -61,7 +61,7 @@ export function Header({ onOpenMenu: _onOpenMenu }: HeaderProps) {
   }
 
   return (
-    <header className="flex h-full w-full items-center justify-between gap-3 px-4 backdrop-blur-sm">
+    <header className="flex h-full w-full items-center justify-between gap-3 bg-(--header-bg) px-4">
       <div className="flex h-full min-w-0 items-center gap-2">
         <Logo></Logo>
         {/* <Button

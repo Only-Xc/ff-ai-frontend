@@ -25,22 +25,22 @@ export const useInterventionWorkbenchStyles = createStyles(({ css }) => ({
     position: relative;
     overflow: hidden;
     border: 1px solid var(--workbench-border);
-    backdrop-filter: blur(18px) saturate(150%);
+    background: var(--panel);
   `,
   card: css`
+    contain: paint;
     overflow: hidden;
     border-color: var(--workbench-border);
-    box-shadow: var(--workbench-card-shadow);
-    backdrop-filter: blur(16px) saturate(140%);
+    background: var(--panel);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
     transition:
       border-color 180ms ease,
-      box-shadow 180ms ease,
       background-color 180ms ease;
 
     .ant-card-head {
       min-height: 44px;
       border-bottom-color: var(--divider-subtle);
-      background: transparent;
+      background: var(--panel);
       padding-inline: 14px;
     }
 
@@ -56,7 +56,6 @@ export const useInterventionWorkbenchStyles = createStyles(({ css }) => ({
 
     &:hover {
       border-color: color-mix(in srgb, var(--admin-primary) 18%, var(--border));
-      box-shadow: 0 18px 38px rgb(15 23 42 / 0.07);
     }
   `,
   fillCard: css`
@@ -71,6 +70,8 @@ export const useInterventionWorkbenchStyles = createStyles(({ css }) => ({
       overflow: auto;
       display: flex;
       flex-direction: column;
+      contain: paint;
+      scrollbar-gutter: stable;
       scrollbar-color: var(--scrollbar-thumb) transparent;
       scrollbar-width: thin;
     }
@@ -94,15 +95,18 @@ export const useInterventionWorkbenchStyles = createStyles(({ css }) => ({
     .ant-card-body {
       max-height: min(34vh, 360px);
       overflow: auto;
+      contain: paint;
       padding: 12px;
+      scrollbar-gutter: stable;
       scrollbar-color: var(--scrollbar-thumb) transparent;
       scrollbar-width: thin;
     }
   `,
   fieldSurface: css`
+    contain: paint;
     border: 1px solid var(--workbench-border);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--control-bg) 58%, transparent);
+    background: var(--control-bg);
     padding: 10px 12px;
   `,
   emptyCard: css`

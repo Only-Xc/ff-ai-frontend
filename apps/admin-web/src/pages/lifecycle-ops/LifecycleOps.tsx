@@ -164,7 +164,7 @@ export function LifecycleOps() {
         />
       </PageHeader>
 
-      <PageContainer className="flex min-h-0 flex-1 flex-col overflow-hidden bg-(--ant-color-bg-container) shadow-[0_1px_2px_rgb(15_23_42/0.04),0_12px_32px_rgb(15_23_42/0.05)] [backdrop-filter:blur(18px)]">
+      <PageContainer className="flex min-h-0 flex-1 flex-col overflow-hidden bg-(--ant-color-bg-container) shadow-[0_1px_2px_rgb(15_23_42/0.04)] contain-[paint]">
         <div className="flex h-full min-h-0 w-full flex-col">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-b-(--ant-color-border-secondary) px-5 py-3">
             <LifecycleFilterBar

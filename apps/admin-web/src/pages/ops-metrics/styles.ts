@@ -2,7 +2,7 @@ import { createStyles } from 'antd-style'
 
 export const useOpsMetricsStyles = createStyles(({ css }) => ({
   page: css`
-    --ops-surface: color-mix(in srgb, var(--panel) 92%, transparent);
+    --ops-surface: var(--panel);
     --ops-surface-strong: color-mix(in srgb, var(--panel) 98%, white 2%);
     --ops-soft: color-mix(in srgb, var(--admin-primary) 4%, var(--panel));
     --ops-border: color-mix(in srgb, var(--border) 78%, transparent);
@@ -13,11 +13,11 @@ export const useOpsMetricsStyles = createStyles(({ css }) => ({
     isolation: isolate;
 
     .ant-card {
+      contain: paint;
       overflow: hidden;
       border-color: var(--ops-border);
       background: var(--ops-surface);
       box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
-      backdrop-filter: blur(18px);
     }
 
     .ant-card-head {
@@ -61,6 +61,7 @@ export const useOpsMetricsStyles = createStyles(({ css }) => ({
   chartCard: css`
     .ant-card-body {
       min-height: 328px;
+      contain: paint;
     }
   `,
   metricCard: css`

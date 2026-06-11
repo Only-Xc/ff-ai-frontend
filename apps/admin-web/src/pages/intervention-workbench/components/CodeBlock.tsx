@@ -5,6 +5,7 @@ const useStyles = createStyles(({ css }) => ({
     max-height: 360px;
     margin: 0;
     overflow: auto;
+    contain: paint;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--control-bg);
@@ -13,6 +14,7 @@ const useStyles = createStyles(({ css }) => ({
     font-size: 12px;
     line-height: 1.65;
     white-space: pre;
+    scrollbar-gutter: stable;
     scrollbar-color: var(--scrollbar-thumb) transparent;
     scrollbar-width: thin;
 

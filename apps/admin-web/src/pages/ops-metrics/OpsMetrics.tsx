@@ -163,7 +163,7 @@ export function OpsMetrics() {
     <div
       className={`${styles.page} flex min-h-[calc(100vh-var(--ant-layout-header-height)-10px)] w-full flex-col gap-3 pb-4`}
     >
-      <header className="rounded-xl border border-(--ops-border) bg-[linear-gradient(180deg,color-mix(in_srgb,var(--panel)_96%,white_4%),color-mix(in_srgb,var(--panel)_88%,transparent))] px-4 py-3 shadow-(--ops-shadow) backdrop-blur-xl">
+      <header className="rounded-xl border border-(--ops-border) bg-(--panel) px-4 py-3 shadow-[0_1px_2px_rgb(15_23_42/0.05)] contain-[paint]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
