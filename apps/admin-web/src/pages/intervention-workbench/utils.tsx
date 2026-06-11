@@ -1,6 +1,7 @@
 import { Typography } from 'antd'
 import type { DescriptionsProps } from 'antd'
 import dayjs from 'dayjs'
+import type { TFunction } from 'i18next'
 import isEmpty from 'lodash-es/isEmpty'
 
 import type {
@@ -58,14 +59,15 @@ export function buildCloneCommand(snapshot: AdminTaskSnapshot) {
 }
 
 export function buildSnapshotItems(
-  snapshot?: AdminTaskSnapshot,
+  snapshot: AdminTaskSnapshot | undefined,
+  t: TFunction,
 ): DescriptionsProps['items'] {
   if (!snapshot) return []
 
   return [
     {
       key: 'task_id',
-      label: '工单 ID',
+      label: t('pages.intervention.fields.taskId'),
       children: (
         <Typography.Text copyable={{ text: snapshot.task_id }}>
           {snapshot.task_id}
@@ -74,7 +76,7 @@ export function buildSnapshotItems(
     },
     {
       key: 'tenant_id',
-      label: '租户',
+      label: t('pages.intervention.fields.tenant'),
       children: (
         <Typography.Text copyable={{ text: snapshot.tenant_id }}>
           {snapshot.tenant_id || '-'}
@@ -83,41 +85,42 @@ export function buildSnapshotItems(
     },
     {
       key: 'current_node',
-      label: '当前节点',
+      label: t('pages.intervention.fields.currentNode'),
       children: snapshot.current_node || '-',
     },
     {
       key: 'retry_count',
-      label: '重试次数',
+      label: t('pages.intervention.fields.retryCount'),
       children: snapshot.retry_count,
     },
     {
       key: 'snapshot_at',
-      label: '快照时间',
+      label: t('pages.intervention.fields.snapshotAt'),
       children: formatDateTime(snapshot.snapshot_at),
     },
   ]
 }
 
 export function buildErrorItems(
-  error?: AdminTaskSnapshotError | null,
+  error: AdminTaskSnapshotError | null | undefined,
+  t: TFunction,
 ): DescriptionsProps['items'] {
   if (!error) return []
 
   return [
     {
       key: 'stage',
-      label: '阶段',
+      label: t('pages.intervention.fields.stage'),
       children: error.stage || '-',
     },
     {
       key: 'type',
-      label: '类型',
+      label: t('pages.intervention.fields.type'),
       children: error.error_type || '-',
     },
     {
       key: 'file',
-      label: '文件',
+      label: t('pages.intervention.fields.file'),
       children: error.failed_file ? (
         <Typography.Text copyable={{ text: error.failed_file }}>
           {error.failed_file}
@@ -128,12 +131,12 @@ export function buildErrorItems(
     },
     {
       key: 'line',
-      label: '行号',
+      label: t('pages.intervention.fields.line'),
       children: error.failed_line ?? '-',
     },
     {
       key: 'failed_at',
-      label: '出错时间',
+      label: t('pages.intervention.fields.failedAt'),
       children: formatDateTime(error.failed_at),
     },
   ]
@@ -157,6 +160,8 @@ export function buildPayloadText(payloadSummary?: Record<string, unknown>) {
     : ''
 }
 
-export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : '操作失败'
+export function getErrorMessage(error: unknown, t: TFunction) {
+  return error instanceof Error
+    ? error.message
+    : t('common.errors.operationFailed')
 }

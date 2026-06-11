@@ -1,5 +1,6 @@
 import { requestClient } from '@/utils/request'
 
+import { i18n } from '@/i18n'
 import type { AuthUser } from '@/store/useAuth'
 
 interface LoginCredentials {
@@ -32,7 +33,7 @@ export async function loginWithPassword(
   })
 
   if (!response.access_token) {
-    throw new Error('登录响应缺少 access_token')
+    throw new Error(i18n.t('common.errors.authMissingToken'))
   }
 
   return {

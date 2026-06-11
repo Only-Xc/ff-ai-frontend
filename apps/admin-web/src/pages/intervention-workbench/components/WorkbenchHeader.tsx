@@ -1,6 +1,7 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Button, Space, Typography } from 'antd'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { AdminTaskStatus } from '@/api/ticket-kanban'
 import { DictTag } from '@ff-ai-frontend/dictionaries'
@@ -28,12 +29,14 @@ export function WorkbenchHeader({
   onRefresh,
   status,
 }: WorkbenchHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <header className={`relative rounded-xl px-4 py-3 ${className ?? ''}`}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Space size={12}>
           <Button
-            aria-label="返回工单"
+            aria-label={t('pages.intervention.header.back')}
             className="cursor-pointer"
             icon={<ArrowLeftOutlined />}
             onClick={onBack}
@@ -46,7 +49,7 @@ export function WorkbenchHeader({
               {status ? <StatusTag status={status} /> : null}
             </div>
             <Typography.Text className="text-(--muted)!">
-              人工介入工作台
+              {t('pages.intervention.header.subtitle')}
             </Typography.Text>
           </div>
         </Space>
@@ -58,7 +61,7 @@ export function WorkbenchHeader({
             loading={isFetching}
             onClick={onRefresh}
           >
-            刷新
+            {t('common.actions.refresh')}
           </Button>
         </Space>
       </div>

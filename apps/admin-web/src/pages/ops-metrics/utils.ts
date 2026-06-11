@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import type { TFunction } from 'i18next'
 
 import type {
   OpsMetricsAgentSummary,
@@ -38,15 +39,38 @@ export function getSkillCallTotal(skills?: OpsMetricsHotSkill[]) {
   return skills?.reduce((total, skill) => total + skill.call_count, 0) ?? 0
 }
 
-export function getAgentSegments(summary: OpsMetricsAgentSummary) {
+export function getAgentSegments(
+  summary: OpsMetricsAgentSummary,
+  t: TFunction,
+) {
   const known = summary.running + summary.sandbox + summary.stopped
   const other = Math.max(summary.total - known, 0)
 
   return [
-    { label: '运行中', value: summary.running, color: 'var(--admin-success)' },
-    { label: '沙盒', value: summary.sandbox, color: 'var(--admin-info)' },
-    { label: '停止', value: summary.stopped, color: 'var(--admin-warning)' },
-    ...(other ? [{ label: '其他', value: other, color: 'var(--muted)' }] : []),
+    {
+      label: t('pages.opsMetrics.agents.running'),
+      value: summary.running,
+      color: 'var(--admin-success)',
+    },
+    {
+      label: t('pages.opsMetrics.agents.sandbox'),
+      value: summary.sandbox,
+      color: 'var(--admin-info)',
+    },
+    {
+      label: t('pages.opsMetrics.agents.stopped'),
+      value: summary.stopped,
+      color: 'var(--admin-warning)',
+    },
+    ...(other
+      ? [
+          {
+            label: t('pages.opsMetrics.agents.other'),
+            value: other,
+            color: 'var(--muted)',
+          },
+        ]
+      : []),
   ]
 }
 
@@ -60,6 +84,8 @@ export function getCssVariable(name: string, fallback: string) {
   return value.trim() || fallback
 }
 
-export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : '请求失败'
+export function getErrorMessage(error: unknown, t: TFunction) {
+  return error instanceof Error
+    ? error.message
+    : t('common.errors.requestFailed')
 }

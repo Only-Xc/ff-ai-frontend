@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { EChartsOption } from 'echarts'
 import ReactECharts from 'echarts-for-react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpsMetricsLatency, OpsMetricsPeriod } from '@/api/ops-metrics'
 
@@ -19,6 +20,7 @@ export function LatencyChart({
   period,
   chartTheme,
 }: LatencyChartProps) {
+  const { t } = useTranslation()
   const data = useMemo(() => latency?.data ?? [], [latency?.data])
   const unit = latency?.unit ?? 'ms'
 
@@ -87,8 +89,8 @@ export function LatencyChart({
           const formattedValue = Array.isArray(value)
             ? value.join(', ')
             : value == null
-            ? ''
-            : String(value)
+              ? ''
+              : String(value)
           return `${formattedValue}${unit}`
         },
       },
@@ -140,7 +142,7 @@ export function LatencyChart({
   )
 
   if (!data.length) {
-    return <EmptyBlock description="暂无延迟数据" />
+    return <EmptyBlock description={t('pages.opsMetrics.empty.latency')} />
   }
 
   return (

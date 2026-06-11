@@ -1,5 +1,6 @@
 import { BranchesOutlined } from '@ant-design/icons'
 import { Card, Empty, Space, Typography } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { AdminTaskSourceCode } from '@/api/ticket-kanban'
 
@@ -39,13 +40,15 @@ export function SourcePanel({
   fieldClassName,
   sourceCode,
 }: SourcePanelProps) {
+  const { t } = useTranslation()
+
   return (
     <Card
       className={`rounded-lg! ${cardClassName ?? ''}`}
       title={
         <Space>
           <BranchesOutlined />
-          源码定位
+          {t('pages.intervention.panels.source')}
         </Space>
       }
     >
@@ -54,13 +57,13 @@ export function SourcePanel({
           <SourceField
             breakAll
             className={fieldClassName}
-            label="仓库"
+            label={t('pages.intervention.source.repo')}
             value={sourceCode.repo_url}
           />
           <div className="grid grid-cols-2 gap-3 max-[620px]:grid-cols-1">
             <SourceField
               className={fieldClassName}
-              label="分支"
+              label={t('pages.intervention.source.branch')}
               value={sourceCode.branch}
             />
             <SourceField
@@ -73,7 +76,9 @@ export function SourcePanel({
           {cloneCommand ? (
             <div>
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[12px] text-(--muted)">Clone 命令</span>
+                <span className="text-[12px] text-(--muted)">
+                  {t('pages.intervention.source.cloneCommand')}
+                </span>
               </div>
               <CodeBlock text={cloneCommand} />
             </div>
@@ -82,7 +87,7 @@ export function SourcePanel({
       ) : (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="暂无源码信息"
+          description={t('pages.intervention.empty.source')}
         />
       )}
     </Card>

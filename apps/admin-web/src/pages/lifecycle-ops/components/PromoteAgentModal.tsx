@@ -1,6 +1,7 @@
 import { Descriptions, Form, Input, InputNumber, Modal } from 'antd'
 import type { DescriptionsProps } from 'antd'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { HotLifecycleCandidate } from '@/api/lifecycle-ops'
 import { numberUtils } from '@ff-ai-frontend/utils'
@@ -26,6 +27,7 @@ export function PromoteAgentModal({
   onCancel,
   onSubmit,
 }: PromoteAgentModalProps) {
+  const { t } = useTranslation()
   const [form] = Form.useForm<PromoteFormValues>()
 
   useEffect(() => {
@@ -36,9 +38,9 @@ export function PromoteAgentModal({
 
     form.setFieldsValue({
       ...DEFAULT_PROMOTE_VALUES,
-      reason: getLifecycleActionReason(candidate),
+      reason: getLifecycleActionReason(candidate, t),
     })
-  }, [candidate, form])
+  }, [candidate, form, t])
 
   const handleSubmit = async () => {
     if (!candidate) return
@@ -51,29 +53,34 @@ export function PromoteAgentModal({
     ? [
         {
           key: 'agent',
-          label: '应用',
+          label: t('pages.lifecycle.columns.app'),
           children: candidate.name,
         },
         {
           key: 'agent_id',
-          label: '应用 ID',
+          label: t('pages.lifecycle.columns.appId'),
           children: <CopyableText value={candidate.agent_id} />,
         },
         {
           key: 'metrics',
-          label: '调用表现',
-          children: `${numberUtils.formatNumber(candidate.daily_invocations)} 次/天，平均 ${numberUtils.formatNumber(candidate.avg_duration_ms)} ms`,
+          label: t('pages.lifecycle.modals.promote.metrics'),
+          children: t('pages.lifecycle.modals.promote.metricsValue', {
+            avgDuration: numberUtils.formatNumber(candidate.avg_duration_ms),
+            dailyInvocations: numberUtils.formatNumber(
+              candidate.daily_invocations,
+            ),
+          }),
         },
       ]
     : []
 
   return (
     <Modal
-      title="晋升为常驻服务"
+      title={t('pages.lifecycle.modals.promote.title')}
       open={Boolean(candidate)}
-      okText="创建部署任务"
+      okText={t('pages.lifecycle.modals.promote.ok')}
       okButtonProps={{ loading: pending }}
-      cancelText="取消"
+      cancelText={t('common.actions.cancel')}
       confirmLoading={pending}
       closable={!pending}
       maskClosable={!pending}
@@ -88,8 +95,15 @@ export function PromoteAgentModal({
             <div className="grid grid-cols-3 gap-3 max-[640px]:grid-cols-1">
               <Form.Item
                 name="replicas"
-                label="副本数"
-                rules={[{ required: true, message: '请输入副本数' }]}
+                label={t('pages.lifecycle.modals.promote.replicas')}
+                rules={[
+                  {
+                    required: true,
+                    message: t(
+                      'pages.lifecycle.modals.promote.replicasRequired',
+                    ),
+                  },
+                ]}
               >
                 <InputNumber
                   min={1}
@@ -101,14 +115,22 @@ export function PromoteAgentModal({
               <Form.Item name="cpu" label="CPU">
                 <Input placeholder={DEFAULT_PROMOTE_VALUES.cpu} />
               </Form.Item>
-              <Form.Item name="memory" label="内存">
+              <Form.Item
+                name="memory"
+                label={t('pages.lifecycle.modals.promote.memory')}
+              >
                 <Input placeholder={DEFAULT_PROMOTE_VALUES.memory} />
               </Form.Item>
             </div>
             <Form.Item
               name="reason"
-              label="晋升原因"
-              rules={[{ required: true, message: '请输入晋升原因' }]}
+              label={t('pages.lifecycle.modals.promote.reason')}
+              rules={[
+                {
+                  required: true,
+                  message: t('pages.lifecycle.modals.promote.reasonRequired'),
+                },
+              ]}
             >
               <Input.TextArea rows={4} maxLength={200} showCount />
             </Form.Item>

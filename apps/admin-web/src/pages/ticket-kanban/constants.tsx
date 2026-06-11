@@ -18,7 +18,7 @@ export type MetricKey = 'active' | 'all' | 'failed' | 'pending_approval'
 
 export interface LaneConfig {
   id: LaneId
-  title: string
+  titleKey: string
   description: string
   statuses: AdminTaskStatus[]
   color: LaneColor
@@ -28,7 +28,7 @@ export interface LaneConfig {
 export const lanes: LaneConfig[] = [
   {
     id: 'analysis',
-    title: '解析中',
+    titleKey: 'pages.tickets.lanes.analysis.title',
     description: 'CREATED / ANALYZING',
     statuses: ['CREATED', 'ANALYZING'],
     color: 'blue',
@@ -36,7 +36,7 @@ export const lanes: LaneConfig[] = [
   },
   {
     id: 'coding',
-    title: '编码中',
+    titleKey: 'pages.tickets.lanes.coding.title',
     description: 'ROUTING / CODING',
     statuses: ['ROUTING', 'CODING'],
     color: 'purple',
@@ -44,7 +44,7 @@ export const lanes: LaneConfig[] = [
   },
   {
     id: 'testing',
-    title: '测试中',
+    titleKey: 'pages.tickets.lanes.testing.title',
     description: 'TESTING',
     statuses: ['TESTING'],
     color: 'cyan',
@@ -52,7 +52,7 @@ export const lanes: LaneConfig[] = [
   },
   {
     id: 'blocked',
-    title: '异常挂起',
+    titleKey: 'pages.tickets.lanes.blocked.title',
     description: 'PENDING_APPROVAL / FAILED',
     statuses: ['PENDING_APPROVAL', 'FAILED'],
     color: 'red',
@@ -60,7 +60,7 @@ export const lanes: LaneConfig[] = [
   },
   {
     id: 'deploying',
-    title: '打包中',
+    titleKey: 'pages.tickets.lanes.deploying.title',
     description: 'DEPLOYING',
     statuses: ['DEPLOYING', 'COMPLETED'],
     color: 'gold',
@@ -71,29 +71,29 @@ export const lanes: LaneConfig[] = [
 export const metricCards = [
   {
     key: 'all',
-    title: '全局工单',
-    caption: '全部状态池',
+    titleKey: 'pages.tickets.metrics.all.title',
+    captionKey: 'pages.tickets.metrics.all.caption',
     icon: <UsergroupAddOutlined />,
     color: 'var(--admin-primary)',
   },
   {
     key: 'active',
-    title: '流转中',
-    caption: '处理中占比',
+    titleKey: 'pages.tickets.metrics.active.title',
+    captionKey: 'pages.tickets.metrics.active.caption',
     icon: <FieldTimeOutlined />,
     color: 'var(--admin-info)',
   },
   {
     key: 'pending_approval',
-    title: '待审批',
-    caption: '人工确认',
+    titleKey: 'pages.tickets.metrics.pendingApproval.title',
+    captionKey: 'pages.tickets.metrics.pendingApproval.caption',
     icon: <ExclamationCircleOutlined />,
     color: 'var(--admin-danger)',
   },
   {
     key: 'failed',
-    title: '失败',
-    caption: '执行失败',
+    titleKey: 'pages.tickets.metrics.failed.title',
+    captionKey: 'pages.tickets.metrics.failed.caption',
     icon: <AlertOutlined />,
     color: 'var(--admin-warning)',
   },

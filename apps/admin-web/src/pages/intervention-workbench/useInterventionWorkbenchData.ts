@@ -1,6 +1,7 @@
 import { App } from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import {
@@ -28,6 +29,7 @@ export interface RejectFormValues {
 }
 
 export function useInterventionWorkbenchData() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { message } = App.useApp()
@@ -44,10 +46,13 @@ export function useInterventionWorkbenchData() {
   const snapshot = snapshotQuery.data
   const canOperate = snapshot?.status === 'PENDING_APPROVAL'
   const displayTitle = snapshot?.title?.trim() ? snapshot.title : taskId
-  const snapshotItems = useMemo(() => buildSnapshotItems(snapshot), [snapshot])
+  const snapshotItems = useMemo(
+    () => buildSnapshotItems(snapshot, t),
+    [snapshot, t],
+  )
   const errorItems = useMemo(
-    () => buildErrorItems(snapshot?.error),
-    [snapshot?.error],
+    () => buildErrorItems(snapshot?.error, t),
+    [snapshot?.error, t],
   )
   const contextText = useMemo(
     () => buildContextText(snapshot?.error?.context),
@@ -78,7 +83,9 @@ export function useInterventionWorkbenchData() {
       }),
     onSuccess: (result) => {
       invalidateTaskQueries()
-      void message.success(result.message || '已注入 Prompt')
+      void message.success(
+        result.message || t('pages.intervention.success.reprompt'),
+      )
       void navigate('/tickets')
     },
   })
@@ -91,7 +98,9 @@ export function useInterventionWorkbenchData() {
       }),
     onSuccess: (result) => {
       invalidateTaskQueries()
-      void message.success(result.message || '已驳回工单')
+      void message.success(
+        result.message || t('pages.intervention.success.reject'),
+      )
       void navigate('/tickets')
     },
   })

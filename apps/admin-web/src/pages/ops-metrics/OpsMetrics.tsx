@@ -23,7 +23,9 @@ import {
   theme,
 } from 'antd'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import type { TFunction } from 'i18next'
 
 import {
   adminMetricsKeys,
@@ -81,15 +83,16 @@ function useChartTheme(): ChartTheme {
 function buildMetrics(
   data: AdminMetricsOverview | undefined,
   loading: boolean,
+  t: TFunction,
 ) {
   const latestP95 = getLatestP95(data?.llm_latency)
   const unit = data?.llm_latency.unit ?? 'ms'
 
   return [
     {
-      hint: '周期内创建与流转的工单',
+      hint: t('pages.opsMetrics.metrics.totalTasks.hint'),
       icon: <ToolOutlined />,
-      title: '工单总量',
+      title: t('pages.opsMetrics.metrics.totalTasks.title'),
       value: data
         ? numberUtils.formatNumber(data.factory_output.total_tasks)
         : '-',
@@ -97,16 +100,16 @@ function buildMetrics(
     {
       hint: 'COMPLETED / total_tasks',
       icon: <CheckCircleOutlined />,
-      title: '工单成功率',
+      title: t('pages.opsMetrics.metrics.successRate.title'),
       value: data
         ? numberUtils.formatPercent(data.factory_output.success_rate)
         : '-',
       valueColor: 'var(--admin-success)',
     },
     {
-      hint: '最新聚合点 P95',
+      hint: t('pages.opsMetrics.metrics.llmP95.hint'),
       icon: <ClockCircleOutlined />,
-      title: 'LLM P95 延迟',
+      title: t('pages.opsMetrics.metrics.llmP95.title'),
       value: latestP95
         ? numberUtils.formatNumber(latestP95, {
             suffix: unit,
@@ -114,17 +117,17 @@ function buildMetrics(
         : '-',
     },
     {
-      hint: 'Top Skill 调用汇总',
+      hint: t('pages.opsMetrics.metrics.skillCalls.hint'),
       icon: <ThunderboltOutlined />,
-      title: 'Skill 调用量',
+      title: t('pages.opsMetrics.metrics.skillCalls.title'),
       value: data
         ? numberUtils.formatNumber(getSkillCallTotal(data.hot_skills))
         : '-',
     },
     {
-      hint: '计费汇总 this_month',
+      hint: t('pages.opsMetrics.metrics.monthlySpend.hint'),
       icon: <DollarOutlined />,
-      title: '本月消费',
+      title: t('pages.opsMetrics.metrics.monthlySpend.title'),
       value: data
         ? numberUtils.formatCurrency(data.billing_summary.this_month)
         : '-',
@@ -134,6 +137,7 @@ function buildMetrics(
 }
 
 export function OpsMetrics() {
+  const { t } = useTranslation()
   const { styles } = useOpsMetricsStyles()
   const chartTheme = useChartTheme()
   const periodDict = useDict('ops_metrics_period')
@@ -153,7 +157,7 @@ export function OpsMetrics() {
 
   const data = metricsQuery.data
   const isInitialLoading = metricsQuery.isLoading
-  const metricItems = buildMetrics(data, isInitialLoading)
+  const metricItems = buildMetrics(data, isInitialLoading, t)
 
   return (
     <div
@@ -167,7 +171,7 @@ export function OpsMetrics() {
                 level={3}
                 className="m-0! text-[22px]! font-[720]! tracking-normal!"
               >
-                运营大盘
+                {t('pages.opsMetrics.title')}
               </Typography.Title>
               <Tag
                 className="rounded-md! border-0! bg-[color-mix(in_srgb,var(--admin-primary)_10%,transparent)]! px-2! text-(--admin-primary)!"
@@ -177,7 +181,9 @@ export function OpsMetrics() {
               </Tag>
             </div>
             <Typography.Text className="mt-1 block text-[12px]! text-(--muted)!">
-              数据生成时间：{formatDateTime(data?.generated_at)}
+              {t('pages.opsMetrics.generatedAt', {
+                time: formatDateTime(data?.generated_at),
+              })}
             </Typography.Text>
           </div>
           <Space wrap>
@@ -186,9 +192,9 @@ export function OpsMetrics() {
               value={period}
               onChange={(value) => setPeriod(value as OpsMetricsPeriod)}
             />
-            <Tooltip title="刷新">
+            <Tooltip title={t('common.actions.refresh')}>
               <Button
-                aria-label="刷新"
+                aria-label={t('common.actions.refresh')}
                 icon={<ReloadOutlined />}
                 loading={metricsQuery.isFetching && !isInitialLoading}
                 onClick={() => void metricsQuery.refetch()}
@@ -203,11 +209,11 @@ export function OpsMetrics() {
         <Alert
           showIcon
           type="error"
-          message="运营大盘加载失败"
-          description={getErrorMessage(metricsQuery.error)}
+          message={t('pages.opsMetrics.loadFailed')}
+          description={getErrorMessage(metricsQuery.error, t)}
           action={
             <Button size="small" onClick={() => void metricsQuery.refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
         />
@@ -225,7 +231,7 @@ export function OpsMetrics() {
           title={
             <Space>
               <FieldTimeOutlined />
-              LLM 响应延迟
+              {t('pages.opsMetrics.sections.latency')}
             </Space>
           }
         >
@@ -248,14 +254,17 @@ export function OpsMetrics() {
           title={
             <Space>
               <FireOutlined />
-              工厂产出分布
+              {t('pages.opsMetrics.sections.factoryOutput')}
             </Space>
           }
           extra={
             data ? (
               <Tag className="rounded-md!" color="green">
-                成功率{' '}
-                {numberUtils.formatPercent(data.factory_output.success_rate)}
+                {t('pages.opsMetrics.successRateWithValue', {
+                  value: numberUtils.formatPercent(
+                    data.factory_output.success_rate,
+                  ),
+                })}
               </Tag>
             ) : null
           }
@@ -278,7 +287,7 @@ export function OpsMetrics() {
           title={
             <Space>
               <ThunderboltOutlined />
-              热门 Skill
+              {t('pages.opsMetrics.sections.hotSkills')}
             </Space>
           }
           extra={
@@ -295,7 +304,7 @@ export function OpsMetrics() {
           title={
             <Space>
               <DollarOutlined />
-              计费汇总
+              {t('pages.opsMetrics.sections.billing')}
             </Space>
           }
         >
@@ -310,7 +319,7 @@ export function OpsMetrics() {
           title={
             <Space>
               <CloudServerOutlined />
-              智能体汇总
+              {t('pages.opsMetrics.sections.agents')}
             </Space>
           }
         >

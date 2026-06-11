@@ -1,5 +1,6 @@
 import { CloudServerOutlined } from '@ant-design/icons'
 import { Progress, Skeleton, Space, Statistic } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { OpsMetricsAgentSummary } from '@/api/ops-metrics'
 
@@ -13,14 +14,15 @@ interface AgentSummaryProps {
 }
 
 export function AgentSummary({ loading, summary }: AgentSummaryProps) {
-  const segments = summary ? getAgentSegments(summary) : []
+  const { t } = useTranslation()
+  const segments = summary ? getAgentSegments(summary, t) : []
 
   return (
     <Skeleton active loading={loading} paragraph={{ rows: 5 }} title={false}>
       {summary ? (
         <Space className="w-full" orientation="vertical" size={14}>
           <Statistic
-            title="智能体总数"
+            title={t('pages.opsMetrics.agents.total')}
             value={numberUtils.formatNumber(summary.total)}
             prefix={<CloudServerOutlined />}
             styles={{
@@ -53,7 +55,7 @@ export function AgentSummary({ loading, summary }: AgentSummaryProps) {
           </Space>
         </Space>
       ) : (
-        <EmptyBlock description="暂无智能体数据" />
+        <EmptyBlock description={t('pages.opsMetrics.empty.agents')} />
       )}
     </Skeleton>
   )

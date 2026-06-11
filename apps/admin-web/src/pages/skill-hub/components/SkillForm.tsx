@@ -1,6 +1,7 @@
 import { Button, Form, Input, Select, Space, Typography } from 'antd'
 import { useEffect, useImperativeHandle } from 'react'
 import type { Ref } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { AdminSkillEnvironment, AdminSkillStatus } from '@/api/skill-hub'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
@@ -29,6 +30,7 @@ interface SkillFormProps {
 }
 
 export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
+  const { t } = useTranslation()
   const [form] = Form.useForm<SkillFormValues>()
 
   useImperativeHandle(
@@ -68,30 +70,50 @@ export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
     >
       <div className="grid grid-cols-2 gap-x-4 max-[760px]:grid-cols-1">
         <Form.Item
-          label="Skill 名称"
+          label={t('pages.skillHub.form.skillName')}
           name="name"
-          rules={[{ required: true, message: '请输入 Skill 名称' }]}
+          rules={[
+            {
+              required: true,
+              message: t('pages.skillHub.form.skillNameRequired'),
+            },
+          ]}
         >
-          <Input placeholder="Python ETL 技能" />
+          <Input placeholder={t('pages.skillHub.form.skillNamePlaceholder')} />
         </Form.Item>
         <Form.Item
-          label="技能分类"
+          label={t('pages.skillHub.form.category')}
           name="category"
-          rules={[{ required: true, message: '请输入技能分类' }]}
+          rules={[
+            {
+              required: true,
+              message: t('pages.skillHub.form.categoryRequired'),
+            },
+          ]}
         >
-          <Input placeholder="python-etl" />
+          <Input placeholder={t('pages.skillHub.form.categoryPlaceholder')} />
         </Form.Item>
         <Form.Item
-          label="环境"
+          label={t('pages.skillHub.form.environment')}
           name="environment"
-          rules={[{ required: true, message: '请选择环境' }]}
+          rules={[
+            {
+              required: true,
+              message: t('pages.skillHub.form.environmentRequired'),
+            },
+          ]}
         >
           <DictSelect<AdminSkillEnvironment> type="admin_skill_environment" />
         </Form.Item>
         <Form.Item
-          label="状态"
+          label={t('pages.skillHub.form.status')}
           name="status"
-          rules={[{ required: true, message: '请选择状态' }]}
+          rules={[
+            {
+              required: true,
+              message: t('pages.skillHub.form.statusRequired'),
+            },
+          ]}
         >
           <DictSelect<AdminSkillStatus>
             excludeValues={mode === 'edit' ? undefined : ['deprecated']}
@@ -100,29 +122,40 @@ export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
         </Form.Item>
       </div>
 
-      <Form.Item label="描述" name="description">
+      <Form.Item
+        label={t('pages.skillHub.form.description')}
+        name="description"
+      >
         <Input.TextArea
           autoSize={{ minRows: 2, maxRows: 4 }}
-          placeholder="描述该 Skill 的适用场景"
+          placeholder={t('pages.skillHub.form.descriptionPlaceholder')}
         />
       </Form.Item>
 
       <Form.Item
         label="Prompt"
         name="prompt"
-        rules={[{ required: true, message: '请输入 Prompt' }]}
+        rules={[
+          {
+            required: true,
+            message: t('pages.skillHub.form.promptRequired'),
+          },
+        ]}
       >
         <Input.TextArea
           autoSize={{ minRows: 6, maxRows: 10 }}
-          placeholder="描述 Skill 的能力边界、调用方式和最佳实践"
+          placeholder={t('pages.skillHub.form.promptPlaceholder')}
         />
       </Form.Item>
 
-      <Form.Item label="向量标签" name="embedding_tags">
+      <Form.Item
+        label={t('pages.skillHub.form.embeddingTags')}
+        name="embedding_tags"
+      >
         <Select
           mode="tags"
           tokenSeparators={[',', '，']}
-          placeholder="输入标签后回车"
+          placeholder={t('pages.skillHub.form.embeddingTagsPlaceholder')}
         />
       </Form.Item>
 
@@ -130,9 +163,11 @@ export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
         {(fields, { add, remove }) => (
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <Typography.Text strong>代码片段</Typography.Text>
+              <Typography.Text strong>
+                {t('pages.skillHub.form.codeSnippets')}
+              </Typography.Text>
               <Button size="small" onClick={() => add()}>
-                添加片段
+                {t('pages.skillHub.form.addSnippet')}
               </Button>
             </div>
             <Space className="w-full" orientation="vertical" size={12}>
@@ -143,33 +178,50 @@ export function SkillForm({ initialValues, open, mode, ref }: SkillFormProps) {
                 >
                   <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-3 max-[760px]:grid-cols-1">
                     <Form.Item
-                      label="语言"
+                      label={t('pages.skillHub.form.language')}
                       name={[field.name, 'language']}
-                      rules={[{ required: true, message: '请输入代码语言' }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: t('pages.skillHub.form.languageRequired'),
+                        },
+                      ]}
                     >
                       <Input placeholder="python" />
                     </Form.Item>
                     <Form.Item
-                      label="文件名"
+                      label={t('pages.skillHub.form.filename')}
                       name={[field.name, 'filename']}
-                      rules={[{ required: true, message: '请输入文件名' }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: t('pages.skillHub.form.filenameRequired'),
+                        },
+                      ]}
                     >
                       <Input placeholder="etl_pipeline.py" />
                     </Form.Item>
                     <Form.Item label=" " className="mb-0">
                       <Button danger onClick={() => remove(field.name)}>
-                        删除
+                        {t('common.actions.delete')}
                       </Button>
                     </Form.Item>
                   </div>
                   <Form.Item
-                    label="代码内容"
+                    label={t('pages.skillHub.form.codeContent')}
                     name={[field.name, 'content']}
-                    rules={[{ required: true, message: '请输入代码内容' }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: t('pages.skillHub.form.codeContentRequired'),
+                      },
+                    ]}
                   >
                     <Input.TextArea
                       autoSize={{ minRows: 4, maxRows: 8 }}
-                      placeholder="输入参考代码"
+                      placeholder={t(
+                        'pages.skillHub.form.codeContentPlaceholder',
+                      )}
                     />
                   </Form.Item>
                 </div>

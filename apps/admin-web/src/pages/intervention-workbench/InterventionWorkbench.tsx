@@ -1,5 +1,6 @@
 import { Alert, Button, Card, Empty, Spin } from 'antd'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { ActionModals } from './components/ActionModals'
 import { ActionPanel } from './components/ActionPanel'
@@ -13,6 +14,7 @@ import { useInterventionWorkbenchData } from './useInterventionWorkbenchData'
 import { getErrorMessage } from './utils'
 
 export function InterventionWorkbench() {
+  const { t } = useTranslation()
   const { styles } = useInterventionWorkbenchStyles()
   const [repromptOpen, setRepromptOpen] = useState(false)
   const [rejectOpen, setRejectOpen] = useState(false)
@@ -44,8 +46,12 @@ export function InterventionWorkbench() {
         className="rounded-lg!"
         showIcon
         type="error"
-        title="缺少工单 ID"
-        action={<Button onClick={goBack}>返回工单</Button>}
+        title={t('pages.intervention.errors.missingTaskId')}
+        action={
+          <Button onClick={goBack}>
+            {t('pages.intervention.header.back')}
+          </Button>
+        }
       />
     )
   }
@@ -74,11 +80,11 @@ export function InterventionWorkbench() {
           className="relative rounded-lg!"
           showIcon
           type="error"
-          message="挂起快照加载失败"
-          description={getErrorMessage(snapshotError)}
+          title={t('pages.intervention.errors.snapshotLoadFailed')}
+          description={getErrorMessage(snapshotError, t)}
           action={
             <Button size="small" onClick={() => void refetch()}>
-              重试
+              {t('common.actions.retry')}
             </Button>
           }
         />
@@ -123,7 +129,7 @@ export function InterventionWorkbench() {
           </div>
         ) : isLoading ? null : (
           <Card className={`relative rounded-lg! ${styles.emptyCard}`}>
-            <Empty description="暂无快照数据" />
+            <Empty description={t('pages.intervention.empty.snapshot')} />
           </Card>
         )}
       </Spin>

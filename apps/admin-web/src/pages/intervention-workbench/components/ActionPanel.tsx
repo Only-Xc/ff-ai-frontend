@@ -1,5 +1,6 @@
 import { CloseCircleOutlined, SendOutlined } from '@ant-design/icons'
 import { Alert, Button, Card, Space } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 interface ActionPanelProps {
   cardClassName?: string
@@ -16,6 +17,7 @@ export function ActionPanel({
   onOpenReject,
   onOpenReprompt,
 }: ActionPanelProps) {
+  const { t } = useTranslation()
   const actions = (
     <>
       <Button
@@ -26,7 +28,7 @@ export function ActionPanel({
         type="primary"
         onClick={onOpenReprompt}
       >
-        注入 Prompt 重跑
+        {t('pages.intervention.actions.reprompt')}
       </Button>
       <Button
         block={mode === 'card'}
@@ -36,7 +38,7 @@ export function ActionPanel({
         icon={<CloseCircleOutlined />}
         onClick={onOpenReject}
       >
-        驳回关闭
+        {t('pages.intervention.actions.reject')}
       </Button>
     </>
   )
@@ -50,7 +52,7 @@ export function ActionPanel({
             showIcon
             className="py-1!"
             type="warning"
-            title="当前状态仅支持查看"
+            title={t('pages.intervention.actions.viewOnly')}
           />
         )}
       </Space>
@@ -58,11 +60,18 @@ export function ActionPanel({
   }
 
   return (
-    <Card className={`rounded-lg! ${cardClassName ?? ''}`} title="处理动作">
+    <Card
+      className={`rounded-lg! ${cardClassName ?? ''}`}
+      title={t('pages.intervention.actions.title')}
+    >
       <Space className="w-full" direction="vertical" size={12}>
         {actions}
         {canOperate ? null : (
-          <Alert showIcon type="warning" title="当前状态仅支持查看" />
+          <Alert
+            showIcon
+            type="warning"
+            title={t('pages.intervention.actions.viewOnly')}
+          />
         )}
       </Space>
     </Card>

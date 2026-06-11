@@ -1,5 +1,6 @@
 import { numberUtils } from '@ff-ai-frontend/utils'
 import dayjs from 'dayjs'
+import type { TFunction } from 'i18next'
 import sumBy from 'lodash-es/sumBy'
 
 import type {
@@ -13,22 +14,29 @@ export function sumCost<T extends { daily_avg_cost: number }>(items: T[]) {
 
 export function getLifecycleActionReason(
   candidate: IdleLifecycleCandidate,
+  t: TFunction,
 ): string
 export function getLifecycleActionReason(
   candidate: HotLifecycleCandidate,
+  t: TFunction,
 ): string
 export function getLifecycleActionReason(
   candidate: IdleLifecycleCandidate | HotLifecycleCandidate,
+  t: TFunction,
 ) {
   if ('idle_days' in candidate) {
-    return `连续 ${candidate.idle_days} 天零调用流量，降级以释放 K8s 资源`
+    return t('pages.lifecycle.reason.demote', {
+      days: candidate.idle_days,
+    })
   }
 
-  return `日均调用 ${numberUtils.formatNumber(candidate.daily_invocations)} 次，晋升为常驻微服务`
+  return t('pages.lifecycle.reason.promote', {
+    count: numberUtils.formatNumber(candidate.daily_invocations),
+  })
 }
 
-export function formatDateTime(value?: string | null) {
-  if (!value) return '从未调用'
+export function formatDateTime(value: string | null | undefined, t: TFunction) {
+  if (!value) return t('pages.lifecycle.time.neverInvoked')
 
   const date = dayjs(value)
 
@@ -37,6 +45,8 @@ export function formatDateTime(value?: string | null) {
   return date.format('YYYY/MM/DD HH:mm')
 }
 
-export function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : '操作失败'
+export function getErrorMessage(error: unknown, t: TFunction) {
+  return error instanceof Error
+    ? error.message
+    : t('common.errors.operationFailed')
 }

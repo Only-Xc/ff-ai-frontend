@@ -1,4 +1,5 @@
 import { Skeleton, Tag, Typography } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { OpsMetricsHotSkill } from '@/api/ops-metrics'
 
@@ -11,12 +12,14 @@ interface HotSkillsListProps {
 }
 
 export function HotSkillsList({ loading, skills }: HotSkillsListProps) {
+  const { t } = useTranslation()
+
   if (loading) {
     return <Skeleton active paragraph={{ rows: 8 }} title={false} />
   }
 
   if (!skills?.length) {
-    return <EmptyBlock description="暂无热门 Skill" />
+    return <EmptyBlock description={t('pages.opsMetrics.empty.hotSkills')} />
   }
 
   return (
@@ -56,7 +59,9 @@ export function HotSkillsList({ loading, skills }: HotSkillsListProps) {
               {numberUtils.formatNumber(skill.call_count)}
             </div>
             <div className="text-[12px] text-(--muted)">
-              成功率 {numberUtils.formatPercent(skill.success_rate)}
+              {t('pages.opsMetrics.hotSkills.successRate', {
+                value: numberUtils.formatPercent(skill.success_rate),
+              })}
             </div>
           </div>
         </div>

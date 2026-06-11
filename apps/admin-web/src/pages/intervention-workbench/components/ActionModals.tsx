@@ -1,4 +1,5 @@
 import { Button, Form, Input, Modal } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type {
   RejectFormValues,
@@ -26,6 +27,7 @@ export function ActionModals({
   repromptOpen,
   repromptPending,
 }: ActionModalsProps) {
+  const { t } = useTranslation()
   const [repromptForm] = Form.useForm<RepromptFormValues>()
   const [rejectForm] = Form.useForm<RejectFormValues>()
 
@@ -54,12 +56,12 @@ export function ActionModals({
   return (
     <>
       <Modal
-        title="注入 Prompt 重跑"
+        title={t('pages.intervention.actions.reprompt')}
         open={repromptOpen}
         onCancel={closeRepromptModal}
         footer={[
           <Button key="cancel" onClick={closeRepromptModal}>
-            取消
+            {t('common.actions.cancel')}
           </Button>,
           <Button
             key="submit"
@@ -67,31 +69,40 @@ export function ActionModals({
             type="primary"
             onClick={() => void submitReprompt()}
           >
-            提交重跑
+            {t('pages.intervention.modals.reprompt.submit')}
           </Button>,
         ]}
       >
         <Form form={repromptForm} layout="vertical" requiredMark={false}>
           <Form.Item
-            label="Prompt 提示"
+            label={t('pages.intervention.modals.reprompt.promptHint')}
             name="prompt_hint"
-            rules={[{ required: true, message: '请输入 Prompt 提示' }]}
+            rules={[
+              {
+                required: true,
+                message: t(
+                  'pages.intervention.modals.reprompt.promptHintRequired',
+                ),
+              },
+            ]}
           >
             <Input.TextArea
               autoSize={{ minRows: 6, maxRows: 12 }}
-              placeholder="描述错误根因和期望修复方向"
+              placeholder={t(
+                'pages.intervention.modals.reprompt.promptHintPlaceholder',
+              )}
             />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="驳回关闭"
+        title={t('pages.intervention.actions.reject')}
         open={rejectOpen}
         onCancel={closeRejectModal}
         footer={[
           <Button key="cancel" onClick={closeRejectModal}>
-            取消
+            {t('common.actions.cancel')}
           </Button>,
           <Button
             key="submit"
@@ -100,19 +111,26 @@ export function ActionModals({
             type="primary"
             onClick={() => void submitReject()}
           >
-            确认驳回
+            {t('pages.intervention.modals.reject.submit')}
           </Button>,
         ]}
       >
         <Form form={rejectForm} layout="vertical" requiredMark={false}>
           <Form.Item
-            label="驳回原因"
+            label={t('pages.intervention.modals.reject.reason')}
             name="reason"
-            rules={[{ required: true, message: '请输入驳回原因' }]}
+            rules={[
+              {
+                required: true,
+                message: t('pages.intervention.modals.reject.reasonRequired'),
+              },
+            ]}
           >
             <Input.TextArea
               autoSize={{ minRows: 4, maxRows: 10 }}
-              placeholder="填写关闭工单的原因"
+              placeholder={t(
+                'pages.intervention.modals.reject.reasonPlaceholder',
+              )}
             />
           </Form.Item>
         </Form>

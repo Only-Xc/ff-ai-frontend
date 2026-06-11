@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import pickBy from 'lodash-es/pickBy'
 import trim from 'lodash-es/trim'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useEventCallback } from 'usehooks-ts'
 
 import {
@@ -25,11 +26,17 @@ import { PromoteAgentModal } from './components/PromoteAgentModal'
 import { DEFAULT_FILTER_VALUES } from './constants'
 import { useLifecycleCandidates } from './hooks/useLifecycleCandidates'
 import { useLifecycleOpsStyles } from './styles'
-import type { CandidateTab, DemoteFormValues, FilterValues, PromoteFormValues } from './types'
+import type {
+  CandidateTab,
+  DemoteFormValues,
+  FilterValues,
+  PromoteFormValues,
+} from './types'
 import { numberUtils } from '@ff-ai-frontend/utils'
 import { getErrorMessage } from './utils'
 
 export function LifecycleOps() {
+  const { t } = useTranslation()
   const { styles } = useLifecycleOpsStyles()
   const { message } = App.useApp()
   const operatorId = useAuthStore((state) => state.user?.id)
@@ -93,7 +100,9 @@ export function LifecycleOps() {
     onSuccess: (result) => {
       invalidateCandidates()
       closeDemoteModal()
-      void message.success(result.message || '已降级为沙盒')
+      void message.success(
+        result.message || t('pages.lifecycle.messages.demoteSuccess'),
+      )
     },
   })
 
@@ -122,8 +131,10 @@ export function LifecycleOps() {
       closePromoteModal()
       void message.success(
         result.task_id
-          ? `部署任务已创建：${result.task_id}`
-          : result.message || '部署任务已创建',
+          ? t('pages.lifecycle.messages.deploymentCreatedWithTask', {
+              taskId: result.task_id,
+            })
+          : result.message || t('pages.lifecycle.messages.deploymentCreated'),
       )
     },
   })
@@ -136,8 +147,13 @@ export function LifecycleOps() {
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
-        title="生命周期调度"
-        subtitle={`当前阈值：沉寂 ${queryParams.idle_days} 天，日均调用 ${numberUtils.formatNumber(queryParams.min_daily_invocations)} 次。`}
+        title={t('pages.lifecycle.title')}
+        subtitle={t('pages.lifecycle.subtitle', {
+          idleDays: queryParams.idle_days,
+          minDailyInvocations: numberUtils.formatNumber(
+            queryParams.min_daily_invocations,
+          ),
+        })}
       >
         <LifecycleSummary
           hotCandidates={hotCandidates}
@@ -171,11 +187,11 @@ export function LifecycleOps() {
                   size="small"
                   onClick={refetchAll}
                 >
-                  重试
+                  {t('common.actions.retry')}
                 </Button>
               }
-              title="生命周期候选池加载失败"
-              description={getErrorMessage(currentError)}
+              title={t('pages.lifecycle.loadFailed')}
+              description={getErrorMessage(currentError, t)}
               type="error"
             />
           ) : null}
@@ -187,12 +203,16 @@ export function LifecycleOps() {
             items={[
               {
                 key: 'idle',
-                label: `沉寂应用 (${idleListQuery.data?.count ?? 0})`,
+                label: t('pages.lifecycle.tabs.idle', {
+                  count: idleListQuery.data?.count ?? 0,
+                }),
                 children: null,
               },
               {
                 key: 'hot',
-                label: `火爆应用 (${hotListQuery.data?.count ?? 0})`,
+                label: t('pages.lifecycle.tabs.hot', {
+                  count: hotListQuery.data?.count ?? 0,
+                }),
                 children: null,
               },
             ]}
@@ -216,7 +236,7 @@ export function LifecycleOps() {
 
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
             <Typography.Text className="text-(--muted)!">
-              共 {activeTotal} 条
+              {t('common.labels.totalCount', { total: activeTotal })}
             </Typography.Text>
             <Pagination {...activePagination.props} total={activeTotal} />
           </div>

@@ -26,6 +26,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDebounceCallback } from 'usehooks-ts'
 
 import {
@@ -65,6 +66,7 @@ import {
 } from './utils'
 
 export function SkillHub() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [filterForm] = Form.useForm<SkillFilterValues>()
   const pagination = usePaginationParams()
@@ -103,7 +105,7 @@ export function SkillHub() {
   const createMutation = useMutation({
     mutationFn: adminSkills_create,
     onSuccess: () => {
-      globalMessage.success('Skill 创建成功')
+      globalMessage.success(t('pages.skillHub.messages.createSuccess'))
       closeFormDrawer()
       pagination.reset()
       void queryClient.invalidateQueries({ queryKey: adminSkillsKeys.lists() })
@@ -119,7 +121,7 @@ export function SkillHub() {
       data: AdminSkillUpdateBody
     }) => adminSkills_update(skillId, data),
     onSuccess: (_, { skillId }) => {
-      globalMessage.success('Skill 更新成功')
+      globalMessage.success(t('pages.skillHub.messages.updateSuccess'))
       closeFormDrawer()
       void queryClient.invalidateQueries({ queryKey: adminSkillsKeys.lists() })
 
@@ -134,7 +136,7 @@ export function SkillHub() {
   const deleteMutation = useMutation({
     mutationFn: adminSkills_delete,
     onSuccess: (_, skillId) => {
-      globalMessage.success('Skill 删除成功')
+      globalMessage.success(t('pages.skillHub.messages.deleteSuccess'))
 
       if (drawerSkillId === skillId) {
         setDrawerSkillId(undefined)
@@ -166,7 +168,9 @@ export function SkillHub() {
       })
     } catch (error) {
       globalMessage.error(
-        error instanceof Error ? error.message : 'Skill 详情加载失败',
+        error instanceof Error
+          ? error.message
+          : t('pages.skillHub.errors.detailLoadFailed'),
       )
     } finally {
       setEditLoadingId(undefined)
@@ -175,7 +179,7 @@ export function SkillHub() {
 
   const columns: TableProps<AdminSkill>['columns'] = [
     {
-      title: 'Skill 名称',
+      title: t('pages.skillHub.columns.name'),
       dataIndex: 'name',
       ellipsis: true,
       render: (value: string, record) => (
@@ -188,13 +192,13 @@ export function SkillHub() {
       ),
     },
     {
-      title: '分类',
+      title: t('pages.skillHub.columns.category'),
       dataIndex: 'category',
       width: 120,
       ellipsis: true,
     },
     {
-      title: '环境',
+      title: t('pages.skillHub.columns.environment'),
       dataIndex: 'environment',
       width: 100,
       render: (value: AdminSkillEnvironment) => (
@@ -202,37 +206,37 @@ export function SkillHub() {
       ),
     },
     {
-      title: '状态',
+      title: t('pages.skillHub.columns.status'),
       dataIndex: 'status',
       width: 100,
       render: (value: AdminSkillStatus) => <SkillStatusTag status={value} />,
     },
     {
-      title: '版本',
+      title: t('pages.skillHub.columns.version'),
       dataIndex: 'version',
       width: 100,
     },
     {
-      title: '调用次数',
+      title: t('pages.skillHub.columns.callCount'),
       dataIndex: 'call_count',
       width: 120,
       render: (value: number) => numberUtils.formatNumber(value),
     },
     {
-      title: '成功率',
+      title: t('pages.skillHub.columns.successRate'),
       dataIndex: 'success_rate',
       width: 120,
       render: (value: number | null) =>
         numberUtils.formatPercent(value, { decimals: 1 }),
     },
     {
-      title: '更新时间',
+      title: t('pages.skillHub.columns.updatedAt'),
       dataIndex: 'updated_at',
       width: 160,
       render: (value: string) => formatDateTime(value),
     },
     {
-      title: '操作',
+      title: t('pages.skillHub.columns.action'),
       key: 'action',
       fixed: 'right',
       width: 300,
@@ -243,7 +247,7 @@ export function SkillHub() {
             type="link"
             onClick={() => setDrawerSkillId(record.skill_id)}
           >
-            详情
+            {t('common.actions.detail')}
           </Button>
           <Button
             loading={editLoadingId === record.skill_id}
@@ -251,14 +255,14 @@ export function SkillHub() {
             type="link"
             onClick={() => void openEditDrawer(record.skill_id)}
           >
-            编辑
+            {t('common.actions.edit')}
           </Button>
           <Popconfirm
-            title="确认删除该 Skill？"
-            description="删除后会同步移除向量索引数据。"
-            okText="删除"
+            title={t('pages.skillHub.actions.deleteConfirmTitle')}
+            description={t('pages.skillHub.actions.deleteConfirmDescription')}
+            okText={t('common.actions.delete')}
             okButtonProps={{ danger: true }}
-            cancelText="取消"
+            cancelText={t('common.actions.cancel')}
             onConfirm={() => deleteMutation.mutate(record.skill_id)}
           >
             <Button
@@ -267,7 +271,7 @@ export function SkillHub() {
               loading={deleteMutation.isPending}
               type="link"
             >
-              删除
+              {t('common.actions.delete')}
             </Button>
           </Popconfirm>
         </Space>
@@ -302,7 +306,7 @@ export function SkillHub() {
     let body: ReturnType<typeof buildSubmitBody>
 
     try {
-      body = buildSubmitBody(values)
+      body = buildSubmitBody(values, t('common.errors.metadataJsonObject'))
     } catch (error) {
       skillFormRef.current?.setFields([
         {
@@ -310,7 +314,7 @@ export function SkillHub() {
           errors: [
             error instanceof Error
               ? error.message
-              : 'metadata 必须是合法 JSON 对象',
+              : t('common.errors.metadataJsonObject'),
           ],
         },
       ])
@@ -338,15 +342,15 @@ export function SkillHub() {
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
-        title="技能库"
-        subtitle="维护平台 Skill，支持检索、创建、编辑、删除和详情查看。"
+        title={t('pages.skillHub.page.title')}
+        subtitle={t('pages.skillHub.page.subtitle')}
       >
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={openCreateDrawer}
         >
-          新建 Skill
+          {t('pages.skillHub.actions.newSkill')}
         </Button>
       </PageHeader>
 
@@ -360,13 +364,17 @@ export function SkillHub() {
               onValuesChange={handleFilterValuesChange}
             >
               <Form.Item name="category">
-                <Input allowClear className="w-40!" placeholder="全部分类" />
+                <Input
+                  allowClear
+                  className="w-40!"
+                  placeholder={t('pages.skillHub.filters.allCategories')}
+                />
               </Form.Item>
               <Form.Item name="environment">
                 <DictSelect<AdminSkillEnvironment>
                   allowClear
                   className="w-35!"
-                  placeholder="全部环境"
+                  placeholder={t('pages.skillHub.filters.allEnvironments')}
                   type="admin_skill_environment"
                 />
               </Form.Item>
@@ -374,7 +382,7 @@ export function SkillHub() {
                 <DictSelect<AdminSkillStatus>
                   allowClear
                   className="w-36!"
-                  placeholder="全部状态"
+                  placeholder={t('pages.skillHub.filters.allStatuses')}
                   type="admin_skill_status"
                 />
               </Form.Item>
@@ -382,19 +390,21 @@ export function SkillHub() {
                 <Input
                   allowClear
                   className="w-56!"
-                  placeholder="搜索名称或描述"
+                  placeholder={t('pages.skillHub.filters.keyword')}
                 />
               </Form.Item>
               <Form.Item>
                 <Space>
-                  <Button onClick={handleFilterReset}>重置</Button>
+                  <Button onClick={handleFilterReset}>
+                    {t('common.actions.reset')}
+                  </Button>
                   <Button
                     type="primary"
                     icon={<ReloadOutlined />}
                     loading={listQuery.isFetching}
                     onClick={() => void listQuery.refetch()}
                   >
-                    刷新
+                    {t('common.actions.refresh')}
                   </Button>
                 </Space>
               </Form.Item>
@@ -411,10 +421,10 @@ export function SkillHub() {
                   size="small"
                   onClick={() => void listQuery.refetch()}
                 >
-                  重试
+                  {t('common.actions.retry')}
                 </Button>
               }
-              title="Skill 列表加载失败"
+              title={t('pages.skillHub.errors.listLoadFailed')}
               type="error"
             />
           ) : null}
@@ -435,7 +445,7 @@ export function SkillHub() {
 
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
             <Typography.Text className="text-(--muted)!">
-              共 {total} 条
+              {t('common.labels.totalCount', { total })}
             </Typography.Text>
             <Pagination {...pagination.props} total={total} />
           </div>
@@ -445,7 +455,7 @@ export function SkillHub() {
       <Drawer
         size={640}
         open={Boolean(drawerSkillId)}
-        title={detailQuery.data?.name ?? 'Skill 详情'}
+        title={detailQuery.data?.name ?? t('pages.skillHub.drawer.detailTitle')}
         onClose={() => setDrawerSkillId(undefined)}
         extra={
           <Button
@@ -453,7 +463,7 @@ export function SkillHub() {
             loading={detailQuery.isFetching}
             onClick={() => void detailQuery.refetch()}
           >
-            刷新
+            {t('common.actions.refresh')}
           </Button>
         }
       >
@@ -466,10 +476,10 @@ export function SkillHub() {
             showIcon
             action={
               <Button size="small" onClick={() => void detailQuery.refetch()}>
-                重试
+                {t('common.actions.retry')}
               </Button>
             }
-            title="Skill 详情加载失败"
+            title={t('pages.skillHub.errors.detailLoadFailed')}
             type="error"
           />
         ) : detailQuery.data ? (
@@ -481,17 +491,25 @@ export function SkillHub() {
         destroyOnHidden
         size={720}
         open={Boolean(formDrawer)}
-        title={formDrawer?.mode === 'edit' ? '编辑 Skill' : '新建 Skill'}
+        title={
+          formDrawer?.mode === 'edit'
+            ? t('pages.skillHub.drawer.editTitle')
+            : t('pages.skillHub.drawer.createTitle')
+        }
         onClose={closeFormDrawer}
         extra={
           <Space>
-            <Button onClick={closeFormDrawer}>取消</Button>
+            <Button onClick={closeFormDrawer}>
+              {t('common.actions.cancel')}
+            </Button>
             <Button
               type="primary"
               loading={isSubmitting}
               onClick={() => void handleSkillSubmit()}
             >
-              {formDrawer?.mode === 'edit' ? '保存' : '创建'}
+              {formDrawer?.mode === 'edit'
+                ? t('common.actions.save')
+                : t('common.actions.create')}
             </Button>
           </Space>
         }

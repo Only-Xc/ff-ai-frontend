@@ -6,6 +6,7 @@ import {
 } from '@ant-design/icons'
 import { Button, Form, Input, Space, Typography } from 'antd'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate } from 'react-router'
 
 import { loginWithPassword } from '@/api/auth'
@@ -25,6 +26,7 @@ const initialValues: LoginFormValues = {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [form] = Form.useForm<LoginFormValues>()
 
@@ -39,7 +41,7 @@ export function LoginPage() {
       const result = await loginWithPassword(values)
 
       setToken(result.accessToken)
-      void globalMessage.success('登录成功')
+      void globalMessage.success(t('pages.login.success'))
       void navigate('/', { replace: true })
     } finally {
       setSubmitting(false)
@@ -56,7 +58,7 @@ export function LoginPage() {
         <section className="hidden lg:block">
           <div className="mb-8 inline-flex items-center gap-2 rounded-md border border-(--border) bg-(--control-bg) px-3 py-2 text-sm text-(--muted)">
             <SafetyCertificateOutlined className="text-(--green)" />
-            安全访问控制台
+            {t('pages.login.badge')}
           </div>
           <Typography.Title
             level={1}
@@ -65,8 +67,7 @@ export function LoginPage() {
             FF AI Platform
           </Typography.Title>
           <Typography.Paragraph className="mt-5! max-w-140 text-base! leading-7! text-(--muted)!">
-            统一管理 Agent
-            工作台、应用配置与运行数据。登录后进入首页，继续处理当前平台任务。
+            {t('pages.login.description')}
           </Typography.Paragraph>
           <div className="mt-10 grid max-w-[560px] grid-cols-3 gap-3">
             {['Agent', 'Workspace', 'Schema'].map((item) => (
@@ -87,10 +88,10 @@ export function LoginPage() {
           <Space className="w-full" direction="vertical" size={24}>
             <div>
               <Typography.Title level={2} className="mb-2! text-2xl!">
-                账号登录
+                {t('pages.login.form.title')}
               </Typography.Title>
               <Typography.Text className="text-(--muted)">
-                使用平台账号进入首页
+                {t('pages.login.form.subtitle')}
               </Typography.Text>
             </div>
 
@@ -103,11 +104,17 @@ export function LoginPage() {
               onFinish={(values) => void handleSubmit(values)}
             >
               <Form.Item
-                label="邮箱"
+                label={t('pages.login.fields.email')}
                 name="username"
                 rules={[
-                  { required: true, message: '请输入邮箱' },
-                  { type: 'email', message: '请输入有效邮箱' },
+                  {
+                    required: true,
+                    message: t('pages.login.validation.emailRequired'),
+                  },
+                  {
+                    type: 'email',
+                    message: t('pages.login.validation.emailInvalid'),
+                  },
                 ]}
               >
                 <Input
@@ -119,14 +126,19 @@ export function LoginPage() {
               </Form.Item>
 
               <Form.Item
-                label="密码"
+                label={t('pages.login.fields.password')}
                 name="password"
-                rules={[{ required: true, message: '请输入密码' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: t('pages.login.validation.passwordRequired'),
+                  },
+                ]}
               >
                 <Input.Password
                   autoComplete="current-password"
                   prefix={<LockOutlined />}
-                  placeholder="请输入密码"
+                  placeholder={t('pages.login.placeholders.password')}
                   size="large"
                 />
               </Form.Item>
@@ -140,7 +152,7 @@ export function LoginPage() {
                   size="large"
                   type="primary"
                 >
-                  登录
+                  {t('pages.login.submit')}
                 </Button>
               </Form.Item>
             </Form>

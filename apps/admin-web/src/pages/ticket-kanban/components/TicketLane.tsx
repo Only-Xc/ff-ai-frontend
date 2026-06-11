@@ -1,5 +1,6 @@
 import { Badge, Empty } from 'antd'
 import type { CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Virtuoso } from 'react-virtuoso'
 
 import type { AdminTask } from '@/api/ticket-kanban'
@@ -8,10 +9,15 @@ import { laneColorMap, type LaneConfig } from '../constants'
 import { TaskCard } from './TaskCard'
 
 function VirtualTaskList({ tasks }: { tasks: AdminTask[] }) {
+  const { t } = useTranslation()
+
   if (!tasks.length) {
     return (
       <div className="grid min-h-0 flex-1 place-items-center p-3">
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无工单" />
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={t('pages.tickets.empty')}
+        />
       </div>
     )
   }
@@ -40,6 +46,8 @@ export function TicketLane({
   lane: LaneConfig
   tasks: AdminTask[]
 }) {
+  const { t } = useTranslation()
+
   return (
     <section
       className="flex min-h-0 min-w-65 flex-col rounded-lg border border-(--border) bg-[color-mix(in_srgb,var(--bg)_82%,var(--border))] shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
@@ -52,7 +60,7 @@ export function TicketLane({
           </span>
           <div className="min-w-0">
             <div className="truncate text-[14px] font-semibold leading-5 text-(--text-strong)">
-              {lane.title}
+              {t(lane.titleKey)}
             </div>
             <div className="truncate text-[10px] font-medium uppercase leading-3 tracking-normal text-(--muted)">
               {lane.description}

@@ -57,7 +57,7 @@ function normalizeCodeSnippets(snippets?: AdminSkillCodeSnippet[]) {
     )
 }
 
-function parseMetadata(value?: string) {
+function parseMetadata(value: string | undefined, metadataObjectError: string) {
   const text = trim(value)
 
   if (!text) return {}
@@ -65,7 +65,7 @@ function parseMetadata(value?: string) {
   const parsed = JSON.parse(text) as unknown
 
   if (!isPlainObject(parsed)) {
-    throw new Error('metadata 必须是合法 JSON 对象')
+    throw new Error(metadataObjectError)
   }
 
   return parsed as Record<string, unknown>
@@ -83,7 +83,10 @@ function getCreateStatus(
   return 'hot'
 }
 
-export function buildSubmitBody(values: SkillFormValues): AdminSkillCreateBody {
+export function buildSubmitBody(
+  values: SkillFormValues,
+  metadataObjectError: string,
+): AdminSkillCreateBody {
   return {
     name: trim(values.name),
     category: trim(values.category),
@@ -93,7 +96,7 @@ export function buildSubmitBody(values: SkillFormValues): AdminSkillCreateBody {
     status: getCreateStatus(values.status),
     code_snippets: normalizeCodeSnippets(values.code_snippets),
     embedding_tags: normalizeTags(values.embedding_tags),
-    metadata: parseMetadata(values.metadata),
+    metadata: parseMetadata(values.metadata, metadataObjectError),
   }
 }
 

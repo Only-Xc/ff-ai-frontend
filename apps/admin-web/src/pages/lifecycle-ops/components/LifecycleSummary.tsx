@@ -7,6 +7,7 @@ import {
 import { Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type {
   HotLifecycleCandidate,
@@ -62,30 +63,35 @@ export function LifecycleSummary({
   idleTotal,
   queryParams,
 }: LifecycleSummaryProps) {
+  const { t } = useTranslation()
   const summaryItems = useMemo(
     () => [
       {
-        title: '沉寂候选',
+        title: t('pages.lifecycle.summary.idle.title'),
         value: numberUtils.formatNumber(idleTotal),
-        hint: `连续 ${queryParams.idle_days} 天零调用`,
+        hint: t('pages.lifecycle.summary.idle.hint', {
+          days: queryParams.idle_days,
+        }),
         icon: <SwapOutlined />,
       },
       {
-        title: '火爆候选',
+        title: t('pages.lifecycle.summary.hot.title'),
         value: numberUtils.formatNumber(hotTotal),
-        hint: `日均调用高于 ${numberUtils.formatNumber(queryParams.min_daily_invocations)}`,
+        hint: t('pages.lifecycle.summary.hot.hint', {
+          count: numberUtils.formatNumber(queryParams.min_daily_invocations),
+        }),
         icon: <FireOutlined />,
       },
       {
-        title: '可释放成本',
+        title: t('pages.lifecycle.summary.releaseCost.title'),
         value: numberUtils.formatCurrency(sumCost(idleCandidates)),
-        hint: '当前页沉寂候选日均运行成本',
+        hint: t('pages.lifecycle.summary.releaseCost.hint'),
         icon: <DollarOutlined />,
       },
       {
-        title: '沙盒执行成本',
+        title: t('pages.lifecycle.summary.sandboxCost.title'),
         value: numberUtils.formatCurrency(sumCost(hotCandidates)),
-        hint: '当前页火爆候选日均沙盒成本',
+        hint: t('pages.lifecycle.summary.sandboxCost.hint'),
         icon: <CheckCircleOutlined />,
       },
     ],
@@ -96,13 +102,14 @@ export function LifecycleSummary({
       idleTotal,
       queryParams.idle_days,
       queryParams.min_daily_invocations,
+      t,
     ],
   )
 
   return (
     <div className="flex min-w-0 items-stretch gap-3 max-[1180px]:w-full">
       <div
-        aria-label="生命周期指标"
+        aria-label={t('pages.lifecycle.summary.aria')}
         className="grid min-w-155 flex-1 grid-cols-4 gap-2.5 max-[1180px]:min-w-0 max-[760px]:grid-cols-2 max-[520px]:grid-cols-1"
       >
         {summaryItems.map((item) => (

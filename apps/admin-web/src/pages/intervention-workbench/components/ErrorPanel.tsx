@@ -1,6 +1,7 @@
 import { FileTextOutlined } from '@ant-design/icons'
 import { Alert, Card, Collapse, Descriptions, Empty, Space } from 'antd'
 import type { DescriptionsProps } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { AdminTaskSnapshotError } from '@/api/ticket-kanban'
 
@@ -19,27 +20,33 @@ export function ErrorPanel({
   error,
   items,
 }: ErrorPanelProps) {
+  const { t } = useTranslation()
+
   return (
     <Card
       className={`rounded-lg! ${cardClassName ?? ''}`}
       title={
         <Space>
           <FileTextOutlined />
-          错误诊断
+          {t('pages.intervention.panels.error')}
         </Space>
       }
     >
       {error ? (
         <Space className="w-full" orientation="vertical" size={14}>
           <Descriptions column={{ md: 2, xs: 1 }} items={items} size="small" />
-          <Alert showIcon type="error" title={error.message || '执行异常'} />
+          <Alert
+            showIcon
+            type="error"
+            title={error.message || t('pages.intervention.errors.execution')}
+          />
           {contextText ? <CodeBlock text={contextText} /> : null}
           {error.traceback ? (
             <Collapse
               items={[
                 {
                   key: 'traceback',
-                  label: '完整堆栈',
+                  label: t('pages.intervention.panels.traceback'),
                   children: <CodeBlock text={error.traceback} />,
                 },
               ]}
@@ -49,7 +56,7 @@ export function ErrorPanel({
       ) : (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="暂无错误信息"
+          description={t('pages.intervention.empty.error')}
         />
       )}
     </Card>

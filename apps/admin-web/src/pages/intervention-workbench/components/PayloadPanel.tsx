@@ -1,5 +1,6 @@
 import { CodeOutlined } from '@ant-design/icons'
 import { Card, Empty, Space } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import { CodeBlock } from './CodeBlock'
 
@@ -10,13 +11,15 @@ export function PayloadPanel({
   cardClassName?: string
   payloadText: string
 }) {
+  const { t } = useTranslation()
+
   return (
     <Card
       className={`rounded-lg! ${cardClassName ?? ''}`}
       title={
         <Space>
           <CodeOutlined />
-          上下文摘要
+          {t('pages.intervention.panels.payload')}
         </Space>
       }
     >
@@ -25,7 +28,7 @@ export function PayloadPanel({
       ) : (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description="暂无上下文摘要"
+          description={t('pages.intervention.empty.payload')}
         />
       )}
     </Card>

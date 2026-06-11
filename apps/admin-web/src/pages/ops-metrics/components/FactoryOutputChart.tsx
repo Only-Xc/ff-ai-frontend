@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import type { EChartsOption } from 'echarts'
 import ReactECharts from 'echarts-for-react'
+import { useTranslation } from 'react-i18next'
 
 import type { OpsMetricsFactoryOutput } from '@/api/ops-metrics'
 import { useDict } from '@ff-ai-frontend/dictionaries'
@@ -19,6 +20,7 @@ export function FactoryOutputChart({
   chartTheme,
   output,
 }: FactoryOutputChartProps) {
+  const { t } = useTranslation()
   const statusDict = useDict('task_status')
   const chartData = useMemo(
     () =>
@@ -83,7 +85,9 @@ export function FactoryOutputChart({
   )
 
   if (!chartData.length) {
-    return <EmptyBlock description="暂无产出数据" />
+    return (
+      <EmptyBlock description={t('pages.opsMetrics.empty.factoryOutput')} />
+    )
   }
 
   return (
@@ -96,7 +100,9 @@ export function FactoryOutputChart({
         />
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-center">
-            <div className="text-[11px] text-(--muted)">总工单</div>
+            <div className="text-[11px] text-(--muted)">
+              {t('pages.opsMetrics.factory.totalTasks')}
+            </div>
             <div className="text-[24px] font-[680] text-(--text-strong) tabular-nums">
               {numberUtils.formatNumber(total)}
             </div>

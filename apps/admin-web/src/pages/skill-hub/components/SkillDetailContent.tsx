@@ -1,16 +1,16 @@
 import { Descriptions, Divider, Space, Tag, Typography } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import type { AdminSkillDetail } from '@/api/skill-hub'
 import { numberUtils } from '@ff-ai-frontend/utils'
 
-import {
-  formatDateTime,
-  stringifyMetadata,
-} from '../utils'
+import { formatDateTime, stringifyMetadata } from '../utils'
 import { CodeBlock } from './CodeBlock'
 import { EnvironmentTag, SkillStatusTag } from './SkillTags'
 
 export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
+  const { t } = useTranslation()
+
   return (
     <div className="space-y-5">
       <Descriptions
@@ -20,46 +20,50 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
           {
             key: 'skill_id',
             label: 'Skill ID',
-            children: <Typography.Text copyable>{skill.skill_id}</Typography.Text>,
+            children: (
+              <Typography.Text copyable>{skill.skill_id}</Typography.Text>
+            ),
           },
           {
             key: 'category',
-            label: '分类',
+            label: t('pages.skillHub.columns.category'),
             children: skill.category,
           },
           {
             key: 'environment',
-            label: '环境',
+            label: t('pages.skillHub.columns.environment'),
             children: <EnvironmentTag environment={skill.environment} />,
           },
           {
             key: 'status',
-            label: '状态',
+            label: t('pages.skillHub.columns.status'),
             children: <SkillStatusTag status={skill.status} />,
           },
           {
             key: 'version',
-            label: '版本',
+            label: t('pages.skillHub.columns.version'),
             children: skill.version,
           },
           {
             key: 'call_count',
-            label: '调用次数',
+            label: t('pages.skillHub.columns.callCount'),
             children: numberUtils.formatNumber(skill.call_count),
           },
           {
             key: 'success_rate',
-            label: '成功率',
-            children: numberUtils.formatPercent(skill.success_rate, { decimals: 1 }),
+            label: t('pages.skillHub.columns.successRate'),
+            children: numberUtils.formatPercent(skill.success_rate, {
+              decimals: 1,
+            }),
           },
           {
             key: 'created_at',
-            label: '创建时间',
+            label: t('pages.skillHub.columns.createdAt'),
             children: formatDateTime(skill.created_at),
           },
           {
             key: 'updated_at',
-            label: '更新时间',
+            label: t('pages.skillHub.columns.updatedAt'),
             children: formatDateTime(skill.updated_at),
           },
         ]}
@@ -69,7 +73,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
 
       <section>
         <Typography.Title className="mb-3!" level={5}>
-          描述
+          {t('pages.skillHub.detail.description')}
         </Typography.Title>
         <Typography.Paragraph className="mb-0! text-(--text)">
           {skill.description}
@@ -78,14 +82,14 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
 
       <section>
         <Typography.Title className="mb-3!" level={5}>
-          Prompt
+          {t('pages.skillHub.detail.prompt')}
         </Typography.Title>
         <CodeBlock>{skill.prompt}</CodeBlock>
       </section>
 
       <section>
         <Typography.Title className="mb-3!" level={5}>
-          代码片段
+          {t('pages.skillHub.detail.codeSnippets')}
         </Typography.Title>
         {skill.code_snippets.length > 0 ? (
           <Space className="w-full" orientation="vertical" size={12}>
@@ -94,12 +98,12 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
                 key={`${snippet.filename}-${snippet.language}-${snippet.content}`}
               >
                 <div className="mb-2 flex items-center gap-2">
-                  <Typography.Text strong>
-                    {snippet.filename}
-                  </Typography.Text>
+                  <Typography.Text strong>{snippet.filename}</Typography.Text>
                   <Tag>{snippet.language}</Tag>
                 </div>
-                <CodeBlock language={snippet.language}>{snippet.content}</CodeBlock>
+                <CodeBlock language={snippet.language}>
+                  {snippet.content}
+                </CodeBlock>
               </div>
             ))}
           </Space>
@@ -110,7 +114,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
 
       <section>
         <Typography.Title className="mb-3!" level={5}>
-          向量标签
+          {t('pages.skillHub.detail.embeddingTags')}
         </Typography.Title>
         {skill.embedding_tags.length > 0 ? (
           <Space wrap size={[6, 6]}>

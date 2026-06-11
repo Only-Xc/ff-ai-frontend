@@ -34,7 +34,8 @@ export const appRoutes: AppRouteObject[] = [
     path: '/login',
     element: lazyLoad(() => import('@/pages/login/Login')),
     handle: {
-      title: '登录',
+      title: 'Login',
+      titleKey: 'routes.login.title',
       layout: false,
       hideInMenu: true,
       hideInBreadcrumb: true,
@@ -44,7 +45,7 @@ export const appRoutes: AppRouteObject[] = [
     path: '/tickets',
     element: lazyLoad(() => import('@/pages/ticket-kanban/TicketKanban')),
     handle: {
-      title: '全局工单',
+      title: 'Global Tickets',
       titleKey: 'routes.tickets.title',
       icon: <FileTextOutlined />,
       navKey: 'tickets',
@@ -56,7 +57,7 @@ export const appRoutes: AppRouteObject[] = [
     path: '/skills',
     element: lazyLoad(() => import('@/pages/skill-hub/SkillHub')),
     handle: {
-      title: '技能库',
+      title: 'Skill Hub',
       titleKey: 'routes.skills.title',
       icon: <AppstoreOutlined />,
       navKey: 'skills',
@@ -68,7 +69,7 @@ export const appRoutes: AppRouteObject[] = [
     path: '/ops-metrics',
     element: lazyLoad(() => import('@/pages/ops-metrics/OpsMetrics')),
     handle: {
-      title: '运营大盘',
+      title: 'Ops Metrics',
       titleKey: 'routes.opsMetrics.title',
       icon: <LineChartOutlined />,
       navKey: 'ops-metrics',
@@ -80,7 +81,7 @@ export const appRoutes: AppRouteObject[] = [
     path: '/lifecycle-ops',
     element: lazyLoad(() => import('@/pages/lifecycle-ops/LifecycleOps')),
     handle: {
-      title: '生命周期调度',
+      title: 'Lifecycle Ops',
       titleKey: 'routes.lifecycleOps.title',
       icon: <DeploymentUnitOutlined />,
       navKey: 'lifecycle-ops',
@@ -94,7 +95,8 @@ export const appRoutes: AppRouteObject[] = [
       () => import('@/pages/intervention-workbench/InterventionWorkbench'),
     ),
     handle: {
-      title: '人工介入',
+      title: 'Intervention',
+      titleKey: 'routes.intervention.title',
       navKey: 'tickets',
       hideInMenu: true,
     },

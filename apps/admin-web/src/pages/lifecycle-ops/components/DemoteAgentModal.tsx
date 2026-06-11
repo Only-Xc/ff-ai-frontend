@@ -1,6 +1,7 @@
 import { Descriptions, Form, Input, Modal } from 'antd'
 import type { DescriptionsProps } from 'antd'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type { IdleLifecycleCandidate } from '@/api/lifecycle-ops'
 
@@ -24,6 +25,7 @@ export function DemoteAgentModal({
   onCancel,
   onSubmit,
 }: DemoteAgentModalProps) {
+  const { t } = useTranslation()
   const [form] = Form.useForm<DemoteFormValues>()
 
   useEffect(() => {
@@ -33,9 +35,9 @@ export function DemoteAgentModal({
     }
 
     form.setFieldsValue({
-      reason: getLifecycleActionReason(candidate),
+      reason: getLifecycleActionReason(candidate, t),
     })
-  }, [candidate, form])
+  }, [candidate, form, t])
 
   const handleSubmit = async () => {
     if (!candidate) return
@@ -48,34 +50,34 @@ export function DemoteAgentModal({
     ? [
         {
           key: 'agent',
-          label: '应用',
+          label: t('pages.lifecycle.columns.app'),
           children: candidate.name,
         },
         {
           key: 'agent_id',
-          label: '应用 ID',
+          label: t('pages.lifecycle.columns.appId'),
           children: <CopyableText value={candidate.agent_id} />,
         },
         {
           key: 'tenant_id',
-          label: '租户',
+          label: t('pages.lifecycle.columns.tenant'),
           children: <CopyableText value={candidate.tenant_id} />,
         },
         {
           key: 'impact',
-          label: '影响',
-          children: '销毁常驻容器并释放 Pod 资源，下次调用时按需创建沙盒。',
+          label: t('pages.lifecycle.modals.demote.impact'),
+          children: t('pages.lifecycle.modals.demote.impactDescription'),
         },
       ]
     : []
 
   return (
     <Modal
-      title="确认降级智能体"
+      title={t('pages.lifecycle.modals.demote.title')}
       open={Boolean(candidate)}
-      okText="确认降级"
+      okText={t('pages.lifecycle.modals.demote.ok')}
       okButtonProps={{ danger: true, loading: pending }}
-      cancelText="取消"
+      cancelText={t('common.actions.cancel')}
       confirmLoading={pending}
       closable={!pending}
       maskClosable={!pending}
@@ -89,8 +91,13 @@ export function DemoteAgentModal({
           <Form form={form} layout="vertical">
             <Form.Item
               name="reason"
-              label="降级原因"
-              rules={[{ required: true, message: '请输入降级原因' }]}
+              label={t('pages.lifecycle.modals.demote.reason')}
+              rules={[
+                {
+                  required: true,
+                  message: t('pages.lifecycle.modals.demote.reasonRequired'),
+                },
+              ]}
             >
               <Input.TextArea rows={4} maxLength={200} showCount />
             </Form.Item>

@@ -1,4 +1,4 @@
 export const defaultSettings = {
-  title: 'AI 应用平台',
+  title: 'AI App Platform',
   colorPrimary: '#6b43f7',
 }

@@ -1,4 +1,5 @@
 import { Alert, Button, Spin } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import { TicketKanbanControls } from './components/TicketKanbanControls'
 import { TicketLane } from './components/TicketLane'
@@ -7,6 +8,7 @@ import { lanes } from './constants'
 import { useTicketKanbanData } from './useTicketKanbanData'
 
 export function TicketKanban() {
+  const { t } = useTranslation()
   const {
     currentStatusValue,
     isError,
@@ -45,10 +47,10 @@ export function TicketKanban() {
               <Alert
                 showIcon
                 type="error"
-                title="工单看板加载失败"
+                title={t('pages.tickets.loadFailed')}
                 action={
                   <Button size="small" onClick={() => void refetch()}>
-                    重试
+                    {t('common.actions.retry')}
                   </Button>
                 }
               />

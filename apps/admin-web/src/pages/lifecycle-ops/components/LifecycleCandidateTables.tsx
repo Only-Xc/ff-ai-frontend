@@ -2,6 +2,7 @@ import { CloudServerOutlined, SwapOutlined } from '@ant-design/icons'
 import { Button, Table, Tag } from 'antd'
 import type { TableProps } from 'antd'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import type {
   HotLifecycleCandidate,
@@ -30,10 +31,7 @@ interface LifecycleCandidateTablesProps {
   promotePending: boolean
 }
 
-function renderAgentCell(
-  value: string,
-  record: { agent_id: string },
-) {
+function renderAgentCell(value: string, record: { agent_id: string }) {
   return <AgentCell name={value} agentId={record.agent_id} />
 }
 
@@ -51,49 +49,56 @@ export function LifecycleCandidateTables({
   promoteCandidateId,
   promotePending,
 }: LifecycleCandidateTablesProps) {
+  const { t } = useTranslation()
   const idleColumns = useMemo<TableProps<IdleLifecycleCandidate>['columns']>(
     () => [
       {
-        title: '应用',
+        title: t('pages.lifecycle.columns.app'),
         dataIndex: 'name',
         width: 300,
         ellipsis: true,
         render: renderAgentCell,
       },
       {
-        title: '租户',
+        title: t('pages.lifecycle.columns.tenant'),
         dataIndex: 'tenant_id',
         width: 190,
         render: (value: string) => <CopyableText value={value} />,
       },
       {
-        title: '沉寂天数',
+        title: t('pages.lifecycle.columns.idleDays'),
         dataIndex: 'idle_days',
         width: 130,
         render: (value: number) => (
-          <Tag color={value >= idleDays ? 'red' : 'default'}>{value} 天</Tag>
+          <Tag color={value >= idleDays ? 'red' : 'default'}>
+            {t('pages.lifecycle.units.days', { count: value })}
+          </Tag>
         ),
       },
       {
-        title: '最近调用',
+        title: t('pages.lifecycle.columns.lastInvoked'),
         dataIndex: 'last_invoked_at',
         width: 180,
-        render: (value: string | null) => formatDateTime(value),
+        render: (value: string | null) => formatDateTime(value, t),
       },
       {
-        title: '日均运行成本',
+        title: t('pages.lifecycle.columns.dailyRunCost'),
         dataIndex: 'daily_avg_cost',
         width: 150,
         render: (value: number) => numberUtils.formatCurrency(value),
       },
       {
-        title: '推荐动作',
+        title: t('pages.lifecycle.columns.recommendation'),
         key: 'recommendation',
         width: 150,
-        render: () => <Tag color="warning">降级为沙盒</Tag>,
+        render: () => (
+          <Tag color="warning">
+            {t('pages.lifecycle.recommendations.demote')}
+          </Tag>
+        ),
       },
       {
-        title: '操作',
+        title: t('pages.lifecycle.columns.action'),
         key: 'action',
         fixed: 'right',
         width: 150,
@@ -105,55 +110,59 @@ export function LifecycleCandidateTables({
             type="link"
             onClick={() => onOpenDemote(record)}
           >
-            降级
+            {t('pages.lifecycle.actions.demote')}
           </Button>
         ),
       },
     ],
-    [demoteCandidateId, demotePending, idleDays, onOpenDemote],
+    [demoteCandidateId, demotePending, idleDays, onOpenDemote, t],
   )
 
   const hotColumns = useMemo<TableProps<HotLifecycleCandidate>['columns']>(
     () => [
       {
-        title: '应用',
+        title: t('pages.lifecycle.columns.app'),
         dataIndex: 'name',
         width: 300,
         ellipsis: true,
         render: renderAgentCell,
       },
       {
-        title: '租户',
+        title: t('pages.lifecycle.columns.tenant'),
         dataIndex: 'tenant_id',
         width: 190,
         render: (value: string) => <CopyableText value={value} />,
       },
       {
-        title: '日均调用',
+        title: t('pages.lifecycle.columns.dailyInvocations'),
         dataIndex: 'daily_invocations',
         width: 140,
         render: (value: number) => numberUtils.formatNumber(value),
       },
       {
-        title: '平均耗时',
+        title: t('pages.lifecycle.columns.avgDuration'),
         dataIndex: 'avg_duration_ms',
         width: 130,
         render: (value: number) => `${numberUtils.formatNumber(value)} ms`,
       },
       {
-        title: '日均沙盒成本',
+        title: t('pages.lifecycle.columns.dailySandboxCost'),
         dataIndex: 'daily_avg_cost',
         width: 160,
         render: (value: number) => numberUtils.formatCurrency(value),
       },
       {
-        title: '推荐动作',
+        title: t('pages.lifecycle.columns.recommendation'),
         key: 'recommendation',
         width: 170,
-        render: () => <Tag color="success">晋升为常驻服务</Tag>,
+        render: () => (
+          <Tag color="success">
+            {t('pages.lifecycle.recommendations.promote')}
+          </Tag>
+        ),
       },
       {
-        title: '操作',
+        title: t('pages.lifecycle.columns.action'),
         key: 'action',
         fixed: 'right',
         width: 150,
@@ -164,12 +173,12 @@ export function LifecycleCandidateTables({
             type="link"
             onClick={() => onOpenPromote(record)}
           >
-            晋升
+            {t('pages.lifecycle.actions.promote')}
           </Button>
         ),
       },
     ],
-    [onOpenPromote, promoteCandidateId, promotePending],
+    [onOpenPromote, promoteCandidateId, promotePending, t],
   )
 
   return (

@@ -1,6 +1,7 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Form, InputNumber, Space } from 'antd'
 import type { FormInstance } from 'antd'
+import { useTranslation } from 'react-i18next'
 
 import { DEFAULT_FILTER_VALUES } from '../constants'
 import type { FilterValues } from '../types'
@@ -22,6 +23,8 @@ export function LifecycleFilterBar({
   onRefresh,
   onReset,
 }: LifecycleFilterBarProps) {
+  const { t } = useTranslation()
+
   return (
     <Form
       form={form}
@@ -39,28 +42,38 @@ export function LifecycleFilterBar({
     >
       <Form.Item
         name="idle_days"
-        label="沉寂天数"
-        rules={[{ required: true, message: '请输入沉寂天数' }]}
+        label={t('pages.lifecycle.filters.idleDays')}
+        rules={[
+          {
+            required: true,
+            message: t('pages.lifecycle.filters.idleDaysRequired'),
+          },
+        ]}
       >
         <InputNumber min={1} precision={0} className="w-32" />
       </Form.Item>
       <Form.Item
         name="min_daily_invocations"
-        label="日均调用"
-        rules={[{ required: true, message: '请输入日均调用阈值' }]}
+        label={t('pages.lifecycle.filters.minDailyInvocations')}
+        rules={[
+          {
+            required: true,
+            message: t('pages.lifecycle.filters.minDailyInvocationsRequired'),
+          },
+        ]}
       >
         <InputNumber min={1} precision={0} className="w-40" />
       </Form.Item>
       <Form.Item>
         <Space>
-          <Button onClick={onReset}>重置</Button>
+          <Button onClick={onReset}>{t('common.actions.reset')}</Button>
           <Button
             icon={<ReloadOutlined />}
             loading={isRefreshing}
             type="primary"
             onClick={onRefresh}
           >
-            刷新
+            {t('common.actions.refresh')}
           </Button>
         </Space>
       </Form.Item>
