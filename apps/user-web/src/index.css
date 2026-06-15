@@ -25,7 +25,7 @@
   --bg: var(--admin-bg);
   --panel: var(--admin-panel);
   --card: var(--admin-card);
-  --header-bg: rgb(255 255 255 / 0.6);
+  --header-bg: var(--admin-bg);
   --control-bg: rgb(17 24 39 / 0.035);
   --control-hover-bg: rgb(17 24 39 / 0.07);
   --control-subtle-bg: rgb(17 24 39 / 0.045);
@@ -70,7 +70,7 @@
   --bg: var(--admin-bg);
   --panel: var(--admin-panel);
   --card: var(--admin-card);
-  --header-bg: rgb(10 12 16 / 0.6);
+  --header-bg: var(--admin-bg);
   --control-bg: rgb(255 255 255 / 0.03);
   --control-hover-bg: rgb(255 255 255 / 0.06);
   --control-subtle-bg: rgb(255 255 255 / 0.05);

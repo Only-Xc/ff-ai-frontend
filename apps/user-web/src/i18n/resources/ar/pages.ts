@@ -83,6 +83,8 @@ export default {
   'pages.chat.sender.errors.invalidFile': 'اختر ملفا صالحا',
   'pages.chat.sender.errors.allowedFiles':
     'يمكن رفع ملفات {{extensions}} فقط',
+  'pages.chat.sender.errors.fileTooLarge':
+    'يجب ألا يتجاوز حجم كل مرفق {{size}}',
   'pages.chat.sender.errors.uploadFailed': 'فشل رفع المرفق',
   'pages.chat.sender.errors.uploading':
     'لا تزال المرفقات قيد الرفع. أرسل بعد اكتمالها.',

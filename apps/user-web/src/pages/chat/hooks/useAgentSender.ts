@@ -21,6 +21,8 @@ type OnRemove = NonNullable<UploadProps<FileUploadResponse>['onRemove']>
 type UploadRequestFile = File & { uid?: string }
 
 const ALLOWED_ATTACHMENT_EXTENSIONS = ['pdf', 'docx', 'txt', 'md', 'csv', 'xlsx']
+const ATTACHMENT_MAX_SIZE_MB = 20
+const ATTACHMENT_MAX_SIZE_BYTES = ATTACHMENT_MAX_SIZE_MB * 1024 * 1024
 const ATTACHMENT_ACCEPT = ALLOWED_ATTACHMENT_EXTENSIONS.map(
   (extension) => `.${extension}`,
 ).join(',')
@@ -56,6 +58,10 @@ function getFileExtension(fileName: string) {
 
 function isAllowedAttachmentFile(file: File) {
   return ALLOWED_ATTACHMENT_EXTENSIONS.includes(getFileExtension(file.name))
+}
+
+function isWithinAttachmentSizeLimit(file: File) {
+  return file.size <= ATTACHMENT_MAX_SIZE_BYTES
 }
 
 function getAttachmentUid(file: UploadRequestFile) {
@@ -108,6 +114,18 @@ export function useAgentSender(
         const error = new Error(
           i18n.t('pages.chat.sender.errors.allowedFiles', {
             extensions: ALLOWED_ATTACHMENT_EXTENSIONS.join(separator),
+          }),
+        )
+
+        globalMessage.warning(error.message)
+        uploadOptions.onError?.(error)
+        return
+      }
+
+      if (!isWithinAttachmentSizeLimit(file)) {
+        const error = new Error(
+          i18n.t('pages.chat.sender.errors.fileTooLarge', {
+            size: `${ATTACHMENT_MAX_SIZE_MB}MB`,
           }),
         )
 

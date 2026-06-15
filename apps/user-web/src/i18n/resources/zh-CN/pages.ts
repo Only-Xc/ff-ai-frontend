@@ -78,6 +78,8 @@ export default {
   'pages.chat.sender.errors.invalidFile': '请选择有效文件',
   'pages.chat.sender.errors.allowedFiles':
     '仅支持上传 {{extensions}} 格式的文件',
+  'pages.chat.sender.errors.fileTooLarge':
+    '单个附件大小不能超过 {{size}}',
   'pages.chat.sender.errors.uploadFailed': '附件上传失败',
   'pages.chat.sender.errors.uploading': '附件上传中，请稍后再发送',
   'pages.chat.sender.errors.removeFailedBeforeSend':

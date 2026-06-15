@@ -86,6 +86,8 @@ export default {
   'pages.chat.sender.errors.invalidFile': 'Select a valid file',
   'pages.chat.sender.errors.allowedFiles':
     'Only {{extensions}} files can be uploaded',
+  'pages.chat.sender.errors.fileTooLarge':
+    'Each attachment must be {{size}} or less',
   'pages.chat.sender.errors.uploadFailed': 'Attachment upload failed',
   'pages.chat.sender.errors.uploading':
     'Attachments are still uploading. Send after they finish.',
