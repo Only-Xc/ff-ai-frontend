@@ -38,7 +38,7 @@ export function fileUpload(
   }
 
   return requestClient({
-    url: '/api/v1/attachments/upload1',
+    url: '/api/v1/attachments/upload',
     method: 'POST',
     data: formData,
     onUploadProgress: params.onUploadProgress,
