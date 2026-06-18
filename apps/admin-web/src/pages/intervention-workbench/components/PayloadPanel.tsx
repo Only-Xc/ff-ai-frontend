@@ -1,8 +1,7 @@
 import { CodeOutlined } from '@ant-design/icons'
 import { Card, Empty, Space } from 'antd'
 import { useTranslation } from 'react-i18next'
-
-import { CodeBlock } from './CodeBlock'
+import { CodeBlock } from '@ff-ai-frontend/components'
 
 export function PayloadPanel({
   cardClassName,

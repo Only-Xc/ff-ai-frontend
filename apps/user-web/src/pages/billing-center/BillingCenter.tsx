@@ -20,6 +20,11 @@ import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect, useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import {
+  PageContainer,
+  PageHeader,
+  TableScrollYWrapper,
+} from '@ff-ai-frontend/components'
 import { numberUtils } from '@ff-ai-frontend/utils'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
@@ -32,10 +37,7 @@ import {
   type TenantBillingQuery,
   type TenantBillingRecord,
 } from '@/api/billing-center'
-import { PageContainer } from '@/components/Container'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
-import { PageHeader } from '@/components/Header'
-import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { i18n } from '@/i18n'
 

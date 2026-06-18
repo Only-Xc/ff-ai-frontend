@@ -8,7 +8,7 @@ import type {
   HotLifecycleCandidate,
   IdleLifecycleCandidate,
 } from '@/api/lifecycle-ops'
-import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
+import { TableScrollYWrapper } from '@ff-ai-frontend/components'
 
 import type { CandidateTab } from '../types'
 import { numberUtils } from '@ff-ai-frontend/utils'

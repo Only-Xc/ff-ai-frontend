@@ -35,18 +35,33 @@ const useStyles = createStyles(({ css }) => ({
   `,
 }))
 
-export function CodeBlock({
-  fill,
-  text,
-}: {
+export interface CodeBlockProps {
+  className?: string
   fill?: boolean
+  language?: string
   text: string
-}) {
+}
+
+export function CodeBlock({
+  className,
+  fill,
+  language,
+  text,
+}: CodeBlockProps) {
   const { styles } = useStyles()
+  const rootClassName = [
+    styles.codeBlock,
+    fill ? styles.fill : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <pre className={`${styles.codeBlock} ${fill ? styles.fill : ''}`}>
-      {text}
+    <pre className={rootClassName}>
+      <code className={language ? `language-${language}` : undefined}>
+        {text}
+      </code>
     </pre>
   )
 }

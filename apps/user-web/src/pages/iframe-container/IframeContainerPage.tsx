@@ -1,7 +1,7 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Result, Spin } from 'antd'
 import { createStyles } from 'antd-style'
-import { PageContainer } from '@/components/Container'
+import { PageContainer } from '@ff-ai-frontend/components'
 import WujieReact from '@/components/WujieReact'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
@@ -31,7 +31,8 @@ const wujieIframeAttrs = {
 function getLocalApiPreviewUrl(previewUrl: string) {
   try {
     const url = new URL(previewUrl, window.location.origin)
-    const isApiPath = url.pathname === '/api' || url.pathname.startsWith('/api/')
+    const isApiPath =
+      url.pathname === '/api' || url.pathname.startsWith('/api/')
 
     if (isApiPath) {
       return `${window.location.origin}${url.pathname}${url.search}${url.hash}`

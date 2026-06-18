@@ -12,12 +12,12 @@ import {
 import {
   useAntdTableScrollY,
   type UseAntdTableScrollYOptions,
-} from '@/hooks/useAntdTableScrollY'
+} from './useAntdTableScrollY.js'
 
 type AntdTableScroll = TableProps<object>['scroll']
 type AntdTableStyles = TableProps<object>['styles']
 
-interface TableScrollYWrapperRenderArgs {
+export interface TableScrollYWrapperRenderArgs {
   scroll?: AntdTableScroll
   scrollY?: number
   styles?: AntdTableStyles
@@ -27,7 +27,7 @@ type TableScrollYWrapperChild =
   | ReactElement<{ scroll?: AntdTableScroll; styles?: AntdTableStyles }>
   | ((args: TableScrollYWrapperRenderArgs) => ReactNode)
 
-interface TableScrollYWrapperProps extends UseAntdTableScrollYOptions {
+export interface TableScrollYWrapperProps extends UseAntdTableScrollYOptions {
   children: TableScrollYWrapperChild
   className?: string
   style?: CSSProperties

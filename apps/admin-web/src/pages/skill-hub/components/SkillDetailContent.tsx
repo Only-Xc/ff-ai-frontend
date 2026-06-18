@@ -2,10 +2,10 @@ import { Descriptions, Divider, Space, Tag, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import type { AdminSkillDetail } from '@/api/skill-hub'
+import { CodeBlock } from '@ff-ai-frontend/components'
 import { numberUtils } from '@ff-ai-frontend/utils'
 
 import { formatDateTime, stringifyMetadata } from '../utils'
-import { CodeBlock } from './CodeBlock'
 import { EnvironmentTag, SkillStatusTag } from './SkillTags'
 
 export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
@@ -84,7 +84,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
         <Typography.Title className="mb-3!" level={5}>
           {t('pages.skillHub.detail.prompt')}
         </Typography.Title>
-        <CodeBlock>{skill.prompt}</CodeBlock>
+        <CodeBlock text={skill.prompt} />
       </section>
 
       <section>
@@ -101,9 +101,10 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
                   <Typography.Text strong>{snippet.filename}</Typography.Text>
                   <Tag>{snippet.language}</Tag>
                 </div>
-                <CodeBlock language={snippet.language}>
-                  {snippet.content}
-                </CodeBlock>
+                <CodeBlock
+                  language={snippet.language}
+                  text={snippet.content}
+                />
               </div>
             ))}
           </Space>
@@ -131,7 +132,7 @@ export function SkillDetailContent({ skill }: { skill: AdminSkillDetail }) {
         <Typography.Title className="mb-3!" level={5}>
           Metadata
         </Typography.Title>
-        <CodeBlock>{stringifyMetadata(skill.metadata)}</CodeBlock>
+        <CodeBlock text={stringifyMetadata(skill.metadata)} />
       </section>
     </div>
   )

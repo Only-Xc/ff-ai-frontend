@@ -42,11 +42,13 @@ import {
   type AdminSkillStatus,
   type AdminSkillUpdateBody,
 } from '@/api/skill-hub'
+import {
+  PageContainer,
+  PageHeader,
+  TableScrollYWrapper,
+} from '@ff-ai-frontend/components'
 import { numberUtils } from '@ff-ai-frontend/utils'
-import { PageContainer } from '@/components/Container'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
-import { PageHeader } from '@/components/Header'
-import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { globalMessage } from '@/utils/message'
 

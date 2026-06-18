@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-type PageContainerProps = ComponentPropsWithoutRef<'div'> & {
+export type PageContainerProps = ComponentPropsWithoutRef<'div'> & {
   bordered?: boolean
 }
 

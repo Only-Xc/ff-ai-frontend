@@ -32,7 +32,7 @@ import {
   type TenantAppQuery,
 } from '@/api/tenant-apps'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
-import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
+import { TableScrollYWrapper } from '@ff-ai-frontend/components'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { useMenuStore } from '@/store/useMenu'
 
@@ -80,19 +80,22 @@ export function AgentList() {
     },
   })
 
-  const collectToggle = useCallback((record: TenantAgent) => {
-    if (record.is_favorited) {
-      cancelCollectMutation.mutate(record.agent_id)
-    } else {
-      collectMutation.mutate({
-        title: record.name,
-        type: 'app',
-        order: 0,
-        agent_id: record.agent_id,
-        icon_url: '',
-      })
-    }
-  }, [cancelCollectMutation, collectMutation])
+  const collectToggle = useCallback(
+    (record: TenantAgent) => {
+      if (record.is_favorited) {
+        cancelCollectMutation.mutate(record.agent_id)
+      } else {
+        collectMutation.mutate({
+          title: record.name,
+          type: 'app',
+          order: 0,
+          agent_id: record.agent_id,
+          icon_url: '',
+        })
+      }
+    },
+    [cancelCollectMutation, collectMutation],
+  )
 
   const columns = useMemo<TableProps<TenantAgent>['columns']>(
     () => [
@@ -103,10 +106,7 @@ export function AgentList() {
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             {record.endpoint_url ? (
-              <Tooltip
-                placement="top"
-                title={t('pages.agentTicket.preview')}
-              >
+              <Tooltip placement="top" title={t('pages.agentTicket.preview')}>
                 <Typography.Link
                   href={record.endpoint_url}
                   target="_blank"

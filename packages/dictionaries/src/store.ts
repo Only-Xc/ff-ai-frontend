@@ -21,7 +21,7 @@ function cloneItems(items: readonly DictItem[]) {
 }
 
 function createInitialDictMap(): DictMap {
-  return mapValues(dictRegistry, cloneItems) as DictMap
+  return mapValues(dictRegistry, cloneItems)
 }
 
 export const useDictStore = create<DictState>((set) => ({

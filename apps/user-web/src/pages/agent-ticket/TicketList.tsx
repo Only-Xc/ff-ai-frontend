@@ -21,7 +21,7 @@ import {
   type TenantTask,
 } from '@/api/agent-ticket'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
-import { TableScrollYWrapper } from '@/components/TableScrollYWrapper'
+import { TableScrollYWrapper } from '@ff-ai-frontend/components'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { TaskStatusTag, TaskTypeTag } from './components/status'
@@ -57,10 +57,7 @@ export function TicketList() {
           <Space orientation="vertical" size={2}>
             <span className="text-(--text) font-medium">
               {record.web_url ? (
-                <Tooltip
-                  placement="top"
-                  title={t('pages.agentTicket.preview')}
-                >
+                <Tooltip placement="top" title={t('pages.agentTicket.preview')}>
                   <Typography.Link href={record.web_url} target="_blank" strong>
                     {value}
                   </Typography.Link>

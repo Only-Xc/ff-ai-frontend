@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router'
 
-import { PageContainer } from '@/components/Container'
-import { PageHeader } from '@/components/Header'
+import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { agentTicketTabs } from './constants'
 
 const useStyles = createStyles(() => ({

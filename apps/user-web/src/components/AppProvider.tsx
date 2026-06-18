@@ -1,4 +1,5 @@
 import { App as AntdApp, ConfigProvider, theme } from 'antd'
+import { setComponentsLocale } from '@ff-ai-frontend/components'
 import { setDictLocale } from '@ff-ai-frontend/dictionaries'
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
@@ -58,6 +59,7 @@ export function AppProvider({ children }: Props) {
     document.documentElement.dir = direction
     syncDayjsLocale(locale)
     setDictLocale(locale)
+    setComponentsLocale(locale)
   }, [direction, locale])
 
   // antd 主题配置

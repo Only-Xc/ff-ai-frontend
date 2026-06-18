@@ -14,8 +14,7 @@ import {
   type IdleLifecycleCandidate,
   type PromoteAgentPayload,
 } from '@/api/lifecycle-ops'
-import { PageContainer } from '@/components/Container'
-import { PageHeader } from '@/components/Header'
+import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { useAuthStore } from '@/store/useAuth'
 
 import { DemoteAgentModal } from './components/DemoteAgentModal'

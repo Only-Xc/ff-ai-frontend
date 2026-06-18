@@ -6,7 +6,7 @@ import { Virtuoso } from 'react-virtuoso'
 import type { AdminTask } from '@/api/ticket-kanban'
 
 import { laneColorMap, type LaneConfig } from '../constants'
-import { TaskCard } from './TaskCard'
+import { TaskCard } from '@ff-ai-frontend/components'
 
 function VirtualTaskList({ tasks }: { tasks: AdminTask[] }) {
   const { t } = useTranslation()
@@ -25,11 +25,11 @@ function VirtualTaskList({ tasks }: { tasks: AdminTask[] }) {
   return (
     <div className="min-h-0 flex-1 p-2">
       <Virtuoso
-        className="h-full [scrollbar-color:var(--scrollbar-thumb)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--scrollbar-thumb) [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-thumb-hover)"
+        className="h-full [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--scrollbar-thumb) [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-thumb-hover)"
         data={tasks}
         itemContent={(_, task) => (
           <div className="px-2 pb-3 pt-1">
-            <TaskCard task={task} />
+            <TaskCard showAction task={task} />
           </div>
         )}
         computeItemKey={(_, task) => task.task_id}

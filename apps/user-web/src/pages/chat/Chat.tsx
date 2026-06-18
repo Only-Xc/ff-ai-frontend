@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Result, Spin } from 'antd'
 
-import { PageContainer } from '@/components/Container'
+import { PageContainer } from '@ff-ai-frontend/components'
 import { AgentMsgHistory } from './components/AgentMsgHistory'
 import { AgentConversation } from './components/AgentConversation'
 import { TaskConfirmationSidebar } from './components/TaskConfirmationSidebar'

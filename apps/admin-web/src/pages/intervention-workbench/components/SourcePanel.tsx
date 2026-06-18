@@ -3,8 +3,7 @@ import { Card, Empty, Space, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import type { AdminTaskSourceCode } from '@/api/ticket-kanban'
-
-import { CodeBlock } from './CodeBlock'
+import { CodeBlock } from '@ff-ai-frontend/components'
 
 interface SourcePanelProps {
   cardClassName?: string
