@@ -14,10 +14,10 @@ import {
 } from '@/api/chat'
 import { toMediaAttachment } from '@/api/media'
 import type {
-  ChatTask,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
+import type { Task } from '@ff-ai-frontend/api'
 import { RequestError } from '@ff-ai-frontend/utils'
 
 const EMPTY_MESSAGES: UIMessage[] = []
@@ -78,10 +78,10 @@ export function mapSessionMessagesToHistory(
       message.role === 'user' && media?.every((item) => item.kind === 'image')
         ? media.map((item) => ({ url: item.url, name: item.name }))
         : undefined
-    const task =
-      message.role === 'assistant' && message.kind === 'task-created'
-        ? (message.metadata as ChatTask)
-        : null
+    const isTaskMessage =
+      message.role === 'assistant' &&
+      (message.kind === 'task-created' || message.kind === 'task-info-update')
+    const task = isTaskMessage ? (message.metadata as Task) : null
 
     return [
       {

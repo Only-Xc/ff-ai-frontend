@@ -1,39 +1,11 @@
 import type { UIMediaAttachment } from '@/api/media'
+import type { Task, PendingTask } from '@ff-ai-frontend/api'
 
 export type Role = 'user' | 'assistant' | 'tool' | 'system'
 
 /** "trace" rows are intermediate agent breadcrumbs (tool-call hints,
  * progress pings) that should not be rendered as conversational replies. */
 export type MessageKind = 'message' | 'trace' | 'error'
-
-export type ChatTaskStatus =
-  | 'CREATED'
-  | 'ANALYZING'
-  | 'ROUTING'
-  | 'CODING'
-  | 'TESTING'
-  | 'DEPLOYING'
-  | 'COMPLETED'
-  | 'PENDING_APPROVAL'
-  | 'FAILED'
-
-export interface ChatTaskError {
-  stage: string
-  message: string
-}
-
-export interface ChatTask {
-  title: string
-  status: ChatTaskStatus
-  task_id: string
-  tenant_id: string
-  created_at: string
-  updated_at: string
-  last_error: ChatTaskError | null
-  retry_count: number
-  current_node: string
-  web_url?: string | null
-}
 
 /** One image attached to a UIMessage.
  *
@@ -79,17 +51,10 @@ export interface UIMessage {
   /** Optional answer choices for a pending ask_user question. */
   buttons?: string[][]
   /** Task-processing bubble payload, keyed by websocket bubble_id. */
-  task?: ChatTask
+  task?: Task
 }
 
 export interface TaskConfirmationViewState {
-  pendingTask:
-    | {
-        confirmation_id: string
-        title: string
-        task_type: 'process' | 'container' | 'direct_result'
-        markdown: string
-      }
-    | null
+  pendingTask: PendingTask
   submitting: boolean
 }

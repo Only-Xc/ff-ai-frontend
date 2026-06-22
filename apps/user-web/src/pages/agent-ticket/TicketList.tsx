@@ -17,8 +17,9 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   tenantTaskKeys,
   tenantTasks_list,
+  type Task,
   type TaskStatusFilter,
-  type TenantTask,
+  type TenantTaskQuery,
 } from '@/api/agent-ticket'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { TableScrollYWrapper } from '@ff-ai-frontend/components'
@@ -27,9 +28,7 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { TaskStatusTag, TaskTypeTag } from './components/status'
 import { formatDateTime } from './utils/format'
 
-interface TicketFilterValues {
-  status?: TaskStatusFilter
-}
+type TicketFilterValues = Pick<TenantTaskQuery, 'status'>
 
 export function TicketList() {
   const { t } = useTranslation()
@@ -47,7 +46,7 @@ export function TicketList() {
     queryFn: () => tenantTasks_list(listParams),
     placeholderData: keepPreviousData,
   })
-  const columns = useMemo<TableProps<TenantTask>['columns']>(
+  const columns = useMemo<TableProps<Task>['columns']>(
     () => [
       {
         title: t('pages.agentTicket.columns.requirementTitle'),
@@ -168,7 +167,7 @@ export function TicketList() {
         className="min-h-0 flex-1 border-t border-t-(--ant-color-border-secondary)"
         refreshKey={`${data?.data.length ?? 0}:${isFetching}`}
       >
-        <Table<TenantTask>
+        <Table<Task>
           columns={columns}
           dataSource={data?.data ?? []}
           loading={isFetching}

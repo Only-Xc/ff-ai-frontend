@@ -25,6 +25,7 @@ import {
   tenantAgents_list,
   type AgentStatusFilter,
   type TenantAgent,
+  type TenantAgentQuery,
 } from '@/api/agent-ticket'
 import {
   tenantApps_add,
@@ -40,9 +41,7 @@ import { AgentStatusTag } from './components/status'
 import { formatDateTime } from './utils/format'
 import { globalMessage } from '@/utils/message'
 
-interface AgentFilterValues {
-  status?: AgentStatusFilter
-}
+type AgentFilterValues = Pick<TenantAgentQuery, 'status'>
 
 export function AgentList() {
   const { t } = useTranslation()

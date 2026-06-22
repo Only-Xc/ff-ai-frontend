@@ -10,10 +10,9 @@ import {
 import { request } from './_request'
 
 export type {
-  AdminTask,
+  Task,
   AdminTaskAction,
-  AdminTaskError,
-  AdminTaskList,
+  TaskList,
   AdminTaskListQuery,
   AdminTaskQuery,
   AdminTaskRejectBody,
@@ -23,8 +22,11 @@ export type {
   AdminTaskSnapshotError,
   AdminTaskSourceCode,
   AdminTaskStats,
-  AdminTaskStatus,
-  AdminTaskStatusFilter,
+  TaskError,
+  TaskLog,
+  TaskLogLevel,
+  TaskStatus,
+  TaskStatusFilter,
 } from '@ff-ai-frontend/api'
 
 export const adminTasksKeys = {

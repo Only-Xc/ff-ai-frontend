@@ -1,21 +1,21 @@
 import dayjs from 'dayjs'
 
-import type { AdminTask, AdminTaskStatus } from '@/api/ticket-kanban'
+import type { Task, TaskStatus } from '@/api/ticket-kanban'
 
 import { lanes, type LaneId } from './constants'
 
 const statusLaneMap = Object.fromEntries(
   lanes.flatMap((lane) => lane.statuses.map((status) => [status, lane.id])),
-) as Record<AdminTaskStatus, LaneId>
+) as Record<TaskStatus, LaneId>
 
-export function getLaneId(status: AdminTaskStatus): LaneId {
+export function getLaneId(status: TaskStatus): LaneId {
   return statusLaneMap[status] ?? 'deploying'
 }
 
-export function groupTasksByLane(tasks: AdminTask[]) {
+export function groupTasksByLane(tasks: Task[]) {
   const groupedTasks = Object.fromEntries(
-    lanes.map((lane) => [lane.id, [] as AdminTask[]]),
-  ) as Record<LaneId, AdminTask[]>
+    lanes.map((lane) => [lane.id, [] as Task[]]),
+  ) as Record<LaneId, Task[]>
 
   tasks.forEach((task) => {
     groupedTasks[getLaneId(task.status)].push(task)

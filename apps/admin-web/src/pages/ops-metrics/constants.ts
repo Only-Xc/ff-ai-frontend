@@ -1,6 +1,6 @@
-import type { OpsMetricsTaskStatus } from '@/api/ops-metrics'
+import type { TaskStatus } from '@/api/ops-metrics'
 
-export const statusOrder: OpsMetricsTaskStatus[] = [
+export const statusOrder: TaskStatus[] = [
   'CREATED',
   'ANALYZING',
   'ROUTING',
@@ -12,7 +12,7 @@ export const statusOrder: OpsMetricsTaskStatus[] = [
   'FAILED',
 ]
 
-export const statusColorMap: Record<OpsMetricsTaskStatus, string> = {
+export const statusColorMap: Record<TaskStatus, string> = {
   ANALYZING: '#4096ff',
   CODING: '#7c3aed',
   COMPLETED: '#0f9f8f',

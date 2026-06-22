@@ -7,12 +7,12 @@ import {
   adminTasks_list,
   type AdminTaskStats,
   type AdminTaskQuery,
-  type AdminTaskStatusFilter,
+  type TaskStatusFilter,
 } from '@/api/ticket-kanban'
 
 import { groupTasksByLane } from './utils'
 
-function normalizeStatusFilter(value: AdminTaskStatusFilter | 'all') {
+function normalizeStatusFilter(value: TaskStatusFilter | 'all') {
   return value === 'all' ? undefined : value
 }
 
@@ -27,10 +27,10 @@ function createEmptyStats(): AdminTaskStats {
 }
 
 export function useTicketKanbanData() {
-  const [status, setStatus] = useState<AdminTaskStatusFilter | undefined>(
+  const [status, setStatus] = useState<TaskStatusFilter | undefined>(
     'active',
   )
-  const currentStatusValue: AdminTaskStatusFilter | 'all' = status ?? 'all'
+  const currentStatusValue: TaskStatusFilter | 'all' = status ?? 'all'
   const listParams = useMemo<AdminTaskQuery>(() => ({ status: status ?? "" }), [status])
 
   const listQuery = useQuery({
@@ -63,7 +63,7 @@ export function useTicketKanbanData() {
     isLoading: listQuery.isLoading,
     isRefreshing: listQuery.isFetching || statsQuery.isFetching,
     refetch: () => Promise.all([listQuery.refetch(), statsQuery.refetch()]),
-    setStatusValue: (value: AdminTaskStatusFilter | 'all') => {
+    setStatusValue: (value: TaskStatusFilter | 'all') => {
       setStatus(normalizeStatusFilter(value))
     },
     stats,

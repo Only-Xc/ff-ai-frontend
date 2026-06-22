@@ -15,7 +15,7 @@ export type {
   OpsMetricsLatency,
   OpsMetricsLatencyPoint,
   OpsMetricsPeriod,
-  OpsMetricsTaskStatus,
+  TaskStatus,
 } from '@ff-ai-frontend/api'
 
 export const adminMetricsKeys = {

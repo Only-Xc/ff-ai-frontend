@@ -25,9 +25,4 @@ export type {
   TableScrollYWrapperRenderArgs,
 } from './src/TableScrollYWrapper/index.js'
 export { TaskCard } from './src/TaskCard/index.js'
-export type {
-  TaskCardError,
-  TaskCardProps,
-  TaskCardStatus,
-  TaskCardTask,
-} from './src/TaskCard/index.js'
+export type { TaskCardProps } from './src/TaskCard/index.js'

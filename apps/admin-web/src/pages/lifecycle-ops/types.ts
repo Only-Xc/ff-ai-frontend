@@ -1,17 +1,19 @@
-export interface FilterValues {
-  idle_days: number
-  min_daily_invocations: number
-}
+import type {
+  DemoteAgentPayload,
+  LifecycleHotCandidateListQuery,
+  LifecycleIdleCandidateListQuery,
+  PromoteAgentPayload,
+} from '@/api/lifecycle-ops'
 
-export interface DemoteFormValues {
-  reason: string
-}
+export type FilterValues = Pick<LifecycleIdleCandidateListQuery, 'idle_days'> &
+  Pick<LifecycleHotCandidateListQuery, 'min_daily_invocations'>
 
-export interface PromoteFormValues {
-  reason: string
-  replicas: number
-  cpu?: string
-  memory?: string
+export type DemoteFormValues = Pick<DemoteAgentPayload, 'reason'>
+
+export type PromoteFormValues = Pick<PromoteAgentPayload, 'reason'> & {
+  replicas: NonNullable<PromoteAgentPayload['replicas']>
+  cpu?: NonNullable<PromoteAgentPayload['resources']>['cpu']
+  memory?: NonNullable<PromoteAgentPayload['resources']>['memory']
 }
 
 export type CandidateTab = 'idle' | 'hot'

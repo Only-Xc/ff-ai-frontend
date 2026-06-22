@@ -5,10 +5,10 @@ import { splitSessionKey } from '@/api/chat'
 import { i18n } from '@/i18n'
 import { toMediaAttachment } from '@/api/media'
 import type {
-  ChatTask,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
+import type { Task } from '@ff-ai-frontend/api'
 import type {
   InboundEvent,
   InboundTaskProcessingEvent,
@@ -26,18 +26,21 @@ function createMessageId(): string {
   return `msg-${uuidV4()}`
 }
 
-function toChatTask(event: InboundTaskProcessingEvent): ChatTask {
+function toChatTask(event: InboundTaskProcessingEvent): Task {
   return {
     title: event.title,
     status: event.status,
     task_id: event.task_id,
     tenant_id: event.tenant_id,
+    agent_id: event.agent_id ?? null,
+    task_type: event.task_type,
     created_at: event.created_at,
     updated_at: event.updated_at,
     last_error: event.last_error,
     retry_count: event.retry_count,
     current_node: event.current_node,
     web_url: event.web_url,
+    logs: Array.isArray(event.logs) ? event.logs : undefined,
   }
 }
 

@@ -1,17 +1,7 @@
 import { createRequest } from '../client.js'
+import type { TaskStatus } from '../task.js'
 
 export type OpsMetricsPeriod = 'today' | 'week' | 'month'
-
-export type OpsMetricsTaskStatus =
-  | 'CREATED'
-  | 'ANALYZING'
-  | 'ROUTING'
-  | 'CODING'
-  | 'TESTING'
-  | 'DEPLOYING'
-  | 'COMPLETED'
-  | 'PENDING_APPROVAL'
-  | 'FAILED'
 
 export interface OpsMetricsHotSkill {
   name: string
@@ -42,7 +32,7 @@ export interface OpsMetricsAgentSummary {
 }
 
 export interface OpsMetricsFactoryOutput {
-  by_status: Partial<Record<OpsMetricsTaskStatus, number>>
+  by_status: Partial<Record<TaskStatus, number>>
   total_tasks: number
   success_rate: number
 }

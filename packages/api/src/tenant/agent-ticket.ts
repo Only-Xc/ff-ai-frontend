@@ -1,36 +1,6 @@
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
-
-export type TaskStatusFilter =
-  | 'active'
-  | 'pending_approval'
-  | 'completed'
-  | 'failed'
-  | ''
-
-export type TaskStatus =
-  | 'CREATED'
-  | 'ANALYZING'
-  | 'ROUTING'
-  | 'CODING'
-  | 'TESTING'
-  | 'DEPLOYING'
-  | 'COMPLETED'
-  | 'PENDING_APPROVAL'
-  | 'FAILED'
-
-export type TaskType = 'direct_result' | 'process' | 'container'
-
-export interface TenantTask {
-  title: string
-  status: TaskStatus
-  task_id: string
-  agent_id: string | null
-  task_type: TaskType
-  created_at: string
-  updated_at: string
-  web_url?: string
-}
+import type { Task, TaskStatusFilter } from '../task.js'
 
 export type TenantTaskQuery = {
   status?: TaskStatusFilter
@@ -67,7 +37,7 @@ export interface TenantAgentBudgetResponse {
 }
 
 export const listTenantTasksRequest = (params: TenantTaskQuery) =>
-  createRequest<ListResult<TenantTask>>('GET', '/api/tenant/tasks', { params })
+  createRequest<ListResult<Task>>('GET', '/api/tenant/tasks', { params })
 
 export const listTenantAgentsRequest = (params: TenantAgentQuery) =>
   createRequest<ListResult<TenantAgent>>('GET', '/api/tenant/agents', { params })

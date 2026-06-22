@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.2",
+    "@ff-ai-frontend/api": "workspace:*",
     "@ff-ai-frontend/dictionaries": "workspace:*",
     "antd": "^6.3.7",
     "antd-style": "^4.1.0",

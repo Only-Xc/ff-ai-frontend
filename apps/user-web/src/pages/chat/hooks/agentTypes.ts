@@ -1,5 +1,4 @@
-import type { PendingTaskConfirmation } from '@/api/chat'
-import type { ChatTask } from '@/pages/chat/types'
+import type { Task, PendingTask } from '@ff-ai-frontend/api'
 
 export type ConnectionStatus =
   | 'idle'
@@ -37,7 +36,7 @@ export interface InboundMessageEvent {
   kind?: 'tool_hint' | 'progress' | 'task_confirmation' | ''
 }
 
-export interface InboundTaskProcessingEvent extends ChatTask {
+export interface InboundTaskProcessingEvent extends Task {
   event: 'task-created' | 'task-info-update'
   chat_id: string
   conversation_id?: string
@@ -91,7 +90,7 @@ export interface InboundTaskConfirmEvent {
   conversation_id?: string
   confirmation_id: string
   title: string
-  task_type: NonNullable<PendingTaskConfirmation['pending_task_confirmation']>['task_type']
+  task_type: NonNullable<PendingTask>['task_type']
   markdown: string
   'message-type'?: string
 }

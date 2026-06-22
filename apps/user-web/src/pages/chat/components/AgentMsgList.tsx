@@ -20,8 +20,8 @@ import type { ComponentProps } from '@ant-design/x-markdown'
 import { Virtuoso } from 'react-virtuoso'
 import { useTranslation } from 'react-i18next'
 import { TaskCard } from '@ff-ai-frontend/components'
+import type { Task } from '@ff-ai-frontend/api'
 import type { AgentBubbleItem } from '@/pages/chat/hooks/useAgent'
-import type { ChatTask } from '@/pages/chat/types'
 import '@/assets/x-markdown-light.css'
 import '@/assets/x-markdown-dark.css'
 
@@ -432,7 +432,7 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
           margin: '0 auto',
           paddingInline: '8px 0',
         },
-        contentRender: (content: ChatTask) => (
+        contentRender: (content: Task) => (
           <div className="w-full min-w-90">
             <TaskCard task={content} />
           </div>

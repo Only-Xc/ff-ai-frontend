@@ -10,6 +10,7 @@ import {
 import { request } from './_request'
 
 export type {
+  Task,
   AgentStatus,
   AgentStatusFilter,
   TaskStatus,
@@ -19,7 +20,6 @@ export type {
   TenantAgentBudgetResponse,
   TenantAgentDetail,
   TenantAgentQuery,
-  TenantTask,
   TenantTaskQuery,
 } from '@ff-ai-frontend/api'
 

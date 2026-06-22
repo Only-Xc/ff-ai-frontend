@@ -1,28 +1,10 @@
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
-
-export type AdminTaskStatusFilter =
-  | 'active'
-  | 'pending_approval'
-  | 'completed'
-  | 'failed'
-  | ''
-
-export type AdminTaskStatus =
-  | 'CREATED'
-  | 'ANALYZING'
-  | 'ROUTING'
-  | 'CODING'
-  | 'TESTING'
-  | 'DEPLOYING'
-  | 'COMPLETED'
-  | 'PENDING_APPROVAL'
-  | 'FAILED'
-
-export interface AdminTaskError {
-  stage: string
-  message: string
-}
+import type {
+  Task,
+  TaskStatus,
+  TaskStatusFilter,
+} from '../task.js'
 
 export interface AdminTaskSnapshotContextLine {
   line_no: number
@@ -50,7 +32,7 @@ export interface AdminTaskSourceCode {
 export interface AdminTaskSnapshot {
   error: AdminTaskSnapshotError | null
   title: string
-  status: AdminTaskStatus
+  status: TaskStatus
   task_id: string
   tenant_id: string
   retry_count: number
@@ -61,7 +43,7 @@ export interface AdminTaskSnapshot {
 }
 
 export interface AdminTaskAction {
-  status: AdminTaskStatus
+  status: TaskStatus
   message: string
   task_id: string
 }
@@ -76,24 +58,11 @@ export interface AdminTaskRepromptBody {
   operator_id?: string
 }
 
-export interface AdminTask {
-  title: string
-  status: AdminTaskStatus
-  task_id: string
-  tenant_id: string
-  created_at: string
-  updated_at: string
-  last_error: AdminTaskError | null
-  retry_count: number
-  current_node: string
-  web_url?: string
-}
-
 export interface AdminTaskQuery {
-  status?: AdminTaskStatusFilter
+  status?: TaskStatusFilter
 }
 
-export type AdminTaskList = ListResult<AdminTask>
+export type TaskList = ListResult<Task>
 
 export type AdminTaskListQuery = AdminTaskQuery & PaginationQuery
 
@@ -106,7 +75,7 @@ export interface AdminTaskStats {
 }
 
 export const listAdminTasksRequest = (params: AdminTaskListQuery) =>
-  createRequest<AdminTaskList>('GET', '/api/admin/tasks', { params })
+  createRequest<TaskList>('GET', '/api/admin/tasks', { params })
 
 export const getAdminTaskSnapshotRequest = (taskId: string) =>
   createRequest<AdminTaskSnapshot>(

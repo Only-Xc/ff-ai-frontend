@@ -3,12 +3,12 @@ import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Virtuoso } from 'react-virtuoso'
 
-import type { AdminTask } from '@/api/ticket-kanban'
+import type { Task } from '@/api/ticket-kanban'
 
 import { laneColorMap, type LaneConfig } from '../constants'
 import { TaskCard } from '@ff-ai-frontend/components'
 
-function VirtualTaskList({ tasks }: { tasks: AdminTask[] }) {
+function VirtualTaskList({ tasks }: { tasks: Task[] }) {
   const { t } = useTranslation()
 
   if (!tasks.length) {
@@ -44,7 +44,7 @@ export function TicketLane({
   tasks,
 }: {
   lane: LaneConfig
-  tasks: AdminTask[]
+  tasks: Task[]
 }) {
   const { t } = useTranslation()
 

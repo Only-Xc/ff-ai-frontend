@@ -10,17 +10,16 @@ import {
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 
-import type { AdminTaskStatus } from '@/api/ticket-kanban'
+import type { TaskStatus } from '@/api/ticket-kanban'
 
 export type LaneId = 'analysis' | 'coding' | 'testing' | 'blocked' | 'deploying'
 export type LaneColor = 'blue' | 'cyan' | 'gold' | 'purple' | 'red'
-export type MetricKey = 'active' | 'all' | 'failed' | 'pending_approval'
 
 export interface LaneConfig {
   id: LaneId
   titleKey: string
   description: string
-  statuses: AdminTaskStatus[]
+  statuses: TaskStatus[]
   color: LaneColor
   icon: ReactNode
 }
@@ -98,6 +97,8 @@ export const metricCards = [
     color: 'var(--admin-warning)',
   },
 ] as const
+
+export type MetricKey = (typeof metricCards)[number]['key']
 
 export const laneColorMap: Record<LaneConfig['color'], string> = {
   blue: '#2563eb',

@@ -1,5 +1,5 @@
 import { createRequest, path } from '../client.js'
-import type { TaskType } from '../tenant/agent-ticket.js'
+import type { TaskType } from '../task.js'
 
 export interface SessionRow {
   key: string

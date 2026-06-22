@@ -1,25 +1,14 @@
 import type {
-  AdminSkillCodeSnippet,
-  AdminSkillEnvironment,
+  AdminSkillCreateBody,
+  AdminSkillListQuery,
   AdminSkillStatus,
 } from '@/api/skill-hub'
 
-export interface SkillFilterValues {
-  category?: string
-  environment?: AdminSkillEnvironment
-  status?: AdminSkillStatus
-  keyword?: string
-}
+export type SkillFilterValues = Omit<AdminSkillListQuery, 'skip' | 'limit'>
 
-export interface SkillFormValues {
-  name: string
-  category: string
-  description?: string
-  prompt: string
-  environment?: AdminSkillEnvironment
+export interface SkillFormValues
+  extends Omit<AdminSkillCreateBody, 'metadata' | 'status'> {
   status?: AdminSkillStatus
-  code_snippets?: AdminSkillCodeSnippet[]
-  embedding_tags?: string[]
   metadata?: string
 }
 

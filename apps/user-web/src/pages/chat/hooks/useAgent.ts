@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { BubbleItemType } from '@ant-design/x'
+import type { Task } from '@ff-ai-frontend/api'
 
 import type {
   ChatSummary,
-  ChatTask,
   TaskConfirmationViewState,
   UIMessage,
 } from '@/pages/chat/types'
@@ -27,7 +27,7 @@ interface AgentSenderState {
 }
 
 export type AgentBubbleItem = BubbleItemType & {
-  task?: ChatTask
+  task?: Task
 }
 
 export interface AgentTaskConfirmationView extends TaskConfirmationViewState {

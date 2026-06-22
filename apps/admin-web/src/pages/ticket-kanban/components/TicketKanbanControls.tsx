@@ -2,14 +2,14 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { Button, Tooltip, Typography } from 'antd'
 import { useTranslation } from 'react-i18next'
 
-import type { AdminTaskStatusFilter } from '@/api/ticket-kanban'
+import type { TaskStatusFilter } from '@/api/ticket-kanban'
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
 
 interface TicketKanbanControlsProps {
   isRefreshing: boolean
   total: number
-  value: AdminTaskStatusFilter | 'all'
-  onChange: (value: AdminTaskStatusFilter | 'all') => void
+  value: TaskStatusFilter | 'all'
+  onChange: (value: TaskStatusFilter | 'all') => void
   onRefresh: () => void
 }
 
@@ -24,7 +24,7 @@ export function TicketKanbanControls({
 
   return (
     <div className="flex min-h-14.5 min-w-0 items-center gap-2 rounded-lg border border-(--border) bg-(--panel) px-2 py-2 shadow-[0_1px_2px_rgb(15_23_42/0.05)]">
-      <DictSelect<AdminTaskStatusFilter | 'all'>
+      <DictSelect<TaskStatusFilter | 'all'>
         className="h-10 flex-1"
         type="task_status_filter"
         value={value}

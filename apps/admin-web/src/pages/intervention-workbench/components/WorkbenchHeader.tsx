@@ -3,7 +3,7 @@ import { Button, Space, Typography } from 'antd'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { AdminTaskStatus } from '@/api/ticket-kanban'
+import type { TaskStatus } from '@/api/ticket-kanban'
 import { DictTag } from '@ff-ai-frontend/dictionaries'
 
 interface WorkbenchHeaderProps {
@@ -13,10 +13,10 @@ interface WorkbenchHeaderProps {
   isFetching: boolean
   onBack: () => void
   onRefresh: () => void
-  status?: AdminTaskStatus
+  status?: TaskStatus
 }
 
-function StatusTag({ status }: { status: AdminTaskStatus }) {
+function StatusTag({ status }: { status: TaskStatus }) {
   return <DictTag type="task_status" value={status} />
 }
 

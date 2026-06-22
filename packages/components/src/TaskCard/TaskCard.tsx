@@ -1,52 +1,29 @@
 import {
   ClockCircleOutlined,
   ExclamationCircleOutlined,
+  HistoryOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
-import { Button, Tag, Typography, Tooltip } from 'antd'
+import { Button, Collapse, Tag, Typography, Tooltip } from 'antd'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
+import type {
+  Task,
+  TaskError,
+  TaskLog,
+  TaskLogLevel,
+} from '@ff-ai-frontend/api'
 import { DictTag } from '@ff-ai-frontend/dictionaries'
 import { useComponentsI18n } from '../locale/index.js'
 import { formatDateTime } from './utils.js'
 
-export interface TaskCardError {
-  stage: string
-  message: string
-}
-
-export type TaskCardStatus =
-  | 'CREATED'
-  | 'ANALYZING'
-  | 'ROUTING'
-  | 'CODING'
-  | 'TESTING'
-  | 'DEPLOYING'
-  | 'COMPLETED'
-  | 'PENDING_APPROVAL'
-  | 'FAILED'
-  | (string & {})
-
-export interface TaskCardTask {
-  title: string
-  status: TaskCardStatus
-  task_id: string
-  tenant_id: string
-  created_at: string
-  updated_at: string
-  last_error?: TaskCardError | null
-  retry_count: number
-  current_node: string
-  web_url?: string | null
-}
-
 export interface TaskCardProps {
   showAction?: boolean
-  task: TaskCardTask
+  task: Task
 }
 
-function TaskStatusTag({ status }: { status: TaskCardStatus }) {
+function TaskStatusTag({ status }: { status: Task['status'] | string }) {
   return <DictTag className="m-0! shrink-0" type="task_status" value={status} />
 }
 
@@ -54,7 +31,7 @@ function TaskErrorSummary({
   error,
   executionError,
 }: {
-  error: TaskCardError
+  error: TaskError
   executionError: string
 }) {
   return (
@@ -89,12 +66,93 @@ function TaskInfoRow({
   )
 }
 
+function getLogLevelColor(level?: TaskLogLevel) {
+  switch (level?.toLowerCase()) {
+    case 'error':
+      return 'red'
+    case 'warn':
+    case 'warning':
+      return 'orange'
+    case 'success':
+      return 'green'
+    case 'debug':
+      return 'blue'
+    default:
+      return 'default'
+  }
+}
+
+function TaskLogList({ logs }: { logs: TaskLog[] }) {
+  return (
+    <div className="max-h-64 overflow-y-auto border-t border-(--border) px-2.5 py-2 [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin">
+      <div className="grid gap-2">
+        {logs.map((log, index) => (
+          <div
+            className="min-w-0 border-l-2 border-[color-mix(in_srgb,var(--admin-primary)_24%,var(--border))] pl-2.5"
+            key={`${log.timestamp ?? 'log'}-${index}`}
+          >
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+              <span className="text-[11px] leading-4 text-(--muted)">
+                {formatDateTime(log.timestamp)}
+              </span>
+              <Tag
+                color={getLogLevelColor(log.level)}
+                className="m-0! text-[11px]! leading-4!"
+              >
+                {log.level || 'info'}
+              </Tag>
+              {log.node ? (
+                <TaskStatusTag status={log.node} />
+              ) : null}
+            </div>
+            <div className="mt-1 break-words text-[12px] leading-4 text-(--text)">
+              {log.message || '-'}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TaskLogsCollapse({
+  label,
+  logs,
+}: {
+  label: string
+  logs: TaskLog[]
+}) {
+  if (!logs.length) return null
+
+  return (
+    <Collapse
+      bordered={false}
+      className="mt-2 rounded-md bg-(--control-bg) [&_.ant-collapse-content-box]:p-0! [&_.ant-collapse-header]:items-center! [&_.ant-collapse-header]:px-2.5! [&_.ant-collapse-header]:py-2!"
+      expandIconPlacement="end"
+      items={[
+        {
+          key: 'logs',
+          label: (
+            <span className="flex min-w-0 items-center gap-1.5 text-[12px] font-medium leading-4 text-(--text-strong)">
+              <HistoryOutlined className="shrink-0 text-(--muted)" />
+              <span className="truncate">{label}</span>
+            </span>
+          ),
+          children: <TaskLogList logs={logs} />,
+        },
+      ]}
+      size="small"
+    />
+  )
+}
+
 export function TaskCard({
   showAction = false,
   task,
 }: TaskCardProps) {
   const { t } = useComponentsI18n()
   const isApproval = task.status === 'PENDING_APPROVAL'
+  const logs = task.logs ?? []
 
   return (
     <article
@@ -178,6 +236,12 @@ export function TaskCard({
           <TaskErrorSummary
             error={task.last_error}
             executionError={t('TaskCard.executionError')}
+          />
+        ) : null}
+        {logs.length > 0 ? (
+          <TaskLogsCollapse
+            label={t('TaskCard.logs', { count: logs.length })}
+            logs={logs}
           />
         ) : null}
         {showAction && isApproval ? (

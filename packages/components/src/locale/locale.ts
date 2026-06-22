@@ -8,6 +8,7 @@ const taskCardMessages = {
   ar: {
     'TaskCard.enterIntervention': 'معالجة',
     'TaskCard.executionError': 'خطأ في التنفيذ',
+    'TaskCard.logs': 'السجلات {{count}}',
     'TaskCard.node': 'العقدة',
     'TaskCard.preview': 'معاينة',
     'TaskCard.redFlag': 'علامة حمراء',
@@ -18,6 +19,7 @@ const taskCardMessages = {
   'en-US': {
     'TaskCard.enterIntervention': 'Handle',
     'TaskCard.executionError': 'Execution error',
+    'TaskCard.logs': 'Logs {{count}}',
     'TaskCard.node': 'Node',
     'TaskCard.preview': 'Preview',
     'TaskCard.redFlag': 'Red flag',
@@ -28,6 +30,7 @@ const taskCardMessages = {
   'zh-CN': {
     'TaskCard.enterIntervention': '进入处理',
     'TaskCard.executionError': '执行异常',
+    'TaskCard.logs': '历史日志 {{count}} 条',
     'TaskCard.node': '节点',
     'TaskCard.preview': '点击预览',
     'TaskCard.redFlag': '红牌',
