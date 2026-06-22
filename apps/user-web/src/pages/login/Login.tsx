@@ -40,6 +40,10 @@ export function LoginPage() {
     try {
       const result = await loginWithPassword(values)
 
+      if (!result.accessToken) {
+        throw new Error(t('common.errors.authMissingToken'))
+      }
+
       setToken(result.accessToken)
       void globalMessage.success(t('pages.login.success'))
       void navigate('/', { replace: true })

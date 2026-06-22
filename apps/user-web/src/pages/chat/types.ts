@@ -1,3 +1,5 @@
+import type { UIMediaAttachment } from '@/api/media'
+
 export type Role = 'user' | 'assistant' | 'tool' | 'system'
 
 /** "trace" rows are intermediate agent breadcrumbs (tool-call hints,
@@ -51,13 +53,14 @@ export interface UIImage {
   name?: string
 }
 
-export type UIMediaKind = 'image' | 'video' | 'file'
+export type {
+  ChatSummary,
+} from '@/api/chat'
 
-export interface UIMediaAttachment {
-  kind: UIMediaKind
-  url?: string
-  name?: string
-}
+export type {
+  UIMediaAttachment,
+  UIMediaKind,
+} from '@/api/media'
 
 export interface UIMessage {
   id: string
@@ -77,18 +80,6 @@ export interface UIMessage {
   buttons?: string[][]
   /** Task-processing bubble payload, keyed by websocket bubble_id. */
   task?: ChatTask
-}
-
-export interface ChatSummary {
-  /** Server-side session key, e.g. ``websocket:abcd-...``. */
-  key: string
-  /** Local channel + chat_id parts derived from ``key`` for convenience. */
-  channel: string
-  chatId: string
-  createdAt: string | null
-  updatedAt: string | null
-  title?: string
-  preview: string
 }
 
 export interface TaskConfirmationViewState {

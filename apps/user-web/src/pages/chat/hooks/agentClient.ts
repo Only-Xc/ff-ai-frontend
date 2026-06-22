@@ -1,5 +1,8 @@
-import { EventEmitter, WebSocketWrapper } from '@ff-ai-frontend/utils'
-import type { WebSocketWrapperState } from '@ff-ai-frontend/utils'
+import {
+  EventEmitter,
+  WebSocketWrapper,
+  type WebSocketWrapperState,
+} from '@ff-ai-frontend/utils'
 
 import type {
   ConnectionStatus,

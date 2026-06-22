@@ -1,0 +1,98 @@
+{
+  "name": "@ff-ai-frontend/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./auth": {
+      "types": "./src/auth.ts",
+      "import": "./src/auth.ts"
+    },
+    "./caller": {
+      "types": "./src/caller.ts",
+      "import": "./src/caller.ts"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "import": "./src/client.ts"
+    },
+    "./common": {
+      "types": "./src/common.ts",
+      "import": "./src/common.ts"
+    },
+    "./admin": {
+      "types": "./src/admin/index.ts",
+      "import": "./src/admin/index.ts"
+    },
+    "./admin/lifecycle-ops": {
+      "types": "./src/admin/lifecycle-ops.ts",
+      "import": "./src/admin/lifecycle-ops.ts"
+    },
+    "./admin/ops-metrics": {
+      "types": "./src/admin/ops-metrics.ts",
+      "import": "./src/admin/ops-metrics.ts"
+    },
+    "./admin/skill-hub": {
+      "types": "./src/admin/skill-hub.ts",
+      "import": "./src/admin/skill-hub.ts"
+    },
+    "./admin/ticket-kanban": {
+      "types": "./src/admin/ticket-kanban.ts",
+      "import": "./src/admin/ticket-kanban.ts"
+    },
+    "./conversation": {
+      "types": "./src/conversation/index.ts",
+      "import": "./src/conversation/index.ts"
+    },
+    "./conversation/chat": {
+      "types": "./src/conversation/chat.ts",
+      "import": "./src/conversation/chat.ts"
+    },
+    "./conversation/file": {
+      "types": "./src/conversation/file.ts",
+      "import": "./src/conversation/file.ts"
+    },
+    "./tenant": {
+      "types": "./src/tenant/index.ts",
+      "import": "./src/tenant/index.ts"
+    },
+    "./tenant/agent-ticket": {
+      "types": "./src/tenant/agent-ticket.ts",
+      "import": "./src/tenant/agent-ticket.ts"
+    },
+    "./tenant/apps": {
+      "types": "./src/tenant/apps.ts",
+      "import": "./src/tenant/apps.ts"
+    },
+    "./tenant/billing-center": {
+      "types": "./src/tenant/billing-center.ts",
+      "import": "./src/tenant/billing-center.ts"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "oxlint && eslint . --max-warnings=0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "oxfmt . --ignore-path ../../.gitignore --write",
+    "format:check": "oxfmt . --ignore-path ../../.gitignore --check"
+  },
+  "dependencies": {
+    "@ff-ai-frontend/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@ff-ai-frontend/tooling": "workspace:*",
+    "eslint": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -16,6 +16,7 @@
     "@ant-design/icons": "^6.2.2",
     "@ant-design/x": "^2.7.0",
     "@ant-design/x-markdown": "^2.7.0",
+    "@ff-ai-frontend/api": "workspace:*",
     "@ff-ai-frontend/components": "workspace:*",
     "@ff-ai-frontend/dictionaries": "workspace:*",
     "@ff-ai-frontend/utils": "workspace:*",

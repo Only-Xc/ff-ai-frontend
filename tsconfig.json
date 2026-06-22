@@ -1,6 +1,7 @@
 {
   "files": [],
   "references": [
+    { "path": "./packages/api" },
     { "path": "./packages/components" },
     { "path": "./packages/utils" },
     { "path": "./apps/admin-web" },

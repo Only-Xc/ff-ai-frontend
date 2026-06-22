@@ -7,8 +7,8 @@ import {
   errorHandlerPlugin,
   normalizeRequestError,
   restfulPlugin,
+  type RequestConfig,
 } from '@ff-ai-frontend/utils'
-import type { RequestConfig } from '@ff-ai-frontend/utils'
 import { globalMessage } from '@/utils/message'
 import { useAppStore } from '@/store/useApp'
 import { i18n } from '@/i18n'

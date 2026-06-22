@@ -1,64 +1,30 @@
-import { requestClient } from '@/utils/request'
+import {
+  createConversationRequest,
+  deleteConversationRequest,
+  getConversationDetailRequest,
+  getConversationMessagesRequest,
+  getConversationPendingTaskRequest,
+  listConversationsRequest,
+} from '@ff-ai-frontend/api'
 
-import type { ChatSummary } from '@/pages/chat/types'
 import { useAuthStore } from '@/store/useAuth'
 
-interface SessionRow {
-  key: string
-  created_at: string | null
-  updated_at: string | null
-  title?: string
-  preview?: string
-}
+import { request } from './_request'
 
-export interface CreateSessionData {
-  project_id?: string
-  title: string
-}
+export { splitSessionKey } from '@ff-ai-frontend/api'
 
-export interface SessionDetail {
-  key: string
-  created_at: string | null
-  updated_at: string | null
-}
-
-export interface SessionMediaUrl {
-  url: string
-  name?: string
-}
-
-export interface SessionMessageItem {
-  bubble_id: string
-  role: string // 角色
-  content: string // 内容
-  metadata?: unknown
-  kind?: string | null
-  timestamp?: string // 时间
-  tool_calls?: unknown
-  tool_call_id?: string | null
-  name?: string | null
-  reply_to?: string | null
-  media?: string[] | null
-  media_urls?: SessionMediaUrl[] | null
-}
-
-export interface SessionMessages {
-  key: string
-  created_at: string | null
-  updated_at: string | null
-  messages: SessionMessageItem[]
-}
-
-export interface PendingTaskConfirmation {
-  conversation_id: string
-  chat_id: string
-  pending_task_confirmation: {
-    confirmation_id: string
-    title: string
-    task_type: 'process' | 'container' | 'direct_result'
-    markdown: string
-  } | null
-}
+export type {
+  ChatSummary,
+  ConversationDeleteResponse,
+  ConversationSessionsResponse,
+  CreateSessionData,
+  PendingTaskConfirmation,
+  SessionDetail,
+  SessionMediaUrl,
+  SessionMessageItem,
+  SessionMessages,
+  SessionRow,
+} from '@ff-ai-frontend/api'
 
 export const conversationKeys = {
   all: ['conversations'] as const,
@@ -69,85 +35,12 @@ export const conversationKeys = {
     [...conversationKeys.all, 'messages', conversationId] as const,
 }
 
-export function splitSessionKey(key: string | null): {
-  channel: string
-  chatId: string
-} {
-  if (!key) {
-    return { channel: '', chatId: '' }
-  }
-
-  const index = key.indexOf(':')
-
-  if (index === -1) {
-    return { channel: '', chatId: key }
-  }
-
-  return {
-    channel: key.slice(0, index),
-    chatId: key.slice(index + 1),
-  }
-}
-
-export function conversations_list(): Promise<ChatSummary[]> {
-  return requestClient<{ sessions: SessionRow[] }>({
-    url: '/api/conversations',
-    method: 'GET',
-  }).then((data) =>
-    data.sessions.map(
-      (row): ChatSummary => ({
-        key: row.key,
-        ...splitSessionKey(row.key),
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-        title: row.title ?? '',
-        preview: row.preview ?? '',
-      }),
-    ),
-  )
-}
-
-export function conversations_create(data: CreateSessionData) {
-  return requestClient({
-    url: '/api/conversations',
-    method: 'POST',
-    data,
-  })
-}
-
-export function conversations_detail(
-  conversationId: string,
-): Promise<SessionDetail> {
-  return requestClient({
-    url: `/api/conversations/${conversationId}`,
-    method: 'GET',
-  })
-}
-
-export function conversations_message(
-  conversationId: string,
-): Promise<SessionMessages> {
-  return requestClient({
-    url: `/api/conversations/${conversationId}/messages`,
-    method: 'GET',
-  })
-}
-
-export function conversations_delete(conversationId: string): Promise<boolean> {
-  return requestClient<{ deleted: boolean }>({
-    url: `/api/conversations/${conversationId}`,
-    method: 'DELETE',
-  }).then((res) => res.deleted)
-}
-
-export function conversations_pending_task(
-  conversationId: string,
-): Promise<PendingTaskConfirmation['pending_task_confirmation']> {
-  return requestClient<PendingTaskConfirmation>({
-    url: `/api/conversations/${conversationId}/pending-task-confirmation`,
-    method: 'GET',
-  }).then((res) => res.pending_task_confirmation)
-}
+export const conversations_list = request(listConversationsRequest)
+export const conversations_create = request(createConversationRequest)
+export const conversations_delete = request(deleteConversationRequest)
+export const conversations_detail = request(getConversationDetailRequest)
+export const conversations_message = request(getConversationMessagesRequest)
+export const conversations_pending_task = request(getConversationPendingTaskRequest)
 
 export function deriveWsUrl(
   options: { chatId?: string; clientId?: string } = {},

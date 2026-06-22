@@ -1,4 +1,10 @@
-import type { UIMediaAttachment, UIMediaKind } from '@/pages/chat/types'
+export type UIMediaKind = 'image' | 'video' | 'file'
+
+export interface UIMediaAttachment {
+  kind: UIMediaKind
+  url?: string
+  name?: string
+}
 
 const IMAGE_EXTENSIONS = new Set([
   '.png',
