@@ -70,7 +70,7 @@ export function DictSelect<Value extends string = string>({
         options={groupOptions}
         value={props.value}
         onChange={(event) => {
-          props.onChange?.(event.target.value, selectOptions)
+          props.onChange?.(event.target.value as Value, selectOptions)
           radioProps?.onChange?.(event)
         }}
       />

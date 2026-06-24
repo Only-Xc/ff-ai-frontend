@@ -4,6 +4,7 @@
     "package.json",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
+    "eslint.config.mjs",
     "packages/tooling/**",
     "tsconfig.json"
   ],

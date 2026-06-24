@@ -4,15 +4,18 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./eslint/react-vite": "./eslint/react-vite.js",
-    "./eslint/typescript": "./eslint/typescript.js",
+    "./eslint": "./eslint/index.js",
     "./tsconfig/browser-lib.json": "./tsconfig/browser-lib.json",
     "./tsconfig/node.json": "./tsconfig/node.json",
     "./tsconfig/react-app.json": "./tsconfig/react-app.json"
   },
   "dependencies": {
     "@eslint/js": "catalog:",
+    "@stylistic/eslint-plugin": "catalog:",
     "eslint": "catalog:",
+    "eslint-import-resolver-typescript": "catalog:",
+    "eslint-plugin-import-x": "catalog:",
+    "eslint-plugin-n": "catalog:",
     "eslint-plugin-oxlint": "catalog:",
     "eslint-plugin-react-dom": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",

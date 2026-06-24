@@ -23,7 +23,7 @@ export interface TaskCardProps {
   task: Task
 }
 
-function TaskStatusTag({ status }: { status: Task['status'] | string }) {
+function TaskStatusTag({ status }: { status: string }) {
   return <DictTag className="m-0! shrink-0" type="task_status" value={status} />
 }
 
@@ -86,10 +86,10 @@ function TaskLogList({ logs }: { logs: TaskLog[] }) {
   return (
     <div className="max-h-64 overflow-y-auto border-t border-(--border) px-2.5 py-2 [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin">
       <div className="grid gap-2">
-        {logs.map((log, index) => (
+        {logs.map((log) => (
           <div
             className="min-w-0 border-l-2 border-[color-mix(in_srgb,var(--admin-primary)_24%,var(--border))] pl-2.5"
-            key={`${log.timestamp ?? 'log'}-${index}`}
+            key={`${log.timestamp ?? 'log'}-${log.level ?? 'level'}-${log.message ?? 'message'}`}
           >
             <div className="flex min-w-0 flex-wrap items-center gap-1.5">
               <span className="text-[11px] leading-4 text-(--muted)">
@@ -99,14 +99,14 @@ function TaskLogList({ logs }: { logs: TaskLog[] }) {
                 color={getLogLevelColor(log.level)}
                 className="m-0! text-[11px]! leading-4!"
               >
-                {log.level || 'info'}
+                {log.level ?? 'info'}
               </Tag>
               {log.node ? (
                 <TaskStatusTag status={log.node} />
               ) : null}
             </div>
             <div className="mt-1 break-words text-[12px] leading-4 text-(--text)">
-              {log.message || '-'}
+              {log.message ?? '-'}
             </div>
           </div>
         ))}
