@@ -35,6 +35,14 @@ function getLocalApiPreviewUrl(previewUrl: string) {
       url.pathname === '/api' || url.pathname.startsWith('/api/')
 
     if (isApiPath) {
+      if (
+        url.hostname === window.location.hostname &&
+        window.location.port === '8083'
+      ) {
+        url.port = '18083'
+        return url.toString()
+      }
+
       return `${window.location.origin}${url.pathname}${url.search}${url.hash}`
     }
   } catch {
@@ -58,6 +66,7 @@ export function IframeContainerPage() {
   const previewUrl = app?.preview_url
     ? getLocalApiPreviewUrl(app.preview_url)
     : ''
+  const useNativeIframe = previewUrl.includes('/api/tasks/')
 
   if (!taskId) {
     return (
@@ -118,13 +127,23 @@ export function IframeContainerPage() {
 
   return (
     <PageContainer className="h-full w-full overflow-hidden">
-      <WujieReact
-        key={taskId}
-        name={`iframe-container-${taskId}`}
-        url={previewUrl}
-        degrade
-        attrs={wujieIframeAttrs}
-      />
+      {useNativeIframe ? (
+        <iframe
+          key={taskId}
+          src={previewUrl}
+          title={app.title}
+          className="block h-full w-full border-0"
+          sandbox={wujieIframeAttrs.sandbox}
+        />
+      ) : (
+        <WujieReact
+          key={taskId}
+          name={`iframe-container-${taskId}`}
+          url={previewUrl}
+          degrade
+          attrs={wujieIframeAttrs}
+        />
+      )}
     </PageContainer>
   )
 }

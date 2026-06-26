@@ -35,6 +35,7 @@ export function Header({ onOpenMenu: _onOpenMenu }: HeaderProps) {
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const user = useAuthStore((state) => state.user)
   const clearAuth = useAuthStore((state) => state.clearAuth)
+  const displayName = user?.full_name || user?.email || ''
 
   const isDarkMode = themeMode === 'dark'
   const themeToggleLabel = isDarkMode
@@ -110,10 +111,10 @@ export function Header({ onOpenMenu: _onOpenMenu }: HeaderProps) {
           menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
         >
           <div className="flex cursor-pointer flex-row items-center gap-2 rounded-md px-2 py-1 transition-colors hover:bg-(--sidebar-hover)">
-            <Avatar size={28}>{user?.full_name.slice(0, 1)}</Avatar>
+            <Avatar size={28}>{displayName.slice(0, 1).toUpperCase()}</Avatar>
             <div className="leading-[1.15]">
               <div className="max-w-28 truncate text-xs font-semibold text-(--text-strong)">
-                {user?.full_name}
+                {displayName}
               </div>
               <span className="mt-0.5 block max-w-28 truncate text-[11px] text-(--dark-text)">
                 {user?.email}

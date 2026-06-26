@@ -27,6 +27,7 @@ export interface AgentSessionsState {
 export interface AgentSessionsActions {
   refresh: () => Promise<unknown>
   createChat: () => Promise<string>
+  createLocalChat: () => string
   deleteChat: (key: string) => Promise<void>
   setSessionStreaming: (chatId: string, isStreaming: boolean) => void
 }
@@ -105,6 +106,30 @@ export function useAgentSessions(client: AgentClient): {
     return session.chatId
   }, [createChatMutation])
 
+  const createLocalChat = useCallback((): string => {
+    const chatId =
+      globalThis.crypto?.randomUUID?.() ??
+      `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+    const key = `websocket:${chatId}`
+    const now = new Date().toISOString()
+    const session: ChatSummary = {
+      key,
+      channel: 'websocket',
+      chatId,
+      createdAt: now,
+      updatedAt: now,
+      title: '',
+      preview: '',
+    }
+
+    queryClient.setQueryData<ChatSummary[]>(conversationKeys.list(), (current) => [
+      session,
+      ...(current ?? []).filter((item) => item.key !== session.key),
+    ])
+
+    return chatId
+  }, [queryClient])
+
   const deleteChat = useCallback(
     async (key: string) => {
       await deleteChatMutation.mutateAsync(key)
@@ -147,6 +172,7 @@ export function useAgentSessions(client: AgentClient): {
     actions: {
       refresh,
       createChat,
+      createLocalChat,
       deleteChat,
       setSessionStreaming,
     },

@@ -27,6 +27,8 @@ const queryClient = new QueryClient({
   },
 })
 
+const enableQueryDevtools = import.meta.env.VITE_ENABLE_QUERY_DEVTOOLS === 'true'
+
 const themeBackgroundTokens = {
   dark: {
     colorBgLayout: '#0a0c10',
@@ -96,7 +98,7 @@ export function AppProvider({ children }: Props) {
           {children}
         </AntdApp>
       </ConfigProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {enableQueryDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
     </QueryClientProvider>
   )
 }

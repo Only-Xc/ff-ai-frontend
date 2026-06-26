@@ -21,8 +21,8 @@ interface LoginFormValues {
 
 // 生产环境下请删除
 const initialValues: LoginFormValues = {
-  username: 'dev@example.com',
-  password: 'password123',
+  username: 'admin@example.com',
+  password: 'changethis',
 }
 
 export function LoginPage() {

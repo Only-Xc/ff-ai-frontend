@@ -54,7 +54,7 @@ export interface AgentClient {
   newChat: (timeoutMs?: number) => Promise<string>
   on: (type: 'chat', options: AgentChatListenerOptions) => Unsubscribe
   sendMessage: (chatId: string, content: string, options?: SendOptions) => void
-  taskConfirm: (confirmationId: string) => void
+  taskConfirm: (chatId: string, confirmationId: string) => void
 }
 
 const NEW_CHAT_TIMEOUT_MS = 5_000 // new-chat 到 attached 的超时时间
@@ -180,9 +180,10 @@ class WebSocketAgentClient implements AgentClient {
     this.queueSend({ type: 'cancel', chat_id: chatId })
   }
 
-  taskConfirm(confirmationId: string): void {
+  taskConfirm(chatId: string, confirmationId: string): void {
     const frame: OutboundTaskConfirm = {
       type: 'task_confirmation',
+      chat_id: chatId,
       confirmation_id: confirmationId,
     }
 

@@ -1,11 +1,13 @@
 import {
+  CheckCircleOutlined,
   ClockCircleOutlined,
   ExclamationCircleOutlined,
   HistoryOutlined,
+  LoadingOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
-import { Button, Collapse, Tag, Typography, Tooltip } from 'antd'
-import type { ReactNode } from 'react'
+import { Button, Modal, Tag, Typography, Tooltip } from 'antd'
+import { useMemo, useState, type MouseEvent, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import type {
@@ -16,6 +18,7 @@ import type {
 } from '@ff-ai-frontend/api'
 import { DictTag } from '@ff-ai-frontend/dictionaries'
 import { useComponentsI18n } from '../locale/index.js'
+import type { ComponentsTranslate } from '../locale/types.js'
 import { formatDateTime } from './utils.js'
 
 export interface TaskCardProps {
@@ -42,7 +45,10 @@ function TaskErrorSummary({
           <div className="truncate text-[12px] font-semibold text-(--text-strong)">
             {error.stage || executionError}
           </div>
-          <div className="mt-0.5 line-clamp-1 text-[12px] leading-4 text-(--muted)">
+          <div
+            className="mt-0.5 line-clamp-2 text-[12px] leading-4 text-(--muted)"
+            title={error.message || undefined}
+          >
             {error.message || '-'}
           </div>
         </div>
@@ -82,9 +88,133 @@ function getLogLevelColor(level?: TaskLogLevel) {
   }
 }
 
-function TaskLogList({ logs }: { logs: TaskLog[] }) {
+function getReadableNode(node?: string) {
+  if (!node) return ''
+
+  return node
+    .toLowerCase()
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function isTaskActive(status: Task['status'] | string) {
+  return !['COMPLETED', 'FAILED', 'PENDING_APPROVAL'].includes(status)
+}
+
+function toDisplayAgentText(text?: string) {
+  return String(text || '')
+    .replace(/HERMES/g, 'AGENT')
+    .replace(/Hermes/g, 'Agent')
+    .replace(/hermes/g, 'agent')
+}
+
+function stringField(record: Record<string, unknown> | null | undefined, key: string) {
+  const value = record?.[key]
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function resolveTaskIssueMessage(task: Task) {
+  const qualityFailure = task.quality_failure ?? null
+  const qualityMessage = stringField(qualityFailure, 'message')
+  const solution = stringField(qualityFailure, 'solution')
+  const pendingReason =
+    typeof task.pending_approval_reason === 'string'
+      ? task.pending_approval_reason.trim()
+      : ''
+  const lastErrorMessage = task.last_error?.message?.trim() || ''
   return (
-    <div className="max-h-64 overflow-y-auto border-t border-(--border) px-2.5 py-2 [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin">
+    [qualityMessage, solution].filter(Boolean).join('\n') ||
+    pendingReason ||
+    (lastErrorMessage !== '-' ? lastErrorMessage : '')
+  )
+}
+
+function resolveTaskError(task: Task, executionError: string): TaskError | null {
+  const issueMessage = resolveTaskIssueMessage(task)
+  const qualityFailure = task.quality_failure ?? null
+  if (qualityFailure || issueMessage) {
+    const stage =
+      stringField(qualityFailure, 'code') ||
+      stringField(qualityFailure, 'step') ||
+      task.last_error?.stage ||
+      executionError
+    return {
+      stage,
+      message: issueMessage || task.last_error?.message || '-',
+    }
+  }
+  return task.last_error
+}
+
+function buildFallbackLogs(task: Task, t: ComponentsTranslate): TaskLog[] {
+  const node = task.current_node || task.status
+  const readableNode = getReadableNode(node)
+  const issueMessage = resolveTaskIssueMessage(task)
+  const logs: TaskLog[] = [
+    {
+      timestamp: task.created_at,
+      level: 'success',
+      node: 'CREATED',
+      message: t('TaskCard.process.created'),
+    },
+    {
+      timestamp: task.updated_at,
+      level: isTaskActive(task.status) ? 'info' : 'success',
+      node,
+      message: isTaskActive(task.status)
+        ? t('TaskCard.process.running', { node: readableNode || node })
+        : t('TaskCard.process.latest', { node: readableNode || node }),
+    },
+  ]
+
+  if (task.status === 'PENDING_APPROVAL') {
+    logs.push({
+      timestamp: task.updated_at,
+      level: 'warn',
+      node: task.current_node || 'PENDING_APPROVAL',
+      message:
+        issueMessage ||
+        task.last_error?.message ||
+        t('TaskCard.process.pendingApproval'),
+    })
+  }
+
+  if (task.status === 'FAILED') {
+    logs.push({
+      timestamp: task.updated_at,
+      level: 'error',
+      node: task.current_node || 'FAILED',
+      message: task.last_error?.message || t('TaskCard.process.failed'),
+    })
+  }
+
+  if (task.status === 'COMPLETED') {
+    logs.push({
+      timestamp: task.updated_at,
+      level: 'success',
+      node: 'COMPLETED',
+      message: task.web_url
+        ? t('TaskCard.process.previewReady')
+        : t('TaskCard.process.completed'),
+    })
+  }
+
+  return logs
+}
+
+function TaskLogList({
+  compact = false,
+  logs,
+}: {
+  compact?: boolean
+  logs: TaskLog[]
+}) {
+  return (
+    <div
+      className={`${compact ? 'max-h-48' : 'max-h-64'} overflow-y-auto px-2.5 py-2 [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin`}
+    >
       <div className="grid gap-2">
         {logs.map((log) => (
           <div
@@ -102,11 +232,11 @@ function TaskLogList({ logs }: { logs: TaskLog[] }) {
                 {log.level ?? 'info'}
               </Tag>
               {log.node ? (
-                <TaskStatusTag status={log.node} />
+                <TaskStatusTag status={toDisplayAgentText(log.node)} />
               ) : null}
             </div>
-            <div className="mt-1 break-words text-[12px] leading-4 text-(--text)">
-              {log.message ?? '-'}
+            <div className="mt-1 whitespace-pre-wrap break-words text-[12px] leading-4 text-(--text)">
+              {toDisplayAgentText(log.message) || '-'}
             </div>
           </div>
         ))}
@@ -115,35 +245,64 @@ function TaskLogList({ logs }: { logs: TaskLog[] }) {
   )
 }
 
-function TaskLogsCollapse({
-  label,
+function TaskProcessWindow({
   logs,
+  task,
 }: {
-  label: string
   logs: TaskLog[]
+  task: Task
 }) {
-  if (!logs.length) return null
+  const { t } = useComponentsI18n()
+  const active = isTaskActive(task.status)
 
   return (
-    <Collapse
-      bordered={false}
-      className="mt-2 rounded-md bg-(--control-bg) [&_.ant-collapse-content-box]:p-0! [&_.ant-collapse-header]:items-center! [&_.ant-collapse-header]:px-2.5! [&_.ant-collapse-header]:py-2!"
-      expandIconPlacement="end"
-      items={[
-        {
-          key: 'logs',
-          label: (
-            <span className="flex min-w-0 items-center gap-1.5 text-[12px] font-medium leading-4 text-(--text-strong)">
-              <HistoryOutlined className="shrink-0 text-(--muted)" />
-              <span className="truncate">{label}</span>
-            </span>
-          ),
-          children: <TaskLogList logs={logs} />,
-        },
-      ]}
-      size="small"
-    />
+    <section
+      className="mt-2 overflow-hidden rounded-md border border-[color-mix(in_srgb,var(--admin-primary)_18%,var(--border))] bg-[color-mix(in_srgb,var(--control-bg)_72%,var(--panel))]"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="flex min-w-0 items-center justify-between gap-3 border-b border-(--border) px-2.5 py-2">
+        <div className="flex min-w-0 items-center gap-2">
+          {active ? (
+            <LoadingOutlined className="shrink-0 text-(--admin-primary)" />
+          ) : task.status === 'COMPLETED' ? (
+            <CheckCircleOutlined className="shrink-0 text-(--admin-success)" />
+          ) : (
+            <HistoryOutlined className="shrink-0 text-(--muted)" />
+          )}
+          <div className="min-w-0">
+            <div className="truncate text-[12px] font-semibold leading-4 text-(--text-strong)">
+              {t('TaskCard.process.title')}
+            </div>
+            <div className="truncate text-[11px] leading-4 text-(--muted)">
+              {active
+                ? t('TaskCard.process.live')
+                : t('TaskCard.process.snapshot')}
+            </div>
+          </div>
+        </div>
+        <TaskStatusTag status={task.current_node || task.status} />
+      </div>
+      <TaskLogList compact logs={logs} />
+    </section>
   )
+}
+
+function resolvePreviewUrl(rawUrl: string) {
+  try {
+    const url = new URL(rawUrl, window.location.origin)
+    const isLocalFrontend =
+      url.hostname === window.location.hostname &&
+      window.location.port === '8083' &&
+      url.pathname.startsWith('/api/')
+
+    if (isLocalFrontend) {
+      url.port = '18083'
+    }
+
+    return url.toString()
+  } catch {
+    return rawUrl
+  }
 }
 
 export function TaskCard({
@@ -153,10 +312,48 @@ export function TaskCard({
   const { t } = useComponentsI18n()
   const isApproval = task.status === 'PENDING_APPROVAL'
   const logs = task.logs ?? []
+  const processLogs = useMemo(
+    () => (logs.length > 0 ? logs : buildFallbackLogs(task, t)),
+    [logs, task, t],
+  )
+  const displayError = useMemo(
+    () => resolveTaskError(task, t('TaskCard.executionError')),
+    [task, t],
+  )
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const previewUrl = useMemo(() => {
+    if (!task.web_url) return ''
+    return resolvePreviewUrl(task.web_url)
+  }, [task.web_url])
+  const canPreview = !!previewUrl && task.status === 'COMPLETED'
+
+  const openPreview = () => {
+    if (canPreview) {
+      setPreviewOpen(true)
+    }
+  }
+
+  const stopCardClick = (event: MouseEvent) => {
+    event.stopPropagation()
+  }
 
   return (
-    <article
-      className={`relative flex overflow-hidden rounded-lg border p-3 transition-[border-color,box-shadow,transform] duration-160 hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--admin-primary)_32%,var(--border))] hover:shadow-[0_8px_18px_rgb(15_23_42/0.07)] ${
+    <>
+      <article
+      aria-label={canPreview ? `${task.title || task.task_id} preview` : undefined}
+      role={canPreview ? 'button' : undefined}
+      tabIndex={canPreview ? 0 : undefined}
+      onClick={openPreview}
+      onKeyDown={(event) => {
+        if (!canPreview) return
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          setPreviewOpen(true)
+        }
+      }}
+      className={`relative flex w-full overflow-hidden rounded-lg border p-3 transition-[border-color,box-shadow,transform] duration-160 hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--admin-primary)_32%,var(--border))] hover:shadow-[0_8px_18px_rgb(15_23_42/0.07)] ${
+        canPreview ? 'cursor-pointer' : ''
+      } ${
         task.status === 'PENDING_APPROVAL'
           ? 'border-[color-mix(in_srgb,var(--admin-danger)_48%,var(--border))] bg-(--panel)'
           : task.status === 'FAILED'
@@ -168,9 +365,16 @@ export function TaskCard({
         <div className="mb-2 flex shrink-0 items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="line-clamp-1 text-[14px] font-semibold leading-5 text-(--text-strong)">
-              {task.web_url ? (
+              {canPreview ? (
                 <Tooltip placement="top" title={t('TaskCard.preview')}>
-                  <Typography.Link href={task.web_url} target="_blank">
+                  <Typography.Link
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setPreviewOpen(true)
+                    }}
+                    href={previewUrl}
+                  >
                     {task.title || '--'}
                   </Typography.Link>
                 </Tooltip>
@@ -180,6 +384,7 @@ export function TaskCard({
             </div>
             <Typography.Text
               copyable
+              onClick={stopCardClick}
               className="mt-0.5 block max-w-43 truncate text-[12px]! leading-4! text-(--muted)! [&_.ant-typography-copy]:opacity-[0.68]"
             >
               {task.task_id}
@@ -192,6 +397,7 @@ export function TaskCard({
           <TaskInfoRow label={t('TaskCard.tenant')}>
             <Typography.Text
               copyable
+              onClick={stopCardClick}
               className="max-w-37.5 truncate text-[12px]! leading-4! [&_.ant-typography-copy]:opacity-[0.68]"
             >
               {task.tenant_id || '-'}
@@ -232,22 +438,18 @@ export function TaskCard({
           ) : null}
         </div>
 
-        {task.last_error ? (
+        {displayError ? (
           <TaskErrorSummary
-            error={task.last_error}
+            error={displayError}
             executionError={t('TaskCard.executionError')}
           />
         ) : null}
-        {logs.length > 0 ? (
-          <TaskLogsCollapse
-            label={t('TaskCard.logs', { count: logs.length })}
-            logs={logs}
-          />
-        ) : null}
+        <TaskProcessWindow logs={processLogs} task={task} />
         {showAction && isApproval ? (
           <Link
             className="block pt-2"
             to={`/tickets/${encodeURIComponent(task.task_id)}/intervention`}
+            onClick={stopCardClick}
           >
             <Button
               block
@@ -261,6 +463,31 @@ export function TaskCard({
           </Link>
         ) : null}
       </div>
-    </article>
+      </article>
+      <Modal
+        centered
+        destroyOnHidden
+        footer={null}
+        onCancel={() => setPreviewOpen(false)}
+        open={previewOpen}
+        title={task.title || task.task_id}
+        width="min(1120px, calc(100vw - 48px))"
+        styles={{
+          body: {
+            height: 'min(760px, calc(100vh - 150px))',
+            padding: 0,
+          },
+        }}
+      >
+        {previewUrl ? (
+          <iframe
+            src={previewUrl}
+            title={task.title || task.task_id}
+            className="block h-full w-full border-0"
+            sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+          />
+        ) : null}
+      </Modal>
+    </>
   )
 }

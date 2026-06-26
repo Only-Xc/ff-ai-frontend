@@ -4,6 +4,7 @@ import { v4 as uuidV4 } from 'uuid'
 import { splitSessionKey } from '@/api/chat'
 import { i18n } from '@/i18n'
 import { toMediaAttachment } from '@/api/media'
+import { useMenuStore } from '@/store/useMenu'
 import type {
   TaskConfirmationViewState,
   UIMessage,
@@ -26,6 +27,68 @@ function createMessageId(): string {
   return `msg-${uuidV4()}`
 }
 
+function sanitizeAgentLabel(value: string): string {
+  return value
+    .replaceAll('Hermes Agent', 'Agent')
+    .replaceAll('Hermes/LLM', 'Agent/LLM')
+    .replaceAll('Hermes', 'Agent')
+}
+
+function normalizeErrorMessage(detail: unknown): string {
+  const raw = typeof detail === 'string' ? detail.trim() : ''
+  let message = raw
+  let code = ''
+
+  if (raw.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>
+      const parsedDetail = parsed.detail ?? parsed.message ?? parsed.error
+      if (typeof parsed.code === 'string') {
+        code = parsed.code
+      }
+      if (typeof parsedDetail === 'string' && parsedDetail.trim()) {
+        message = parsedDetail.trim()
+      }
+    } catch {
+      message = raw
+    }
+  } else if (raw.includes('{') && raw.includes('}')) {
+    try {
+      const embedded = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1)
+      const parsed = JSON.parse(embedded) as Record<string, unknown>
+      if (typeof parsed.code === 'string') {
+        code = parsed.code
+      }
+      if (typeof parsed.message === 'string' && parsed.message.trim()) {
+        message = parsed.message.trim()
+      }
+    } catch {
+      message = raw
+    }
+  }
+
+  const normalized = `${raw} ${message} ${code}`.toLowerCase()
+  if (
+    normalized.includes('429') ||
+    normalized.includes('too many requests') ||
+    normalized.includes('quota') ||
+    normalized.includes('额度')
+  ) {
+    return 'Agent/LLM 当前返回 429 Too Many Requests：模型额度或流量可能已用完，也可能是请求过于频繁。请稍后重试，或更换可用的模型/API Key 后再提交。'
+  }
+  if (
+    normalized.includes('401') ||
+    normalized.includes('api_key_disabled') ||
+    normalized.includes('api key is disabled')
+  ) {
+    return 'Agent/LLM 认证失败：上游服务返回 401。这通常表示运行环境里的 API Key 无效、已失效，或某个工具侧凭据与主模型凭据不一致；不能仅凭该错误判断凭据的具体状态。'
+  }
+  if (normalized.includes('unsupported content type')) {
+    return '请求格式不符合接口预期：Content-Type 不被后端支持。请刷新页面后重试；如果仍出现，需要检查当前请求是否按 JSON 或正确的上传格式发送。'
+  }
+  return sanitizeAgentLabel(message) || '执行失败，请稍后重试。'
+}
+
 function toChatTask(event: InboundTaskProcessingEvent): Task {
   return {
     title: event.title,
@@ -41,6 +104,12 @@ function toChatTask(event: InboundTaskProcessingEvent): Task {
     current_node: event.current_node,
     web_url: event.web_url,
     logs: Array.isArray(event.logs) ? event.logs : undefined,
+  }
+}
+
+function refreshAppMenuForCompletedTask(task: Task) {
+  if (task.status === 'COMPLETED' && task.web_url) {
+    void useMenuStore.getState().retryMenu()
   }
 }
 
@@ -147,10 +216,12 @@ export function useAgentConversation({
             return
           }
 
-          const eventConversationId =
-            eventChatId === targetChatId
-              ? targetConversationId
-              : `websocket:${eventChatId}`
+            const eventConversationId =
+              'conversation_id' in event && event.conversation_id
+                ? event.conversation_id
+                : eventChatId === targetChatId
+                  ? targetConversationId
+                  : `websocket:${eventChatId}`
           const now = Date.now()
           const eventStrategies: Partial<
             Record<InboundEvent['event'], () => void | SessionHistoryData>
@@ -280,15 +351,39 @@ export function useAgentConversation({
               })
             },
             error: () => {
+              if (event.event !== 'error') return
+
               const strategyRuntime =
                 getConversationRuntime(eventConversationId)
               const state = conversationHistory.getHistory(eventConversationId)
+              const replaceMessageId = strategyRuntime.buffer?.messageId
+              const messageId = event.bubble_id ?? replaceMessageId ?? createMessageId()
 
               strategyRuntime.currentRunId = null
               strategyRuntime.buffer = null
               onSessionStreamingChange?.(eventChatId, false)
 
-              return liveReducer(state, { type: 'stream_ended' })
+              return liveReducer(
+                {
+                  ...state,
+                  messages: state.messages.map((message) =>
+                    message.isStreaming
+                      ? { ...message, isStreaming: false }
+                      : message,
+                  ),
+                },
+                {
+                  type: 'message_received',
+                  message: {
+                    id: messageId,
+                    role: 'assistant',
+                    kind: 'error',
+                    content: normalizeErrorMessage(event.detail),
+                    createdAt: now,
+                  },
+                  ...(replaceMessageId ? { replaceMessageId } : {}),
+                },
+              )
             },
             message: () => {
               if (event.event !== 'message') return
@@ -301,21 +396,76 @@ export function useAgentConversation({
                 event.run_id ?? strategyRuntime.currentRunId
               onSessionStreamingChange?.(eventChatId, true)
 
-              if (event.kind === 'tool_hint' || event.kind === 'progress') {
-                return state
-              }
+                if (event.kind === 'tool_hint') {
+                  return state
+                }
 
-              const media = event.media_urls?.length
-                ? event.media_urls.map((item) => toMediaAttachment(item))
-                : event.media?.map((url) => toMediaAttachment({ url }))
+                if (event.kind === 'progress') {
+                  const progressText = event.text?.trim()
+
+                  if (!progressText) return state
+
+                  const messageId =
+                    strategyRuntime.buffer?.messageId ??
+                    event.bubble_id ??
+                    createMessageId()
+
+                  strategyRuntime.buffer ??= {
+                    messageId,
+                    parts: [],
+                  }
+                  strategyRuntime.buffer.parts = [progressText]
+
+                  return liveReducer(state, {
+                    type: 'delta_received',
+                    messageId,
+                    content: progressText,
+                    createdAt: now,
+                  })
+                }
+
+                if (
+                  event.kind === 'task-created' ||
+                  event.kind === 'task-info-update'
+                ) {
+                  strategyRuntime.currentRunId = null
+                  strategyRuntime.buffer = null
+                  onSessionStreamingChange?.(eventChatId, false)
+
+                  if (eventConversationId === conversationId) {
+                    setTaskConfirmationSubmitting(false)
+                  }
+
+                  const task = toChatTask(
+                    event as unknown as InboundTaskProcessingEvent,
+                  )
+                  refreshAppMenuForCompletedTask(task)
+
+                  return liveReducer(state, {
+                    type: 'task_message_upserted',
+                    message: {
+                      id: event.bubble_id,
+                      role: 'assistant',
+                      content: event.text,
+                      createdAt: now,
+                      task,
+                    },
+                  })
+                }
+
+                const media = event.media_urls?.length
+                  ? event.media_urls.map((item) => toMediaAttachment(item))
+                  : event.media?.map((url) => toMediaAttachment({ url }))
               const hasMedia = !!media && media.length > 0
               const hasButtons = !!event.buttons?.length
               const isTaskConfirmation = event.kind === 'task_confirmation'
+              const isErrorMessage = event.kind === 'error'
 
               if (
                 !hasMedia &&
                 !hasButtons &&
-                !isTaskConfirmation
+                !isTaskConfirmation &&
+                !isErrorMessage
               ) {
                 return state
               }
@@ -328,9 +478,12 @@ export function useAgentConversation({
                 message: {
                   id: event.bubble_id,
                   role: 'assistant',
-                  content: hasButtons
-                    ? (event.button_prompt ?? event.text)
-                    : event.text,
+                  kind: isErrorMessage ? 'error' : undefined,
+                  content: isErrorMessage
+                    ? normalizeErrorMessage(event.text)
+                    : hasButtons
+                      ? (event.button_prompt ?? event.text)
+                      : event.text,
                   createdAt: now,
                   ...(hasButtons ? { buttons: event.buttons } : {}),
                   ...(hasMedia ? { media } : {}),
@@ -368,33 +521,39 @@ export function useAgentConversation({
                 messageId: streamingMessageId,
               })
 
-              return liveReducer(nextState, {
-                type: 'task_message_upserted',
-                message: {
-                  id: event.bubble_id,
-                  role: 'assistant',
-                  content: event.text,
-                  createdAt: Date.parse(event.created_at) || now,
-                  task: toChatTask(event),
-                },
-              })
-            },
+                const task = toChatTask(event)
+                refreshAppMenuForCompletedTask(task)
+
+                return liveReducer(nextState, {
+                  type: 'task_message_upserted',
+                  message: {
+                    id: event.bubble_id,
+                    role: 'assistant',
+                    content: event.text,
+                    createdAt: Date.parse(event.created_at) || now,
+                    task,
+                  },
+                })
+              },
             'task-info-update': () => {
               if (event.event !== 'task-info-update') return
 
               const state = conversationHistory.getHistory(eventConversationId)
 
-              return liveReducer(state, {
-                type: 'task_message_upserted',
-                message: {
-                  id: event.bubble_id,
-                  role: 'assistant',
-                  content: event.text,
-                  createdAt: Date.parse(event.created_at) || now,
-                  task: toChatTask(event),
-                },
-              })
-            },
+                const task = toChatTask(event)
+                refreshAppMenuForCompletedTask(task)
+
+                return liveReducer(state, {
+                  type: 'task_message_upserted',
+                  message: {
+                    id: event.bubble_id,
+                    role: 'assistant',
+                    content: event.text,
+                    createdAt: Date.parse(event.created_at) || now,
+                    task,
+                  },
+                })
+              },
           }
           const nextConversation = eventStrategies[event.event]?.()
 
@@ -556,7 +715,12 @@ export function useAgentConversation({
       setTaskConfirmationSubmitting(true)
 
       try {
-        client.taskConfirm(pendingTask.confirmation_id)
+        const chatId = splitSessionKey(conversationId).chatId
+        if (!chatId) {
+          setTaskConfirmationSubmitting(false)
+          return
+        }
+        client.taskConfirm(chatId, pendingTask.confirmation_id)
       } catch {
         setTaskConfirmationSubmitting(false)
       }

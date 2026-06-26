@@ -33,7 +33,14 @@ export interface InboundMessageEvent {
   button_prompt?: string
   /** Present when the frame is an agent breadcrumb (e.g. tool hint,
    * generic progress line) rather than a conversational reply. */
-  kind?: 'tool_hint' | 'progress' | 'task_confirmation' | ''
+  kind?:
+    | 'tool_hint'
+    | 'progress'
+    | 'task_confirmation'
+    | 'task-created'
+    | 'task-info-update'
+    | 'error'
+    | ''
 }
 
 export interface InboundTaskProcessingEvent extends Task {
@@ -81,6 +88,7 @@ export interface InboundCanceledEvent {
 export interface InboundErrorEvent {
   event: 'error'
   chat_id?: string
+  bubble_id?: string
   detail?: string
 }
 
@@ -134,6 +142,7 @@ export type OutboundCancel =
 
 export interface OutboundTaskConfirm {
   type: 'task_confirmation'
+  chat_id: string
   confirmation_id: string
 }
 

@@ -23,6 +23,15 @@ export interface TaskError {
   message: string
 }
 
+export interface TaskQualityFailure {
+  [key: string]: unknown
+  code?: string
+  message?: string
+  reprompt_hint?: string
+  solution?: string
+  step?: string
+}
+
 export type TaskLogLevel =
   | 'debug'
   | 'error'
@@ -54,6 +63,9 @@ export interface Task {
   last_error: TaskError | null
   retry_count: number
   current_node: string
+  quality_failure?: TaskQualityFailure | null
+  manual_fix_required?: boolean | null
+  pending_approval_reason?: string | null
   web_url?: string | null
   logs?: TaskLog[]
 }

@@ -90,7 +90,7 @@ export function useAgent(agentClient: AgentClientValue) {
   // 会话列表相关逻辑固定收敛在 sessions hook 内部。
   const {
     state: { loading: sessionsLoading, sessions, streamingChatIdSet },
-    actions: { createChat, deleteChat, refresh, setSessionStreaming },
+    actions: { createChat, createLocalChat, deleteChat, refresh, setSessionStreaming },
   } = useAgentSessions(agentClient.client)
 
   // undefined：默认跟随列表第一项
@@ -124,10 +124,15 @@ export function useAgent(agentClient: AgentClientValue) {
       setSelectedKey(`websocket:${createdChatId}`)
 
       return createdChatId
-    } catch {
-      return null
+    } catch (error) {
+      console.warn('Falling back to local chat id for first message', error)
+      const localChatId = createLocalChat()
+
+      setSelectedKey(`websocket:${localChatId}`)
+
+      return localChatId
     }
-  }, [createChat])
+  }, [createChat, createLocalChat])
 
   const deleteSession = useCallback(
     (key: string) => {
