@@ -35,7 +35,7 @@ export function Header({ onOpenMenu: _onOpenMenu }: HeaderProps) {
   const toggleTheme = useAppStore((state) => state.toggleTheme)
   const user = useAuthStore((state) => state.user)
   const clearAuth = useAuthStore((state) => state.clearAuth)
-  const displayName = user?.full_name || user?.email || ''
+  const displayName = user?.full_name ?? user?.email ?? ''
 
   const isDarkMode = themeMode === 'dark'
   const themeToggleLabel = isDarkMode
