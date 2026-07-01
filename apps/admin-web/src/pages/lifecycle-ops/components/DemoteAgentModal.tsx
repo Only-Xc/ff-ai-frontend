@@ -1,4 +1,4 @@
-import { Descriptions, Form, Input, Modal } from 'antd'
+import { Checkbox, Descriptions, Form, Input, Modal } from 'antd'
 import type { DescriptionsProps } from 'antd'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -36,6 +36,8 @@ export function DemoteAgentModal({
 
     form.setFieldsValue({
       reason: getLifecycleActionReason(candidate, t),
+      preserve_data: true,
+      remove_image: false,
     })
   }, [candidate, form, t])
 
@@ -100,6 +102,12 @@ export function DemoteAgentModal({
               ]}
             >
               <Input.TextArea rows={4} maxLength={200} showCount />
+            </Form.Item>
+            <Form.Item name="preserve_data" valuePropName="checked">
+              <Checkbox>{t('pages.lifecycle.modals.demote.preserveData')}</Checkbox>
+            </Form.Item>
+            <Form.Item name="remove_image" valuePropName="checked">
+              <Checkbox>{t('pages.lifecycle.modals.demote.removeImage')}</Checkbox>
             </Form.Item>
           </Form>
         </div>

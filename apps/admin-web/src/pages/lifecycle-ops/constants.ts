@@ -3,6 +3,9 @@ import type { FilterValues, PromoteFormValues } from './types'
 export const DEFAULT_FILTER_VALUES: FilterValues = {
   idle_days: 7,
   min_daily_invocations: 1000,
+  invoked_range: null,
+  runtime_status: undefined,
+  tenant_keyword: undefined,
 }
 
 export const DEFAULT_PROMOTE_VALUES: Pick<

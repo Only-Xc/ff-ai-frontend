@@ -24,6 +24,8 @@ import {
 import { DictSelect } from '@ff-ai-frontend/dictionaries'
 import { TableScrollYWrapper } from '@ff-ai-frontend/components'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useAuthStore } from '@/store/useAuth'
+import { buildAuthenticatedPreviewUrl } from '@/utils/previewUrl'
 
 import { TaskStatusTag, TaskTypeTag } from './components/status'
 import { formatDateTime } from './utils/format'
@@ -34,6 +36,7 @@ export function TicketList() {
   const { t } = useTranslation()
   const [form] = Form.useForm<TicketFilterValues>()
   const [status, setStatus] = useState<TaskStatusFilter>()
+  const accessToken = useAuthStore((state) => state.accessToken)
   const pagination = usePaginationParams()
 
   const listParams = {
@@ -55,9 +58,13 @@ export function TicketList() {
         render: (value: string, record) => (
           <Space orientation="vertical" size={2}>
             <span className="text-(--text) font-medium">
-              {record.web_url ? (
+              {buildAuthenticatedPreviewUrl(record.web_url, accessToken) ? (
                 <Tooltip placement="top" title={t('pages.agentTicket.preview')}>
-                  <Typography.Link href={record.web_url} target="_blank" strong>
+                  <Typography.Link
+                    href={buildAuthenticatedPreviewUrl(record.web_url, accessToken)}
+                    target="_blank"
+                    strong
+                  >
                     {value}
                   </Typography.Link>
                 </Tooltip>
@@ -104,7 +111,7 @@ export function TicketList() {
         ),
       },
     ],
-    [t],
+    [accessToken, t],
   )
 
   return (

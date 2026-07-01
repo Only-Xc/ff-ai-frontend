@@ -1,6 +1,6 @@
 import {
   CheckCircleOutlined,
-  DollarOutlined,
+  EyeOutlined,
   FireOutlined,
   SwapOutlined,
 } from '@ant-design/icons'
@@ -12,11 +12,11 @@ import { useTranslation } from 'react-i18next'
 import type {
   HotLifecycleCandidate,
   IdleLifecycleCandidate,
+  ObserveLifecycleCandidate,
 } from '@/api/lifecycle-ops'
 
-import type { FilterValues } from '../types'
 import { numberUtils } from '@ff-ai-frontend/utils'
-import { sumCost } from '../utils'
+import { summarizeResources } from '../utils'
 
 interface SummaryCardProps {
   hint: string
@@ -30,7 +30,8 @@ interface LifecycleSummaryProps {
   hotTotal: number
   idleCandidates: IdleLifecycleCandidate[]
   idleTotal: number
-  queryParams: FilterValues
+  observeCandidates: ObserveLifecycleCandidate[]
+  observeTotal: number
 }
 
 function SummaryCard({ hint, icon, title, value }: SummaryCardProps) {
@@ -61,7 +62,8 @@ export function LifecycleSummary({
   hotTotal,
   idleCandidates,
   idleTotal,
-  queryParams,
+  observeCandidates,
+  observeTotal,
 }: LifecycleSummaryProps) {
   const { t } = useTranslation()
   const summaryItems = useMemo(
@@ -69,29 +71,25 @@ export function LifecycleSummary({
       {
         title: t('pages.lifecycle.summary.idle.title'),
         value: numberUtils.formatNumber(idleTotal),
-        hint: t('pages.lifecycle.summary.idle.hint', {
-          days: queryParams.idle_days,
-        }),
+        hint: t('pages.lifecycle.summary.idle.hint'),
         icon: <SwapOutlined />,
+      },
+      {
+        title: t('pages.lifecycle.summary.observe.title'),
+        value: numberUtils.formatNumber(observeTotal),
+        hint: t('pages.lifecycle.summary.observe.hint'),
+        icon: <EyeOutlined />,
       },
       {
         title: t('pages.lifecycle.summary.hot.title'),
         value: numberUtils.formatNumber(hotTotal),
-        hint: t('pages.lifecycle.summary.hot.hint', {
-          count: numberUtils.formatNumber(queryParams.min_daily_invocations),
-        }),
+        hint: t('pages.lifecycle.summary.hot.hint'),
         icon: <FireOutlined />,
       },
       {
-        title: t('pages.lifecycle.summary.releaseCost.title'),
-        value: numberUtils.formatCurrency(sumCost(idleCandidates)),
-        hint: t('pages.lifecycle.summary.releaseCost.hint'),
-        icon: <DollarOutlined />,
-      },
-      {
-        title: t('pages.lifecycle.summary.sandboxCost.title'),
-        value: numberUtils.formatCurrency(sumCost(hotCandidates)),
-        hint: t('pages.lifecycle.summary.sandboxCost.hint'),
+        title: t('pages.lifecycle.summary.releasableResources.title'),
+        value: summarizeResources(idleCandidates),
+        hint: t('pages.lifecycle.summary.releasableResources.hint'),
         icon: <CheckCircleOutlined />,
       },
     ],
@@ -100,8 +98,8 @@ export function LifecycleSummary({
       hotTotal,
       idleCandidates,
       idleTotal,
-      queryParams.idle_days,
-      queryParams.min_daily_invocations,
+      observeCandidates,
+      observeTotal,
       t,
     ],
   )

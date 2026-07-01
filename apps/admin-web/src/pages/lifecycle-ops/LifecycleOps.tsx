@@ -1,6 +1,6 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { Alert, App, Button, Form, Pagination, Tabs, Typography } from 'antd'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import pickBy from 'lodash-es/pickBy'
 import trim from 'lodash-es/trim'
 import { useState } from 'react'
@@ -9,6 +9,8 @@ import { useEventCallback } from 'usehooks-ts'
 
 import {
   adminAgents_demote,
+  adminAgents_getLifecycleOperationsByAgent,
+  adminAgentsKeys,
   adminAgents_promote,
   type HotLifecycleCandidate,
   type IdleLifecycleCandidate,
@@ -21,6 +23,7 @@ import { DemoteAgentModal } from './components/DemoteAgentModal'
 import { LifecycleCandidateTables } from './components/LifecycleCandidateTables'
 import { LifecycleFilterBar } from './components/LifecycleFilterBar'
 import { LifecycleSummary } from './components/LifecycleSummary'
+import { LifecycleOperationsDrawer } from './components/LifecycleOperationsDrawer'
 import { PromoteAgentModal } from './components/PromoteAgentModal'
 import { DEFAULT_FILTER_VALUES } from './constants'
 import { useLifecycleCandidates } from './hooks/useLifecycleCandidates'
@@ -31,7 +34,6 @@ import type {
   FilterValues,
   PromoteFormValues,
 } from './types'
-import { numberUtils } from '@ff-ai-frontend/utils'
 import { getErrorMessage } from './utils'
 
 export function LifecycleOps() {
@@ -44,6 +46,7 @@ export function LifecycleOps() {
     useState<IdleLifecycleCandidate>()
   const [promoteCandidate, setPromoteCandidate] =
     useState<HotLifecycleCandidate>()
+  const [historyAgentId, setHistoryAgentId] = useState<string>()
   const {
     activePagination,
     activeTab,
@@ -58,6 +61,8 @@ export function LifecycleOps() {
     invalidateCandidates,
     isActiveTabLoading,
     isRefreshing,
+    observeCandidates,
+    observeListQuery,
     queryParams,
     refetchAll,
     setActiveTab,
@@ -69,6 +74,10 @@ export function LifecycleOps() {
 
   const closePromoteModal = useEventCallback(() => {
     setPromoteCandidate(undefined)
+  })
+
+  const closeHistoryDrawer = useEventCallback(() => {
+    setHistoryAgentId(undefined)
   })
 
   const openDemoteModal = useEventCallback(
@@ -93,6 +102,8 @@ export function LifecycleOps() {
     }) => {
       return adminAgents_demote(candidate.agent_id, {
         reason: trim(values.reason),
+        preserve_data: values.preserve_data ?? true,
+        remove_image: values.remove_image ?? false,
         ...(operatorId ? { operator_id: operatorId } : {}),
       })
     },
@@ -138,7 +149,28 @@ export function LifecycleOps() {
     },
   })
 
+  const operationsQuery = useQuery({
+    queryKey: historyAgentId
+      ? adminAgentsKeys.lifecycleOperationListByAgent(historyAgentId, {
+          skip: 0,
+          limit: 20,
+        })
+      : adminAgentsKeys.lifecycleOperationList({
+          skip: 0,
+          limit: 20,
+        }),
+    queryFn: () =>
+      historyAgentId
+        ? adminAgents_getLifecycleOperationsByAgent(historyAgentId, {
+            skip: 0,
+            limit: 20,
+          })
+        : Promise.resolve({ data: [], count: 0 }),
+    enabled: Boolean(historyAgentId),
+  })
+
   const handleFilterReset = useEventCallback(() => {
+    filterForm.resetFields()
     filterForm.setFieldsValue(DEFAULT_FILTER_VALUES)
     resetFilterQuery()
   })
@@ -147,19 +179,15 @@ export function LifecycleOps() {
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full flex-col bg-transparent">
       <PageHeader
         title={t('pages.lifecycle.title')}
-        subtitle={t('pages.lifecycle.subtitle', {
-          idleDays: queryParams.idle_days,
-          minDailyInvocations: numberUtils.formatNumber(
-            queryParams.min_daily_invocations,
-          ),
-        })}
+        subtitle={t('pages.lifecycle.subtitle')}
       >
         <LifecycleSummary
           hotCandidates={hotCandidates}
           hotTotal={hotListQuery.data?.count ?? 0}
           idleCandidates={idleCandidates}
           idleTotal={idleListQuery.data?.count ?? 0}
-          queryParams={queryParams}
+          observeCandidates={observeCandidates}
+          observeTotal={observeListQuery.data?.count ?? 0}
         />
       </PageHeader>
 
@@ -176,7 +204,9 @@ export function LifecycleOps() {
             />
           </div>
 
-          {idleListQuery.isError || hotListQuery.isError ? (
+          {idleListQuery.isError ||
+          observeListQuery.isError ||
+          hotListQuery.isError ? (
             <Alert
               showIcon
               className="mx-5 mb-4 shrink-0"
@@ -208,6 +238,13 @@ export function LifecycleOps() {
                 children: null,
               },
               {
+                key: 'observe',
+                label: t('pages.lifecycle.tabs.observe', {
+                  count: observeListQuery.data?.count ?? 0,
+                }),
+                children: null,
+              },
+              {
                 key: 'hot',
                 label: t('pages.lifecycle.tabs.hot', {
                   count: hotListQuery.data?.count ?? 0,
@@ -227,9 +264,11 @@ export function LifecycleOps() {
             idleCandidates={idleCandidates}
             idleDays={queryParams.idle_days}
             isLoading={isActiveTabLoading}
+            observeCandidates={observeCandidates}
             promoteCandidateId={promoteCandidate?.agent_id}
             promotePending={promoteMutation.isPending}
             onOpenDemote={openDemoteModal}
+            onOpenHistory={setHistoryAgentId}
             onOpenPromote={openPromoteModal}
           />
 
@@ -257,6 +296,13 @@ export function LifecycleOps() {
         onSubmit={(values, candidate) => {
           promoteMutation.mutate({ values, candidate })
         }}
+      />
+      <LifecycleOperationsDrawer
+        agentId={historyAgentId}
+        loading={operationsQuery.isFetching}
+        operations={operationsQuery.data?.data ?? []}
+        open={Boolean(historyAgentId)}
+        onClose={closeHistoryDrawer}
       />
     </div>
   )

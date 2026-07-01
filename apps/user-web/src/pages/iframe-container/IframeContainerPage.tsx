@@ -6,7 +6,9 @@ import WujieReact from '@/components/WujieReact'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
+import { useAuthStore } from '@/store/useAuth'
 import { useMenuStore } from '@/store/useMenu'
+import { buildAuthenticatedPreviewUrl } from '@/utils/previewUrl'
 
 const useStyles = createStyles(() => ({
   root: {
@@ -28,30 +30,6 @@ const wujieIframeAttrs = {
     'allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts',
 }
 
-function getLocalApiPreviewUrl(previewUrl: string) {
-  try {
-    const url = new URL(previewUrl, window.location.origin)
-    const isApiPath =
-      url.pathname === '/api' || url.pathname.startsWith('/api/')
-
-    if (isApiPath) {
-      if (
-        url.hostname === window.location.hostname &&
-        window.location.port === '8083'
-      ) {
-        url.port = '18083'
-        return url.toString()
-      }
-
-      return `${window.location.origin}${url.pathname}${url.search}${url.hash}`
-    }
-  } catch {
-    return previewUrl
-  }
-
-  return previewUrl
-}
-
 export function IframeContainerPage() {
   const { t } = useTranslation()
   const { styles } = useStyles()
@@ -61,11 +39,14 @@ export function IframeContainerPage() {
   const appMenuNodes = useMenuStore((state) => state.appMenuNodes)
   const retryMenu = useMenuStore((state) => state.retryMenu)
   const getAppByTaskId = useMenuStore((state) => state.getAppByTaskId)
+  const accessToken = useAuthStore((state) => state.accessToken)
 
   const app = taskId ? getAppByTaskId(taskId) : undefined
-  const previewUrl = app?.preview_url
-    ? getLocalApiPreviewUrl(app.preview_url)
-    : ''
+  const previewUrl = buildAuthenticatedPreviewUrl(
+    app?.preview_url,
+    accessToken,
+    taskId,
+  )
   const useNativeIframe = previewUrl.includes('/api/tasks/')
 
   if (!taskId) {
