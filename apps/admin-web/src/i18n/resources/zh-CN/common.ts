@@ -18,4 +18,6 @@ export default {
   'common.errors.operationFailed': '操作失败',
   'common.errors.metadataJsonObject': 'metadata 必须是合法 JSON 对象',
   'common.errors.authMissingToken': '登录响应缺少 access_token',
+  'common.actions.search': '查询',
+  'common.dateTime.longFormat': 'YYYY年M月D日 HH:mm',
 }

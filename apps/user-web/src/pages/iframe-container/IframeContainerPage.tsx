@@ -27,6 +27,8 @@ const wujieIframeAttrs = {
   sandbox:
     'allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts',
 }
+const nativeIframeSandbox =
+  'allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts'
 
 function getLocalApiPreviewUrl(previewUrl: string) {
   try {
@@ -133,7 +135,7 @@ export function IframeContainerPage() {
           src={previewUrl}
           title={app.title}
           className="block h-full w-full border-0"
-          sandbox={wujieIframeAttrs.sandbox}
+          sandbox={nativeIframeSandbox}
         />
       ) : (
         <WujieReact

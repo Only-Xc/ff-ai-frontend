@@ -19,4 +19,6 @@ export default {
   'common.errors.metadataJsonObject': 'يجب أن تكون metadata كائن JSON صالحا',
   'common.errors.authMissingToken':
     'استجابة تسجيل الدخول لا تحتوي على access_token',
+  'common.actions.search': 'بحث',
+  'common.dateTime.longFormat': 'D MMM YYYY HH:mm',
 }

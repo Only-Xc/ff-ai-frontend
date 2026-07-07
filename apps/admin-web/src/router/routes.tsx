@@ -1,6 +1,7 @@
 import {
   AppstoreOutlined,
   DeploymentUnitOutlined,
+  FileDoneOutlined,
   FileTextOutlined,
   LineChartOutlined,
 } from '@ant-design/icons'
@@ -90,6 +91,65 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    handle: {
+      title: 'Exam Center',
+      titleKey: 'routes.examCenter.title',
+      icon: <FileDoneOutlined />,
+      menuType: 'catalog',
+      menuMode: 'submenu',
+      navKey: 'exam-center',
+      navOrder: 6,
+      hideInBreadcrumb: true,
+    },
+    children: [
+      {
+        path: '/exams',
+        element: lazyLoad(() => import('@/pages/exam-management/ExamList')),
+        handle: {
+          title: 'Exam Management',
+          titleKey: 'routes.exams.title',
+          navKey: 'exams',
+          navOrder: 1,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/exams/:paperId',
+        element: lazyLoad(() => import('@/pages/exam-management/ExamDetail')),
+        handle: {
+          title: 'Exam Detail',
+          titleKey: 'routes.examDetail.title',
+          navKey: 'exams',
+          hideInMenu: true,
+        },
+      },
+      {
+        path: '/exam-questions',
+        element: lazyLoad(
+          () => import('@/pages/exam-management/QuestionManagement'),
+        ),
+        handle: {
+          title: 'Question Management',
+          titleKey: 'routes.examQuestions.title',
+          navKey: 'exam-questions',
+          navOrder: 2,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/exam-attempts',
+        element: lazyLoad(() => import('@/pages/exam-management/AttemptOverview')),
+        handle: {
+          title: 'Exam Attempts',
+          titleKey: 'routes.examAttempts.title',
+          navKey: 'exam-attempts',
+          navOrder: 3,
+          hideInBreadcrumb: true,
+        },
+      },
+    ],
+  },
+  {
     path: '/tickets/:taskId/intervention',
     element: lazyLoad(
       () => import('@/pages/intervention-workbench/InterventionWorkbench'),
@@ -97,6 +157,7 @@ export const appRoutes: AppRouteObject[] = [
     handle: {
       title: 'Intervention',
       titleKey: 'routes.intervention.title',
+      layout: false,
       navKey: 'tickets',
       hideInMenu: true,
     },

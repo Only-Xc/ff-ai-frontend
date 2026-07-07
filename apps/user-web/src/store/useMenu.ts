@@ -17,6 +17,9 @@ interface MenuState {
 }
 
 const WORKSPACE_NAV_KEY = 'workspace'
+const PLATFORM_APPS_KEY = 'workspace-platform-apps'
+const KNOWLEDGE_BASE_KEY = 'workspace-knowledge-base'
+const PLATFORM_APP_NAV_KEYS = new Set(['exams', 'attempts'])
 const APP_MENU_LOADING_KEY = 'workspace-apps-loading'
 const APP_MENU_EMPTY_KEY = 'workspace-apps-empty'
 const APP_MENU_RETRY_KEY = 'workspace-apps-retry'
@@ -68,6 +71,50 @@ function buildTenantAppNavItems(nodes: TenantAppMenuNode[]) {
     .filter((item): item is NavTreeItem => Boolean(item))
 }
 
+function getEmptyMenuItem(key: string): NavTreeItem {
+  return {
+    key,
+    label: i18n.t('pages.menu.empty'),
+    kind: 'menu',
+    disabled: true,
+  }
+}
+
+function buildWorkspaceNavChildren(
+  appMenuNavItems: NavTreeItem[],
+  platformAppNavItems: NavTreeItem[],
+) {
+  return [
+    ...appMenuNavItems,
+    {
+      key: PLATFORM_APPS_KEY,
+      label: i18n.t('pages.menu.platformApps'),
+      kind: 'group',
+      children: platformAppNavItems.length
+        ? platformAppNavItems
+        : [getEmptyMenuItem(`${PLATFORM_APPS_KEY}-empty`)],
+    },
+    {
+      key: KNOWLEDGE_BASE_KEY,
+      label: i18n.t('pages.menu.knowledgeBase'),
+      kind: 'group',
+      children: [getEmptyMenuItem(`${KNOWLEDGE_BASE_KEY}-empty`)],
+    },
+  ] satisfies NavTreeItem[]
+}
+
+function extractPlatformAppNavItems(navItems: NavTreeItem[]) {
+  const platformAppNavItems: NavTreeItem[] = []
+  const restNavItems = navItems.filter((item) => {
+    if (!PLATFORM_APP_NAV_KEYS.has(item.key)) return true
+
+    platformAppNavItems.push(item)
+    return false
+  })
+
+  return { platformAppNavItems, restNavItems }
+}
+
 function withWorkspaceNavChildren(
   navItems: NavTreeItem[],
   children: NavTreeItem[],
@@ -91,7 +138,7 @@ function withWorkspaceNavChildren(
     ...nextItems,
     {
       key: WORKSPACE_NAV_KEY,
-      label: i18n.t('pages.menu.appList'),
+      label: i18n.t('pages.menu.myApps'),
       kind: 'group',
       children,
     },
@@ -137,6 +184,8 @@ export function buildSidebarNavItemsWithAppMenu(
   },
 ) {
   const { appMenuNodes, onRetry, status } = options
+  const { platformAppNavItems, restNavItems } =
+    extractPlatformAppNavItems(staticNavItems)
   let appMenuNavItems: NavTreeItem[]
 
   if (status === 'success') {
@@ -172,7 +221,10 @@ export function buildSidebarNavItemsWithAppMenu(
     ]
   }
 
-  return withWorkspaceNavChildren(staticNavItems, appMenuNavItems)
+  return withWorkspaceNavChildren(
+    restNavItems,
+    buildWorkspaceNavChildren(appMenuNavItems, platformAppNavItems),
+  )
 }
 
 function isMenuCacheFresh(lastUpdatedAt: number | null, now = Date.now()) {

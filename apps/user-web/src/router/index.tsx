@@ -7,9 +7,25 @@ import { authMiddleware } from './middleware/auth'
 import { RouteOutletBoundary } from './runtime/RouteBoundary'
 import { appRoutes } from './routes'
 
-const bareRoutes = appRoutes.filter((route) => route.handle?.layout === false)
+const publicBareRoutes = appRoutes.filter(
+  (route) => route.handle?.layout === false && route.path === '/login',
+)
 
-const layoutRoutes = appRoutes.filter((route) => route.handle?.layout !== false)
+const standaloneProtectedRoutes = appRoutes.filter(
+  (route) => route.handle?.standalone === true,
+)
+
+const protectedBareRoutes = appRoutes.filter(
+  (route) =>
+    route.handle?.layout === false &&
+    route.handle?.standalone !== true &&
+    route.path !== '/login',
+)
+
+const layoutRoutes = appRoutes.filter(
+  (route) =>
+    route.handle?.layout !== false && route.handle?.standalone !== true,
+)
 
 const router = createBrowserRouter([
   {
@@ -17,7 +33,26 @@ const router = createBrowserRouter([
     children: [
       {
         element: <RouteOutletBoundary />,
-        children: bareRoutes as RouteObject[],
+        children: publicBareRoutes as RouteObject[],
+      },
+    ],
+  },
+  {
+    element: <BareLayout />,
+    middleware: [authMiddleware],
+    children: [
+      {
+        element: <RouteOutletBoundary />,
+        children: protectedBareRoutes as RouteObject[],
+      },
+    ],
+  },
+  {
+    middleware: [authMiddleware],
+    children: [
+      {
+        element: <RouteOutletBoundary />,
+        children: standaloneProtectedRoutes as RouteObject[],
       },
     ],
   },

@@ -28,6 +28,11 @@ export default defineConfig({
         bypass: (req) =>
           req.headers.upgrade === 'websocket' ? undefined : req.url,
       },
+      '/api/exam': {
+        target: 'http://127.0.0.1:8013',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/exam/, '/api/v1'),
+      },
       '/api': { target, changeOrigin: true },
     },
   },

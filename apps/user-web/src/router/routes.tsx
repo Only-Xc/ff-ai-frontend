@@ -1,5 +1,6 @@
 import {
   DesktopOutlined,
+  FileTextOutlined,
   ProjectOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -15,6 +16,7 @@ export interface RouteMeta {
   subtitleKey?: string
   icon?: ReactNode
   layout?: boolean
+  standalone?: boolean
   hideInMenu?: boolean
   hideInBreadcrumb?: boolean
   menuType?: 'catalog' | 'menu'
@@ -146,7 +148,65 @@ export const appRoutes: AppRouteObject[] = [
           hideInBreadcrumb: true,
         },
       },
+      {
+        path: '/exams',
+        element: lazyLoad(() => import('@/pages/exam/ExamList')),
+        handle: {
+          title: 'Exams',
+          titleKey: 'routes.exams.title',
+          icon: <FileTextOutlined />,
+          menuType: 'menu',
+          navKey: 'exams',
+          navOrder: 4,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/exams/:paperId/attempt',
+        element: lazyLoad(() => import('@/pages/exam/AttemptState')),
+        handle: {
+          title: 'Start Exam',
+          titleKey: 'routes.examAttempt.title',
+          navKey: 'exams',
+          hideInMenu: true,
+        },
+      },
+      {
+        path: '/attempts',
+        element: lazyLoad(() => import('@/pages/exam/AttemptHistory')),
+        handle: {
+          title: 'Attempt History',
+          titleKey: 'routes.attempts.title',
+          icon: <FileTextOutlined />,
+          menuType: 'menu',
+          navKey: 'attempts',
+          navOrder: 5,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/attempts/:attemptId/result',
+        element: lazyLoad(() => import('@/pages/exam/ExamResult')),
+        handle: {
+          title: 'Exam Result',
+          titleKey: 'routes.examResult.title',
+          navKey: 'attempts',
+          hideInMenu: true,
+        },
+      },
     ],
+  },
+  {
+    path: '/attempts/:attemptId',
+    element: lazyLoad(() => import('@/pages/exam/ExamRoom')),
+    handle: {
+      title: 'Exam Room',
+      titleKey: 'routes.examRoom.title',
+      standalone: true,
+      navKey: 'exams',
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+    },
   },
   {
     handle: {

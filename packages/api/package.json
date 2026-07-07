@@ -28,6 +28,10 @@
       "types": "./src/admin/index.ts",
       "import": "./src/admin/index.ts"
     },
+    "./admin/exam": {
+      "types": "./src/admin/exam.ts",
+      "import": "./src/admin/exam.ts"
+    },
     "./admin/lifecycle-ops": {
       "types": "./src/admin/lifecycle-ops.ts",
       "import": "./src/admin/lifecycle-ops.ts"
@@ -71,6 +75,10 @@
     "./tenant/billing-center": {
       "types": "./src/tenant/billing-center.ts",
       "import": "./src/tenant/billing-center.ts"
+    },
+    "./tenant/exam": {
+      "types": "./src/tenant/exam.ts",
+      "import": "./src/tenant/exam.ts"
     }
   },
   "sideEffects": false,
