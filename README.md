@@ -2,13 +2,7 @@
 
 本项目提供 Docker 部署方案，`user-web` 和 `admin-web` 会分别构建为独立的 Nginx 镜像。
 
-### 配置环境变量
-
-从示例文件创建部署环境变量文件，并设置后端服务地址：
-
-```bash
-cp docker/.env.example docker/.env
-```
+Nginx 固定代理主后端到 `http://host.docker.internal:8001`，考试服务 `/api/exam` 到 `http://host.docker.internal:8013` 并重写为 `/api/v1`。
 
 ### 构建并启动
 

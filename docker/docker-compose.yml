@@ -10,8 +10,6 @@ services:
     image: ff-ai-frontend-user-web:latest
     ports:
       - "18080:80"
-    environment:
-      BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -25,8 +23,6 @@ services:
     image: ff-ai-frontend-admin-web:latest
     ports:
       - "18081:80"
-    environment:
-      BACKEND_URL: ${BACKEND_URL:?Set BACKEND_URL in docker/.env or shell}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
