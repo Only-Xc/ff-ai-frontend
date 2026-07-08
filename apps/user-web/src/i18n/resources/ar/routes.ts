@@ -11,6 +11,7 @@ export default {
   'routes.agentTicket.taskBoard.title': 'لوحة المتابعة',
   'routes.agentTicket.agentDetail.title': 'تفاصيل الوكيل',
   'routes.appPreview.title': 'معاينة التطبيق',
+  'routes.knowledge.title': 'قاعدة المعرفة',
   'routes.billingCenter.title': 'مركز الفواتير',
   'routes.exams.title': 'الاختبارات',
   'routes.examAttempt.title': 'بدء الاختبار',

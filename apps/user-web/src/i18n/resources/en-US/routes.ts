@@ -11,6 +11,7 @@ export default {
   'routes.agentTicket.taskBoard.title': 'Live Board',
   'routes.agentTicket.agentDetail.title': 'Agent Details',
   'routes.appPreview.title': 'App Preview',
+  'routes.knowledge.title': 'Knowledge Base',
   'routes.billingCenter.title': 'Billing Center',
   'routes.exams.title': 'Exams',
   'routes.examAttempt.title': 'Start Exam',

@@ -11,6 +11,7 @@ export default {
   'routes.agentTicket.taskBoard.title': '动态看板',
   'routes.agentTicket.agentDetail.title': '智能体详情',
   'routes.appPreview.title': '应用预览',
+  'routes.knowledge.title': '知识库',
   'routes.billingCenter.title': '账单中心',
   'routes.exams.title': '在线考试',
   'routes.examAttempt.title': '开始考试',

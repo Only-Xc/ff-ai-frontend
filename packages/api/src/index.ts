@@ -1,4 +1,5 @@
 export * from './admin/index.js'
+export * from './ai/index.js'
 export * from './auth.js'
 export * from './caller.js'
 export * from './client.js'

@@ -99,12 +99,12 @@ function getReadableNode(node?: string) {
     .join(' ')
 }
 
-function isTaskActive(status: Task['status'] | string) {
+function isTaskActive(status: string) {
   return !['COMPLETED', 'FAILED', 'PENDING_APPROVAL'].includes(status)
 }
 
 function toDisplayAgentText(text?: string) {
-  return String(text || '')
+  return String(text ?? '')
     .replace(/HERMES/g, 'AGENT')
     .replace(/Hermes/g, 'Agent')
     .replace(/hermes/g, 'agent')
@@ -115,6 +115,15 @@ function stringField(record: Record<string, unknown> | null | undefined, key: st
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function firstText(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const text = value?.trim()
+    if (text) return text
+  }
+
+  return ''
+}
+
 function resolveTaskIssueMessage(task: Task) {
   const qualityFailure = task.quality_failure ?? null
   const qualityMessage = stringField(qualityFailure, 'message')
@@ -123,33 +132,36 @@ function resolveTaskIssueMessage(task: Task) {
     typeof task.pending_approval_reason === 'string'
       ? task.pending_approval_reason.trim()
       : ''
-  const lastErrorMessage = task.last_error?.message?.trim() || ''
-  return (
-    [qualityMessage, solution].filter(Boolean).join('\n') ||
-    pendingReason ||
-    (lastErrorMessage !== '-' ? lastErrorMessage : '')
+  const lastErrorMessage = task.last_error?.message?.trim() ?? ''
+  const issueMessage = firstText(
+    [qualityMessage, solution].filter(Boolean).join('\n'),
+    pendingReason,
   )
+  if (issueMessage) return issueMessage
+
+  return lastErrorMessage !== '-' ? lastErrorMessage : ''
 }
 
 function resolveTaskError(task: Task, executionError: string): TaskError | null {
   const issueMessage = resolveTaskIssueMessage(task)
   const qualityFailure = task.quality_failure ?? null
   if (qualityFailure || issueMessage) {
-    const stage =
-      stringField(qualityFailure, 'code') ||
-      stringField(qualityFailure, 'step') ||
-      task.last_error?.stage ||
-      executionError
+    const stage = firstText(
+      stringField(qualityFailure, 'code'),
+      stringField(qualityFailure, 'step'),
+      task.last_error?.stage,
+      executionError,
+    )
     return {
       stage,
-      message: issueMessage || task.last_error?.message || '-',
+      message: firstText(issueMessage, task.last_error?.message, '-'),
     }
   }
   return task.last_error
 }
 
 function buildFallbackLogs(task: Task, t: ComponentsTranslate): TaskLog[] {
-  const node = task.current_node || task.status
+  const node = firstText(task.current_node, task.status)
   const readableNode = getReadableNode(node)
   const issueMessage = resolveTaskIssueMessage(task)
   const logs: TaskLog[] = [
@@ -164,8 +176,8 @@ function buildFallbackLogs(task: Task, t: ComponentsTranslate): TaskLog[] {
       level: isTaskActive(task.status) ? 'info' : 'success',
       node,
       message: isTaskActive(task.status)
-        ? t('TaskCard.process.running', { node: readableNode || node })
-        : t('TaskCard.process.latest', { node: readableNode || node }),
+        ? t('TaskCard.process.running', { node: firstText(readableNode, node) })
+        : t('TaskCard.process.latest', { node: firstText(readableNode, node) }),
     },
   ]
 
@@ -173,11 +185,12 @@ function buildFallbackLogs(task: Task, t: ComponentsTranslate): TaskLog[] {
     logs.push({
       timestamp: task.updated_at,
       level: 'warn',
-      node: task.current_node || 'PENDING_APPROVAL',
-      message:
-        issueMessage ||
-        task.last_error?.message ||
+      node: firstText(task.current_node, 'PENDING_APPROVAL'),
+      message: firstText(
+        issueMessage,
+        task.last_error?.message,
         t('TaskCard.process.pendingApproval'),
+      ),
     })
   }
 
@@ -185,8 +198,8 @@ function buildFallbackLogs(task: Task, t: ComponentsTranslate): TaskLog[] {
     logs.push({
       timestamp: task.updated_at,
       level: 'error',
-      node: task.current_node || 'FAILED',
-      message: task.last_error?.message || t('TaskCard.process.failed'),
+      node: firstText(task.current_node, 'FAILED'),
+      message: firstText(task.last_error?.message, t('TaskCard.process.failed')),
     })
   }
 
@@ -311,11 +324,10 @@ export function TaskCard({
 }: TaskCardProps) {
   const { t } = useComponentsI18n()
   const isApproval = task.status === 'PENDING_APPROVAL'
-  const logs = task.logs ?? []
-  const processLogs = useMemo(
-    () => (logs.length > 0 ? logs : buildFallbackLogs(task, t)),
-    [logs, task, t],
-  )
+  const processLogs = useMemo(() => {
+    const logs = task.logs ?? []
+    return logs.length > 0 ? logs : buildFallbackLogs(task, t)
+  }, [task, t])
   const displayError = useMemo(
     () => resolveTaskError(task, t('TaskCard.executionError')),
     [task, t],
@@ -484,7 +496,7 @@ export function TaskCard({
             src={previewUrl}
             title={task.title || task.task_id}
             className="block h-full w-full border-0"
-            sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts"
           />
         ) : null}
       </Modal>
