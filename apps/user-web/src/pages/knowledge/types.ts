@@ -5,11 +5,7 @@ import type {
   KnowledgeSearchResult,
 } from '@/api/knowledge'
 
-export type KnowledgeWorkspaceTab =
-  | 'overview'
-  | 'documents'
-  | 'retrieval'
-  | 'settings'
+export type KnowledgeWorkspaceTab = 'details' | 'documents' | 'retrieval'
 
 export type KnowledgeIngestionStage =
   | 'uploaded'
@@ -17,8 +13,6 @@ export type KnowledgeIngestionStage =
   | 'indexed'
   | 'failed'
   | 'unknown'
-
-export type KnowledgeDocumentStatusFilter = 'all' | KnowledgeIngestionStage
 
 export type KnowledgeInspectorTarget =
   | { type: 'dataset'; dataset: KnowledgeDataset }

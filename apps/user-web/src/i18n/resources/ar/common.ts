@@ -5,6 +5,8 @@ export default {
   'common.actions.retry': 'إعادة المحاولة',
   'common.actions.reset': 'إعادة ضبط',
   'common.actions.save': 'حفظ',
+  'common.actions.cancel': 'إلغاء',
+  'common.actions.close': 'إغلاق',
   'common.actions.detail': 'التفاصيل',
   'common.actions.delete': 'حذف',
   'common.labels.totalCount': 'الإجمالي {{total}}',

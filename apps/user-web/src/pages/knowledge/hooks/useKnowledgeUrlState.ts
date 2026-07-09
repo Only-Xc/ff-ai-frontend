@@ -7,6 +7,8 @@ import type { KnowledgeWorkspaceTab } from '../types'
 const VALID_TABS = new Set(KNOWLEDGE_WORKSPACE_TABS.map((item) => item.key))
 
 function normalizeTab(value: string | null): KnowledgeWorkspaceTab {
+  if (value === 'overview' || value === 'settings') return 'details'
+
   return VALID_TABS.has(value as KnowledgeWorkspaceTab)
     ? (value as KnowledgeWorkspaceTab)
     : DEFAULT_KNOWLEDGE_TAB

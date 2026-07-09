@@ -10,7 +10,6 @@ import {
   Button,
   Empty,
   Pagination,
-  Segmented,
   Space,
   Table,
   Tag,
@@ -23,14 +22,10 @@ import { useTranslation } from 'react-i18next'
 import type { KnowledgeDocument } from '@/api/knowledge'
 
 import {
-  DOCUMENT_STATUS_FILTERS,
   INGESTION_STAGE_COLORS,
   INGESTION_STAGE_LABEL_KEYS,
 } from '../constants'
-import type {
-  KnowledgeDocumentStatusFilter,
-  NormalizedKnowledgeDocument,
-} from '../types'
+import type { NormalizedKnowledgeDocument } from '../types'
 import { formatFileSize, formatKnowledgeDateTime } from '../utils/format'
 
 const { Text } = Typography
@@ -42,7 +37,6 @@ export interface DocumentsPanelProps {
   page: number
   pageSize: number
   selectedDocumentIds: string[]
-  statusFilter: KnowledgeDocumentStatusFilter
   total: number
   onBatchDelete: (documentIds: string[]) => void
   onBatchParse: (documentIds: string[]) => void
@@ -53,7 +47,6 @@ export interface DocumentsPanelProps {
   onParse: (document: KnowledgeDocument) => void
   onRetry: () => void
   onSelectionChange: (documentIds: string[]) => void
-  onStatusFilterChange: (filter: KnowledgeDocumentStatusFilter) => void
 }
 
 function canParse(document: NormalizedKnowledgeDocument) {
@@ -67,7 +60,6 @@ export function DocumentsPanel({
   page,
   pageSize,
   selectedDocumentIds,
-  statusFilter,
   total,
   onBatchDelete,
   onBatchParse,
@@ -78,19 +70,10 @@ export function DocumentsPanel({
   onParse,
   onRetry,
   onSelectionChange,
-  onStatusFilterChange,
 }: DocumentsPanelProps) {
   const { t } = useTranslation()
 
-  const filteredDocuments = useMemo(
-    () =>
-      statusFilter === 'all'
-        ? documents
-        : documents.filter((item) => item.ingestionStage === statusFilter),
-    [documents, statusFilter],
-  )
-
-  const selectedParseableIds = filteredDocuments
+  const selectedParseableIds = documents
     .filter((item) => selectedDocumentIds.includes(item.id) && canParse(item))
     .map((item) => item.id)
 
@@ -180,16 +163,8 @@ export function DocumentsPanel({
   )
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col py-2">
-      <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <Segmented
-          options={DOCUMENT_STATUS_FILTERS.map((item) => ({
-            label: t(item.labelKey),
-            value: item.key,
-          }))}
-          value={statusFilter}
-          onChange={onStatusFilterChange}
-        />
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="mb-3 flex shrink-0 justify-end">
         <Space wrap>
           <Button icon={<ReloadOutlined />} loading={loading} onClick={onRetry}>
             {t('common.actions.refresh')}
@@ -215,8 +190,8 @@ export function DocumentsPanel({
       ) : null}
 
       {selectedDocumentIds.length > 0 ? (
-        <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-(--ant-color-border-secondary) px-3 py-2">
-          <Text type="secondary">
+        <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-[color-mix(in_srgb,var(--ant-color-primary)_20%,var(--ant-color-border))] bg-[color-mix(in_srgb,var(--ant-color-primary)_6%,var(--ant-color-bg-container))] px-3 py-2">
+          <Text className="text-[12px] font-medium text-(--text-strong)!">
             {t('pages.knowledge.selection.selectedCount', {
               count: selectedDocumentIds.length,
             })}
@@ -244,8 +219,8 @@ export function DocumentsPanel({
         </div>
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {filteredDocuments.length === 0 && !loading ? (
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-(--ant-color-border-secondary) bg-(--ant-color-bg-container)">
+        {documents.length === 0 && !loading ? (
           <Empty
             className="py-16"
             description={t('pages.knowledge.empty.noDocuments')}
@@ -258,7 +233,7 @@ export function DocumentsPanel({
         ) : (
           <Table<NormalizedKnowledgeDocument>
             columns={columns}
-            dataSource={filteredDocuments}
+            dataSource={documents}
             loading={loading}
             pagination={false}
             rowKey="id"
@@ -266,13 +241,16 @@ export function DocumentsPanel({
               selectedRowKeys: selectedDocumentIds,
               onChange: (keys) => onSelectionChange(keys.map(String)),
             }}
-            scroll={{ x: 1170, y: 'calc(100vh - 420px)' }}
+            scroll={{ x: 1170, y: 'calc(100vh - 390px)' }}
             size="small"
           />
         )}
       </div>
 
-      <div className="flex shrink-0 justify-end pt-3">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 pt-3">
+        <Text className="text-[12px] text-(--muted)!">
+          {t('common.labels.totalCount', { total })}
+        </Text>
         <Pagination
           current={page}
           pageSize={pageSize}

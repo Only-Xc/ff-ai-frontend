@@ -5,6 +5,8 @@ export default {
   'common.actions.retry': 'Retry',
   'common.actions.reset': 'Reset',
   'common.actions.save': 'Save',
+  'common.actions.cancel': 'Cancel',
+  'common.actions.close': 'Close',
   'common.actions.detail': 'Details',
   'common.actions.delete': 'Delete',
   'common.labels.totalCount': 'Total {{total}}',

@@ -3,7 +3,7 @@ import {
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Empty, Modal, Space, Tabs, Tag, Typography } from 'antd'
+import { Alert, Button, Empty, Modal, Space, Tabs, Tag } from 'antd'
 import {
   keepPreviousData,
   useMutation,
@@ -18,7 +18,6 @@ import {
   knowledgeDatasets_create,
   knowledgeDatasets_list,
   knowledgeDatasets_delete,
-  knowledgeDatasets_deleteMany,
   knowledgeDatasets_get,
   knowledgeDatasets_update,
   knowledgeDocuments_delete,
@@ -36,15 +35,11 @@ import {
 } from '@/api/knowledge'
 import { globalMessage } from '@/utils/message'
 
-import {
-  DEFAULT_DOCUMENT_STATUS_FILTER,
-  KNOWLEDGE_WORKSPACE_TABS,
-} from './constants'
+import { KNOWLEDGE_WORKSPACE_TABS } from './constants'
 import { KnowledgeSpaces } from './components/KnowledgeSpaces'
 import { OverviewPanel } from './components/OverviewPanel'
 import { DocumentsPanel } from './components/DocumentsPanel'
 import { RetrievalLab } from './components/RetrievalLab'
-import { SettingsPanel } from './components/SettingsPanel'
 import { DatasetFormDrawer } from './components/DatasetFormDrawer'
 import { UploadDocumentsDrawer } from './components/UploadDocumentsDrawer'
 import { KnowledgeInspector } from './components/KnowledgeInspector'
@@ -54,12 +49,7 @@ import {
   normalizeKnowledgeSearchResult,
 } from './utils/adapters'
 import { useKnowledgeUrlState } from './hooks/useKnowledgeUrlState'
-import type {
-  KnowledgeDocumentStatusFilter,
-  KnowledgeInspectorTarget,
-} from './types'
-
-const { Text } = Typography
+import type { KnowledgeInspectorTarget } from './types'
 
 export function KnowledgeBase() {
   const { t } = useTranslation()
@@ -69,8 +59,6 @@ export function KnowledgeBase() {
   const [editingDatasetId, setEditingDatasetId] = useState<string>()
   const [documentPage, setDocumentPage] = useState(1)
   const [documentPageSize, setDocumentPageSize] = useState(20)
-  const [documentStatusFilter, setDocumentStatusFilter] =
-    useState<KnowledgeDocumentStatusFilter>(DEFAULT_DOCUMENT_STATUS_FILTER)
   const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([])
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
   const [inspectorTarget, setInspectorTarget] =
@@ -122,7 +110,6 @@ export function KnowledgeBase() {
 
   useEffect(() => {
     setDocumentPage(1)
-    setDocumentStatusFilter(DEFAULT_DOCUMENT_STATUS_FILTER)
     setSelectedDocumentIds([])
     setSearchResults([])
     setInspectorTarget(null)
@@ -176,19 +163,6 @@ export function KnowledgeBase() {
     mutationFn: knowledgeDatasets_delete,
     onSuccess: async (_, datasetId) => {
       if (datasetId === knowledgeUrlState.datasetId) {
-        knowledgeUrlState.clearDataset()
-      }
-      await invalidateDatasets()
-    },
-  })
-
-  const deleteDatasetsMutation = useMutation({
-    mutationFn: knowledgeDatasets_deleteMany,
-    onSuccess: async (_, datasetIds) => {
-      if (
-        knowledgeUrlState.datasetId &&
-        datasetIds.includes(knowledgeUrlState.datasetId)
-      ) {
         knowledgeUrlState.clearDataset()
       }
       await invalidateDatasets()
@@ -362,13 +336,6 @@ export function KnowledgeBase() {
     setDocumentPage(pageSize === documentPageSize ? page : 1)
   }
 
-  const handleDocumentStatusFilterChange = (
-    filter: KnowledgeDocumentStatusFilter,
-  ) => {
-    setDocumentStatusFilter(filter)
-    setDocumentPage(1)
-  }
-
   const handleParseDocuments = (documentIds: string[]) => {
     if (documentIds.length === 0) return
 
@@ -407,30 +374,17 @@ export function KnowledgeBase() {
     })
   }
 
-  const confirmDeleteDatasets = (datasetIds: string[]) => {
-    Modal.confirm({
-      title: t('pages.knowledge.confirm.deleteDatasetsTitle'),
-      content: t('pages.knowledge.confirm.deleteDatasetsContent', {
-        count: datasetIds.length,
-      }),
-      okButtonProps: { danger: true },
-      okText: t('common.actions.delete'),
-      onOk: () => deleteDatasetsMutation.mutateAsync(datasetIds),
-    })
-  }
-
   const tabItems = KNOWLEDGE_WORKSPACE_TABS.map((item) => ({
     key: item.key,
     label: t(item.labelKey),
     children: workspaceDataset ? (
       {
-        overview: (
+        details: (
           <OverviewPanel
             dataset={workspaceDataset}
             documents={documentsQuery.data?.data ?? []}
             loading={documentsQuery.isFetching}
-            onOpenDocuments={() => knowledgeUrlState.setTab('documents')}
-            onOpenRetrieval={() => knowledgeUrlState.setTab('retrieval')}
+            onEdit={() => openEditDataset(workspaceDataset)}
           />
         ),
         documents: (
@@ -446,7 +400,6 @@ export function KnowledgeBase() {
             page={documentPage}
             pageSize={documentPageSize}
             selectedDocumentIds={selectedDocumentIds}
-            statusFilter={documentStatusFilter}
             total={documentsQuery.data?.count ?? 0}
             onBatchDelete={confirmDeleteDocuments}
             onBatchParse={handleParseDocuments}
@@ -459,7 +412,6 @@ export function KnowledgeBase() {
             onParse={(document) => handleParseDocuments([document.id])}
             onRetry={() => void documentsQuery.refetch()}
             onSelectionChange={setSelectedDocumentIds}
-            onStatusFilterChange={handleDocumentStatusFilterChange}
           />
         ),
         retrieval: (
@@ -472,15 +424,6 @@ export function KnowledgeBase() {
               setInspectorTarget({ type: 'search-result', result })
             }
             onSearch={(payload) => searchMutation.mutate(payload)}
-          />
-        ),
-        settings: (
-          <SettingsPanel
-            dataset={workspaceDataset}
-            error={selectedDatasetDetailQuery.isError}
-            loading={selectedDatasetDetailQuery.isFetching}
-            onEdit={() => openEditDataset(workspaceDataset)}
-            onRetry={() => void selectedDatasetDetailQuery.refetch()}
           />
         ),
       }[item.key]
@@ -499,8 +442,9 @@ export function KnowledgeBase() {
         subtitle={t('pages.knowledge.subtitle')}
         title={t('pages.knowledge.title')}
       >
-        <Space wrap size="small">
+        <Space wrap className="justify-end" size="small">
           <Tag
+            className="m-0! inline-flex h-8 items-center justify-center rounded-md! px-2.5! text-[12px] font-medium leading-none"
             color={isRagflowReady ? 'success' : 'warning'}
             icon={<DatabaseOutlined />}
           >
@@ -511,16 +455,10 @@ export function KnowledgeBase() {
           <Button
             icon={<ReloadOutlined />}
             loading={runtimeStatusQuery.isFetching || datasetsQuery.isFetching}
+            size="middle"
             onClick={handleRefresh}
           >
             {t('common.actions.refresh')}
-          </Button>
-          <Button
-            icon={<PlusOutlined />}
-            type="primary"
-            onClick={openCreateDataset}
-          >
-            {t('pages.knowledge.actions.createDataset')}
           </Button>
         </Space>
       </PageHeader>
@@ -528,14 +466,14 @@ export function KnowledgeBase() {
       {isRuntimeWarningVisible ? (
         <Alert
           showIcon
-          className="mb-3"
+          className="mb-3 rounded-lg! border-(--ant-color-warning-border)!"
           message={t('pages.knowledge.runtime.notConfiguredMessage')}
           type="warning"
         />
       ) : null}
 
-      <div className="flex min-h-0 flex-1 gap-3 max-[900px]:flex-col">
-        <PageContainer className="flex min-h-0 w-[360px] shrink-0 flex-col overflow-hidden max-[900px]:h-80 max-[900px]:w-full">
+      <div className="flex min-h-0 flex-1 gap-4 max-[900px]:flex-col">
+        <PageContainer className="flex min-h-0 w-[376px] shrink-0 flex-col overflow-hidden shadow-[0_1px_2px_rgb(15_23_42/0.04)] [contain:paint] max-[900px]:h-[21rem] max-[900px]:w-full">
           <KnowledgeSpaces
             datasets={datasetsQuery.data?.data ?? []}
             error={datasetsQuery.isError}
@@ -545,7 +483,6 @@ export function KnowledgeBase() {
             pageSize={knowledgeUrlState.pageSize}
             selectedDatasetId={knowledgeUrlState.datasetId}
             total={datasetsQuery.data?.count ?? 0}
-            onBatchDelete={confirmDeleteDatasets}
             onCreate={openCreateDataset}
             onDelete={confirmDeleteDataset}
             onEdit={openEditDataset}
@@ -556,30 +493,13 @@ export function KnowledgeBase() {
           />
         </PageContainer>
 
-        <PageContainer className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          {workspaceDataset ? (
-            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-b-(--ant-color-border-secondary) px-5 py-4">
-              <Space direction="vertical" size={2}>
-                <Text strong>{workspaceDataset.name}</Text>
-                <Text copyable type="secondary">
-                  {workspaceDataset.id}
-                </Text>
-              </Space>
-              <Button
-                icon={<ReloadOutlined />}
-                loading={datasetsQuery.isFetching}
-                onClick={() => void datasetsQuery.refetch()}
-              >
-                {t('common.actions.refresh')}
-              </Button>
-            </div>
-          ) : null}
-
+        <PageContainer className="flex min-h-0 flex-1 flex-col overflow-hidden shadow-[0_1px_2px_rgb(15_23_42/0.04)] [contain:paint]">
           {workspaceDataset ? (
             <Tabs
               activeKey={knowledgeUrlState.tab}
-              className="min-h-0 flex-1 px-5"
+              className="flex min-h-0 flex-1 flex-col [&_.ant-tabs-content-holder]:min-h-0 [&_.ant-tabs-content-holder]:flex-1 [&_.ant-tabs-content-holder]:px-6 [&_.ant-tabs-content-holder]:py-5 [&_.ant-tabs-content]:h-full [&_.ant-tabs-content]:min-h-0 [&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:px-6 [&_.ant-tabs-tab]:py-3 [&_.ant-tabs-tab-btn]:text-[13px] [&_.ant-tabs-tab-btn]:font-medium [&_.ant-tabs-tabpane]:h-full [&_.ant-tabs-tabpane]:min-h-0"
               items={tabItems}
+              tabBarGutter={24}
               onChange={(key) =>
                 knowledgeUrlState.setTab(
                   key as (typeof KNOWLEDGE_WORKSPACE_TABS)[number]['key'],
@@ -589,6 +509,7 @@ export function KnowledgeBase() {
           ) : (
             <div className="flex min-h-0 flex-1 items-center justify-center px-5">
               <Empty
+                className="max-w-md rounded-xl border border-dashed border-(--ant-color-border-secondary) bg-[color-mix(in_srgb,var(--ant-color-bg-container)_94%,var(--ant-color-bg-layout))] px-8 py-14"
                 description={t('pages.knowledge.empty.selectDatasetDescription')}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
