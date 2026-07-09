@@ -154,6 +154,7 @@ export interface UserCreateBody {
   full_name: string
   password: string
   is_active?: boolean
+  role_ids?: string[]
 }
 
 export type UserUpdateBody = Partial<{

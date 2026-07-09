@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import type { AuthUser, CurrentRbacProfile } from '@ff-ai-frontend/api'
 import { local } from '@ff-ai-frontend/utils'
+import { rbacProfile_get } from '@/api/rbac'
 
 export const AUTH_TOKEN_STORAGE_KEY = 'ff-admin-access-token'
 
@@ -15,6 +16,7 @@ interface AuthState {
   setToken: (accessToken: string) => void
   setUserInfo: (user: AuthUser | null) => void
   setRbacProfile: (profile: CurrentRbacProfile | null) => void
+  refreshRbacProfile: () => Promise<void>
   hasPermission: (code: string) => boolean
   hasAnyPermission: (codes: string[]) => boolean
   hasAllPermissions: (codes: string[]) => boolean
@@ -83,6 +85,19 @@ export const useAuthStore = create<AuthState>((set, get) => {
         menuCodes: [],
         organizationIds: [],
       })
+    },
+    refreshRbacProfile: async () => {
+      try {
+        const profile = await rbacProfile_get()
+        set({
+          roleCodes: profile.role_codes ?? [],
+          permissionCodes: profile.permission_codes ?? [],
+          menuCodes: profile.menu_codes ?? [],
+          organizationIds: profile.organizations.map((item) => item.id) ?? [],
+        })
+      } catch {
+        // best-effort refresh; auth middleware will re-fetch on next navigation
+      }
     },
   }
 })

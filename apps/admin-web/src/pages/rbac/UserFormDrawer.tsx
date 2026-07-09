@@ -1,8 +1,16 @@
-import { Button, Drawer, Form, Input, Space, Switch, message } from 'antd'
-import { useEffect, useRef } from 'react'
+import { Button, Drawer, Form, Input, Select, Space, Switch } from 'antd'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { User, UserCreateBody, UserUpdateBody } from '@/api/rbac'
+import {
+  adminRoles_list,
+  rbacKeys,
+  type Role,
+  type User,
+  type UserCreateBody,
+  type UserUpdateBody,
+} from '@/api/rbac'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 const { Password } = Input
 
@@ -27,6 +35,22 @@ export function UserFormDrawer({
   const [form] = Form.useForm()
   const isMountedRef = useRef(false)
 
+  // Fetch all roles for the role selection field
+  const rolesQuery = useQuery({
+    queryKey: rbacKeys.roles({ keyword: '', skip: 0, limit: 200 }),
+    queryFn: () => adminRoles_list({ keyword: '', skip: 0, limit: 200 }),
+    placeholderData: keepPreviousData,
+  })
+
+  const roleOptions = useMemo(
+    () =>
+      (rolesQuery.data?.data ?? []).map((r: Role) => ({
+        value: r.id,
+        label: `${r.name} (${r.code})`,
+      })),
+    [rolesQuery.data],
+  )
+
   useEffect(() => {
     if (open && !isMountedRef.current) {
       isMountedRef.current = true
@@ -35,6 +59,7 @@ export function UserFormDrawer({
         full_name: initialValues?.full_name ?? '',
         is_active: initialValues?.is_active ?? true,
         password: '',
+        role_ids: [],
       })
     }
     if (!open) {
@@ -50,6 +75,9 @@ export function UserFormDrawer({
         full_name: values.full_name,
         is_active: values.is_active,
         ...(values.password ? { password: values.password } : {}),
+        ...(mode === 'create' && values.role_ids?.length
+          ? { role_ids: values.role_ids }
+          : {}),
       }
       await onSubmit(payload)
     } catch {
@@ -128,6 +156,34 @@ export function UserFormDrawer({
         >
           <Password placeholder={t('pages.rbac.form.passwordPlaceholder')} />
         </Form.Item>
+
+        {mode === 'create' && (
+          <Form.Item
+            label={t('pages.rbac.form.roles')}
+            name="role_ids"
+            rules={[
+              {
+                required: true,
+                message: t('pages.rbac.form.rolesRequired'),
+                type: 'array',
+              },
+            ]}
+            extra={t('pages.rbac.form.rolesHint')}
+          >
+            <Select
+              placeholder={t('pages.rbac.form.selectRole')}
+              mode="multiple"
+              options={roleOptions}
+              showSearch
+              optionFilterProp="label"
+              className="w-full"
+              loading={rolesQuery.isLoading}
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
+            />
+          </Form.Item>
+        )}
 
         <Form.Item
           label={t('pages.rbac.form.status')}

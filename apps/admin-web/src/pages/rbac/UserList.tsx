@@ -1,29 +1,17 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
   PlusOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  message,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from 'antd'
+import { Button, Card, Form, Input, message, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
+  adminRoles_list,
   adminUsers_create,
   adminUsers_delete,
   adminUsers_list,
@@ -31,16 +19,58 @@ import {
   rbacKeys,
   userRoles_list,
   type User,
+  type UserCreateBody,
   type UserListQuery,
+  type UserUpdateBody,
+  type UserRoleAssignment,
 } from '@/api/rbac'
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
-import { globalMessage } from '@/utils/message'
 import { UserFormDrawer } from './UserFormDrawer'
 import { UserRoleDrawer } from './UserRoleDrawer'
 
 const { Search } = Input
+
+// Resolve role IDs to short display names
+function useRoleNameMap() {
+  const { data } = useQuery({
+    queryKey: rbacKeys.roles({ keyword: '', skip: 0, limit: 200 }),
+    queryFn: () => adminRoles_list({ keyword: '', skip: 0, limit: 200 }),
+  })
+  return useMemo(() => {
+    const map = new Map<string, string>()
+    for (const r of data?.data ?? []) {
+      map.set(r.id, r.name)
+    }
+    return map
+  }, [data])
+}
+
+// Component that renders a user's roles as tags
+function UserRolesCell({ userId }: { userId: string }) {
+  const roleNameMap = useRoleNameMap()
+  const { data: assignments } = useQuery({
+    queryKey: rbacKeys.userRoles(userId),
+    queryFn: () => userRoles_list(userId),
+    staleTime: 30_000,
+  })
+
+  const roleIds = assignments?.map((a: UserRoleAssignment) => a.role_id) ?? []
+
+  if (roleIds.length === 0) {
+    return <Tag>viewer</Tag>
+  }
+  return (
+    <Space size={[4, 4]} wrap>
+      {roleIds.map((rid) => (
+        <Tag key={rid} style={{ margin: 0 }}>
+          {roleNameMap.get(rid) ?? rid.slice(0, 8)}
+        </Tag>
+      ))}
+    </Space>
+  )
+}
 
 export default function UserList() {
   const { t } = useTranslation()
@@ -73,14 +103,6 @@ export default function UserList() {
     queryFn: () => adminUsers_list(listParams),
     placeholderData: keepPreviousData,
   })
-
-  // Pre-fetch role count for each user
-  const roleCountMap = useMemo(() => {
-    const map = new Map<string, number>()
-    // We don't have role count from the user list endpoint,
-    // so we'll compute it from the userRoles data if available
-    return map
-  }, [usersQuery.data])
 
   const createMutation = useMutation({
     mutationFn: adminUsers_create,
@@ -153,6 +175,12 @@ export default function UserList() {
       ),
     },
     {
+      title: t('pages.rbac.columns.role'),
+      key: 'roles',
+      width: 200,
+      render: (_, record) => <UserRolesCell userId={record.id} />,
+    },
+    {
       title: t('pages.rbac.columns.status'),
       key: 'is_active',
       width: 100,
@@ -165,7 +193,7 @@ export default function UserList() {
       ),
     },
     {
-      title: t('pages.rbac.columns.system'),
+      title: t('pages.rbac.columns.superuser'),
       dataIndex: 'is_superuser',
       key: 'is_superuser',
       width: 100,

@@ -40,6 +40,7 @@ import {
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useAuthStore } from '@/store/useAuth'
 import { globalMessage } from '@/utils/message'
 import { RoleFormDrawer } from './RoleFormDrawer'
 import { RolePermissionDrawer } from './RolePermissionDrawer'
@@ -92,6 +93,7 @@ export default function RoleList() {
       setFormDrawerState({ open: false, mode: 'create' })
       pagination.reset()
       void queryClient.invalidateQueries({ queryKey: rbacKeys.all })
+      void useAuthStore.getState().refreshRbacProfile()
     },
   })
 
@@ -102,6 +104,7 @@ export default function RoleList() {
       message.success(t('pages.rbac.messages.roleUpdated'))
       setFormDrawerState({ open: false, mode: 'edit' })
       void queryClient.invalidateQueries({ queryKey: rbacKeys.all })
+      void useAuthStore.getState().refreshRbacProfile()
     },
   })
 
@@ -114,6 +117,7 @@ export default function RoleList() {
         pagination.setCurrent(pagination.current - 1)
       }
       void queryClient.invalidateQueries({ queryKey: rbacKeys.all })
+      void useAuthStore.getState().refreshRbacProfile()
     },
   })
 
