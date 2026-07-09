@@ -4,7 +4,7 @@ ENV TURBO_TELEMETRY_DISABLED=1
 
 RUN npm config set registry https://registry.npmmirror.com
 RUN npm install -g turbo@2.9.14 && \
-    npm install -g pnpm@11.5.2
+    npm install -g pnpm@11.9.0
 
 FROM base AS pruner
 
@@ -14,6 +14,7 @@ ARG APP_NAME
 
 COPY . .
 
+RUN npm pkg set packageManager=pnpm@11.9.0
 RUN turbo prune @ff-ai-frontend/${APP_NAME} --docker
 
 FROM base AS builder

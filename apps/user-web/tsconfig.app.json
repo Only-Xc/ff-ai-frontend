@@ -2,10 +2,11 @@
   "extends": "@ff-ai-frontend/tooling/tsconfig/react-app.json",
   "compilerOptions": {
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@pages/*": ["./pages/*"]
     },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
   },
-  "include": ["src"],
+  "include": ["src", "pages"],
   "exclude": ["src/**/*.test.ts"]
 }

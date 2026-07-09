@@ -6,8 +6,8 @@ import {
   LoadingOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
-import { Button, Modal, Tag, Typography, Tooltip } from 'antd'
-import { useMemo, useState, type MouseEvent, type ReactNode } from 'react'
+import { Button, Tag, Typography, Tooltip } from 'antd'
+import { useMemo, type MouseEvent, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import type {
@@ -21,7 +21,13 @@ import { useComponentsI18n } from '../locale/index.js'
 import type { ComponentsTranslate } from '../locale/types.js'
 import { formatDateTime } from './utils.js'
 
+export interface TaskCardPreviewEvent {
+  previewUrl: string
+  task: Task
+}
+
 export interface TaskCardProps {
+  onPreview?: (event: TaskCardPreviewEvent) => void
   showAction?: boolean
   task: Task
 }
@@ -300,25 +306,8 @@ function TaskProcessWindow({
   )
 }
 
-function resolvePreviewUrl(rawUrl: string) {
-  try {
-    const url = new URL(rawUrl, window.location.origin)
-    const isLocalFrontend =
-      url.hostname === window.location.hostname &&
-      window.location.port === '8083' &&
-      url.pathname.startsWith('/api/')
-
-    if (isLocalFrontend) {
-      url.port = '18083'
-    }
-
-    return url.toString()
-  } catch {
-    return rawUrl
-  }
-}
-
 export function TaskCard({
+  onPreview,
   showAction = false,
   task,
 }: TaskCardProps) {
@@ -332,16 +321,12 @@ export function TaskCard({
     () => resolveTaskError(task, t('TaskCard.executionError')),
     [task, t],
   )
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const previewUrl = useMemo(() => {
-    if (!task.web_url) return ''
-    return resolvePreviewUrl(task.web_url)
-  }, [task.web_url])
+  const previewUrl = task.web_url ?? ''
   const canPreview = !!previewUrl && task.status === 'COMPLETED'
 
   const openPreview = () => {
     if (canPreview) {
-      setPreviewOpen(true)
+      onPreview?.({ previewUrl, task })
     }
   }
 
@@ -360,7 +345,7 @@ export function TaskCard({
         if (!canPreview) return
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
-          setPreviewOpen(true)
+          openPreview()
         }
       }}
       className={`relative flex w-full overflow-hidden rounded-lg border p-3 transition-[border-color,box-shadow,transform] duration-160 hover:-translate-y-px hover:border-[color-mix(in_srgb,var(--admin-primary)_32%,var(--border))] hover:shadow-[0_8px_18px_rgb(15_23_42/0.07)] ${
@@ -383,7 +368,7 @@ export function TaskCard({
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      setPreviewOpen(true)
+                      openPreview()
                     }}
                     href={previewUrl}
                   >
@@ -476,30 +461,6 @@ export function TaskCard({
         ) : null}
       </div>
       </article>
-      <Modal
-        centered
-        destroyOnHidden
-        footer={null}
-        onCancel={() => setPreviewOpen(false)}
-        open={previewOpen}
-        title={task.title || task.task_id}
-        width="min(1120px, calc(100vw - 48px))"
-        styles={{
-          body: {
-            height: 'min(760px, calc(100vh - 150px))',
-            padding: 0,
-          },
-        }}
-      >
-        {previewUrl ? (
-          <iframe
-            src={previewUrl}
-            title={task.title || task.task_id}
-            className="block h-full w-full border-0"
-            sandbox="allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-scripts"
-          />
-        ) : null}
-      </Modal>
     </>
   )
 }

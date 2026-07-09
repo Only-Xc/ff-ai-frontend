@@ -47,7 +47,7 @@ function initStartAppQueue(name: string | undefined, queue: Promise<void>) {
   return queue
 }
 
-const WujieReact = memo(function WujieReact(props: WujieReactProps) {
+export const WujieReact = memo(function WujieReact(props: WujieReactProps) {
   const { width, height, style } = props
   const { styles } = useStyles()
   const myRef = useRef<HTMLDivElement>(null)

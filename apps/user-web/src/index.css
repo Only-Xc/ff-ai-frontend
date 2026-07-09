@@ -5,6 +5,7 @@
 @import '@ff-ai-frontend/components/tailwind-source.css';
 
 @source './';
+@source '../pages';
 
 :root,
 [data-theme='light'] {

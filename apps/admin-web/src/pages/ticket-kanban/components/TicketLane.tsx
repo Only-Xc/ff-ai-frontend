@@ -1,14 +1,24 @@
 import { Badge, Empty } from 'antd'
-import type { CSSProperties } from 'react'
+import { useCallback, useState, type CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Virtuoso } from 'react-virtuoso'
+import {
+  TaskCard,
+  TaskPreviewDrawer,
+  type TaskCardPreviewEvent,
+} from '@ff-ai-frontend/components'
 
 import type { Task } from '@/api/ticket-kanban'
 
 import { laneColorMap, type LaneConfig } from '../constants'
-import { TaskCard } from '@ff-ai-frontend/components'
 
-function VirtualTaskList({ tasks }: { tasks: Task[] }) {
+function VirtualTaskList({
+  onPreview,
+  tasks,
+}: {
+  onPreview: (event: TaskCardPreviewEvent) => void
+  tasks: Task[]
+}) {
   const { t } = useTranslation()
 
   if (!tasks.length) {
@@ -29,7 +39,11 @@ function VirtualTaskList({ tasks }: { tasks: Task[] }) {
         data={tasks}
         itemContent={(_, task) => (
           <div className="px-2 pb-3 pt-1">
-            <TaskCard showAction task={task} />
+            <TaskCard
+              showAction
+              task={task}
+              onPreview={onPreview}
+            />
           </div>
         )}
         computeItemKey={(_, task) => task.task_id}
@@ -47,35 +61,47 @@ export function TicketLane({
   tasks: Task[]
 }) {
   const { t } = useTranslation()
+  const [previewTaskId, setPreviewTaskId] = useState<string | null>(null)
+
+  const openTaskPreview = useCallback((event: TaskCardPreviewEvent) => {
+    setPreviewTaskId(event.task.task_id)
+  }, [])
+
+  const closeTaskPreview = useCallback(() => {
+    setPreviewTaskId(null)
+  }, [])
 
   return (
-    <section
-      className="flex min-h-0 min-w-65 flex-col rounded-lg border border-(--border) bg-[color-mix(in_srgb,var(--bg)_82%,var(--border))] shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
-      style={{ '--lane-color': laneColorMap[lane.color] } as CSSProperties}
-    >
-      <header className="flex shrink-0 items-center justify-between gap-2 rounded-t-lg border-b border-(--border-strong) bg-(--panel) px-2.5 py-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="grid size-7 shrink-0 place-items-center rounded-[7px] border border-[color-mix(in_srgb,var(--lane-color)_20%,var(--border))] bg-[color-mix(in_srgb,var(--lane-color)_12%,var(--panel))] text-[15px] text-(--lane-color)">
-            {lane.icon}
-          </span>
-          <div className="min-w-0">
-            <div className="truncate text-[14px] font-semibold leading-5 text-(--text-strong)">
-              {t(lane.titleKey)}
-            </div>
-            <div className="truncate text-[10px] font-medium uppercase leading-3 tracking-normal text-(--muted)">
-              {lane.description}
+    <>
+      <section
+        className="flex min-h-0 min-w-65 flex-col rounded-lg border border-(--border) bg-[color-mix(in_srgb,var(--bg)_82%,var(--border))] shadow-[0_1px_2px_rgb(15_23_42/0.04)]"
+        style={{ '--lane-color': laneColorMap[lane.color] } as CSSProperties}
+      >
+        <header className="flex shrink-0 items-center justify-between gap-2 rounded-t-lg border-b border-(--border-strong) bg-(--panel) px-2.5 py-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="grid size-7 shrink-0 place-items-center rounded-[7px] border border-[color-mix(in_srgb,var(--lane-color)_20%,var(--border))] bg-[color-mix(in_srgb,var(--lane-color)_12%,var(--panel))] text-[15px] text-(--lane-color)">
+              {lane.icon}
+            </span>
+            <div className="min-w-0">
+              <div className="truncate text-[14px] font-semibold leading-5 text-(--text-strong)">
+                {t(lane.titleKey)}
+              </div>
+              <div className="truncate text-[10px] font-medium uppercase leading-3 tracking-normal text-(--muted)">
+                {lane.description}
+              </div>
             </div>
           </div>
-        </div>
-        <Badge
-          count={tasks.length}
-          showZero
-          color="var(--admin-primary)"
-          overflowCount={999}
-        />
-      </header>
+          <Badge
+            count={tasks.length}
+            showZero
+            color="var(--admin-primary)"
+            overflowCount={999}
+          />
+        </header>
 
-      <VirtualTaskList tasks={tasks} />
-    </section>
+        <VirtualTaskList tasks={tasks} onPreview={openTaskPreview} />
+      </section>
+      <TaskPreviewDrawer onClose={closeTaskPreview} taskId={previewTaskId} />
+    </>
   )
 }
