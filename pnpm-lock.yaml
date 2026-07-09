@@ -318,9 +318,6 @@ importers:
       uuid:
         specifier: ^11.1.1
         version: 11.1.1
-      wujie:
-        specifier: ^2.0.2
-        version: 2.0.2
       zustand:
         specifier: ^5.0.12
         version: 5.0.13(@types/react@19.2.15)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))
@@ -428,6 +425,9 @@ importers:
       usehooks-ts:
         specifier: ^3.1.1
         version: 3.1.1(react@19.2.6)
+      wujie:
+        specifier: ^2.0.2
+        version: 2.0.2
       zustand:
         specifier: ^5.0.12
         version: 5.0.13(@types/react@19.2.15)(react@19.2.6)(use-sync-external-store@1.6.0(react@19.2.6))

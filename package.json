@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@11.5.2",
+  "packageManager": "pnpm",
   "devDependencies": {
     "@ff-ai-frontend/tooling": "workspace:*",
     "@types/node": "catalog:",

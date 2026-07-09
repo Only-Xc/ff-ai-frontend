@@ -19,7 +19,8 @@ import { XMarkdown } from '@ant-design/x-markdown'
 import type { ComponentProps } from '@ant-design/x-markdown'
 import { Virtuoso } from 'react-virtuoso'
 import { useTranslation } from 'react-i18next'
-import { TaskCard } from '@ff-ai-frontend/components'
+import { TaskCard, TaskPreviewDrawer } from '@ff-ai-frontend/components'
+import type { TaskCardPreviewEvent } from '@ff-ai-frontend/components'
 import type { Task } from '@ff-ai-frontend/api'
 import type { AgentBubbleItem } from '@/pages/chat/hooks/useAgent'
 import '@/assets/x-markdown-light.css'
@@ -332,6 +333,13 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
   const { t } = useTranslation()
   const { theme: antdTheme, token } = theme.useToken()
   const isDark = antdTheme.id !== 0
+  const [previewTaskId, setPreviewTaskId] = useState<string | null>(null)
+  const openTaskPreview = useCallback((event: TaskCardPreviewEvent) => {
+    setPreviewTaskId(event.task.task_id)
+  }, [])
+  const closeTaskPreview = useCallback(() => {
+    setPreviewTaskId(null)
+  }, [])
 
   const aiActionItems = useCallback(
     (content: string) => [
@@ -434,7 +442,7 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
         },
         contentRender: (content: Task) => (
           <div className="w-full min-w-90">
-            <TaskCard task={content} />
+            <TaskCard task={content} onPreview={openTaskPreview} />
           </div>
         ),
       },
@@ -483,24 +491,31 @@ export function AgentMsgList({ items }: AgentMsgListProps) {
     token.colorErrorBg,
     token.colorErrorBorder,
     token.colorErrorText,
+    openTaskPreview,
     userActionItems,
   ])
 
   return (
-    <div className="min-h-0 flex-1 py-2">
-      <Virtuoso
-        className="h-full [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--scrollbar-thumb) [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-thumb-hover)"
-        computeItemKey={(_, item: AgentBubbleItem) => item.key}
-        data={items}
-        defaultItemHeight={VIRTUOSO_DEFAULT_ITEM_HEIGHT}
-        followOutput={(isAtBottom) => (isAtBottom ? 'smooth' : false)}
-        increaseViewportBy={VIRTUOSO_VIEWPORT_PRELOAD}
-        itemContent={(_, item: AgentBubbleItem) => (
-          <AgentMessageBubble item={item} role={role} />
-        )}
-        overscan={VIRTUOSO_OVERSCAN}
-        style={{ height: '100%' }}
+    <>
+      <div className="min-h-0 flex-1 py-2">
+        <Virtuoso
+          className="h-full [scrollbar-color:var(--scrollbar-thumb)_transparent] scrollbar-thin [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-(--scrollbar-thumb) [&::-webkit-scrollbar-thumb:hover]:bg-(--scrollbar-thumb-hover)"
+          computeItemKey={(_, item: AgentBubbleItem) => item.key}
+          data={items}
+          defaultItemHeight={VIRTUOSO_DEFAULT_ITEM_HEIGHT}
+          followOutput={(isAtBottom) => (isAtBottom ? 'smooth' : false)}
+          increaseViewportBy={VIRTUOSO_VIEWPORT_PRELOAD}
+          itemContent={(_, item: AgentBubbleItem) => (
+            <AgentMessageBubble item={item} role={role} />
+          )}
+          overscan={VIRTUOSO_OVERSCAN}
+          style={{ height: '100%' }}
+        />
+      </div>
+      <TaskPreviewDrawer
+        onClose={closeTaskPreview}
+        taskId={previewTaskId}
       />
-    </div>
+    </>
   )
 }

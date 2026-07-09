@@ -1,6 +1,19 @@
 export { CodeBlock } from './src/CodeBlock/index.js'
 export type { CodeBlockProps } from './src/CodeBlock/index.js'
 export {
+  IframeContainerPage,
+  IframeStandalonePage,
+  TaskPreviewDrawer,
+  WujieReact,
+  getTaskPreviewUrl,
+} from './src/IframeContainerPage/index.js'
+export type {
+  IframeContainerPageProps,
+  IframeStandalonePageProps,
+  TaskPreviewDrawerProps,
+  WujieReactProps,
+} from './src/IframeContainerPage/index.js'
+export {
   getComponentsLocale,
   setComponentsLocale,
   t,
@@ -25,4 +38,7 @@ export type {
   TableScrollYWrapperRenderArgs,
 } from './src/TableScrollYWrapper/index.js'
 export { TaskCard } from './src/TaskCard/index.js'
-export type { TaskCardProps } from './src/TaskCard/index.js'
+export type {
+  TaskCardPreviewEvent,
+  TaskCardProps,
+} from './src/TaskCard/index.js'

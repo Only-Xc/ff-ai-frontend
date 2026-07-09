@@ -33,6 +33,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/exam/, '/api/v1'),
       },
+      '^/app(?=/|$)': {
+        target,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/app(?=\/|$)/, '/api/tasks'),
+      },
       '/api': { target, changeOrigin: true },
     },
   },

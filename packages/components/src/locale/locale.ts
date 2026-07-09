@@ -6,6 +6,8 @@ import type {
 
 const taskCardMessages = {
   ar: {
+    'TaskPreview.backToWorkspace': 'العودة إلى مساحة العمل',
+    'TaskPreview.missingAppId': 'معرف التطبيق مفقود',
     'TaskCard.enterIntervention': 'معالجة',
     'TaskCard.executionError': 'خطأ في التنفيذ',
     'TaskCard.logs': 'السجلات {{count}}',
@@ -27,6 +29,8 @@ const taskCardMessages = {
     'TaskCard.updated': 'آخر تحديث',
   },
   'en-US': {
+    'TaskPreview.backToWorkspace': 'Back to workspace',
+    'TaskPreview.missingAppId': 'Missing app ID',
     'TaskCard.enterIntervention': 'Handle',
     'TaskCard.executionError': 'Execution error',
     'TaskCard.logs': 'Logs {{count}}',
@@ -48,6 +52,8 @@ const taskCardMessages = {
     'TaskCard.updated': 'Updated',
   },
   'zh-CN': {
+    'TaskPreview.backToWorkspace': '返回工作台',
+    'TaskPreview.missingAppId': '缺少应用 ID',
     'TaskCard.enterIntervention': '进入处理',
     'TaskCard.executionError': '执行异常',
     'TaskCard.logs': '历史日志 {{count}} 条',

@@ -12,6 +12,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@pages': fileURLToPath(new URL('./pages', import.meta.url)),
     },
   },
   plugins: [
@@ -19,6 +20,14 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        iframe: fileURLToPath(new URL('./pages/iframe.html', import.meta.url)),
+        main: fileURLToPath(new URL('./index.html', import.meta.url)),
+      },
+    },
+  },
   server: {
     proxy: {
       '/api/chat/ws': {
@@ -32,6 +41,11 @@ export default defineConfig({
         target: 'http://127.0.0.1:8013',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/exam/, '/api/v1'),
+      },
+      '^/app(?=/|$)': {
+        target,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/app(?=\/|$)/, '/api/tasks'),
       },
       '/api': { target, changeOrigin: true },
     },
