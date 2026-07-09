@@ -21,6 +21,7 @@ export default {
   'routes.workspace.title': 'Dashboard',
   'routes.workspaceOverview.title': 'Workspace',
   'routes.rbac.roles.title': 'Role & Permissions',
+  'routes.rbac.users.title': 'User Management',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
 }

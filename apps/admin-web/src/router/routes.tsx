@@ -5,6 +5,8 @@ import {
   FileTextOutlined,
   LineChartOutlined,
   SafetyCertificateOutlined,
+  TeamOutlined,
+  UserOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
@@ -166,6 +168,20 @@ export const appRoutes: AppRouteObject[] = [
       navOrder: 7,
       hideInBreadcrumb: true,
       permission: 'admin.roles.read',
+      menuCode: 'menu.admin.rbac',
+    },
+  },
+  {
+    path: '/rbac/users',
+    element: lazyLoad(() => import('@/pages/rbac/UserList')),
+    handle: {
+      title: 'User Management',
+      titleKey: 'routes.rbac.users.title',
+      icon: <TeamOutlined />,
+      navKey: 'rbac-users',
+      navOrder: 8,
+      hideInBreadcrumb: true,
+      permission: 'admin.users.read',
       menuCode: 'menu.admin.rbac',
     },
   },

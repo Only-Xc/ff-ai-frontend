@@ -140,6 +140,35 @@ export interface UserRoleAssignment {
   expires_at?: string | null
 }
 
+export interface User {
+  id: string
+  email: string
+  full_name: string | null
+  is_active: boolean
+  is_superuser: boolean
+  created_at: string | null
+}
+
+export interface UserCreateBody {
+  email: string
+  full_name: string
+  password: string
+  is_active?: boolean
+}
+
+export type UserUpdateBody = Partial<{
+  email: string
+  full_name: string
+  password: string
+  is_active: boolean
+}>
+
+export type UserList = ListResult<User>
+
+export type UserListQuery = {
+  keyword?: string
+} & PaginationQuery
+
 export const listAdminMenusRequest = (app?: string) =>
   createRequest<MenuNode[]>('GET', '/api/v1/admin/menus', {
     params: app ? { app } : undefined,
@@ -212,4 +241,19 @@ export const updateUserRolesRequest = (
     'PUT',
     path`/api/v1/admin/users/${userId}/roles`,
     { data: { assignments } },
+  )
+
+export const listUsersRequest = (params: UserListQuery) =>
+  createRequest<UserList>('GET', '/api/v1/users/', { params })
+
+export const createUserRequest = (data: UserCreateBody) =>
+  createRequest<User>('POST', '/api/v1/users/', { data })
+
+export const updateUserRequest = (userId: string, data: UserUpdateBody) =>
+  createRequest<User>('PATCH', path`/api/v1/users/${userId}`, { data })
+
+export const deleteUserRequest = (userId: string) =>
+  createRequest<{ message: string }>(
+    'DELETE',
+    path`/api/v1/users/${userId}`,
   )
