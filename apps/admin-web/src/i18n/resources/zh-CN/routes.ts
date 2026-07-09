@@ -12,7 +12,6 @@ export default {
   'routes.examCenter.title': '考试中心',
   'routes.exams.title': '考试管理',
   'routes.examDetail.title': '试卷详情',
-  'routes.examQuestions.title': '题目管理',
   'routes.examAttempts.title': '答题汇总',
   'routes.intervention.title': '人工介入',
   'routes.apps.title': '我的应用',

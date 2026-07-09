@@ -1,17 +1,26 @@
-import { Form, Input, InputNumber, Radio } from 'antd'
+import { Form, Input, InputNumber, Radio, Select } from 'antd'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { AdminExamPaper } from '@/api/exam'
+import type { AdminExamPaper, KnowledgeDataset } from '@/api/exam'
 
 import type { ExamFormValues } from '../types'
 
 interface ExamFormProps {
   initialValues?: Partial<AdminExamPaper>
+  knowledgeDatasets?: KnowledgeDataset[]
+  knowledgeDatasetsLoading?: boolean
+  showKnowledgeDataset?: boolean
   onSubmit: (values: ExamFormValues) => void
 }
 
-export function ExamForm({ initialValues, onSubmit }: ExamFormProps) {
+export function ExamForm({
+  initialValues,
+  knowledgeDatasets = [],
+  knowledgeDatasetsLoading = false,
+  showKnowledgeDataset = false,
+  onSubmit,
+}: ExamFormProps) {
   const { t } = useTranslation()
   const [form] = Form.useForm<ExamFormValues>()
   const mode = Form.useWatch('mode', form)
@@ -26,6 +35,7 @@ export function ExamForm({ initialValues, onSubmit }: ExamFormProps) {
       passing_score: initialValues?.passing_score ?? 60,
       allowed_user_ids_text: initialValues?.allowed_user_ids?.join('\n') ?? '',
       max_attempts_per_user: initialValues?.max_attempts_per_user ?? null,
+      knowledge_dataset_id: initialValues?.knowledge_dataset_id ?? null,
     })
   }, [form, initialValues])
 
@@ -83,6 +93,26 @@ export function ExamForm({ initialValues, onSubmit }: ExamFormProps) {
           <InputNumber className="w-full" max={100} min={0} precision={1} />
         </Form.Item>
       </div>
+
+      {showKnowledgeDataset ? (
+        <Form.Item
+          label={t('pages.examManagement.form.knowledgeDataset')}
+          name="knowledge_dataset_id"
+          tooltip={t('pages.examManagement.form.knowledgeDatasetTooltip')}
+        >
+          <Select
+            allowClear
+            loading={knowledgeDatasetsLoading}
+            optionFilterProp="label"
+            options={knowledgeDatasets.map((dataset) => ({
+              label: dataset.name || dataset.id,
+              value: dataset.id,
+            }))}
+            placeholder={t('pages.examManagement.form.knowledgeDatasetPlaceholder')}
+            showSearch
+          />
+        </Form.Item>
+      ) : null}
 
       {mode === 'random' ? (
         <Form.Item

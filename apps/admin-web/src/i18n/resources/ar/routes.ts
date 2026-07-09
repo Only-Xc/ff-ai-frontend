@@ -12,7 +12,6 @@ export default {
   'routes.examCenter.title': 'مركز الاختبارات',
   'routes.exams.title': 'إدارة الاختبارات',
   'routes.examDetail.title': 'تفاصيل الاختبار',
-  'routes.examQuestions.title': 'إدارة الأسئلة',
   'routes.examAttempts.title': 'ملخص الإجابات',
   'routes.intervention.title': 'التدخل اليدوي',
   'routes.apps.title': 'تطبيقاتي',

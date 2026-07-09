@@ -124,26 +124,13 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
       {
-        path: '/exam-questions',
-        element: lazyLoad(
-          () => import('@/pages/exam-management/QuestionManagement'),
-        ),
-        handle: {
-          title: 'Question Management',
-          titleKey: 'routes.examQuestions.title',
-          navKey: 'exam-questions',
-          navOrder: 2,
-          hideInBreadcrumb: true,
-        },
-      },
-      {
         path: '/exam-attempts',
         element: lazyLoad(() => import('@/pages/exam-management/AttemptOverview')),
         handle: {
           title: 'Exam Attempts',
           titleKey: 'routes.examAttempts.title',
           navKey: 'exam-attempts',
-          navOrder: 3,
+          navOrder: 2,
           hideInBreadcrumb: true,
         },
       },

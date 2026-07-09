@@ -18,7 +18,7 @@ interface MenuState {
 
 const WORKSPACE_NAV_KEY = 'workspace'
 const PLATFORM_APPS_KEY = 'workspace-platform-apps'
-const KNOWLEDGE_BASE_KEY = 'workspace-knowledge-base'
+const KNOWLEDGE_BASE_KEY = 'knowledge-base'
 const PLATFORM_APP_NAV_KEYS = new Set(['exams', 'attempts'])
 const APP_MENU_LOADING_KEY = 'workspace-apps-loading'
 const APP_MENU_EMPTY_KEY = 'workspace-apps-empty'
@@ -83,7 +83,12 @@ function getEmptyMenuItem(key: string): NavTreeItem {
 function buildWorkspaceNavChildren(
   appMenuNavItems: NavTreeItem[],
   platformAppNavItems: NavTreeItem[],
+  knowledgeBaseNavItem?: NavTreeItem,
 ) {
+  const knowledgeBaseChildren = knowledgeBaseNavItem?.children?.length
+    ? knowledgeBaseNavItem.children
+    : [getEmptyMenuItem(`${KNOWLEDGE_BASE_KEY}-empty`)]
+
   return [
     ...appMenuNavItems,
     {
@@ -95,24 +100,30 @@ function buildWorkspaceNavChildren(
         : [getEmptyMenuItem(`${PLATFORM_APPS_KEY}-empty`)],
     },
     {
-      key: KNOWLEDGE_BASE_KEY,
-      label: i18n.t('pages.menu.knowledgeBase'),
+      key: knowledgeBaseNavItem?.key ?? KNOWLEDGE_BASE_KEY,
+      label: knowledgeBaseNavItem?.label ?? i18n.t('pages.menu.knowledgeBase'),
       kind: 'group',
-      children: [getEmptyMenuItem(`${KNOWLEDGE_BASE_KEY}-empty`)],
+      children: knowledgeBaseChildren,
     },
   ] satisfies NavTreeItem[]
 }
 
-function extractPlatformAppNavItems(navItems: NavTreeItem[]) {
+function extractWorkspaceChildNavItems(navItems: NavTreeItem[]) {
   const platformAppNavItems: NavTreeItem[] = []
+  let knowledgeBaseNavItem: NavTreeItem | undefined
   const restNavItems = navItems.filter((item) => {
+    if (item.key === KNOWLEDGE_BASE_KEY) {
+      knowledgeBaseNavItem = item
+      return false
+    }
+
     if (!PLATFORM_APP_NAV_KEYS.has(item.key)) return true
 
     platformAppNavItems.push(item)
     return false
   })
 
-  return { platformAppNavItems, restNavItems }
+  return { knowledgeBaseNavItem, platformAppNavItems, restNavItems }
 }
 
 function withWorkspaceNavChildren(
@@ -184,8 +195,8 @@ export function buildSidebarNavItemsWithAppMenu(
   },
 ) {
   const { appMenuNodes, onRetry, status } = options
-  const { platformAppNavItems, restNavItems } =
-    extractPlatformAppNavItems(staticNavItems)
+  const { knowledgeBaseNavItem, platformAppNavItems, restNavItems } =
+    extractWorkspaceChildNavItems(staticNavItems)
   let appMenuNavItems: NavTreeItem[]
 
   if (status === 'success') {
@@ -223,7 +234,11 @@ export function buildSidebarNavItemsWithAppMenu(
 
   return withWorkspaceNavChildren(
     restNavItems,
-    buildWorkspaceNavChildren(appMenuNavItems, platformAppNavItems),
+    buildWorkspaceNavChildren(
+      appMenuNavItems,
+      platformAppNavItems,
+      knowledgeBaseNavItem,
+    ),
   )
 }
 

@@ -31,15 +31,19 @@ import type { TFunction } from 'i18next'
 import {
   adminExamKeys,
   adminExams_create,
+  adminExams_createQuestionGenerationJob,
   adminExams_delete,
   adminExams_list,
+  adminExams_listKnowledgeDatasets,
   adminExams_publish,
   adminExams_unpublish,
   adminExams_update,
   type AdminExamListQuery,
   type AdminExamPaper,
   type AdminExamUpdateBody,
+  type ExamGenerationStatus,
   type ExamMode,
+  type QuestionGenerationJobCreateBody,
 } from '@/api/exam'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { globalMessage } from '@/utils/message'
@@ -85,14 +89,44 @@ export function ExamList() {
     placeholderData: keepPreviousData,
   })
 
+  const knowledgeDatasetQuery = useQuery({
+    queryKey: adminExamKeys.knowledgeDatasets({
+      page: 1,
+      page_size: 100,
+    }),
+    queryFn: () =>
+      adminExams_listKnowledgeDatasets({
+        page: 1,
+        page_size: 100,
+      }),
+    enabled: drawer?.mode === 'create',
+  })
+
   const closeDrawer = () => setDrawer(undefined)
   const invalidateList = () =>
     queryClient.invalidateQueries({ queryKey: adminExamKeys.lists() })
 
+  const createQuestionGenerationMutation = useMutation({
+    mutationFn: adminExams_createQuestionGenerationJob,
+    onSettled: () => {
+      void invalidateList()
+    },
+  })
+
   const createMutation = useMutation({
-    mutationFn: adminExams_create,
-    onSuccess: () => {
-      globalMessage.success(t('pages.examManagement.messages.examCreated'))
+    mutationFn: (values: ExamFormValues) =>
+      adminExams_create(toExamCreateBody(values)),
+    onSuccess: (exam) => {
+      if (exam.knowledge_dataset_id) {
+        createQuestionGenerationMutation.mutate(
+          toQuestionGenerationJobCreateBody(exam),
+        )
+      }
+      globalMessage.success(
+        exam.knowledge_dataset_id
+          ? t('pages.examManagement.messages.examCreatedAndGenerating')
+          : t('pages.examManagement.messages.examCreated'),
+      )
       closeDrawer()
       pagination.reset()
       void invalidateList()
@@ -142,7 +176,7 @@ export function ExamList() {
       return
     }
 
-    createMutation.mutate(toExamCreateBody(values))
+    createMutation.mutate(values)
   }
 
   const columns: TableProps<AdminExamPaper>['columns'] = [
@@ -168,6 +202,16 @@ export function ExamList() {
           {value
             ? t('pages.examManagement.publishStatus.published')
             : t('pages.examManagement.publishStatus.draft')}
+        </Tag>
+      ),
+    },
+    {
+      title: t('pages.examManagement.columns.generationStatus'),
+      dataIndex: 'generation_status',
+      width: 110,
+      render: (value: ExamGenerationStatus) => (
+        <Tag color={generationStatusColor(value)}>
+          {t(`pages.examManagement.generationStatus.${value}`)}
         </Tag>
       ),
     },
@@ -244,7 +288,12 @@ export function ExamList() {
               {t('pages.examManagement.actions.unpublish')}
             </Button>
           ) : (
-            <Button loading={publishMutation.isPending} type="link" onClick={() => publishMutation.mutate(record.id)}>
+            <Button
+              disabled={record.generation_status === 'generating'}
+              loading={publishMutation.isPending}
+              type="link"
+              onClick={() => publishMutation.mutate(record.id)}
+            >
               {t('pages.examManagement.actions.publish')}
             </Button>
           )}
@@ -353,7 +402,7 @@ export function ExamList() {
             loading={listQuery.isFetching}
             pagination={false}
             rowKey="id"
-            scroll={{ x: 1460 }}
+            scroll={{ x: 1570 }}
           />
         </TableScrollYWrapper>
 
@@ -378,7 +427,11 @@ export function ExamList() {
             <Button
               form="admin-exam-form"
               htmlType="submit"
-              loading={createMutation.isPending || updateMutation.isPending}
+              loading={
+                createMutation.isPending
+                || createQuestionGenerationMutation.isPending
+                || updateMutation.isPending
+              }
               type="primary"
             >
               {t('common.actions.save')}
@@ -387,10 +440,51 @@ export function ExamList() {
         }
         onClose={closeDrawer}
       >
-        <ExamForm initialValues={drawer?.exam} onSubmit={handleSubmit} />
+        <ExamForm
+          initialValues={drawer?.exam}
+          knowledgeDatasets={knowledgeDatasetQuery.data?.data}
+          knowledgeDatasetsLoading={knowledgeDatasetQuery.isFetching}
+          showKnowledgeDataset={drawer?.mode === 'create'}
+          onSubmit={handleSubmit}
+        />
       </Drawer>
     </div>
   )
+}
+
+function toQuestionGenerationJobCreateBody(
+  exam: AdminExamPaper,
+): QuestionGenerationJobCreateBody {
+  const datasetId = exam.knowledge_dataset_id
+
+  return {
+    paper_id: exam.id,
+    title: exam.title,
+    description: exam.description,
+    question_count: exam.mode === 'random' ? (exam.random_count ?? 20) : 20,
+    question_types: ['single'],
+    difficulty: 'medium',
+    score_per_question: 5,
+    time_limit_minutes: exam.time_limit_minutes,
+    passing_score: exam.passing_score,
+    max_attempts_per_user: exam.max_attempts_per_user ?? null,
+    allowed_user_ids: exam.allowed_user_ids?.length ? exam.allowed_user_ids : null,
+    knowledge: datasetId
+      ? {
+        enabled: true,
+        dataset_ids: [datasetId],
+        top_k: 5,
+        query: [exam.title, exam.description].filter(Boolean).join(' '),
+      }
+      : undefined,
+    sync_to_exam: true,
+  }
+}
+
+function generationStatusColor(status: ExamGenerationStatus) {
+  if (status === 'completed') return 'green'
+  if (status === 'generating') return 'processing'
+  return 'red'
 }
 
 function formatDateTime(value: string, t: TFunction) {

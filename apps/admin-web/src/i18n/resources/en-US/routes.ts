@@ -12,7 +12,6 @@ export default {
   'routes.examCenter.title': 'Exam Center',
   'routes.exams.title': 'Exam Management',
   'routes.examDetail.title': 'Exam Detail',
-  'routes.examQuestions.title': 'Question Management',
   'routes.examAttempts.title': 'Exam Attempts',
   'routes.intervention.title': 'Intervention',
   'routes.apps.title': 'My Apps',

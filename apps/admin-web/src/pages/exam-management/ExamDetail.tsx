@@ -8,12 +8,10 @@ import {
   ProfileOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { Alert, Button, Descriptions, Drawer, Menu, Pagination, Space, Spin, Statistic, Table, Tag, Typography } from 'antd'
-import type { TableProps } from 'antd'
+import { Alert, Button, Descriptions, Drawer, Menu, Pagination, Space, Spin, Statistic, Tag, Typography } from 'antd'
 import { createStyles } from 'antd-style'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
-import type { Key } from 'react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
@@ -25,19 +23,14 @@ import {
   adminExamKeys,
   adminExamQuestions_create,
   adminExamQuestions_import,
-  adminExamQuestions_link,
-  adminExamQuestions_unlink,
+  adminExamQuestions_delete,
   adminExamQuestions_update,
   adminExamQuestionStats_list,
-  adminQuestionBank_list,
   adminExams_get,
   type AdminExamAttemptDetail,
   type AdminExamQuestion,
   type AdminExamQuestionUpdateBody,
-  type AdminQuestionListQuery,
   type AdminQuestionAccuracyStat,
-  type QuestionDifficulty,
-  type QuestionType,
 } from '@/api/exam'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { globalMessage } from '@/utils/message'
@@ -151,21 +144,10 @@ export function ExamDetail() {
     question?: AdminExamQuestion
   }>()
   const [importOpen, setImportOpen] = useState(false)
-  const [bankOpen, setBankOpen] = useState(false)
-  const [selectedBankQuestionIds, setSelectedBankQuestionIds] = useState<Key[]>([])
   const [attemptDetail, setAttemptDetail] = useState<AdminExamAttemptDetail>()
   const [activeSection, setActiveSection] = useState<ExamDetailSection>('questions')
 
   const attemptsQueryParams = useMemo(() => pagination.query, [pagination.query])
-  const questionBankQuery = useMemo(
-    () =>
-      ({
-        skip: 0,
-        limit: 100,
-        sort: 'created_at:desc',
-      }) satisfies AdminQuestionListQuery,
-    [],
-  )
 
   const detailQuery = useQuery({
     queryKey: adminExamKeys.detail(paperId ?? ''),
@@ -186,12 +168,6 @@ export function ExamDetail() {
     retry: false,
   })
 
-  const questionBankQueryResult = useQuery({
-    queryKey: adminExamKeys.questionBankList(questionBankQuery),
-    queryFn: () => adminQuestionBank_list(questionBankQuery),
-    enabled: bankOpen,
-  })
-
   const invalidateDetail = () => {
     if (!paperId) return
     void queryClient.invalidateQueries({ queryKey: adminExamKeys.detail(paperId) })
@@ -210,7 +186,7 @@ export function ExamDetail() {
 
   const updateQuestionMutation = useMutation({
     mutationFn: ({ data, questionId }: { questionId: string; data: AdminExamQuestionUpdateBody }) =>
-      adminExamQuestions_update(questionId, data),
+      adminExamQuestions_update(paperId!, questionId, data),
     onSuccess: () => {
       globalMessage.success(t('pages.examManagement.messages.questionUpdated'))
       setQuestionDrawer(undefined)
@@ -219,22 +195,10 @@ export function ExamDetail() {
     },
   })
 
-  const unlinkQuestionMutation = useMutation({
-    mutationFn: (questionId: string) => adminExamQuestions_unlink(paperId!, questionId),
+  const deleteQuestionMutation = useMutation({
+    mutationFn: (questionId: string) => adminExamQuestions_delete(paperId!, questionId),
     onSuccess: () => {
-      globalMessage.success(t('pages.examManagement.messages.questionUnlinked'))
-      invalidateDetail()
-      void queryClient.invalidateQueries({ queryKey: adminExamKeys.questionStats(paperId!) })
-    },
-  })
-
-  const linkQuestionsMutation = useMutation({
-    mutationFn: (questionIds: string[]) =>
-      adminExamQuestions_link(paperId!, { question_ids: questionIds }),
-    onSuccess: () => {
-      globalMessage.success(t('pages.examManagement.messages.questionsLinked'))
-      setBankOpen(false)
-      setSelectedBankQuestionIds([])
+      globalMessage.success(t('pages.examManagement.messages.questionDeleted'))
       invalidateDetail()
       void queryClient.invalidateQueries({ queryKey: adminExamKeys.questionStats(paperId!) })
     },
@@ -268,65 +232,8 @@ export function ExamDetail() {
     createQuestionMutation.mutate(values)
   }
 
-  const closeBankDrawer = () => {
-    setBankOpen(false)
-    setSelectedBankQuestionIds([])
-  }
-
   const paper = detailQuery.data
   const questions = useMemo(() => paper?.questions ?? [], [paper?.questions])
-  const linkedQuestionIds = useMemo(
-    () => new Set(questions.map((question) => question.id)),
-    [questions],
-  )
-  const bankQuestions = useMemo(
-    () =>
-      (questionBankQueryResult.data?.data ?? []).filter(
-        (question) => !linkedQuestionIds.has(question.id),
-      ),
-    [linkedQuestionIds, questionBankQueryResult.data?.data],
-  )
-  const bankQuestionColumns = useMemo<TableProps<AdminExamQuestion>['columns']>(
-    () => [
-      {
-        title: t('pages.examManagement.columns.order'),
-        dataIndex: 'order',
-        width: 80,
-      },
-      {
-        title: t('pages.examManagement.columns.questionType'),
-        dataIndex: 'type',
-        width: 90,
-        render: (value: QuestionType) => <Tag>{formatQuestionType(value, t)}</Tag>,
-      },
-      {
-        title: t('pages.examManagement.columns.difficulty'),
-        dataIndex: 'difficulty',
-        width: 90,
-        render: (value: QuestionDifficulty | null | undefined) =>
-          value ? (
-            <Tag color={getDifficultyColor(value)}>
-              {formatDifficulty(value, t)}
-            </Tag>
-          ) : (
-            '-'
-          ),
-      },
-      {
-        title: t('pages.examManagement.columns.questionText'),
-        dataIndex: 'text',
-        ellipsis: true,
-        render: (value: string) => <Typography.Text>{value}</Typography.Text>,
-      },
-      {
-        title: t('pages.examManagement.columns.scoreValue'),
-        dataIndex: 'score',
-        width: 90,
-        render: (value: number) => t('pages.examManagement.units.pointsWithValue', { value }),
-      },
-    ],
-    [t],
-  )
   const totalScore = useMemo(
     () => questions.reduce((sum, question) => sum + question.score, 0),
     [questions],
@@ -354,9 +261,6 @@ export function ExamDetail() {
           </Button>
           <Button icon={<ReloadOutlined />} loading={detailQuery.isFetching} onClick={() => void detailQuery.refetch()}>
             {t('common.actions.refresh')}
-          </Button>
-          <Button icon={<PlusOutlined />} onClick={() => setBankOpen(true)}>
-            {t('pages.examManagement.actions.selectFromBank')}
           </Button>
           <Button icon={<ImportOutlined />} onClick={() => setImportOpen(true)}>
             {t('pages.examManagement.actions.importJson')}
@@ -567,13 +471,10 @@ export function ExamDetail() {
                     {({ scrollY }) => (
                       <QuestionList
                         data={questions}
-                        deleteDescription={t('pages.examManagement.questions.unlinkDescription')}
-                        deleteText={t('pages.examManagement.actions.unlink')}
-                        deleteTitle={t('pages.examManagement.questions.unlinkTitle')}
-                        deletingId={unlinkQuestionMutation.variables}
+                        deletingId={deleteQuestionMutation.variables}
                         loading={detailQuery.isFetching}
                         scrollY={scrollY}
-                        onDelete={(questionId) => unlinkQuestionMutation.mutate(questionId)}
+                        onDelete={(questionId) => deleteQuestionMutation.mutate(questionId)}
                         onEdit={(question) => setQuestionDrawer({ mode: 'edit', question })}
                       />
                     )}
@@ -666,45 +567,6 @@ export function ExamDetail() {
         onSubmit={(body) => importMutation.mutate(body)}
       />
 
-      <Drawer
-        destroyOnHidden
-        open={bankOpen}
-        size={900}
-        title={t('pages.examManagement.bank.title')}
-        extra={
-          <Space>
-            <Button onClick={closeBankDrawer}>{t('common.actions.cancel')}</Button>
-            <Button
-              disabled={!selectedBankQuestionIds.length}
-              loading={linkQuestionsMutation.isPending}
-              type="primary"
-              onClick={() =>
-                linkQuestionsMutation.mutate(selectedBankQuestionIds.map(String))
-              }
-            >
-              {t('pages.examManagement.actions.linkQuestions')}
-            </Button>
-          </Space>
-        }
-        onClose={closeBankDrawer}
-      >
-        {questionBankQueryResult.isError ? (
-          <Alert showIcon className="mb-3" title={t('pages.examManagement.errors.questionBankLoadFailed')} type="error" />
-        ) : null}
-        <Table<AdminExamQuestion>
-          columns={bankQuestionColumns}
-          dataSource={bankQuestions}
-          loading={questionBankQueryResult.isFetching}
-          pagination={{ pageSize: 10, showSizeChanger: false }}
-          rowKey="id"
-          rowSelection={{
-            selectedRowKeys: selectedBankQuestionIds,
-            onChange: setSelectedBankQuestionIds,
-          }}
-          scroll={{ x: 840 }}
-        />
-      </Drawer>
-
       <AttemptResultModal
         attempt={attemptDetail}
         onClose={() => setAttemptDetail(undefined)}
@@ -718,21 +580,6 @@ function getSectionMeta(section: ExamDetailSection, t: TFunction) {
     description: t(`pages.examManagement.sections.${section}.description`),
     title: t(`pages.examManagement.sections.${section}.title`),
   }
-}
-
-function formatQuestionType(type: QuestionType, t: TFunction) {
-  return t(`pages.examManagement.questionType.${type}`)
-}
-
-function formatDifficulty(value: QuestionDifficulty, t: TFunction) {
-  return t(`pages.examManagement.difficulty.${value}`)
-}
-
-function getDifficultyColor(value: QuestionDifficulty) {
-  if (value === 'easy') return 'green'
-  if (value === 'hard') return 'red'
-
-  return 'blue'
 }
 
 function formatDateTime(value: string | null, t: TFunction) {

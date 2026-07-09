@@ -5,6 +5,7 @@ export type QuestionType = 'single' | 'multiple' | 'true_false'
 export type ExamMode = 'fixed' | 'random'
 export type AttemptStatus = 'in_progress' | 'submitted'
 export type QuestionDifficulty = 'easy' | 'medium' | 'hard'
+export type ExamGenerationStatus = 'completed' | 'generating' | 'failed'
 
 export interface ExamQuestionOption {
   key: string
@@ -23,6 +24,9 @@ export interface AdminExamPaper {
   passing_score: number
   allowed_user_ids: string[]
   max_attempts_per_user?: number | null
+  generation_status: ExamGenerationStatus
+  knowledge_dataset_id?: string | null
+  question_generation_job_id?: string | null
   is_published: boolean
   created_by: string
   created_at: string
@@ -32,7 +36,7 @@ export interface AdminExamPaper {
 
 export interface AdminExamQuestion {
   id: string
-  paper_id: string | null
+  paper_id: string
   type: QuestionType
   text: string
   options: ExamQuestionOption[]
@@ -91,14 +95,6 @@ export type AdminExamListQuery = {
 
 export type AdminExamAttemptListQuery = PaginationQuery
 
-export type AdminQuestionListQuery = {
-  sort?: string
-  text?: string
-  type?: QuestionType
-  difficulty?: QuestionDifficulty
-  paper_id?: string
-} & PaginationQuery
-
 export type AdminGlobalAttemptListQuery = {
   paper_id?: string
   status?: AttemptStatus
@@ -115,6 +111,7 @@ export interface AdminExamCreateBody {
   passing_score: number
   allowed_user_ids?: string[] | null
   max_attempts_per_user?: number | null
+  knowledge_dataset_id?: string | null
 }
 
 export type AdminExamUpdateBody = Partial<AdminExamCreateBody> & {
@@ -137,13 +134,8 @@ export interface AdminExamQuestionImportBody {
   questions: AdminExamQuestionBody[]
 }
 
-export interface AdminQuestionLinkBody {
-  question_ids: string[]
-}
-
 export type AdminExamList = ListResult<AdminExamPaper>
 export type AdminExamAttemptList = ListResult<AdminExamAttemptSummary>
-export type AdminExamQuestionList = ListResult<AdminExamQuestion>
 
 export interface AdminQuestionAccuracyStat {
   question_id: string
@@ -206,16 +198,6 @@ export const importAdminExamQuestionsRequest = (
     { data },
   )
 
-export const linkAdminExamQuestionsRequest = (
-  paperId: string,
-  data: AdminQuestionLinkBody,
-) =>
-  createRequest<AdminExamQuestion[]>(
-    'POST',
-    path`/api/exam/admin/exams/${paperId}/questions/link`,
-    { data },
-  )
-
 export const listAdminExamQuestionsRequest = (paperId: string) =>
   createRequest<AdminExamQuestion[]>(
     'GET',
@@ -232,44 +214,25 @@ export const createAdminExamQuestionRequest = (
     { data },
   )
 
-export const unlinkAdminExamQuestionRequest = (
+export const deleteAdminExamQuestionRequest = (
   paperId: string,
   questionId: string,
 ) =>
   createRequest<void>(
     'DELETE',
     path`/api/exam/admin/exams/${paperId}/questions/${questionId}`,
-  )
-
-export const listAdminQuestionBankRequest = (params: AdminQuestionListQuery) =>
-  createRequest<AdminExamQuestionList>('GET', '/api/exam/admin/questions', {
-    params,
-  })
-
-export const createAdminQuestionBankRequest = (data: AdminExamQuestionBody) =>
-  createRequest<AdminExamQuestion>('POST', '/api/exam/admin/questions', {
-    data,
-  })
-
-export const importAdminQuestionBankRequest = (
-  data: AdminExamQuestionImportBody,
-) =>
-  createRequest<AdminExamQuestion[]>('POST', '/api/exam/admin/questions/import', {
-    data,
-  })
+)
 
 export const updateAdminExamQuestionRequest = (
+  paperId: string,
   questionId: string,
   data: AdminExamQuestionUpdateBody,
 ) =>
   createRequest<AdminExamQuestion>(
     'PATCH',
-    path`/api/exam/admin/questions/${questionId}`,
+    path`/api/exam/admin/exams/${paperId}/questions/${questionId}`,
     { data },
   )
-
-export const deleteAdminExamQuestionRequest = (questionId: string) =>
-  createRequest<void>('DELETE', path`/api/exam/admin/questions/${questionId}`)
 
 export const listAdminExamAttemptsRequest = (
   paperId: string,

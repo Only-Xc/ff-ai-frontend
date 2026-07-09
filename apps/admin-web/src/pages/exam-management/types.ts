@@ -26,6 +26,7 @@ export interface ExamFormValues {
   passing_score: number
   allowed_user_ids_text?: string
   max_attempts_per_user?: number | null
+  knowledge_dataset_id?: string | null
 }
 
 export interface QuestionOptionFormValue {
@@ -62,6 +63,7 @@ export function toExamCreateBody(values: ExamFormValues): AdminExamCreateBody {
     passing_score: values.passing_score,
     allowed_user_ids: parseUserIds(values.allowed_user_ids_text),
     max_attempts_per_user: values.max_attempts_per_user ?? null,
+    knowledge_dataset_id: values.knowledge_dataset_id ?? null,
   }
 }
 
