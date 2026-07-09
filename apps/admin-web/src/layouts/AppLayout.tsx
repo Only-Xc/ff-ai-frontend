@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Outlet, useLocation } from 'react-router'
 
+import { usePermission } from '@/hooks/usePermission'
 import { useLocale } from '@/i18n/useLocale'
 import { appRoutes } from '@/router/routes'
 import { useAppStore } from '@/store/useApp'
@@ -71,11 +72,27 @@ export function AppLayout() {
   const { direction } = useLocale()
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { hasAllPermissions, hasAnyPermission, hasMenu, hasPermission } =
+    usePermission()
   const sidebarCollapsed = useAppStore((state) => state.sidebarCollapsed)
   const toggleSidebarCollapsed = useAppStore(
     (state) => state.toggleSidebarCollapsed,
   )
-  const navItems = useMemo(() => buildNavItems(appRoutes, t), [t])
+  const navItems = useMemo(
+    () =>
+      buildNavItems(appRoutes, t, {
+        canAccess: (meta) => {
+          if (meta.menuCode && !hasMenu(meta.menuCode)) return false
+          if (meta.permission && !hasPermission(meta.permission)) return false
+          if (!meta.permissions?.length) return true
+
+          return meta.permissionMode === 'any'
+            ? hasAnyPermission(meta.permissions)
+            : hasAllPermissions(meta.permissions)
+        },
+      }),
+    [hasAllPermissions, hasAnyPermission, hasMenu, hasPermission, t],
+  )
   const activeKey = useMemo(
     () => getActiveNavKey(location.pathname, navItems),
     [location.pathname, navItems],

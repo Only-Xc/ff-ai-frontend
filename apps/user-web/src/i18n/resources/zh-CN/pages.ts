@@ -1,6 +1,8 @@
 export default {
   'pages.shell.usageSubtitle': '查看资源消耗、套餐额度、账单与余额',
   'pages.shell.defaultSubtitle': '查看平台任务、应用和资源状态',
+  'pages.forbidden.subtitle': '你没有访问当前页面的权限。',
+  'pages.forbidden.backHome': '返回首页',
   'pages.notFound.subtitle': '页面不存在或已被移动',
   'pages.notFound.backHome': '返回首页',
   'pages.analysis.stats.callsToday': '今日调用',
