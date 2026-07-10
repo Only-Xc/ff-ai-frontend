@@ -89,6 +89,26 @@ export function UserRoleDrawer({
   const handleSave = async () => {
     if (!userId) return
 
+    // 校验：每行必须选择角色
+    const emptyIndex = assignments.findIndex((a) => !a.role_id)
+    if (emptyIndex !== -1) {
+      globalMessage.warning(t('pages.rbac.errors.roleRequired'))
+      return
+    }
+
+    // 校验：角色不能重复
+    const seen = new Set<string>()
+    for (const a of assignments) {
+      if (seen.has(a.role_id)) {
+        const role = allRoles.find((r) => r.id === a.role_id)
+        globalMessage.warning(
+          t('pages.rbac.errors.roleDuplicate', { name: role?.name ?? a.role_id }),
+        )
+        return
+      }
+      seen.add(a.role_id)
+    }
+
     setSaving(true)
     try {
       await userRoles_update(userId,

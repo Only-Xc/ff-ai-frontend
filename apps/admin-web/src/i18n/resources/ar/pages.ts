@@ -535,6 +535,8 @@ export default {
   'pages.rbac.messages.orgCreated': 'تم إنشاء المؤسسة',
   'pages.rbac.messages.orgUpdated': 'تم تحديث المؤسسة',
   'pages.rbac.messages.orgDeleted': 'تم حذف المؤسسة',
+  'pages.rbac.errors.roleRequired': 'يرجى اختيار دور لكل صف',
+  'pages.rbac.errors.roleDuplicate': 'الدور "{{name}}" مخصص أكثر من مرة',
   'pages.rbac.errors.detailLoadFailed': 'فشل تحميل تفاصيل الدور',
   'pages.rbac.messages.permissionDrawerPending':
     'درج تكوين الصلاحيات لـ {{name}} قيد التنفيذ',

@@ -528,6 +528,8 @@ export default {
   'pages.rbac.messages.orgCreated': '组织创建成功',
   'pages.rbac.messages.orgUpdated': '组织更新成功',
   'pages.rbac.messages.orgDeleted': '组织已删除',
+  'pages.rbac.errors.roleRequired': '请为每行选择一个角色',
+  'pages.rbac.errors.roleDuplicate': '角色 "{{name}}" 重复分配',
   'pages.rbac.errors.detailLoadFailed': '角色详情加载失败',
   'pages.rbac.messages.permissionDrawerPending': '{{name}} 的权限配置抽屉待实现',
   'pages.rbac.pagination.total': '共 {{total}} 条',

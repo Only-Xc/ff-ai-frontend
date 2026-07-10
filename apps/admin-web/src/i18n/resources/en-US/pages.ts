@@ -545,6 +545,8 @@ export default {
   'pages.rbac.messages.orgCreated': 'Organization created',
   'pages.rbac.messages.orgUpdated': 'Organization updated',
   'pages.rbac.messages.orgDeleted': 'Organization deleted',
+  'pages.rbac.errors.roleRequired': 'Please select a role for every row',
+  'pages.rbac.errors.roleDuplicate': 'Role "{{name}}" is assigned more than once',
   'pages.rbac.errors.detailLoadFailed': 'Failed to load role details',
   'pages.rbac.messages.permissionDrawerPending': 'Permission drawer for {{name}} is pending implementation',
   'pages.rbac.pagination.total': '{{total}} total',
