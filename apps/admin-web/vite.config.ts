@@ -33,10 +33,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/exam/, '/api/v1'),
       },
-      '^/app(?=/|$)': {
-        target,
+      '^/runtime(?=/|$)': {
+        target: 'http://43.165.4.209:18090',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/app(?=\/|$)/, '/api/tasks'),
+        rewrite: (path) => path.replace(/^\/runtime(?=\/|$)/, ''),
       },
       '/api': { target, changeOrigin: true },
     },

@@ -1,3 +1,3 @@
 export function getTaskPreviewUrl(taskId: string) {
-  return `/app/${encodeURIComponent(taskId)}/preview`
+  return `/runtime/api/runtime/deployments/${encodeURIComponent(taskId)}/proxy/`
 }
