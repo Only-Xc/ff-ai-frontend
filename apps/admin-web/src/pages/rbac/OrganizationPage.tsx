@@ -1,4 +1,4 @@
-import { Button, Card, Drawer, Form, Input, InputNumber, message, Popconfirm, Radio, Space, Spin, Table, Tag, Tooltip, Tree } from 'antd'
+import { Button, Card, Drawer, Form, Input, InputNumber, message, Popconfirm, Radio, Select, Space, Spin, Table, Tag, Tooltip, Tree } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { DataNode } from 'antd/es/tree'
 import { ReloadOutlined } from '@ant-design/icons'
@@ -93,6 +93,7 @@ export default function OrganizationPage() {
       form.resetFields()
       void queryClient.invalidateQueries({ queryKey: rbacKeys.all })
     },
+    onError: (err: Error) => message.error(err.message),
   })
 
   const updateMutation = useMutation({
@@ -105,6 +106,7 @@ export default function OrganizationPage() {
       form.resetFields()
       void queryClient.invalidateQueries({ queryKey: rbacKeys.all })
     },
+    onError: (err: Error) => message.error(err.message),
   })
 
   const deleteMutation = useMutation({
@@ -356,30 +358,11 @@ export default function OrganizationPage() {
               treeData={treeData}
               className="org-tree"
               titleRender={(node) => (
-                <div className="flex w-full items-center gap-3 rounded px-2 py-1.5 transition-colors hover:bg-gray-50">
+                <span className="flex items-center gap-2">
                   <span className="font-medium text-gray-800">{node.title as string}</span>
                   <Tag bordered={false} color="blue" className="m-0 text-xs">{node.type as string}</Tag>
-                  <span className="ml-auto text-xs text-gray-400">({node.code as string})</span>
-                  <Space size={0} split={<span className="text-gray-300">|</span>} onClick={(e) => e.stopPropagation()}>
-                    <Button size="small" type="link" onClick={() => openCreateChild(node.key as string)}>
-                      {t('pages.rbac.actions.addChild')}
-                    </Button>
-                    <Button size="small" type="link" onClick={() => handleTreeEdit(node)}>
-                      {t('pages.rbac.orgs.actions.edit')}
-                    </Button>
-                    <Popconfirm
-                      title={t('pages.rbac.orgs.messages.deleteConfirm')}
-                      onConfirm={() => deleteMutation.mutate(node.key as string)}
-                      okText={t('pages.rbac.orgs.actions.delete')}
-                      okButtonProps={{ danger: true }}
-                      cancelText={t('pages.rbac.orgs.actions.cancel')}
-                    >
-                      <Button size="small" type="link" danger>
-                        {t('pages.rbac.orgs.actions.delete')}
-                      </Button>
-                    </Popconfirm>
-                  </Space>
-                </div>
+                  <span className="text-xs text-gray-400">({node.code as string})</span>
+                </span>
               )}
             />
           )}
@@ -401,14 +384,46 @@ export default function OrganizationPage() {
         }
       >
         <Form form={form} layout="vertical">
-          <Form.Item label={t('pages.rbac.orgs.form.name')} name="name" rules={[{ required: true, message: t('pages.rbac.orgs.form.nameRequired') }]}>
+          <Form.Item
+            label={t('pages.rbac.orgs.form.name')}
+            name="name"
+            rules={[
+              { required: true, message: t('pages.rbac.orgs.form.nameRequired') },
+              {
+                validator: (_, value: string) => {
+                  if (!value || !treeQuery.data) return Promise.resolve()
+                  const allOrgs = treeQuery.data.flatMap((n) => [n, ...(n.children ?? [])])
+                  const dup = allOrgs.find((o) => o.name === value && o.id !== editingOrg?.id)
+                  return dup ? Promise.reject(new Error(t('pages.rbac.orgs.form.nameDuplicate', { name: dup.name }))) : Promise.resolve()
+                },
+              },
+            ]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label={t('pages.rbac.orgs.form.code')} name="code" rules={[{ required: true, message: t('pages.rbac.orgs.form.codeRequired') }]}>
+          <Form.Item
+            label={t('pages.rbac.orgs.form.code')}
+            name="code"
+            rules={[
+              { required: true, message: t('pages.rbac.orgs.form.codeRequired') },
+              {
+                validator: (_, value: string) => {
+                  if (!value || !treeQuery.data) return Promise.resolve()
+                  const allOrgs = treeQuery.data.flatMap((n) => [n, ...(n.children ?? [])])
+                  const dup = allOrgs.find((o) => o.code === value && o.id !== editingOrg?.id)
+                  return dup ? Promise.reject(new Error(t('pages.rbac.orgs.form.codeDuplicate', { code: dup.code }))) : Promise.resolve()
+                },
+              },
+            ]}
+          >
             <Input placeholder={t('pages.rbac.orgs.form.codePlaceholder')} />
           </Form.Item>
           <Form.Item label={t('pages.rbac.orgs.form.type')} name="type" initialValue="tenant">
-            <Input />
+            <Select options={[
+              { value: 'tenant', label: t('pages.rbac.orgs.form.typeTenant') },
+              { value: 'department', label: t('pages.rbac.orgs.form.typeDepartment') },
+              { value: 'team', label: t('pages.rbac.orgs.form.typeTeam') },
+            ]} />
           </Form.Item>
           <Form.Item label={t('pages.rbac.orgs.form.sortOrder')} name="sort_order" initialValue={0}>
             <InputNumber min={0} />
