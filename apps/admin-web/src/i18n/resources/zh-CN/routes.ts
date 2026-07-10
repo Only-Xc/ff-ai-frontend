@@ -20,5 +20,8 @@ export default {
   'routes.settings.title': '设置',
   'routes.workspace.title': '工作台',
   'routes.workspaceOverview.title': '工作空间',
+  'routes.rbac.roles.title': '角色权限',
+  'routes.rbac.users.title': '用户管理',
+  'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
 }

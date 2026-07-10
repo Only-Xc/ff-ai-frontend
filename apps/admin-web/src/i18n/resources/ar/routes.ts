@@ -20,5 +20,7 @@ export default {
   'routes.settings.title': 'الإعدادات',
   'routes.workspace.title': 'لوحة العمل',
   'routes.workspaceOverview.title': 'مساحة العمل',
+  'routes.rbac.roles.title': 'الأدوار والصلاحيات',
+  'routes.rbac.users.title': 'إدارة المستخدمين',
   'routes.notFound.title': '404',
 }

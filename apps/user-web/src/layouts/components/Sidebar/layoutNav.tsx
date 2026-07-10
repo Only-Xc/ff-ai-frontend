@@ -15,6 +15,10 @@ export interface NavTreeItem {
   children?: NavTreeItem[]
 }
 
+export interface BuildNavOptions {
+  canAccess?: (meta: RouteMeta) => boolean
+}
+
 type NavTreeItemWithOrder = NavTreeItem & {
   order: number
   children?: NavTreeItemWithOrder[]
@@ -61,6 +65,7 @@ function collectNavItems(
   routes: AppRouteObject[],
   t: TFunction,
   parentPath = '',
+  options?: BuildNavOptions,
 ): NavTreeItemWithOrder[] {
   const items: NavTreeItemWithOrder[] = []
   let sortableItems: NavTreeItemWithOrder[] = []
@@ -76,10 +81,14 @@ function collectNavItems(
     const routePath = joinPath(parentPath, route.path)
     const meta = route.handle
     const children = route.children
-      ? collectNavItems(route.children, t, routePath)
+      ? collectNavItems(route.children, t, routePath, options)
       : []
 
-    if (!meta?.title || meta.hideInMenu) {
+    if (
+      !meta?.title ||
+      meta.hideInMenu ||
+      (options?.canAccess && !options.canAccess(meta))
+    ) {
       if (children.length) {
         flushSortableItems()
         items.push(...children)
@@ -110,8 +119,9 @@ function collectNavItems(
 export function buildNavItems(
   routes: AppRouteObject[],
   t: TFunction,
+  options?: BuildNavOptions,
 ): NavTreeItem[] {
-  return collectNavItems(routes, t).map(stripOrder)
+  return collectNavItems(routes, t, '', options).map(stripOrder)
 }
 
 export function getPathByNavKey(navItems: NavTreeItem[]) {

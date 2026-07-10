@@ -22,6 +22,8 @@ function handleRequestError(error: unknown, config?: RequestConfig) {
 
   if (canceled) return
 
+  if (canceled) return
+
   const skipToast = shouldSkipGlobalErrorToast(config)
 
   switch (status) {

@@ -3,6 +3,8 @@ export default {
     'Review resource usage, plan quotas, billing, and balance.',
   'pages.shell.defaultSubtitle':
     'Review platform tasks, apps, and resource status.',
+  'pages.forbidden.subtitle': 'You do not have permission to access this page.',
+  'pages.forbidden.backHome': 'Back home',
   'pages.notFound.subtitle': 'The page does not exist or has been moved.',
   'pages.notFound.backHome': 'Back home',
   'pages.analysis.stats.callsToday': 'Calls today',

@@ -4,10 +4,14 @@ import {
   FileDoneOutlined,
   FileTextOutlined,
   LineChartOutlined,
+  SafetyCertificateOutlined,
+  TeamOutlined,
+  UserOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 
+import { ForbiddenPage } from '@/pages/exception/ForbiddenPage'
 import { NotFoundPage } from '@/pages/exception/NotFoundPage'
 import { lazyLoad } from './runtime/lazyLoad'
 
@@ -23,6 +27,10 @@ export interface RouteMeta {
   menuMode?: 'group' | 'submenu'
   navKey?: string
   navOrder?: number
+  permission?: string
+  permissions?: string[]
+  permissionMode?: 'all' | 'any'
+  menuCode?: string
 }
 
 export type AppRouteObject = Omit<RouteObject, 'children' | 'handle'> & {
@@ -52,6 +60,8 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'tickets',
       navOrder: 2,
       hideInBreadcrumb: true,
+      permission: 'admin.tickets.read',
+      menuCode: 'menu.admin.tickets',
     },
   },
   {
@@ -64,6 +74,8 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'skills',
       navOrder: 3,
       hideInBreadcrumb: true,
+      permission: 'admin.skills.read',
+      menuCode: 'menu.admin.skills',
     },
   },
   {
@@ -76,6 +88,8 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'ops-metrics',
       navOrder: 4,
       hideInBreadcrumb: true,
+      permission: 'admin.metrics.read',
+      menuCode: 'menu.admin.ops_metrics',
     },
   },
   {
@@ -88,6 +102,8 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'lifecycle-ops',
       navOrder: 5,
       hideInBreadcrumb: true,
+      permission: 'admin.lifecycle.read',
+      menuCode: 'menu.admin.lifecycle_ops',
     },
   },
   {
@@ -100,6 +116,8 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'exam-center',
       navOrder: 6,
       hideInBreadcrumb: true,
+      permission: 'admin.exams.read',
+      menuCode: 'menu.admin.exam_center',
     },
     children: [
       {
@@ -111,6 +129,7 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'exams',
           navOrder: 1,
           hideInBreadcrumb: true,
+          permission: 'admin.exams.read',
         },
       },
       {
@@ -121,6 +140,7 @@ export const appRoutes: AppRouteObject[] = [
           titleKey: 'routes.examDetail.title',
           navKey: 'exams',
           hideInMenu: true,
+          permission: 'admin.exams.read',
         },
       },
       {
@@ -132,9 +152,38 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'exam-attempts',
           navOrder: 2,
           hideInBreadcrumb: true,
+          permission: 'admin.exams.read',
         },
       },
     ],
+  },
+  {
+    path: '/rbac/roles',
+    element: lazyLoad(() => import('@/pages/rbac/RoleList')),
+    handle: {
+      title: 'Role & Permissions',
+      titleKey: 'routes.rbac.roles.title',
+      icon: <SafetyCertificateOutlined />,
+      navKey: 'rbac-roles',
+      navOrder: 7,
+      hideInBreadcrumb: true,
+      permission: 'admin.roles.read',
+      menuCode: 'menu.admin.rbac',
+    },
+  },
+  {
+    path: '/rbac/users',
+    element: lazyLoad(() => import('@/pages/rbac/UserList')),
+    handle: {
+      title: 'User Management',
+      titleKey: 'routes.rbac.users.title',
+      icon: <TeamOutlined />,
+      navKey: 'rbac-users',
+      navOrder: 8,
+      hideInBreadcrumb: true,
+      permission: 'admin.users.read',
+      menuCode: 'menu.admin.rbac',
+    },
   },
   {
     path: '/tickets/:taskId/intervention',
@@ -147,6 +196,7 @@ export const appRoutes: AppRouteObject[] = [
       layout: false,
       navKey: 'tickets',
       hideInMenu: true,
+      permission: 'admin.tickets.intervene',
     },
   },
   {
@@ -155,6 +205,16 @@ export const appRoutes: AppRouteObject[] = [
     handle: {
       hideInMenu: true,
       hideInBreadcrumb: true,
+    },
+  },
+  {
+    path: '/403',
+    element: <ForbiddenPage />,
+    handle: {
+      title: '403',
+      titleKey: 'routes.forbidden.title',
+      layout: false,
+      hideInMenu: true,
     },
   },
   {

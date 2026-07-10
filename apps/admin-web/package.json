@@ -10,7 +10,8 @@
     "typecheck": "tsc -b --noEmit",
     "format": "oxfmt . --write && oxlint --fix && eslint . --fix",
     "format:check": "oxfmt . --check",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.2",

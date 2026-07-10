@@ -24,12 +24,15 @@ export interface LoginResult {
   tokenType: string
 }
 
-export const loginWithPasswordRequest = (data: LoginCredentials) =>
-  createRequest<LoginResult, LoginCredentials>(
+export const loginWithPasswordRequest = (data: LoginCredentials) => {
+  const formData = new URLSearchParams()
+  formData.set('username', data.username)
+  formData.set('password', data.password)
+  return createRequest<LoginResult>(
     'POST',
     '/api/v1/login/access-token',
     {
-      data,
+      data: formData,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -41,6 +44,7 @@ export const loginWithPasswordRequest = (data: LoginCredentials) =>
       tokenType: response.token_type ?? 'bearer',
     }),
   )
+}
 
 export const testAccessTokenRequest = (accessToken: string) =>
   createRequest<AuthUser>('POST', '/api/v1/login/test-token', {

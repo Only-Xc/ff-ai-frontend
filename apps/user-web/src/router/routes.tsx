@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 
+import { ForbiddenPage } from '@/pages/exception/ForbiddenPage'
 import { NotFoundPage } from '@/pages/exception/NotFoundPage'
 import { lazyLoad } from './runtime/lazyLoad'
 
@@ -24,6 +25,10 @@ export interface RouteMeta {
   menuMode?: 'group' | 'submenu'
   navKey?: string
   navOrder?: number
+  permission?: string
+  permissions?: string[]
+  permissionMode?: 'all' | 'any'
+  menuCode?: string
 }
 
 export type AppRouteObject = Omit<RouteObject, 'children' | 'handle'> & {
@@ -56,6 +61,8 @@ export const appRoutes: AppRouteObject[] = [
           menuType: 'menu',
           navKey: 'chat',
           navOrder: 1,
+          permission: 'user.chat.use',
+          menuCode: 'menu.user.chat',
         },
       },
       {
@@ -68,6 +75,8 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'todo',
           navOrder: 2,
           hideInBreadcrumb: true,
+          permission: 'user.agent_tickets.read',
+          menuCode: 'menu.user.agent_ticket',
         },
         children: [
           {
@@ -147,6 +156,8 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'billingCenter',
           navOrder: 4,
           hideInBreadcrumb: true,
+          permission: 'user.billing.read',
+          menuCode: 'menu.user.billing_center',
         },
       },
       {
@@ -160,6 +171,8 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'exams',
           navOrder: 5,
           hideInBreadcrumb: true,
+          permission: 'user.exams.read',
+          menuCode: 'menu.user.exams',
         },
       },
       {
@@ -170,6 +183,7 @@ export const appRoutes: AppRouteObject[] = [
           titleKey: 'routes.examAttempt.title',
           navKey: 'exams',
           hideInMenu: true,
+          permission: 'user.exams.attempt',
         },
       },
       {
@@ -183,6 +197,8 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'attempts',
           navOrder: 6,
           hideInBreadcrumb: true,
+          permission: 'user.attempts.read',
+          menuCode: 'menu.user.attempts',
         },
       },
       {
@@ -193,6 +209,7 @@ export const appRoutes: AppRouteObject[] = [
           titleKey: 'routes.examResult.title',
           navKey: 'attempts',
           hideInMenu: true,
+          permission: 'user.attempts.read',
         },
       },
     ],
@@ -207,6 +224,7 @@ export const appRoutes: AppRouteObject[] = [
       navKey: 'exams',
       hideInMenu: true,
       hideInBreadcrumb: true,
+      permission: 'user.exams.attempt',
     },
   },
   {
@@ -269,6 +287,16 @@ export const appRoutes: AppRouteObject[] = [
     handle: {
       hideInMenu: true,
       hideInBreadcrumb: true,
+    },
+  },
+  {
+    path: '/403',
+    element: <ForbiddenPage />,
+    handle: {
+      title: '403',
+      titleKey: 'routes.forbidden.title',
+      layout: false,
+      hideInMenu: true,
     },
   },
   {
