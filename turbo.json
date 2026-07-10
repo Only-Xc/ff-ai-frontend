@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "dangerouslyDisablePackageManagerCheck": true,
   "globalDependencies": [
     "package.json",
     "pnpm-lock.yaml",

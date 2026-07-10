@@ -34,9 +34,9 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
-  location ^~ /app/ {
-    rewrite ^/app(/.*)$ /api/tasks$1 break;
-    proxy_pass http://host.docker.internal:11499;
+  location ^~ /runtime/ {
+    rewrite ^/runtime(/.*)$ $1 break;
+    proxy_pass http://host.docker.internal:18090;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
