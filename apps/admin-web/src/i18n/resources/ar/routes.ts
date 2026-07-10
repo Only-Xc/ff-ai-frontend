@@ -22,5 +22,6 @@ export default {
   'routes.workspaceOverview.title': 'مساحة العمل',
   'routes.rbac.roles.title': 'الأدوار والصلاحيات',
   'routes.rbac.users.title': 'إدارة المستخدمين',
+  'routes.rbac.organizations.title': 'إدارة المنظمات',
   'routes.notFound.title': '404',
 }

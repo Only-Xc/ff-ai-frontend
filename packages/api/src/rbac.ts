@@ -120,7 +120,8 @@ export interface OrganizationNode {
   sort_order: number
   created_at: string
   updated_at: string
-  children: OrganizationNode[]
+  deleted_at?: string | null
+  children?: OrganizationNode[]
 }
 
 export interface OrganizationCreateBody {
@@ -133,6 +134,12 @@ export interface OrganizationCreateBody {
 }
 
 export type OrganizationUpdateBody = Partial<OrganizationCreateBody>
+
+export type OrganizationListQuery = {
+  keyword?: string
+} & PaginationQuery
+
+export type OrganizationList = ListResult<OrganizationNode>
 
 export interface UserRoleAssignment {
   role_id: string
@@ -209,6 +216,9 @@ export const updateRolePermissionsRequest = (
 export const listOrganizationTreeRequest = () =>
   createRequest<OrganizationNode[]>('GET', '/api/v1/admin/organizations/tree')
 
+export const listOrganizationsRequest = (query: OrganizationListQuery) =>
+  createRequest<OrganizationList>('GET', '/api/v1/admin/organizations', { query })
+
 export const createOrganizationRequest = (data: OrganizationCreateBody) =>
   createRequest<OrganizationNode>('POST', '/api/v1/admin/organizations', { data })
 
@@ -257,4 +267,33 @@ export const deleteUserRequest = (userId: string) =>
   createRequest<{ message: string }>(
     'DELETE',
     path`/api/v1/users/${userId}`,
+  )
+
+export interface UserOrganizationPublic {
+  id: string
+  name: string
+  type: string
+  is_primary: boolean
+}
+
+export interface UserOrganizationInput {
+  organization_id: string
+  is_primary?: boolean
+  position?: string | null
+}
+
+export const getUserOrganizationsRequest = (userId: string) =>
+  createRequest<UserOrganizationPublic[]>(
+    'GET',
+    path`/api/v1/admin/users/${userId}/organizations`,
+  )
+
+export const updateUserOrganizationsRequest = (
+  userId: string,
+  organizations: UserOrganizationInput[],
+) =>
+  createRequest<UserOrganizationPublic[]>(
+    'PUT',
+    path`/api/v1/admin/users/${userId}/organizations`,
+    { data: { organizations } },
   )

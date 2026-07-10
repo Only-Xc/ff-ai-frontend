@@ -186,6 +186,20 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/rbac/organizations',
+    element: lazyLoad(() => import('@/pages/rbac/OrganizationPage')),
+    handle: {
+      title: 'Organization Management',
+      titleKey: 'routes.rbac.organizations.title',
+      icon: <DeploymentUnitOutlined />,
+      navKey: 'rbac-organizations',
+      navOrder: 9,
+      hideInBreadcrumb: true,
+      permission: 'admin.orgs.read',
+      menuCode: 'menu.admin.rbac',
+    },
+  },
+  {
     path: '/tickets/:taskId/intervention',
     element: lazyLoad(
       () => import('@/pages/intervention-workbench/InterventionWorkbench'),

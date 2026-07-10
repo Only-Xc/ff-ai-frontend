@@ -11,6 +11,7 @@ import {
   listAdminPermissionsRequest,
   listAdminRolesRequest,
   listOrganizationTreeRequest,
+  listOrganizationsRequest,
   listUsersRequest,
   updateAdminRoleRequest,
   updateOrganizationRequest,
@@ -18,6 +19,7 @@ import {
   updateUserRequest,
   updateUserRolesRequest,
   type CurrentRbacProfile,
+  type OrganizationListQuery,
   type OrganizationNode,
   type Permission,
   type PermissionListQuery,
@@ -38,6 +40,7 @@ import { request } from './_request'
 
 export type {
   CurrentRbacProfile,
+  OrganizationListQuery,
   OrganizationNode,
   Permission,
   PermissionList,
@@ -63,7 +66,10 @@ export const rbacKeys = {
   role: (roleId: string) => [...rbacKeys.all, 'role', roleId] as const,
   permissions: (query: PermissionListQuery) =>
     [...rbacKeys.all, 'permissions', query] as const,
+  organizationTree: () => [...rbacKeys.all, 'organizationTree'] as const,
   organizations: () => [...rbacKeys.all, 'organizations'] as const,
+  organizationList: (query: OrganizationListQuery) =>
+    [...rbacKeys.all, 'organizationList', query] as const,
   users: (query: UserListQuery) => [...rbacKeys.all, 'users', query] as const,
   userRoles: (userId: string) => [...rbacKeys.all, 'userRoles', userId] as const,
 }
@@ -77,6 +83,7 @@ export const adminRoles_delete = request(deleteAdminRoleRequest)
 export const adminRolePermissions_update = request(updateRolePermissionsRequest)
 export const adminPermissions_list = request(listAdminPermissionsRequest)
 export const adminOrganizations_tree = request(listOrganizationTreeRequest)
+export const adminOrganizations_list = request(listOrganizationsRequest)
 export const userRoles_list = request(getUserRolesRequest)
 export const userRoles_update = request(updateUserRolesRequest)
 export const adminOrganizations_create = request(createOrganizationRequest)

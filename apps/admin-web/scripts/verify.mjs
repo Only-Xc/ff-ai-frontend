@@ -69,6 +69,7 @@ check('No undefined antd components in JSX', () => {
   const candidates = [
     'Space', 'Select', 'Drawer', 'Table', 'Form', 'Switch', 'Tag', 'Card',
     'Popconfirm', 'Spin', 'Tooltip', 'Typography', 'ConfigProvider',
+    'Tree', 'Radio', 'Button',
   ]
 
   for (const file of files) {
@@ -76,16 +77,15 @@ check('No undefined antd components in JSX', () => {
       cwd: PROJECT_ROOT, encoding: 'utf8',
     })
 
-    const m = content.match(/import\s*\{([^}]*)\}\s*from\s*['"]antd['"]/)
-    if (!m) continue
-
-    const importedNames = m[1]
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean)
+    const importMatches = [...content.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"]antd['"]/g)]
+    const importedNames = new Set(
+      importMatches.flatMap(m =>
+        m[1].split(',').map(s => s.trim()).filter(Boolean)
+      )
+    )
 
     const used = candidates.filter(c => new RegExp(`<${c}[\\s/>]`).test(content))
-    const missing = used.filter(c => !importedNames.includes(c))
+    const missing = used.filter(c => !importedNames.has(c))
 
     if (missing.length > 0) {
       errors.push(`${file}: uses <${missing.join(', ')}> but not imported from 'antd'`)
