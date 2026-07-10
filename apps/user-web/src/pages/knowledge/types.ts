@@ -1,42 +1,13 @@
 import type {
   KnowledgeDataset,
   KnowledgeDocument,
-  KnowledgeDocumentParseStatus,
-  KnowledgeSearchResult,
+  KnowledgeRetrievalChunk,
 } from '@/api/knowledge'
 
 export type KnowledgeWorkspaceTab = 'details' | 'documents' | 'retrieval'
 
-export type KnowledgeIngestionStage =
-  | 'uploaded'
-  | 'parsing'
-  | 'indexed'
-  | 'failed'
-  | 'unknown'
-
 export type KnowledgeInspectorTarget =
   | { type: 'dataset'; dataset: KnowledgeDataset }
   | { type: 'document'; document: KnowledgeDocument }
-  | { type: 'search-result'; result: NormalizedKnowledgeSearchResult }
+  | { type: 'search-result'; result: KnowledgeRetrievalChunk }
   | null
-
-export interface NormalizedKnowledgeDataset extends KnowledgeDataset {
-  displayCreatedAt?: string | null
-  displayUpdatedAt?: string | null
-}
-
-export interface NormalizedKnowledgeDocument extends KnowledgeDocument {
-  displayName: string
-  displayCreatedAt?: string | null
-  displayUpdatedAt?: string | null
-  ingestionStage: KnowledgeIngestionStage
-  parseStatus?: KnowledgeDocumentParseStatus | null
-}
-
-export interface NormalizedKnowledgeSearchResult
-  extends KnowledgeSearchResult {
-  displayContent: string
-  displayDocumentName: string
-  displayScore?: number
-  displayChunkId?: string
-}

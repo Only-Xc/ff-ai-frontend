@@ -28,7 +28,7 @@ export function UploadDocumentsDrawer({
   const [fileList, setFileList] = useState<UploadFile[]>([])
 
   useEffect(() => {
-    if (open) return
+    if (!open) return
 
     setFileList([])
     form.resetFields()

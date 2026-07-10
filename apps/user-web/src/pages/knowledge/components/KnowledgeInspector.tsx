@@ -4,9 +4,8 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
-  DOCUMENT_STATUS_STAGE_MAP,
-  INGESTION_STAGE_COLORS,
-  INGESTION_STAGE_LABEL_KEYS,
+  DOCUMENT_RUN_STATUS_COLORS,
+  DOCUMENT_RUN_STATUS_LABEL_KEYS,
   KNOWLEDGE_CHUNK_METHOD_LABEL_KEYS,
   KNOWLEDGE_PERMISSION_LABEL_KEYS,
 } from '../constants'
@@ -78,7 +77,10 @@ export function KnowledgeInspector({
       onClose={onClose}
     >
       {!target ? (
-        <EmptyInspector closeLabel={t('common.actions.close')} onClose={onClose} />
+        <EmptyInspector
+          closeLabel={t('common.actions.close')}
+          onClose={onClose}
+        />
       ) : null}
 
       {target?.type === 'dataset' ? (
@@ -124,17 +126,13 @@ function DatasetInspector({
   t: Translate
   target: DatasetInspectorTarget
 }) {
-  const updatedAt = formatKnowledgeDateTime(
-    target.dataset.updated_at ??
-      target.dataset.created_at ??
-      target.dataset.create_time,
-  )
+  const updatedAt = formatKnowledgeDateTime(target.dataset.update_time)
 
   return (
     <InspectorLayout
       closeLabel={t('common.actions.close')}
       raw={target.dataset}
-      title={target.dataset.name ?? t('pages.knowledge.empty.noValue')}
+      title={target.dataset.name}
       typeLabel={t('pages.knowledge.inspector.dataset')}
       onClose={onClose}
       t={t}
@@ -162,10 +160,12 @@ function DatasetInspector({
             )}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.fields.embeddingModel')}>
-            {target.dataset.embedding_model ?? t('pages.knowledge.empty.noValue')}
+            {target.dataset.embedding_model ??
+              t('pages.knowledge.empty.noValue')}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.metrics.documents')}>
-            {target.dataset.document_count ?? t('pages.knowledge.empty.noValue')}
+            {target.dataset.document_count ??
+              t('pages.knowledge.empty.noValue')}
           </InspectorField>
         </FieldGrid>
       </InspectorSection>
@@ -188,23 +188,17 @@ function DocumentInspector({
   t: Translate
   target: DocumentInspectorTarget
 }) {
-  const status =
-    target.document.parse_status ?? target.document.status ?? target.document.run
-  const stageKey = DOCUMENT_STATUS_STAGE_MAP[String(status ?? '').toLowerCase()]
-  const stage = stageKey ?? 'unknown'
-
   return (
     <InspectorLayout
       closeLabel={t('common.actions.close')}
       raw={target.document}
-      title={
-        target.document.name ??
-        target.document.filename ??
-        t('pages.knowledge.empty.noValue')
-      }
+      title={target.document.name}
       trailing={
-        <Tag className="m-0! rounded-md!" color={INGESTION_STAGE_COLORS[stage]}>
-          {t(INGESTION_STAGE_LABEL_KEYS[stage])}
+        <Tag
+          className="m-0! rounded-md!"
+          color={DOCUMENT_RUN_STATUS_COLORS[target.document.run]}
+        >
+          {t(DOCUMENT_RUN_STATUS_LABEL_KEYS[target.document.run])}
         </Tag>
       }
       typeLabel={t('pages.knowledge.inspector.document')}
@@ -217,30 +211,26 @@ function DocumentInspector({
             <Text copyable>{target.document.id}</Text>
           </InspectorField>
           <InspectorField label={t('pages.knowledge.documents.columns.stage')}>
-            {status ?? t('pages.knowledge.empty.noValue')}
+            {target.document.run}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.documents.columns.chunks')}>
-            {target.document.chunk_count ?? t('pages.knowledge.empty.noValue')}
+            {target.document.chunk_count}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.documents.columns.size')}>
-            {formatFileSize(target.document.size_bytes ?? target.document.size)}
+            {formatFileSize(target.document.size)}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.documents.columns.parser')}>
-            {target.document.parser_id ?? t('pages.knowledge.empty.noValue')}
+            {target.document.chunk_method}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.fields.updatedAt')}>
-            {formatKnowledgeDateTime(
-              target.document.updated_at ??
-                target.document.parse_time ??
-                target.document.created_at,
-            )}
+            {formatKnowledgeDateTime(target.document.update_time)}
           </InspectorField>
         </FieldGrid>
       </InspectorSection>
 
       <InspectorSection title={t('pages.knowledge.inspector.content')}>
         <LongText>
-          {target.document.error ?? t('pages.knowledge.empty.noValue')}
+          {target.document.progress_msg || t('pages.knowledge.empty.noValue')}
         </LongText>
       </InspectorSection>
     </InspectorLayout>
@@ -260,10 +250,10 @@ function SearchResultInspector({
     <InspectorLayout
       closeLabel={t('common.actions.close')}
       raw={target.result}
-      title={target.result.displayDocumentName}
+      title={target.result.document_keyword}
       trailing={
         <Tag className="m-0! rounded-md!" color="processing">
-          {formatSearchScore(target.result.displayScore)}
+          {formatSearchScore(target.result.similarity)}
         </Tag>
       }
       typeLabel={t('pages.knowledge.inspector.searchResult')}
@@ -273,21 +263,17 @@ function SearchResultInspector({
       <InspectorSection title={t('pages.knowledge.inspector.overview')}>
         <FieldGrid>
           <InspectorField label={t('pages.knowledge.retrieval.score')}>
-            {formatSearchScore(target.result.displayScore)}
+            {formatSearchScore(target.result.similarity)}
           </InspectorField>
           <InspectorField label={t('pages.knowledge.fields.chunkId')}>
-            {target.result.displayChunkId ? (
-              <Text copyable>{target.result.displayChunkId}</Text>
-            ) : (
-              t('pages.knowledge.empty.noValue')
-            )}
+            <Text copyable>{target.result.id}</Text>
           </InspectorField>
         </FieldGrid>
       </InspectorSection>
 
       <InspectorSection title={t('pages.knowledge.inspector.content')}>
         <LongText copyable>
-          {target.result.displayContent || t('pages.knowledge.empty.noValue')}
+          {target.result.content || t('pages.knowledge.empty.noValue')}
         </LongText>
       </InspectorSection>
     </InspectorLayout>

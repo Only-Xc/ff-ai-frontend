@@ -29,13 +29,16 @@ export type {
   KnowledgeDatasetQuery,
   KnowledgeDatasetUpdatePayload,
   KnowledgeDocument,
-  KnowledgeDocumentParseStatus,
+  KnowledgeDocumentRunStatus,
   KnowledgeDocumentQuery,
   KnowledgeListResult,
   KnowledgeParserConfig,
   KnowledgePermission,
+  KnowledgeRetrievalChunk,
+  KnowledgeRetrievalDocumentAggregation,
+  KnowledgeRetrievalResult,
   KnowledgeSearchPayload,
-  KnowledgeSearchResult,
+  KnowledgeUploadedDocument,
 } from '@ff-ai-frontend/api'
 
 export const knowledgeKeys = {

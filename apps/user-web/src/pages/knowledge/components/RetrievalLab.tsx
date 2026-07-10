@@ -21,20 +21,23 @@ import { useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 
-import type { KnowledgeDataset } from '@/api/knowledge'
+import type {
+  KnowledgeDataset,
+  KnowledgeRetrievalChunk,
+  KnowledgeSearchPayload,
+} from '@/api/knowledge'
 import { globalMessage } from '@/utils/message'
 
 import {
   KNOWLEDGE_CHUNK_METHOD_LABEL_KEYS,
   KNOWLEDGE_PERMISSION_LABEL_KEYS,
 } from '../constants'
-import type { NormalizedKnowledgeSearchResult } from '../types'
 import { formatSearchScore } from '../utils/format'
 
 const { Paragraph, Text } = Typography
 
 interface RetrievalFormValues {
-  query: string
+  question: string
   top_k: number
 }
 
@@ -42,9 +45,9 @@ export interface RetrievalLabProps {
   dataset: KnowledgeDataset
   error?: unknown
   loading?: boolean
-  results: NormalizedKnowledgeSearchResult[]
-  onInspectResult: (result: NormalizedKnowledgeSearchResult) => void
-  onSearch: (payload: { query: string; top_k: number }) => void
+  results: KnowledgeRetrievalChunk[]
+  onInspectResult: (result: KnowledgeRetrievalChunk) => void
+  onSearch: (payload: KnowledgeSearchPayload) => void
 }
 
 type Translate = TFunction<'translation', undefined>
@@ -81,14 +84,10 @@ function getScoreTone(score?: number) {
   }
 }
 
-function getBestScore(results: NormalizedKnowledgeSearchResult[]) {
-  const scores = results
-    .map((item) => item.displayScore)
-    .filter((score): score is number => typeof score === 'number')
+function getBestScore(results: KnowledgeRetrievalChunk[]) {
+  if (results.length === 0) return undefined
 
-  if (scores.length === 0) return undefined
-
-  return Math.max(...scores)
+  return Math.max(...results.map((item) => item.similarity))
 }
 
 export function RetrievalLab({
@@ -110,9 +109,7 @@ export function RetrievalLab({
     onSearch(values)
   }
 
-  const handleQueryKeyDown = (
-    event: KeyboardEvent<HTMLTextAreaElement>,
-  ) => {
+  const handleQueryKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
       event.preventDefault()
       void form.submit()
@@ -120,7 +117,10 @@ export function RetrievalLab({
   }
 
   const permissionLabel = dataset.permission
-    ? t(KNOWLEDGE_PERMISSION_LABEL_KEYS[dataset.permission] ?? dataset.permission)
+    ? t(
+        KNOWLEDGE_PERMISSION_LABEL_KEYS[dataset.permission] ??
+          dataset.permission,
+      )
     : t('pages.knowledge.empty.noValue')
   const chunkMethodLabel = dataset.chunk_method
     ? t(
@@ -137,14 +137,24 @@ export function RetrievalLab({
             <span className="flex size-7 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--ant-color-primary)_10%,var(--ant-color-bg-container))] text-(--ant-color-primary)">
               <DatabaseOutlined />
             </span>
-            <Text className="min-w-0 flex-1 text-[13px] font-semibold leading-5 text-(--text-strong)!" ellipsis>
+            <Text
+              className="min-w-0 flex-1 text-[13px] font-semibold leading-5 text-(--text-strong)!"
+              ellipsis
+            >
               {t('pages.knowledge.retrieval.currentDataset')}
             </Text>
           </div>
-          <Text className="block text-[14px] font-semibold leading-5 text-(--text-strong)!" ellipsis>
+          <Text
+            className="block text-[14px] font-semibold leading-5 text-(--text-strong)!"
+            ellipsis
+          >
             {dataset.name}
           </Text>
-          <Text copyable className="mt-1 block text-[12px] leading-5 text-(--muted)!" ellipsis>
+          <Text
+            copyable
+            className="mt-1 block text-[12px] leading-5 text-(--muted)!"
+            ellipsis
+          >
             {dataset.id}
           </Text>
         </div>
@@ -160,7 +170,9 @@ export function RetrievalLab({
           />
           <MetaItem
             label={t('pages.knowledge.fields.embeddingModel')}
-            value={dataset.embedding_model ?? t('pages.knowledge.empty.noValue')}
+            value={
+              dataset.embedding_model ?? t('pages.knowledge.empty.noValue')
+            }
           />
         </div>
 
@@ -175,7 +187,7 @@ export function RetrievalLab({
             <Form.Item
               className="mb-3 [&_.ant-form-item-label]:pb-1.5"
               label={t('pages.knowledge.retrieval.query')}
-              name="query"
+              name="question"
               rules={[
                 {
                   required: true,
@@ -264,11 +276,11 @@ export function RetrievalLab({
             {results.map((item, index) => (
               <ResultCard
                 item={item}
-                key={item.displayChunkId ?? `${item.displayDocumentName}-${index}`}
+                key={item.id}
                 rank={index + 1}
                 t={t}
                 onCopy={() => {
-                  void navigator.clipboard.writeText(item.displayContent)
+                  void navigator.clipboard.writeText(item.content)
                   globalMessage.success(t('pages.knowledge.feedback.copied'))
                 }}
                 onInspect={() => onInspectResult(item)}
@@ -288,13 +300,13 @@ function ResultCard({
   rank,
   t,
 }: {
-  item: NormalizedKnowledgeSearchResult
+  item: KnowledgeRetrievalChunk
   onCopy: () => void
   onInspect: () => void
   rank: number
   t: Translate
 }) {
-  const scoreTone = getScoreTone(item.displayScore)
+  const scoreTone = getScoreTone(item.similarity)
 
   return (
     <article
@@ -309,24 +321,31 @@ function ResultCard({
         #{rank}
       </div>
       <div className="min-w-0">
-        <Paragraph className="mb-2! text-[13px] leading-5 text-(--text-strong)" ellipsis={{ rows: 3 }}>
-          {item.displayContent || t('pages.knowledge.empty.noValue')}
+        <Paragraph
+          className="mb-2! text-[13px] leading-5 text-(--text-strong)"
+          ellipsis={{ rows: 3 }}
+        >
+          {item.content || t('pages.knowledge.empty.noValue')}
         </Paragraph>
         <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-[12px] leading-5 text-(--muted)">
           <Tag className="m-0! max-w-[260px] rounded-md! border-transparent! bg-[color-mix(in_srgb,var(--ant-color-fill-tertiary)_72%,transparent)]! px-1.5! py-0! text-[11px] leading-5! text-(--muted)!">
             <FileTextOutlined className="mr-1" />
-            <span className="align-middle">{item.displayDocumentName}</span>
+            <span className="align-middle">{item.document_keyword}</span>
           </Tag>
-          {item.displayChunkId ? (
-            <Text copyable className="max-w-[240px] text-[11px] leading-5 text-(--muted)!" ellipsis>
-              {item.displayChunkId}
-            </Text>
-          ) : null}
+          <Text
+            copyable
+            className="max-w-[240px] text-[11px] leading-5 text-(--muted)!"
+            ellipsis
+          >
+            {item.id}
+          </Text>
         </div>
       </div>
       <div className="flex min-w-[132px] flex-col items-end justify-between gap-2 max-[760px]:col-span-2 max-[760px]:ml-12 max-[760px]:min-w-0 max-[760px]:flex-row">
-        <Tag className={`m-0! rounded-md! px-2! py-0.5! text-[11px] leading-5! ${scoreTone.className}`}>
-          {t(scoreTone.labelKey)} {formatSearchScore(item.displayScore)}
+        <Tag
+          className={`m-0! rounded-md! px-2! py-0.5! text-[11px] leading-5! ${scoreTone.className}`}
+        >
+          {t(scoreTone.labelKey)} {formatSearchScore(item.similarity)}
         </Tag>
         <div className="flex items-center gap-1">
           <Tooltip title={t('pages.knowledge.retrieval.copyContent')}>
@@ -370,7 +389,13 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   )
 }
 
-function SummaryMetric({ label, value }: { label: string; value: number | string }) {
+function SummaryMetric({
+  label,
+  value,
+}: {
+  label: string
+  value: number | string
+}) {
   return (
     <div className="rounded-md border border-[color-mix(in_srgb,var(--ant-color-border-secondary)_72%,transparent)] bg-(--ant-color-bg-container) px-3 py-2">
       <div className="text-[11px] font-medium leading-4 text-(--muted)">
