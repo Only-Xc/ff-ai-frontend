@@ -27,5 +27,6 @@ export default {
   'routes.settings.title': 'الإعدادات',
   'routes.workspace.title': 'لوحة العمل',
   'routes.workspaceOverview.title': 'مساحة العمل',
+  'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
 }

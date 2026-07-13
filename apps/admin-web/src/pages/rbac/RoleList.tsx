@@ -1,6 +1,4 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
   PlusOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
@@ -33,6 +31,7 @@ import {
   adminRoles_list,
   adminRoles_update,
   rbacKeys,
+  type OrganizationNode,
   type Role,
   type RoleDetail,
   type RoleListQuery,
@@ -41,7 +40,6 @@ import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { useAuthStore } from '@/store/useAuth'
-import { globalMessage } from '@/utils/message'
 import { RoleFormDrawer } from './RoleFormDrawer'
 import { RolePermissionDrawer } from './RolePermissionDrawer'
 import { OrganizationTreePanel } from './OrganizationTreePanel'
@@ -335,7 +333,6 @@ export default function RoleList() {
             <Search
               placeholder={t('pages.rbac.filters.keyword')}
               onSearch={handleSearch}
-              onPressEnter={handleSearch}
               allowClear
               style={{ width: 240 }}
             />

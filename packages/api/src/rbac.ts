@@ -217,7 +217,7 @@ export const listOrganizationTreeRequest = () =>
   createRequest<OrganizationNode[]>('GET', '/api/v1/admin/organizations/tree')
 
 export const listOrganizationsRequest = (query: OrganizationListQuery) =>
-  createRequest<OrganizationList>('GET', '/api/v1/admin/organizations', { query })
+  createRequest<OrganizationList>('GET', '/api/v1/admin/organizations', { params: query })
 
 export const createOrganizationRequest = (data: OrganizationCreateBody) =>
   createRequest<OrganizationNode>('POST', '/api/v1/admin/organizations', { data })

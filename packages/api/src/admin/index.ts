@@ -1,4 +1,5 @@
 export * from './exam.js'
+export * from './grc.js'
 export * from './lifecycle-ops.js'
 export * from './ops-metrics.js'
 export * from './skill-hub.js'

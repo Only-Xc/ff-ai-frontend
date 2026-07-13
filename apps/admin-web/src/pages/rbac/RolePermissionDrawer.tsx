@@ -12,7 +12,6 @@ import {
 import { usePermission } from '@/hooks/usePermission'
 import { globalMessage } from '@/utils/message'
 import { PermissionTree } from './components/PermissionTree'
-import type { PermFormValues } from './types'
 
 export interface RolePermissionDrawerProps {
   roleId: string | null

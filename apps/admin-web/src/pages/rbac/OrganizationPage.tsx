@@ -1,4 +1,5 @@
 import { Button, Card, Drawer, Form, Input, InputNumber, message, Popconfirm, Radio, Select, Space, Spin, Table, Tag, Tooltip, Tree } from 'antd'
+import type { RadioChangeEvent } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import type { DataNode } from 'antd/es/tree'
 import { ReloadOutlined } from '@ant-design/icons'
@@ -19,6 +20,13 @@ import {
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 
 type ViewMode = 'list' | 'tree'
+
+interface OrgDataNode extends DataNode {
+  type?: string
+  code?: string
+  sortOrder?: number
+  children?: OrgDataNode[]
+}
 
 const { Search } = Input
 
@@ -148,29 +156,6 @@ export default function OrganizationPage() {
     setFormOpen(true)
   }
 
-  const handleTreeEdit = (node: DataNode) => {
-    const n = node as DataNode & { code?: string; type?: string; sortOrder?: number }
-    setEditingOrg({
-      id: n.key as string,
-      name: n.title as string,
-      code: n.code || '',
-      type: n.type || 'tenant',
-      parent_id: null,
-      status: 'active',
-      sort_order: n.sortOrder || 0,
-      created_at: '',
-      updated_at: '',
-    } as OrganizationNode)
-    setCreatingParentId(null)
-    form.setFieldsValue({
-      name: n.title as string,
-      code: n.code || '',
-      type: n.type || 'tenant',
-      sort_order: n.sortOrder || 0,
-    })
-    setFormOpen(true)
-  }
-
   const handleSubmit = async () => {
     const values = await form.validateFields()
     setSubmitting(true)
@@ -194,12 +179,12 @@ export default function OrganizationPage() {
     }
   }
 
-  const handleViewModeChange = (e: { target: { value: ViewMode } }) => {
-    setViewMode(e.target.value)
+  const handleViewModeChange = (e: RadioChangeEvent) => {
+    setViewMode(e.target.value as ViewMode)
   }
 
   // ─── Tree data mapping ───
-  function mapToTreeData(nodes: OrganizationNode[]): DataNode[] {
+  function mapToTreeData(nodes: OrganizationNode[]): OrgDataNode[] {
     return nodes.map((node) => ({
       key: node.id,
       title: node.name,
@@ -210,7 +195,7 @@ export default function OrganizationPage() {
     }))
   }
 
-  const treeData: DataNode[] = useMemo(() => {
+  const treeData: OrgDataNode[] = useMemo(() => {
     if (!filteredTreeData.length) return []
     return mapToTreeData(filteredTreeData)
   }, [filteredTreeData])
@@ -318,7 +303,6 @@ export default function OrganizationPage() {
                 <Search
                   placeholder={t('pages.rbac.orgs.form.searchPlaceholder')}
                   onSearch={handleSearch}
-                  onPressEnter={handleSearch}
                   allowClear
                   style={{ width: 240 }}
                 />
@@ -360,8 +344,8 @@ export default function OrganizationPage() {
               titleRender={(node) => (
                 <span className="flex items-center gap-2">
                   <span className="font-medium text-gray-800">{node.title as string}</span>
-                  <Tag bordered={false} color="blue" className="m-0 text-xs">{node.type as string}</Tag>
-                  <span className="text-xs text-gray-400">({node.code as string})</span>
+                  <Tag bordered={false} color="blue" className="m-0 text-xs">{(node as OrgDataNode).type as string}</Tag>
+                  <span className="text-xs text-gray-400">({(node as OrgDataNode).code as string})</span>
                 </span>
               )}
             />

@@ -4,6 +4,8 @@ export default {
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',
   'pages.notFound.subtitle': 'الصفحة غير موجودة أو تم نقلها.',
   'pages.notFound.backHome': 'العودة للرئيسية',
+  'pages.forbidden.subtitle': 'ليس لديك صلاحية الوصول إلى هذه الصفحة.',
+  'pages.forbidden.backHome': 'العودة للرئيسية',
   'pages.analysis.stats.callsToday': 'استدعاءات اليوم',
   'pages.analysis.stats.successRate': 'معدل النجاح',
   'pages.analysis.stats.averageLatency': 'متوسط التأخير',

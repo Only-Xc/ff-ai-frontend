@@ -1,16 +1,15 @@
-import { Button, Drawer, Form, Input, Select, Space, Switch, message } from 'antd'
-import type { DataNode } from 'antd/es/tree'
+import { Button, Drawer, Form, Input, Select, Space, Switch } from 'antd'
 import { useMemo, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { RoleDetail, RoleFormValues, OrganizationNode } from '../types'
+import type { RoleDetail, RoleFormValues, OrganizationNode } from './types'
 
 const { TextArea } = Input
 
 export interface RoleFormDrawerProps {
   open: boolean
   mode: 'create' | 'edit'
-  initialValues?: Partial<RoleFormValues>
+  initialValues?: Partial<RoleDetail>
   organizations: OrganizationNode[]
   onSubmit: (values: RoleFormValues) => Promise<void>
   onClose: () => void
@@ -39,7 +38,7 @@ export function RoleFormDrawer({
         name: initialValues?.name ?? '',
         code: initialValues?.code ?? '',
         description: initialValues?.description ?? '',
-        scope_type: initialValues?.scope_type ?? 'system',
+        scope_type: (initialValues?.scope_type as RoleFormValues['scope_type']) ?? 'system',
         organization_id: initialValues?.organization_id ?? undefined,
         is_active: initialValues?.is_active ?? true,
       })

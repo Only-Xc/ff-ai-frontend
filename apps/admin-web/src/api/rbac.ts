@@ -18,30 +18,21 @@ import {
   updateRolePermissionsRequest,
   updateUserRequest,
   updateUserRolesRequest,
-  type CurrentRbacProfile,
   type OrganizationListQuery,
-  type OrganizationNode,
-  type Permission,
   type PermissionListQuery,
-  type Role,
-  type RoleCreateBody,
-  type RoleDetail,
   type RoleListQuery,
-  type RolePermissionsUpdateBody,
-  type RoleUpdateBody,
-  type User,
-  type UserCreateBody,
   type UserListQuery,
-  type UserRoleAssignment,
-  type UserUpdateBody,
 } from '@ff-ai-frontend/api'
 
 import { request } from './_request'
 
 export type {
   CurrentRbacProfile,
+  OrganizationCreateBody,
+  OrganizationList,
   OrganizationListQuery,
   OrganizationNode,
+  OrganizationUpdateBody,
   Permission,
   PermissionList,
   PermissionListQuery,

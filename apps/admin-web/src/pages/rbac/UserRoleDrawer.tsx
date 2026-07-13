@@ -57,7 +57,7 @@ export function UserRoleDrawer({
     const opts: { value: string; label: string }[] = []
     if (orgsQuery.data) {
       function walk(nodes: typeof orgsQuery.data) {
-        for (const node of nodes) {
+        for (const node of nodes ?? []) {
           opts.push({ value: node.id, label: node.name })
           if (node.children?.length) walk(node.children)
         }

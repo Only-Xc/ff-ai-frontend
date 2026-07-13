@@ -1,5 +1,3 @@
-import type { OrganizationNode } from '@ff-ai-frontend/api'
-
 export type {
   RoleCreateBody,
   RoleUpdateBody,

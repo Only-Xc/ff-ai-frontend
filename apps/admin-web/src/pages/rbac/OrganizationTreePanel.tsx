@@ -12,8 +12,16 @@ import {
   adminOrganizations_tree,
   rbacKeys,
   type OrganizationCreateBody,
+  type OrganizationNode,
   type OrganizationUpdateBody,
 } from '@/api/rbac'
+
+interface OrgDataNode extends DataNode {
+  type?: string
+  code?: string
+  sortOrder?: number
+  children?: OrgDataNode[]
+}
 
 export interface OrganizationTreePanelProps {
   open: boolean
@@ -26,9 +34,9 @@ export function OrganizationTreePanel({
 }: OrganizationTreePanelProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const [treeData, setTreeData] = useState<DataNode[]>([])
+  const [treeData, setTreeData] = useState<OrgDataNode[]>([])
   const [formOpen, setFormOpen] = useState(false)
-  const [editingNode, setEditingNode] = useState<DataNode | null>(null)
+  const [editingNode, setEditingNode] = useState<OrgDataNode | null>(null)
   const [creatingParentId, setCreatingParentId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form] = Form.useForm()
@@ -52,14 +60,14 @@ export function OrganizationTreePanel({
     setFormOpen(true)
   }
 
-  const openEdit = (node: DataNode) => {
+  const openEdit = (node: OrgDataNode) => {
     setEditingNode(node)
     setCreatingParentId(null)
     form.setFieldsValue({
       name: node.title as string,
-      code: node.code as string,
-      type: (node.type as string) || 'department',
-      sort_order: node.sortOrder as number,
+      code: node.code,
+      type: node.type || 'department',
+      sort_order: node.sortOrder,
     })
     setFormOpen(true)
   }
@@ -133,14 +141,14 @@ export function OrganizationTreePanel({
               <span>
                 <span className="font-medium">{node.title as string}</span>
                 <span className="ml-2 text-xs text-gray-400">
-                  ({node.type as string})
+                  ({(node as OrgDataNode).type})
                 </span>
               </span>
               <Space size={2} onClick={(e) => e.stopPropagation()}>
                 <Button size="small" type="text" onClick={() => openCreateChild(node.key as string)}>
                   {t('pages.rbac.actions.addChild')}
                 </Button>
-                <Button size="small" type="text" onClick={() => openEdit(node)}>
+                <Button size="small" type="text" onClick={() => openEdit(node as OrgDataNode)}>
                   {t('common.actions.edit')}
                 </Button>
                 <Popconfirm
@@ -208,7 +216,7 @@ export function OrganizationTreePanel({
   )
 }
 
-function mapOrgNode(node: OrganizationNode): DataNode {
+function mapOrgNode(node: OrganizationNode): OrgDataNode {
   return {
     key: node.id,
     title: node.name,

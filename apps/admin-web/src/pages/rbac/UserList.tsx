@@ -300,7 +300,6 @@ export default function UserList() {
             <Search
               placeholder={t('pages.rbac.filters.keyword')}
               onSearch={handleSearch}
-              onPressEnter={handleSearch}
               allowClear
               style={{ width: 240 }}
             />
