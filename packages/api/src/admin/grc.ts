@@ -422,15 +422,25 @@ export const retireGrcRuleVersionRequest = (ruleId: string, version: number) =>
   createRequest<GrcRuleVersion>('POST', path`/api/v1/admin/grc/rules/${ruleId}/versions/${version}/retire`, { data: {} })
 
 export interface GrcRuleValidateBody {
+  evaluator_type?: string
   evaluator_config?: Record<string, unknown>
   applicable_scope?: Record<string, unknown>
+  evidence_requirements?: Record<string, unknown>
 }
 
 export interface GrcRuleValidateResult {
   valid: boolean
   evaluator_type: string
+  evaluator?: string | null
   applicable_scope: Record<string, unknown>
+  evidence_requirements?: Record<string, unknown>
+  errors: string[]
   warnings: string[]
+  required_fields?: string[]
+  examples?: {
+    applicable_scope?: Record<string, unknown>
+    evidence_requirements?: Record<string, unknown>
+  }
 }
 
 export const validateRuleEvaluatorRequest = (body: GrcRuleValidateBody) =>

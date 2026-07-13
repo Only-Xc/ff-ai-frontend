@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch } from 'antd'
+import { App, Alert, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Typography } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
 import {
@@ -10,6 +10,7 @@ import {
   type GrcRuleVersionCreate,
   grcRule_create,
   grcRule_update,
+  grcRule_validate,
   grcRuleVersion_create,
   grcRuleVersion_publish,
   grcRuleVersion_retire,
@@ -31,6 +32,45 @@ const BUILTIN_EVALUATORS = [
   'owner_sla_rollback',
 ]
 
+const EVALUATOR_EXAMPLES: Record<string, {
+  requiredFields: string[]
+  applicableScope: Record<string, unknown>
+  evidenceRequirements: Record<string, unknown>
+}> = {
+  plaintext_secrets_detected: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
+  external_network_allowed: {
+    requiredFields: ['applicable_scope.allowed_domains'],
+    applicableScope: { allowed_domains: ['api.company.com', 'auth.company.com'] },
+    evidenceRequirements: {},
+  },
+  human_oversight_present: {
+    requiredFields: ['evidence_requirements.stop_control|approval_step|owner'],
+    applicableScope: {},
+    evidenceRequirements: { stop_control: true, approval_step: true, owner: true },
+  },
+  restricted_data_no_external_send: {
+    requiredFields: ['applicable_scope.approved_models'],
+    applicableScope: { approved_models: ['claude-opus-4-8'] },
+    evidenceRequirements: {},
+  },
+  pii_has_mitigation: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
+  model_in_approved_list: {
+    requiredFields: ['applicable_scope.approved_models'],
+    applicableScope: { approved_models: ['anthropic/claude-opus-4-8'] },
+    evidenceRequirements: {},
+  },
+  deployment_artifact_complete: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
+  audit_logging_enabled: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
+  min_permissions: {
+    requiredFields: ['applicable_scope.required_permissions|denied_permissions'],
+    applicableScope: { required_permissions: ['read:knowledge'], denied_permissions: ['admin:system'] },
+    evidenceRequirements: {},
+  },
+  owner_sla_rollback: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
+}
+
+const formatJson = (value: Record<string, unknown>) => JSON.stringify(value, null, 2)
+
 type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'evaluator_config' | 'evidence_requirements'> & {
   evaluator?: string
   applicable_scope?: string
@@ -40,6 +80,22 @@ type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'ev
 const parseJsonObject = (value?: string) => {
   if (!value?.trim()) return {}
   return JSON.parse(value) as Record<string, unknown>
+}
+
+const buildVersionPayload = (data: RuleVersionFormValues): GrcRuleVersionCreate => {
+  const {
+    evaluator,
+    applicable_scope,
+    evidence_requirements,
+    ...rest
+  } = data
+
+  return {
+    ...rest,
+    applicable_scope: parseJsonObject(applicable_scope),
+    evaluator_config: evaluator ? { evaluator } : {},
+    evidence_requirements: parseJsonObject(evidence_requirements),
+  }
 }
 
 export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
@@ -69,28 +125,15 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   })
 
   const versionMutation = useMutation({
-    mutationFn: (data: RuleVersionFormValues) => {
-      const {
-        evaluator,
-        applicable_scope,
-        evidence_requirements,
-        ...rest
-      } = data
-      return grcRuleVersion_create(rule!.id, {
-        ...rest,
-        applicable_scope: parseJsonObject(applicable_scope),
-        evaluator_config: evaluator ? { evaluator } : {},
-        evidence_requirements: parseJsonObject(evidence_requirements),
-      })
-    },
+    mutationFn: (data: GrcRuleVersionCreate) => grcRuleVersion_create(rule!.id, data),
     onSuccess: () => {
       message.success(t('pages.grc.rules.versionCreated'))
       onSuccess()
       versionForm.resetFields()
       setShowVersionForm(false)
     },
-    onError: (error) => {
-      message.error(error instanceof SyntaxError ? t('pages.grc.rules.invalidJson') : t('pages.grc.rules.versionCreateFailed'))
+    onError: () => {
+      message.error(t('pages.grc.rules.versionCreateFailed'))
     },
   })
 
@@ -114,6 +157,48 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   const handleSubmit = () => {
     form.validateFields().then(values => {
       saveMutation.mutate(values)
+    })
+  }
+
+  const applyEvaluatorExample = (evaluator: string) => {
+    const example = EVALUATOR_EXAMPLES[evaluator]
+    if (!example) return
+    versionForm.setFieldsValue({
+      applicable_scope: formatJson(example.applicableScope),
+      evidence_requirements: formatJson(example.evidenceRequirements),
+    })
+  }
+
+  const handleCreateVersion = () => {
+    versionForm.validateFields().then(async values => {
+      let payload: GrcRuleVersionCreate
+      try {
+        payload = buildVersionPayload(values as RuleVersionFormValues)
+      } catch {
+        message.error(t('pages.grc.rules.invalidJson'))
+        return
+      }
+
+      try {
+        const validation = await grcRule_validate({
+          evaluator_type: payload.evaluator_type,
+          evaluator_config: payload.evaluator_config,
+          applicable_scope: payload.applicable_scope,
+          evidence_requirements: payload.evidence_requirements,
+        })
+        if (!validation.valid) {
+          message.error(`${t('pages.grc.rules.validationFailed')}: ${validation.errors.join('; ')}`)
+          return
+        }
+        if (validation.warnings?.length) {
+          message.warning(`${t('pages.grc.rules.validationWarnings')}: ${validation.warnings.join('; ')}`)
+        } else {
+          message.success(t('pages.grc.rules.validationPassed'))
+        }
+        versionMutation.mutate(payload)
+      } catch {
+        message.error(t('pages.grc.rules.validationFailed'))
+      }
     })
   }
 
@@ -226,8 +311,52 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                   </Form.Item>
                 )}
               </Form.Item>
+              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type || prev.evaluator !== next.evaluator}>
+                {({ getFieldValue }) => {
+                  const evaluatorType = getFieldValue('evaluator_type')
+                  const evaluator = getFieldValue('evaluator')
+                  const example = EVALUATOR_EXAMPLES[evaluator]
+                  if (evaluatorType !== 'builtin') {
+                    return (
+                      <Alert
+                        type="warning"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        title={t('pages.grc.rules.unsupportedEvaluatorType')}
+                      />
+                    )
+                  }
+                  if (!example) return null
+                  return (
+                    <Alert
+                      type="info"
+                      showIcon
+                      style={{ marginBottom: 16 }}
+                      title={t('pages.grc.rules.evaluatorGuideTitle')}
+                      description={(
+                        <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                          <Typography.Text>{t(`pages.grc.rules.evaluatorDesc_${evaluator}`)}</Typography.Text>
+                          <Typography.Text>
+                            {t('pages.grc.rules.evaluatorGuideRequiredFields')}: {example.requiredFields.length ? example.requiredFields.join(', ') : t('pages.grc.rules.noRequiredFields')}
+                          </Typography.Text>
+                          <div>
+                            <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideApplicableScopeExample')}</Typography.Text>
+                            <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.applicableScope)}</Typography.Paragraph>
+                          </div>
+                          <div>
+                            <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideEvidenceExample')}</Typography.Text>
+                            <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.evidenceRequirements)}</Typography.Paragraph>
+                          </div>
+                          <Button size="small" onClick={() => applyEvaluatorExample(evaluator)}>
+                            {t('pages.grc.rules.applyEvaluatorExample')}
+                          </Button>
+                        </Space>
+                      )}
+                    />
+                  )
+                }}
+              </Form.Item>
               <Form.Item
-                name="applicable_scope"
                 label={t('pages.grc.rules.applicableScope')}
                 tooltip={t('pages.grc.rules.applicableScopeTip')}
               >
@@ -252,11 +381,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
               <Button
                 type="primary"
                 loading={versionMutation.isPending}
-                onClick={() => {
-                  versionForm.validateFields().then(values => {
-                    versionMutation.mutate(values as RuleVersionFormValues)
-                  })
-                }}
+                onClick={handleCreateVersion}
               >
                 {t('pages.grc.rules.createVersion')}
               </Button>
