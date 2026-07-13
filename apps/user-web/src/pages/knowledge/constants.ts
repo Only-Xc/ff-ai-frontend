@@ -1,9 +1,8 @@
 import type { TagProps } from 'antd'
 
-import type {
-  KnowledgeIngestionStage,
-  KnowledgeWorkspaceTab,
-} from './types'
+import type { KnowledgeDocumentRunStatus } from '@/api/knowledge'
+
+import type { KnowledgeWorkspaceTab } from './types'
 
 export const KNOWLEDGE_WORKSPACE_TABS: Array<{
   key: KnowledgeWorkspaceTab
@@ -28,40 +27,24 @@ export const KNOWLEDGE_CHUNK_METHOD_LABEL_KEYS: Record<string, string> = {
   table: 'pages.knowledge.chunkMethods.table',
 }
 
-export const INGESTION_STAGE_LABEL_KEYS: Record<
-  KnowledgeIngestionStage,
+export const DOCUMENT_RUN_STATUS_LABEL_KEYS: Record<
+  KnowledgeDocumentRunStatus,
   string
 > = {
-  failed: 'pages.knowledge.ingestion.failed',
-  indexed: 'pages.knowledge.ingestion.indexed',
-  parsing: 'pages.knowledge.ingestion.parsing',
-  unknown: 'pages.knowledge.ingestion.unknown',
-  uploaded: 'pages.knowledge.ingestion.uploaded',
+  CANCEL: 'pages.knowledge.ingestion.cancelled',
+  DONE: 'pages.knowledge.ingestion.indexed',
+  FAIL: 'pages.knowledge.ingestion.failed',
+  RUNNING: 'pages.knowledge.ingestion.parsing',
+  UNSTART: 'pages.knowledge.ingestion.uploaded',
 }
 
-export const INGESTION_STAGE_COLORS: Record<
-  KnowledgeIngestionStage,
+export const DOCUMENT_RUN_STATUS_COLORS: Record<
+  KnowledgeDocumentRunStatus,
   TagProps['color']
 > = {
-  failed: 'error',
-  indexed: 'success',
-  parsing: 'processing',
-  unknown: 'warning',
-  uploaded: 'default',
+  CANCEL: 'warning',
+  DONE: 'success',
+  FAIL: 'error',
+  RUNNING: 'processing',
+  UNSTART: 'default',
 }
-
-export const DOCUMENT_STATUS_STAGE_MAP: Record<string, KnowledgeIngestionStage> =
-  {
-    cancel: 'failed',
-    cancelled: 'failed',
-    done: 'indexed',
-    failed: 'failed',
-    fail: 'failed',
-    none: 'uploaded',
-    pending: 'uploaded',
-    processing: 'parsing',
-    running: 'parsing',
-    success: 'indexed',
-    succeeded: 'indexed',
-    unstart: 'uploaded',
-  }

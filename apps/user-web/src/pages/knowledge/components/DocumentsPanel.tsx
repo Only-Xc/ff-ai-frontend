@@ -22,16 +22,15 @@ import { useTranslation } from 'react-i18next'
 import type { KnowledgeDocument } from '@/api/knowledge'
 
 import {
-  INGESTION_STAGE_COLORS,
-  INGESTION_STAGE_LABEL_KEYS,
+  DOCUMENT_RUN_STATUS_COLORS,
+  DOCUMENT_RUN_STATUS_LABEL_KEYS,
 } from '../constants'
-import type { NormalizedKnowledgeDocument } from '../types'
 import { formatFileSize, formatKnowledgeDateTime } from '../utils/format'
 
 const { Text } = Typography
 
 export interface DocumentsPanelProps {
-  documents: NormalizedKnowledgeDocument[]
+  documents: KnowledgeDocument[]
   error?: boolean
   loading?: boolean
   page: number
@@ -49,8 +48,8 @@ export interface DocumentsPanelProps {
   onSelectionChange: (documentIds: string[]) => void
 }
 
-function canParse(document: NormalizedKnowledgeDocument) {
-  return document.ingestionStage !== 'parsing'
+function canParse(document: KnowledgeDocument) {
+  return document.run !== 'RUNNING'
 }
 
 export function DocumentsPanel({
@@ -77,18 +76,24 @@ export function DocumentsPanel({
     .filter((item) => selectedDocumentIds.includes(item.id) && canParse(item))
     .map((item) => item.id)
 
-  const columns = useMemo<TableProps<NormalizedKnowledgeDocument>['columns']>(
+  const columns = useMemo<TableProps<KnowledgeDocument>['columns']>(
     () => [
       {
         title: t('pages.knowledge.documents.columns.name'),
-        dataIndex: 'displayName',
+        dataIndex: 'name',
         width: 260,
+        ellipsis: true,
         render: (_, record) => (
-          <Space direction="vertical" size={0}>
-            <Text className="max-w-64" ellipsis strong>
-              {record.displayName}
+          <Space className="w-full min-w-0" direction="vertical" size={0}>
+            <Text className="block" ellipsis={{ tooltip: record.name }} strong>
+              {record.name}
             </Text>
-            <Text copyable className="text-xs" type="secondary">
+            <Text
+              copyable
+              className="block text-xs"
+              ellipsis={{ tooltip: record.id }}
+              type="secondary"
+            >
               {record.id}
             </Text>
           </Space>
@@ -96,11 +101,11 @@ export function DocumentsPanel({
       },
       {
         title: t('pages.knowledge.documents.columns.stage'),
-        dataIndex: 'ingestionStage',
+        dataIndex: 'run',
         width: 140,
         render: (_, record) => (
-          <Tag color={INGESTION_STAGE_COLORS[record.ingestionStage]}>
-            {t(INGESTION_STAGE_LABEL_KEYS[record.ingestionStage])}
+          <Tag color={DOCUMENT_RUN_STATUS_COLORS[record.run]}>
+            {t(DOCUMENT_RUN_STATUS_LABEL_KEYS[record.run])}
           </Tag>
         ),
       },
@@ -114,17 +119,20 @@ export function DocumentsPanel({
       {
         title: t('pages.knowledge.documents.columns.size'),
         width: 120,
-        render: (_, record) => formatFileSize(record.size_bytes ?? record.size),
+        render: (_, record) => formatFileSize(record.size),
       },
       {
         title: t('pages.knowledge.documents.columns.parser'),
         width: 140,
-        render: (_, record) => record.parser_id ?? record.chunk_method ?? '-',
+        dataIndex: 'chunk_method',
+        render: (value: string) => value || '-',
       },
       {
         title: t('pages.knowledge.documents.columns.uploadedAt'),
         width: 180,
-        render: (_, record) => formatKnowledgeDateTime(record.displayCreatedAt),
+        dataIndex: 'create_time',
+        render: (value: number | string | null) =>
+          formatKnowledgeDateTime(value),
       },
       {
         title: t('pages.knowledge.documents.columns.action'),
@@ -137,10 +145,10 @@ export function DocumentsPanel({
               disabled={!canParse(record)}
               icon={<PlayCircleOutlined />}
               size="small"
-              type={record.ingestionStage === 'failed' ? 'primary' : 'default'}
+              type={record.run === 'FAIL' ? 'primary' : 'default'}
               onClick={() => onParse(record)}
             >
-              {record.ingestionStage === 'failed'
+              {record.run === 'FAIL'
                 ? t('pages.knowledge.actions.retryParse')
                 : t('pages.knowledge.actions.parse')}
             </Button>
@@ -169,7 +177,11 @@ export function DocumentsPanel({
           <Button icon={<ReloadOutlined />} loading={loading} onClick={onRetry}>
             {t('common.actions.refresh')}
           </Button>
-          <Button icon={<UploadOutlined />} type="primary" onClick={onOpenUpload}>
+          <Button
+            icon={<UploadOutlined />}
+            type="primary"
+            onClick={onOpenUpload}
+          >
             {t('pages.knowledge.actions.uploadDocuments')}
           </Button>
         </Space>
@@ -231,7 +243,7 @@ export function DocumentsPanel({
             </Button>
           </Empty>
         ) : (
-          <Table<NormalizedKnowledgeDocument>
+          <Table<KnowledgeDocument>
             columns={columns}
             dataSource={documents}
             loading={loading}

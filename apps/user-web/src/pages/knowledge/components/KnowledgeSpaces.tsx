@@ -221,11 +221,7 @@ export function KnowledgeSpaces({
                         {t('pages.knowledge.metrics.chunks')}
                       </span>
                       <span className="col-span-2 truncate px-0.5 text-[10px] leading-4">
-                        {formatKnowledgeDateTime(
-                          dataset.updated_at ??
-                            dataset.created_at ??
-                            dataset.create_time,
-                        )}
+                        {formatKnowledgeDateTime(dataset.update_time)}
                       </span>
                     </div>
                   </div>

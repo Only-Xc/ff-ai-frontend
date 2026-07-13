@@ -31,6 +31,7 @@ import {
   type KnowledgeDatasetCreatePayload,
   type KnowledgeDataset,
   type KnowledgeDocument,
+  type KnowledgeRetrievalChunk,
   type KnowledgeSearchPayload,
 } from '@/api/knowledge'
 import { globalMessage } from '@/utils/message'
@@ -43,11 +44,6 @@ import { RetrievalLab } from './components/RetrievalLab'
 import { DatasetFormDrawer } from './components/DatasetFormDrawer'
 import { UploadDocumentsDrawer } from './components/UploadDocumentsDrawer'
 import { KnowledgeInspector } from './components/KnowledgeInspector'
-import {
-  normalizeKnowledgeDocument,
-  normalizeKnowledgeList,
-  normalizeKnowledgeSearchResult,
-} from './utils/adapters'
 import { useKnowledgeUrlState } from './hooks/useKnowledgeUrlState'
 import type { KnowledgeInspectorTarget } from './types'
 
@@ -63,9 +59,9 @@ export function KnowledgeBase() {
   const [uploadDrawerOpen, setUploadDrawerOpen] = useState(false)
   const [inspectorTarget, setInspectorTarget] =
     useState<KnowledgeInspectorTarget>(null)
-  const [searchResults, setSearchResults] = useState<
-    ReturnType<typeof normalizeKnowledgeSearchResult>[]
-  >([])
+  const [searchResults, setSearchResults] = useState<KnowledgeRetrievalChunk[]>(
+    [],
+  )
 
   const datasetParams = useMemo(
     () => ({
@@ -74,7 +70,6 @@ export function KnowledgeBase() {
       ...(knowledgeUrlState.keyword
         ? {
             keywords: knowledgeUrlState.keyword,
-            name: knowledgeUrlState.keyword,
           }
         : {}),
     }),
@@ -94,7 +89,6 @@ export function KnowledgeBase() {
     queryKey: knowledgeKeys.datasetList(datasetParams),
     queryFn: () => knowledgeDatasets_list(datasetParams),
     placeholderData: keepPreviousData,
-    select: (response) => normalizeKnowledgeList<KnowledgeDataset>(response),
   })
 
   const isRagflowReady =
@@ -135,17 +129,12 @@ export function KnowledgeBase() {
       documentParams,
     ),
     queryFn: () =>
-      knowledgeDocuments_list(knowledgeUrlState.datasetId ?? '', documentParams),
+      knowledgeDocuments_list(
+        knowledgeUrlState.datasetId ?? '',
+        documentParams,
+      ),
     enabled: Boolean(knowledgeUrlState.datasetId),
     placeholderData: keepPreviousData,
-    select: (response) => {
-      const normalized = normalizeKnowledgeList<KnowledgeDocument>(response)
-
-      return {
-        ...normalized,
-        data: normalized.data.map(normalizeKnowledgeDocument),
-      }
-    },
   })
 
   const selectedDatasetDetailQuery = useQuery({
@@ -294,8 +283,8 @@ export function KnowledgeBase() {
 
       return knowledgeSearch_dataset(knowledgeUrlState.datasetId, payload)
     },
-    onSuccess: (results) => {
-      setSearchResults(results.map(normalizeKnowledgeSearchResult))
+    onSuccess: (result) => {
+      setSearchResults(result.chunks)
     },
   })
 
@@ -382,8 +371,7 @@ export function KnowledgeBase() {
         details: (
           <OverviewPanel
             dataset={workspaceDataset}
-            documents={documentsQuery.data?.data ?? []}
-            loading={documentsQuery.isFetching}
+            loading={selectedDatasetDetailQuery.isFetching}
             onEdit={() => openEditDataset(workspaceDataset)}
           />
         ),
@@ -510,7 +498,9 @@ export function KnowledgeBase() {
             <div className="flex min-h-0 flex-1 items-center justify-center px-5">
               <Empty
                 className="max-w-md rounded-xl border border-dashed border-(--ant-color-border-secondary) bg-[color-mix(in_srgb,var(--ant-color-bg-container)_94%,var(--ant-color-bg-layout))] px-8 py-14"
-                description={t('pages.knowledge.empty.selectDatasetDescription')}
+                description={t(
+                  'pages.knowledge.empty.selectDatasetDescription',
+                )}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
                 <Button

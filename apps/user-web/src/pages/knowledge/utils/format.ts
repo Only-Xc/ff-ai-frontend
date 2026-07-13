@@ -2,7 +2,9 @@ import dayjs from 'dayjs'
 
 import { i18n } from '@/i18n'
 
-export function formatKnowledgeDateTime(value?: string | null): string {
+export function formatKnowledgeDateTime(
+  value?: number | string | null,
+): string {
   if (!value) return '-'
 
   const date = dayjs(value)

@@ -1,7 +1,6 @@
 import { EditOutlined } from '@ant-design/icons'
 import { Button, Skeleton, Tag, Typography } from 'antd'
 import type { ReactNode } from 'react'
-import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { KnowledgeDataset } from '@/api/knowledge'
@@ -10,57 +9,31 @@ import {
   KNOWLEDGE_CHUNK_METHOD_LABEL_KEYS,
   KNOWLEDGE_PERMISSION_LABEL_KEYS,
 } from '../constants'
-import type { NormalizedKnowledgeDocument } from '../types'
 import { formatKnowledgeDateTime } from '../utils/format'
 
 const { Text } = Typography
 
 export interface OverviewPanelProps {
   dataset: KnowledgeDataset
-  documents: NormalizedKnowledgeDocument[]
   loading?: boolean
   onEdit: () => void
 }
 
 export function OverviewPanel({
   dataset,
-  documents,
   loading,
   onEdit,
 }: OverviewPanelProps) {
   const { t } = useTranslation()
 
-  const metrics = useMemo(() => {
-    const indexed = documents.filter(
-      (item) => item.ingestionStage === 'indexed',
-    ).length
-    const parsing = documents.filter(
-      (item) => item.ingestionStage === 'parsing',
-    ).length
-    const failed = documents.filter(
-      (item) => item.ingestionStage === 'failed',
-    ).length
-    const chunkCount = documents.reduce(
-      (sum, item) => sum + (item.chunk_count ?? 0),
-      0,
-    )
-
-    return {
-      chunkCount: dataset.chunk_count ?? chunkCount,
-      failed,
-      indexed,
-      parsing,
-      total: dataset.document_count ?? documents.length,
-    }
-  }, [dataset.chunk_count, dataset.document_count, documents])
-
   const emptyValue = t('pages.knowledge.empty.noValue')
-  const updatedAt = formatKnowledgeDateTime(
-    dataset.updated_at ?? dataset.created_at ?? dataset.create_time,
-  )
+  const updatedAt = formatKnowledgeDateTime(dataset.update_time)
   const description = formatOptionalText(dataset.description, emptyValue)
   const permissionLabel = dataset.permission
-    ? t(KNOWLEDGE_PERMISSION_LABEL_KEYS[dataset.permission] ?? dataset.permission)
+    ? t(
+        KNOWLEDGE_PERMISSION_LABEL_KEYS[dataset.permission] ??
+          dataset.permission,
+      )
     : emptyValue
   const chunkMethodLabel = dataset.chunk_method
     ? t(
@@ -74,31 +47,13 @@ export function OverviewPanel({
     {
       key: 'documents',
       label: t('pages.knowledge.metrics.documents'),
-      value: metrics.total,
+      value: dataset.document_count,
       accentClass: 'bg-(--ant-color-primary)',
-    },
-    {
-      key: 'indexed',
-      label: t('pages.knowledge.metrics.indexed'),
-      value: metrics.indexed,
-      accentClass: 'bg-(--ant-color-success)',
-    },
-    {
-      key: 'parsing',
-      label: t('pages.knowledge.metrics.parsing'),
-      value: metrics.parsing,
-      accentClass: 'bg-(--ant-color-info)',
-    },
-    {
-      key: 'failed',
-      label: t('pages.knowledge.metrics.failed'),
-      value: metrics.failed,
-      accentClass: 'bg-(--ant-color-error)',
     },
     {
       key: 'chunks',
       label: t('pages.knowledge.metrics.chunks'),
-      value: metrics.chunkCount,
+      value: dataset.chunk_count,
       accentClass: 'bg-(--ant-color-warning)',
     },
   ]
@@ -131,7 +86,7 @@ export function OverviewPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2.5 max-[1200px]:grid-cols-3 max-[768px]:grid-cols-2 max-[520px]:grid-cols-1">
+      <div className="grid grid-cols-2 gap-2.5 max-[520px]:grid-cols-1">
         {metricCards.map((metric) => (
           <div
             className="relative min-h-[76px] overflow-hidden rounded-lg border border-(--ant-color-border-secondary) bg-(--ant-color-bg-container) px-3 py-3 shadow-[0_1px_2px_rgb(15_23_42/0.03)]"
@@ -170,7 +125,10 @@ export function OverviewPanel({
       <div className="grid gap-3 min-[1180px]:grid-cols-2">
         <DetailSection title={t('pages.knowledge.detail.basicInfo')}>
           <DetailItem label={t('pages.knowledge.fields.id')}>
-            <Text copyable className="text-[13px] leading-5 text-(--text-strong)!">
+            <Text
+              copyable
+              className="text-[13px] leading-5 text-(--text-strong)!"
+            >
               {dataset.id}
             </Text>
           </DetailItem>
