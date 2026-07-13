@@ -11,7 +11,6 @@ import {
   Empty,
   Form,
   Input,
-  InputNumber,
   Tag,
   Tooltip,
   Typography,
@@ -35,10 +34,10 @@ import {
 import { formatSearchScore } from '../utils/format'
 
 const { Paragraph, Text } = Typography
+const RETRIEVAL_TOP_K = 5
 
 interface RetrievalFormValues {
   question: string
-  top_k: number
 }
 
 export interface RetrievalLabProps {
@@ -101,12 +100,11 @@ export function RetrievalLab({
   const { t } = useTranslation()
   const [form] = Form.useForm<RetrievalFormValues>()
   const [hasSearched, setHasSearched] = useState(false)
-  const watchedTopK = Form.useWatch('top_k', form)
   const bestScore = getBestScore(results)
 
   const handleFinish = (values: RetrievalFormValues) => {
     setHasSearched(true)
-    onSearch(values)
+    onSearch({ ...values, top_k: RETRIEVAL_TOP_K })
   }
 
   const handleQueryKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -180,7 +178,6 @@ export function RetrievalLab({
           <Form
             className="p-3"
             form={form}
-            initialValues={{ top_k: 5 }}
             layout="vertical"
             onFinish={handleFinish}
           >
@@ -203,14 +200,6 @@ export function RetrievalLab({
               />
             </Form.Item>
 
-            <Form.Item
-              className="mb-3 [&_.ant-form-item-label]:pb-1.5"
-              label={t('pages.knowledge.retrieval.topK')}
-              name="top_k"
-            >
-              <InputNumber className="w-full rounded-md!" max={20} min={1} />
-            </Form.Item>
-
             <Button
               block
               className="h-9!"
@@ -226,7 +215,7 @@ export function RetrievalLab({
       </aside>
 
       <section className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-(--ant-color-border-secondary) bg-(--ant-color-bg-container) shadow-[0_1px_2px_rgb(15_23_42/0.03)]">
-        <div className="grid shrink-0 grid-cols-3 gap-2 border-b border-b-(--ant-color-border-secondary) bg-[color-mix(in_srgb,var(--ant-color-fill-quaternary)_45%,transparent)] px-3.5 py-3 max-[760px]:grid-cols-1">
+        <div className="grid shrink-0 grid-cols-2 gap-2 border-b border-b-(--ant-color-border-secondary) bg-[color-mix(in_srgb,var(--ant-color-fill-quaternary)_45%,transparent)] px-3.5 py-3 max-[760px]:grid-cols-1">
           <SummaryMetric
             label={t('pages.knowledge.retrieval.hitCount')}
             value={hasSearched ? results.length.toLocaleString() : '-'}
@@ -234,10 +223,6 @@ export function RetrievalLab({
           <SummaryMetric
             label={t('pages.knowledge.retrieval.bestScore')}
             value={hasSearched ? formatSearchScore(bestScore) : '-'}
-          />
-          <SummaryMetric
-            label={t('pages.knowledge.retrieval.topK')}
-            value={watchedTopK ?? 5}
           />
         </div>
 

@@ -82,12 +82,18 @@ export function DocumentsPanel({
         title: t('pages.knowledge.documents.columns.name'),
         dataIndex: 'name',
         width: 260,
+        ellipsis: true,
         render: (_, record) => (
-          <Space direction="vertical" size={0}>
-            <Text className="max-w-64" ellipsis strong>
+          <Space className="w-full min-w-0" direction="vertical" size={0}>
+            <Text className="block" ellipsis={{ tooltip: record.name }} strong>
               {record.name}
             </Text>
-            <Text copyable className="text-xs" type="secondary">
+            <Text
+              copyable
+              className="block text-xs"
+              ellipsis={{ tooltip: record.id }}
+              type="secondary"
+            >
               {record.id}
             </Text>
           </Space>
