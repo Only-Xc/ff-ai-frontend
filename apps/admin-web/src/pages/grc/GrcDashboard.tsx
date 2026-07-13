@@ -26,21 +26,21 @@ function formatReviewTime(seconds: number | null): string {
   return `${minutes}m`
 }
 
-const TABLE_COLUMNS = [
+const TABLE_COLUMNS = (t: (key: string) => string) => [
   {
-    title: 'Rule Code',
+    title: t('pages.grc.rules.code'),
     dataIndex: 'rule_code',
     key: 'rule_code',
     width: 140,
   },
   {
-    title: 'Rule Name',
+    title: t('pages.grc.rules.name'),
     dataIndex: 'rule_name',
     key: 'rule_name',
     ellipsis: true,
   },
   {
-    title: 'Fail Count',
+    title: t('pages.grc.rules.failCount'),
     dataIndex: 'fail_count',
     key: 'fail_count',
     width: 120,
@@ -91,7 +91,7 @@ export function GrcDashboard() {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="Total Agents"
+              title={t('pages.grc.dashboard.totalAgents', 'Total Agents')}
               value={overview?.total_agents ?? 0}
               loading={isLoading}
             />
@@ -101,7 +101,7 @@ export function GrcDashboard() {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="Pass Rate"
+              title={t('pages.grc.dashboard.passRate', 'Pass Rate')}
               value={passRate}
               suffix="%"
               loading={isLoading}
@@ -112,7 +112,7 @@ export function GrcDashboard() {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="Block Rate"
+              title={t('pages.grc.dashboard.blockRate', 'Block Rate')}
               value={blockRate}
               suffix="%"
               loading={isLoading}
@@ -123,7 +123,7 @@ export function GrcDashboard() {
         <Col span={6}>
           <Card size="small">
             <Statistic
-              title="Overdue Treatments"
+              title={t('pages.grc.dashboard.overdueTreatments', 'Overdue Treatments')}
               value={overview?.overdue_treatments ?? 0}
               loading={isLoading}
             />
@@ -133,7 +133,7 @@ export function GrcDashboard() {
 
       <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
         <Col span={12}>
-          <Card size="small" title="Risk Distribution">
+          <Card size="small" title={t('pages.grc.dashboard.riskDist', 'Risk Distribution')}>
             {isLoading ? (
               <Statistic title="" value={0} />
             ) : riskEntries.length > 0 ? (
@@ -147,30 +147,30 @@ export function GrcDashboard() {
                 ))}
               </Row>
             ) : (
-              <Text type="secondary">No risk data</Text>
+              <Text type="secondary">{t('pages.grc.dashboard.noRiskData', 'No risk data')}</Text>
             )}
           </Card>
         </Col>
 
         <Col span={12}>
-          <Card size="small" title="Reviews & Exceptions">
+          <Card size="small" title={t('pages.grc.dashboard.reviewsExceptions', 'Reviews & Exceptions')}>
             <Row gutter={[16, 8]}>
               <Col span={12}>
                 <Statistic
-                  title="Open Reviews"
+                  title={t('pages.grc.dashboard.reviewsOpen', 'Open Reviews')}
                   value={overview?.reviews_open ?? 0}
                   loading={isLoading}
                   valueStyle={{ fontSize: 20 }}
                 />
                 {overview && overview.reviews_overdue > 0 && (
                   <Text type="danger" style={{ fontSize: 12 }}>
-                    {overview.reviews_overdue} overdue
+                    {overview.reviews_overdue} {t('pages.grc.dashboard.overdue', 'overdue')}
                   </Text>
                 )}
               </Col>
               <Col span={12}>
                 <Statistic
-                  title="Avg Review Time"
+                  title={t('pages.grc.dashboard.avgReviewTime', 'Avg Review Time')}
                   value={formatReviewTime(overview?.avg_review_seconds ?? null)}
                   loading={isLoading}
                   valueStyle={{ fontSize: 20 }}
@@ -180,14 +180,14 @@ export function GrcDashboard() {
             <Row gutter={[16, 8]} style={{ marginTop: 8 }}>
               <Col span={12}>
                 <Statistic
-                  title="Active Exceptions"
+                  title={t('pages.grc.dashboard.activeExceptions', 'Active Exceptions')}
                   value={overview?.active_exceptions ?? 0}
                   loading={isLoading}
                   valueStyle={{ fontSize: 20 }}
                 />
                 {overview && overview.expiring_soon_exceptions > 0 && (
                   <Text type="warning" style={{ fontSize: 12 }}>
-                    {overview.expiring_soon_exceptions} expiring soon
+                    {overview.expiring_soon_exceptions} {t('pages.grc.dashboard.expiringSoon', 'expiring soon')}
                   </Text>
                 )}
               </Col>
@@ -198,12 +198,12 @@ export function GrcDashboard() {
 
       <Card
         size="small"
-        title="Top Failing Rules"
+        title={t('pages.grc.dashboard.topFailingRules', 'Top Failing Rules')}
         style={{ marginTop: 16 }}
       >
         <Table
           rowKey="rule_code"
-          columns={TABLE_COLUMNS}
+          columns={TABLE_COLUMNS(t)}
           dataSource={overview?.top_failing_rules ?? []}
           loading={isLoading}
           pagination={false}
