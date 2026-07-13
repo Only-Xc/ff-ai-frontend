@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { App, Button, Drawer, Form, Input, InputNumber, Select, Space, Switch } from 'antd'
+import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
 import {
   type GrcRule,
   type GrcRuleCreate,
+  type GrcRuleUpdate,
   type GrcRuleVersionCreate,
   grcRule_create,
+  grcRule_update,
   grcRuleVersion_create,
+  grcRuleVersion_publish,
+  grcRuleVersion_retire,
 } from '@/api/grc'
 
 const CATEGORIES = ['privacy', 'security', 'safety', 'model', 'data', 'tool', 'deployment', 'access_control', 'logging', 'human_oversight', 'legal', 'operational']
@@ -28,31 +32,61 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
 
   const isEdit = !!rule
 
-  const createMutation = useMutation({
-    mutationFn: (data: GrcRuleCreate) => grcRule_create(data),
+  const saveMutation = useMutation({
+    mutationFn: (data: GrcRuleCreate | GrcRuleUpdate) =>
+      isEdit && rule
+        ? grcRule_update(rule.id, data as GrcRuleUpdate)
+        : grcRule_create(data as GrcRuleCreate),
     onSuccess: () => {
-      message.success(isEdit ? 'Rule updated' : 'Rule created')
+      message.success(isEdit ? t('pages.grc.rules.ruleUpdated') : t('pages.grc.rules.ruleCreated'))
       onSuccess()
       onClose()
     },
   })
 
+  const versionMutation = useMutation({
+    mutationFn: (data: GrcRuleVersionCreate) => grcRuleVersion_create(rule!.id, data),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.versionCreated'))
+      onSuccess()
+      versionForm.resetFields()
+      setShowVersionForm(false)
+    },
+  })
+
+  const publishMutation = useMutation({
+    mutationFn: (version: number) =>
+      grcRuleVersion_publish(rule!.id, version, { change_note: '' }),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.versionPublished'))
+      onSuccess()
+    },
+  })
+
+  const retireMutation = useMutation({
+    mutationFn: (version: number) => grcRuleVersion_retire(rule!.id, version),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.versionRetired'))
+      onSuccess()
+    },
+  })
+
   const handleSubmit = () => {
     form.validateFields().then(values => {
-      createMutation.mutate(values)
+      saveMutation.mutate(values)
     })
   }
 
   return (
     <Drawer
-      title={isEdit ? `Edit: ${rule?.code}` : 'Create Rule'}
+      title={isEdit ? `${t('pages.grc.rules.editRule')}: ${rule?.code}` : t('pages.grc.rules.createRule')}
       open={open}
       onClose={onClose}
-      width={600}
+      size="large"
       footer={
         <Space>
           <Button onClick={onClose}>{t('pages.grc.common.cancel')}</Button>
-          <Button type="primary" onClick={handleSubmit} loading={createMutation.isPending}>
+          <Button type="primary" onClick={handleSubmit} loading={saveMutation.isPending}>
             {t('pages.grc.common.save')}
           </Button>
         </Space>
@@ -60,7 +94,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
     >
       <Form form={form} layout="vertical" initialValues={isEdit ? { name: rule?.name, description: rule?.description } : { code: '', name: '', category: 'security', description: '' }}>
         {!isEdit && (
-          <Form.Item name="code" label="Rule Code" rules={[{ required: true }]}>
+          <Form.Item name="code" label={t('pages.grc.rules.ruleCode')} rules={[{ required: true }]}>
             <Input placeholder="GRC-SEC-001" />
           </Form.Item>
         )}
@@ -72,46 +106,74 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
             <Select options={CATEGORIES.map(c => ({ value: c, label: c }))} />
           </Form.Item>
         )}
-        <Form.Item name="description" label="Description">
+        <Form.Item name="description" label={t('pages.grc.rules.description')}>
           <Input.TextArea rows={3} />
         </Form.Item>
       </Form>
 
-      {/* Version creation section */}
-      {isEdit && (
+      {/* Version management section (edit mode only) */}
+      {isEdit && rule && (
         <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+          {rule.current_version != null && (
+            <Space style={{ marginBottom: 16 }}>
+              <span>
+                {t('pages.grc.rules.version')}: <strong>{rule.current_version}</strong>
+              </span>
+              <Popconfirm
+                title={t('pages.grc.rules.publishConfirm')}
+                onConfirm={() => publishMutation.mutate(rule.current_version!)}
+                okText={t('pages.grc.common.confirm')}
+                cancelText={t('pages.grc.common.cancel')}
+              >
+                <Button size="small" type="primary" loading={publishMutation.isPending}>
+                  {t('pages.grc.rules.publish')}
+                </Button>
+              </Popconfirm>
+              <Popconfirm
+                title={t('pages.grc.rules.publishConfirm')}
+                onConfirm={() => retireMutation.mutate(rule.current_version!)}
+                okText={t('pages.grc.common.confirm')}
+                cancelText={t('pages.grc.common.cancel')}
+              >
+                <Button size="small" danger loading={retireMutation.isPending}>
+                  {t('pages.grc.rules.retire')}
+                </Button>
+              </Popconfirm>
+            </Space>
+          )}
           <Button type="dashed" block onClick={() => setShowVersionForm(!showVersionForm)}>
-            {showVersionForm ? 'Hide' : 'Create New Version'}
+            {showVersionForm ? t('pages.grc.rules.hide') : t('pages.grc.rules.newVersion')}
           </Button>
           {showVersionForm && (
-            <Form form={versionForm} layout="vertical" style={{ marginTop: 16 }} initialValues={{ version: 1, severity: 'MEDIUM', risk_score: 25, block_on_fail: false, exception_allowed: true }}>
-              <Form.Item name="version" label="Version" rules={[{ required: true }]}>
+            <Form form={versionForm} layout="vertical" style={{ marginTop: 16 }} initialValues={{ version: (rule.current_version ?? 0) + 1, severity: 'MEDIUM', risk_score: 25, block_on_fail: false, exception_allowed: true }}>
+              <Form.Item name="version" label={t('pages.grc.rules.version')} rules={[{ required: true }]}>
                 <InputNumber min={1} />
               </Form.Item>
-              <Form.Item name="severity" label="Severity" rules={[{ required: true }]}>
-                <Select options={SEVERITIES.map(s => ({ value: s }))} />
+              <Form.Item name="severity" label={t('pages.grc.rules.severity')} rules={[{ required: true }]}>
+                <Select options={SEVERITIES.map(s => ({ value: s, label: s }))} />
               </Form.Item>
-              <Form.Item name="risk_score" label="Risk Score" rules={[{ required: true, min: 0, max: 100 }]}>
-                <InputNumber />
+              <Form.Item name="risk_score" label={t('pages.grc.rules.riskScore')} rules={[{ required: true, type: 'number', min: 0, max: 100 }]}>
+                <InputNumber min={0} max={100} />
               </Form.Item>
-              <Form.Item name="block_on_fail" label="Block on Fail" valuePropName="checked">
+              <Form.Item name="block_on_fail" label={t('pages.grc.rules.blockOnFail')} valuePropName="checked">
                 <Switch />
               </Form.Item>
-              <Form.Item name="exception_allowed" label="Exception Allowed" valuePropName="checked">
+              <Form.Item name="exception_allowed" label={t('pages.grc.rules.exceptionAllowed')} valuePropName="checked">
                 <Switch />
               </Form.Item>
-              <Form.Item name="change_note" label="Change Note">
+              <Form.Item name="change_note" label={t('pages.grc.rules.changeNote')}>
                 <Input.TextArea rows={2} />
               </Form.Item>
-              <Button type="primary" onClick={() => {
-                versionForm.validateFields().then(values => {
-                  grcRuleVersion_create(rule!.id, values as GrcRuleVersionCreate).then(() => {
-                    message.success('Version created')
-                    onSuccess()
+              <Button
+                type="primary"
+                loading={versionMutation.isPending}
+                onClick={() => {
+                  versionForm.validateFields().then(values => {
+                    versionMutation.mutate(values as GrcRuleVersionCreate)
                   })
-                })
-              }}>
-                Create Version
+                }}
+              >
+                {t('pages.grc.rules.createVersion')}
               </Button>
             </Form>
           )}

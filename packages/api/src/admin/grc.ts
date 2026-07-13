@@ -65,6 +65,7 @@ export interface GrcRule {
   is_active: boolean
   current_version: number | null
   current_severity: string | null
+  current_status: string | null
   created_at: string
   updated_at: string
 }
@@ -393,6 +394,8 @@ export const updateRiskProfileRequest = (id: string, body: GrcRiskProfileUpdate)
 export interface GrcRuleListQuery extends PaginationQuery {
   category?: string
   is_active?: boolean
+  keyword?: string
+  organization_id?: string
 }
 
 export type GrcRuleList = ListResult<GrcRule>
@@ -417,6 +420,21 @@ export const publishGrcRuleVersionRequest = (ruleId: string, version: number, bo
 
 export const retireGrcRuleVersionRequest = (ruleId: string, version: number) =>
   createRequest<GrcRuleVersion>('POST', path`/api/v1/admin/grc/rules/${ruleId}/versions/${version}/retire`, { data: {} })
+
+export interface GrcRuleValidateBody {
+  evaluator_config?: Record<string, unknown>
+  applicable_scope?: Record<string, unknown>
+}
+
+export interface GrcRuleValidateResult {
+  valid: boolean
+  evaluator_type: string
+  applicable_scope: Record<string, unknown>
+  warnings: string[]
+}
+
+export const validateRuleEvaluatorRequest = (body: GrcRuleValidateBody) =>
+  createRequest<GrcRuleValidateResult>('POST', '/api/v1/admin/grc/rules/validate', { data: body })
 
 export interface GrcEvaluationListQuery extends PaginationQuery {
   agent_id?: string

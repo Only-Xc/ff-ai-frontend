@@ -70,6 +70,7 @@ import {
   updateGrcRuleRequest,
   updateRiskProfileRequest,
   updateTreatmentRequest,
+  validateRuleEvaluatorRequest,
   verifyAuditChainRequest,
   verifyTreatmentRequest,
 } from '@ff-ai-frontend/api'
@@ -145,6 +146,7 @@ export const grcRule_update = request(updateGrcRuleRequest)
 export const grcRuleVersion_create = request(createGrcRuleVersionRequest)
 export const grcRuleVersion_publish = request(publishGrcRuleVersionRequest)
 export const grcRuleVersion_retire = request(retireGrcRuleVersionRequest)
+export const grcRule_validate = request(validateRuleEvaluatorRequest)
 
 // Evaluations
 export const grcEvaluations_create = request(createEvaluationRequest)
