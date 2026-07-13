@@ -17,6 +17,30 @@ import {
 
 const CATEGORIES = ['privacy', 'security', 'safety', 'model', 'data', 'tool', 'deployment', 'access_control', 'logging', 'human_oversight', 'legal', 'operational']
 const SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+const EVALUATOR_TYPES = ['builtin', 'json_logic', 'manual']
+const BUILTIN_EVALUATORS = [
+  'plaintext_secrets_detected',
+  'external_network_allowed',
+  'human_oversight_present',
+  'restricted_data_no_external_send',
+  'pii_has_mitigation',
+  'model_in_approved_list',
+  'deployment_artifact_complete',
+  'audit_logging_enabled',
+  'min_permissions',
+  'owner_sla_rollback',
+]
+
+type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'evaluator_config' | 'evidence_requirements'> & {
+  evaluator?: string
+  applicable_scope?: string
+  evidence_requirements?: string
+}
+
+const parseJsonObject = (value?: string) => {
+  if (!value?.trim()) return {}
+  return JSON.parse(value) as Record<string, unknown>
+}
 
 export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   open: boolean
@@ -45,12 +69,28 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   })
 
   const versionMutation = useMutation({
-    mutationFn: (data: GrcRuleVersionCreate) => grcRuleVersion_create(rule!.id, data),
+    mutationFn: (data: RuleVersionFormValues) => {
+      const {
+        evaluator,
+        applicable_scope,
+        evidence_requirements,
+        ...rest
+      } = data
+      return grcRuleVersion_create(rule!.id, {
+        ...rest,
+        applicable_scope: parseJsonObject(applicable_scope),
+        evaluator_config: evaluator ? { evaluator } : {},
+        evidence_requirements: parseJsonObject(evidence_requirements),
+      })
+    },
     onSuccess: () => {
       message.success(t('pages.grc.rules.versionCreated'))
       onSuccess()
       versionForm.resetFields()
       setShowVersionForm(false)
+    },
+    onError: (error) => {
+      message.error(error instanceof SyntaxError ? t('pages.grc.rules.invalidJson') : t('pages.grc.rules.versionCreateFailed'))
     },
   })
 
@@ -145,7 +185,22 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
             {showVersionForm ? t('pages.grc.rules.hide') : t('pages.grc.rules.newVersion')}
           </Button>
           {showVersionForm && (
-            <Form form={versionForm} layout="vertical" style={{ marginTop: 16 }} initialValues={{ version: (rule.current_version ?? 0) + 1, severity: 'MEDIUM', risk_score: 25, block_on_fail: false, exception_allowed: true }}>
+            <Form
+              form={versionForm}
+              layout="vertical"
+              style={{ marginTop: 16 }}
+              initialValues={{
+                version: (rule.current_version ?? 0) + 1,
+                severity: 'MEDIUM',
+                risk_score: 25,
+                evaluator_type: 'builtin',
+                evaluator: 'plaintext_secrets_detected',
+                applicable_scope: '{}',
+                evidence_requirements: '{}',
+                block_on_fail: false,
+                exception_allowed: true,
+              }}
+            >
               <Form.Item name="version" label={t('pages.grc.rules.version')} rules={[{ required: true }]}>
                 <InputNumber min={1} />
               </Form.Item>
@@ -154,6 +209,36 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
               </Form.Item>
               <Form.Item name="risk_score" label={t('pages.grc.rules.riskScore')} rules={[{ required: true, type: 'number', min: 0, max: 100 }]}>
                 <InputNumber min={0} max={100} />
+              </Form.Item>
+              <Form.Item name="evaluator_type" label={t('pages.grc.rules.evaluatorType')} rules={[{ required: true }]}>
+                <Select options={EVALUATOR_TYPES.map(type => ({ value: type, label: t(`pages.grc.rules.evaluatorType_${type}`) }))} />
+              </Form.Item>
+              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
+                  <Form.Item name="evaluator" label={t('pages.grc.rules.builtinEvaluator')} rules={[{ required: true }]}>
+                    <Select
+                      showSearch
+                      options={BUILTIN_EVALUATORS.map(evaluator => ({
+                        value: evaluator,
+                        label: t(`pages.grc.rules.evaluator_${evaluator}`),
+                      }))}
+                    />
+                  </Form.Item>
+                )}
+              </Form.Item>
+              <Form.Item
+                name="applicable_scope"
+                label={t('pages.grc.rules.applicableScope')}
+                tooltip={t('pages.grc.rules.applicableScopeTip')}
+              >
+                <Input.TextArea rows={4} placeholder='{ "allowed_domains": ["api.example.com"] }' />
+              </Form.Item>
+              <Form.Item
+                name="evidence_requirements"
+                label={t('pages.grc.rules.evidenceRequirements')}
+                tooltip={t('pages.grc.rules.evidenceRequirementsTip')}
+              >
+                <Input.TextArea rows={3} placeholder='{ "required_controls": ["approval_step"] }' />
               </Form.Item>
               <Form.Item name="block_on_fail" label={t('pages.grc.rules.blockOnFail')} valuePropName="checked">
                 <Switch />
@@ -169,7 +254,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 loading={versionMutation.isPending}
                 onClick={() => {
                   versionForm.validateFields().then(values => {
-                    versionMutation.mutate(values as GrcRuleVersionCreate)
+                    versionMutation.mutate(values as RuleVersionFormValues)
                   })
                 }}
               >
