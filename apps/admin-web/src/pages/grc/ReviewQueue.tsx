@@ -61,7 +61,7 @@ export function ReviewQueue() {
 
   const columns = [
     {
-      title: 'Case No',
+      title: t('pages.grc.reviews.tableCaseNo'),
       dataIndex: 'case_no',
       key: 'case_no',
       width: 160,
@@ -95,7 +95,7 @@ export function ReviewQueue() {
       },
     },
     {
-      title: 'Risk Score',
+      title: t('pages.grc.reviews.riskScore'),
       dataIndex: 'risk_score',
       key: 'risk_score',
       width: 100,
@@ -125,7 +125,7 @@ export function ReviewQueue() {
       },
     },
     {
-      title: 'Opened',
+      title: t('pages.grc.reviews.opened'),
       dataIndex: 'opened_at',
       key: 'opened',
       width: 120,

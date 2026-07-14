@@ -56,9 +56,9 @@ export function GovernanceReports() {
             dataSource={riskQuery.data ?? []}
             rowKey={(r) => `${r.date}-${r.risk_level}`}
             columns={[
-              { title: 'Date', dataIndex: 'date', key: 'date', width: 150 },
+              { title: t('pages.grc.reports.date'), dataIndex: 'date', key: 'date', width: 150 },
               {
-                title: 'Risk Level',
+                title: t('pages.grc.reports.riskLevel'),
                 dataIndex: 'risk_level',
                 key: 'risk_level',
                 render: (v: string) => {
@@ -68,7 +68,7 @@ export function GovernanceReports() {
                 },
               },
               {
-                title: 'Count',
+                title: t('pages.grc.reports.count'),
                 dataIndex: 'count',
                 key: 'count',
                 sorter: (a: GrcRiskDistributionItem, b: GrcRiskDistributionItem) => a.count - b.count,
@@ -89,9 +89,9 @@ export function GovernanceReports() {
             dataSource={complianceQuery.data ?? []}
             rowKey={(r) => `${r.date}-${r.result}`}
             columns={[
-              { title: 'Date', dataIndex: 'date', key: 'date', width: 150 },
-              { title: 'Result', dataIndex: 'result', key: 'result' },
-              { title: 'Count', dataIndex: 'count', key: 'count' },
+              { title: t('pages.grc.reports.date'), dataIndex: 'date', key: 'date', width: 150 },
+              { title: t('pages.grc.reports.result'), dataIndex: 'result', key: 'result' },
+              { title: t('pages.grc.reports.count'), dataIndex: 'count', key: 'count' },
             ]}
             pagination={false}
           />
@@ -107,21 +107,21 @@ export function GovernanceReports() {
             <Space direction="vertical" style={{ width: '100%' }}>
               <Row gutter={16}>
                 <Col span={6}>
-                  <Statistic title="Total Decided" value={slaQuery.data.total_decided} />
+                  <Statistic title={t("pages.grc.reports.totalDecided")} value={slaQuery.data.total_decided} />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="On Time"
+                    title={t("pages.grc.reports.onTime")}
                     value={slaQuery.data.on_time_count}
                     valueStyle={{ color: '#389e0d' }}
                   />
                 </Col>
                 <Col span={6}>
-                  <Statistic title="SLA Rate" value={slaQuery.data.sla_rate_percent} suffix="%" />
+                  <Statistic title={t("pages.grc.reports.slaRate")} value={slaQuery.data.sla_rate_percent} suffix="%" />
                 </Col>
                 <Col span={6}>
                   <Statistic
-                    title="Avg Resolution (h)"
+                    title={t("pages.grc.reports.avgResolution")}
                     value={slaQuery.data.avg_resolution_hours ?? slaQuery.data.avg_resolution_seconds ?? undefined}
                   />
                 </Col>
@@ -139,20 +139,20 @@ export function GovernanceReports() {
           {exceptionQuery.data && (
             <Row gutter={16}>
               <Col span={6}>
-                <Statistic title="Total" value={exceptionQuery.data.total} />
+                <Statistic title={t("pages.grc.reports.statTotal")} value={exceptionQuery.data.total} />
               </Col>
               <Col span={6}>
                 <Statistic
-                  title="Active"
+                  title={t("pages.grc.reports.statActive")}
                   value={exceptionQuery.data.active_count}
                   valueStyle={{ color: '#389e0d' }}
                 />
               </Col>
               <Col span={6}>
-                <Statistic title="Expired" value={exceptionQuery.data.expired_count} />
+                <Statistic title={t("pages.grc.reports.statExpired")} value={exceptionQuery.data.expired_count} />
               </Col>
               <Col span={6}>
-                <Statistic title="Rejected" value={exceptionQuery.data.rejected_count} />
+                <Statistic title={t("pages.grc.reports.statRejected")} value={exceptionQuery.data.rejected_count} />
               </Col>
             </Row>
           )}
@@ -167,10 +167,10 @@ export function GovernanceReports() {
           {treatmentQuery.data && (
             <Row gutter={16}>
               <Col span={6}>
-                <Statistic title="Total" value={treatmentQuery.data.total} />
+                <Statistic title={t("pages.grc.reports.statTotal")} value={treatmentQuery.data.total} />
               </Col>
               <Col span={6}>
-                <Statistic title="Closure Rate" value={treatmentQuery.data.closure_rate} suffix="%" />
+                <Statistic title={t("pages.grc.reports.closureRate")} value={treatmentQuery.data.closure_rate} suffix="%" />
               </Col>
             </Row>
           )}
@@ -188,9 +188,9 @@ export function GovernanceReports() {
             onChange={(v) => setDays(Number(v))}
             style={{ width: 120 }}
             options={[
-              { value: '7', label: '7 days' },
-              { value: '30', label: '30 days' },
-              { value: '90', label: '90 days' },
+              { value: '7', label: t('pages.grc.reports.days7') },
+              { value: '30', label: t('pages.grc.reports.days30') },
+              { value: '90', label: t('pages.grc.reports.days90') },
             ]}
           />
           <Button

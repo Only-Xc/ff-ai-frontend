@@ -72,7 +72,7 @@ export function ReviewDetail() {
         expected_version: expectedVersion,
       }),
     onSuccess: () => {
-      appMessage.success('Decision submitted')
+      appMessage.success(t('pages.grc.reviews.decisionSubmitted'))
       queryClient.invalidateQueries({ queryKey: ['grc', 'review', caseId] })
       setDecisionOpen(false)
     },
@@ -102,7 +102,7 @@ export function ReviewDetail() {
   return (
     <PageContainer>
       <PageHeader
-        title={caseData?.case_no ?? 'Review Detail'}
+        title={caseData?.case_no ?? t('pages.grc.reviews.caseNo')}
         subtitle={caseData?.title}
       >
         {!isDecided && (
@@ -121,7 +121,7 @@ export function ReviewDetail() {
                 title={t('pages.grc.reviews.riskLevel')}
                 value={caseData.risk_level}
               />
-              <Statistic title="Risk Score" value={caseData.risk_score} />
+              <Statistic title={t("pages.grc.reviews.riskScore")} value={caseData.risk_score} />
               <Tag color={STATUS_COLORS[caseData.status] ?? 'default'}>
                 {caseData.status}
               </Tag>
@@ -130,28 +130,28 @@ export function ReviewDetail() {
 
           {/* Case Details */}
           <Descriptions
-            title="Case Info"
+            title={t("pages.grc.reviews.caseInfo")}
             bordered
             size="small"
             column={2}
             style={{ marginBottom: 24 }}
           >
-            <Descriptions.Item label="Subject">
+            <Descriptions.Item label={t("pages.grc.reviews.subject")}>
               {caseData.subject_type}: {caseData.subject_id}
             </Descriptions.Item>
-            <Descriptions.Item label="Agent">
+            <Descriptions.Item label={t("pages.grc.reviews.agent")}>
               {caseData.agent_id ?? '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="Requester">
+            <Descriptions.Item label={t("pages.grc.reviews.requester")}>
               {caseData.requester_id}
             </Descriptions.Item>
-            <Descriptions.Item label="Assignee">
+            <Descriptions.Item label={t("pages.grc.reviews.assigneeField")}>
               {caseData.assignee_id ?? '-'}
             </Descriptions.Item>
-            <Descriptions.Item label="Opened">
+            <Descriptions.Item label={t("pages.grc.reviews.opened")}>
               {dayjs(caseData.opened_at).format()}
             </Descriptions.Item>
-            <Descriptions.Item label="Due">
+            <Descriptions.Item label={t("pages.grc.reviews.due")}>
               {caseData.due_at ? dayjs(caseData.due_at).format() : '-'}
             </Descriptions.Item>
           </Descriptions>
@@ -168,13 +168,13 @@ export function ReviewDetail() {
                 dataSource={evalResults}
                 columns={[
                   {
-                    title: 'Rule',
+                    title: t('pages.grc.reviews.rule'),
                     dataIndex: 'rule_id',
                     key: 'rule_id',
                     width: 200,
                   },
                   {
-                    title: 'Result',
+                    title: t('pages.grc.reviews.evaluationResult'),
                     dataIndex: 'result',
                     key: 'result',
                     width: 120,
@@ -193,13 +193,13 @@ export function ReviewDetail() {
                     ),
                   },
                   {
-                    title: 'Severity',
+                    title: t('pages.grc.reviews.evaluationSeverity'),
                     dataIndex: 'severity',
                     key: 'severity',
                     width: 100,
                   },
                   {
-                    title: 'Message',
+                    title: t('pages.grc.reviews.evaluationMessage'),
                     dataIndex: 'message',
                     key: 'message',
                     ellipsis: true,
@@ -249,22 +249,22 @@ export function ReviewDetail() {
         width={500}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="decision" label="Decision" rules={[{ required: true }]}>
+          <Form.Item name="decision" label={t("pages.grc.reviews.decision")} rules={[{ required: true }]}>
             <Select
               options={[
-                { value: 'APPROVED', label: 'Approve' },
+                { value: 'APPROVED', label: t('pages.grc.reviews.approve') },
                 {
                   value: 'APPROVED_WITH_CONDITIONS',
-                  label: 'Approve with Conditions',
+                  label: t('pages.grc.reviews.approveWithConditions'),
                 },
-                { value: 'REJECTED', label: 'Reject' },
+                { value: 'REJECTED', label: t('pages.grc.reviews.reject') },
                 {
                   value: 'REMEDIATION_REQUIRED',
-                  label: 'Require Remediation',
+                  label: t('pages.grc.reviews.requireRemediation'),
                 },
                 {
                   value: 'EXCEPTION_REQUESTED',
-                  label: 'Request Exception',
+                  label: t('pages.grc.reviews.requestException'),
                 },
               ]}
             />

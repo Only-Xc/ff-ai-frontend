@@ -46,7 +46,7 @@ export function ExceptionManagement() {
   const approveMutation = useMutation({
     mutationFn: (id: string) => approveException(id),
     onSuccess: () => {
-      message.success('Exception approved')
+      message.success(t('pages.grc.exceptions.exceptionApproved'))
       queryClient.invalidateQueries({ queryKey: ['grc', 'exceptions'] })
     },
   })
@@ -55,7 +55,7 @@ export function ExceptionManagement() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       rejectException(id, reason),
     onSuccess: () => {
-      message.success('Exception rejected')
+      message.success(t('pages.grc.exceptions.exceptionRejected'))
       queryClient.invalidateQueries({ queryKey: ['grc', 'exceptions'] })
     },
   })
@@ -64,20 +64,20 @@ export function ExceptionManagement() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       revokeException(id, reason),
     onSuccess: () => {
-      message.success('Exception revoked')
+      message.success(t('pages.grc.exceptions.exceptionRevoked'))
       queryClient.invalidateQueries({ queryKey: ['grc', 'exceptions'] })
     },
   })
 
   const columns = [
     {
-      title: 'Exception No',
+      title: t('pages.grc.exceptions.exceptionNo'),
       dataIndex: 'exception_no',
       key: 'no',
       width: 160,
     },
     {
-      title: 'Justification',
+      title: t('pages.grc.exceptions.justification'),
       dataIndex: 'justification',
       key: 'justification',
       ellipsis: true,
@@ -96,20 +96,20 @@ export function ExceptionManagement() {
       },
     },
     {
-      title: 'Expires At',
+      title: t('pages.grc.exceptions.expiresAt'),
       key: 'expires',
       width: 180,
       render: (r: GrcException) =>
         dayjs(r.expires_at).format('YYYY-MM-DD HH:mm'),
     },
     {
-      title: 'Used',
+      title: t('pages.grc.exceptions.used'),
       dataIndex: 'used_count',
       key: 'used',
       width: 80,
     },
     {
-      title: 'Max Uses',
+      title: t('pages.grc.exceptions.maxUses'),
       dataIndex: 'max_uses',
       key: 'max',
       width: 80,
@@ -133,7 +133,7 @@ export function ExceptionManagement() {
                 size="small"
                 danger
                 onClick={() =>
-                  rejectMutation.mutate({ id: r.id, reason: 'Rejected' })
+                  rejectMutation.mutate({ id: r.id, reason: t('pages.grc.exceptions.statusRejected') })
                 }
               >
                 {t('pages.grc.exceptions.reject')}
@@ -145,7 +145,7 @@ export function ExceptionManagement() {
               size="small"
               danger
               onClick={() =>
-                revokeMutation.mutate({ id: r.id, reason: 'Revoked' })
+                revokeMutation.mutate({ id: r.id, reason: t('pages.grc.exceptions.statusRevoked') })
               }
             >
               {t('pages.grc.exceptions.revoke')}
@@ -179,24 +179,24 @@ export function ExceptionManagement() {
       </PageHeader>
 
       <Space style={{ marginBottom: 16 }}>
-        <Statistic title="Total" value={stats.total} />
+        <Statistic title={t("pages.grc.exceptions.statTotal")} value={stats.total} />
         <Statistic
-          title="Active"
+          title={t("pages.grc.exceptions.statActive")}
           value={stats.active}
           valueStyle={{ color: '#389e0d' }}
         />
         <Statistic
-          title="Requested"
+          title={t("pages.grc.exceptions.statRequested")}
           value={stats.requested}
           valueStyle={{ color: '#1890ff' }}
         />
         <Statistic
-          title="Revoked"
+          title={t("pages.grc.exceptions.statRevoked")}
           value={stats.revoked}
           valueStyle={{ color: '#faad14' }}
         />
         <Statistic
-          title="Expired"
+          title={t("pages.grc.exceptions.statExpired")}
           value={stats.expired}
           valueStyle={{ color: '#8c8c8c' }}
         />
