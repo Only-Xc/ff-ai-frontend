@@ -266,12 +266,14 @@ export function ReviewDetail() {
                         color={
                           v === 'pass'
                             ? 'green'
-                            : v === 'fail'
-                              ? 'red'
-                              : 'orange'
+                            : v === 'review_required'
+                              ? 'blue'
+                              : v === 'fail'
+                                ? 'red'
+                                : 'orange'
                         }
                       >
-                        {v}
+                        {v === 'review_required' ? t('pages.grc.rules.resultReviewRequired') : v}
                       </Tag>
                     ),
                   },

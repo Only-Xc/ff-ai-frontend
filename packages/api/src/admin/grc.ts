@@ -469,7 +469,7 @@ export interface GrcRuleTestBody {
 export interface GrcRuleTestResult {
   valid: boolean
   errors?: string[]
-  result?: 'pass' | 'fail' | 'error'
+  result?: 'pass' | 'fail' | 'error' | 'review_required'
   message?: string
   evidence?: Record<string, unknown>
 }

@@ -88,6 +88,11 @@ const JSON_LOGIC_TEST_SNAPSHOT_EXAMPLE = {
   approved_models: ['claude-opus-4-8'],
 }
 
+const MANUAL_EXAMPLE = {
+  review_required: true,
+  review_template: '请检查业务目标、用户影响、风险缓解措施。',
+}
+
 const formatJson = (value: unknown) => JSON.stringify(value, null, 2)
 
 type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'evaluator_config' | 'evidence_requirements'> & {
@@ -97,6 +102,7 @@ type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'ev
   json_expression?: string
   json_fail_message?: string
   json_pass_message?: string
+  manual_review_template?: string
   test_input_snapshot?: string
 }
 
@@ -113,6 +119,7 @@ const buildVersionPayload = (data: RuleVersionFormValues): GrcRuleVersionCreate 
     json_expression,
     json_fail_message,
     json_pass_message,
+    manual_review_template,
     test_input_snapshot: _,
     ...rest
   } = data
@@ -123,6 +130,11 @@ const buildVersionPayload = (data: RuleVersionFormValues): GrcRuleVersionCreate 
     evaluator_config = { expression }
     if (json_fail_message) evaluator_config.fail_message = json_fail_message
     if (json_pass_message) evaluator_config.pass_message = json_pass_message
+  } else if (rest.evaluator_type === 'manual') {
+    evaluator_config = {
+      review_required: true,
+      review_template: manual_review_template || MANUAL_EXAMPLE.review_template,
+    }
   } else if (rest.evaluator_type === 'builtin' && evaluator) {
     evaluator_config = { evaluator }
   }
@@ -224,6 +236,17 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
       json_fail_message: JSON_LOGIC_EXAMPLE.fail_message,
       json_pass_message: JSON_LOGIC_EXAMPLE.pass_message,
       test_input_snapshot: formatJson(JSON_LOGIC_TEST_SNAPSHOT_EXAMPLE),
+    })
+  }
+
+  const applyManualExample = () => {
+    versionForm.setFieldsValue({
+      manual_review_template: MANUAL_EXAMPLE.review_template,
+      test_input_snapshot: formatJson({
+        business_purpose: '客户支持自动化',
+        user_impact: '可能影响最终用户回答',
+        mitigations: ['人工复核', '紧急停止开关'],
+      }),
     })
   }
 
@@ -364,6 +387,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 json_expression: '',
                 json_fail_message: '',
                 json_pass_message: '',
+                manual_review_template: MANUAL_EXAMPLE.review_template,
                 test_input_snapshot: '{}',
                 block_on_fail: false,
                 exception_allowed: true,
@@ -422,10 +446,21 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                   if (evaluatorType === 'manual') {
                     return (
                       <Alert
-                        type="warning"
+                        type="info"
                         showIcon
                         style={{ marginBottom: 16 }}
-                        title={t('pages.grc.rules.unsupportedEvaluatorType')}
+                        title={t('pages.grc.rules.manualGuideTitle')}
+                        description={(
+                          <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                            <Typography.Text>{t('pages.grc.rules.manualGuideDescription')}</Typography.Text>
+                            <Typography.Text>
+                              {t('pages.grc.rules.manualPendingDescription')}
+                            </Typography.Text>
+                            <Button size="small" onClick={applyManualExample}>
+                              {t('pages.grc.rules.applyManualExample')}
+                            </Button>
+                          </Space>
+                        )}
                       />
                     )
                   }
@@ -484,9 +519,22 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 )}
               </Form.Item>
 
+              {/* manual-specific fields */}
+              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'manual' && (
+                  <Form.Item
+                    name="manual_review_template"
+                    label={t('pages.grc.rules.manualReviewTemplate')}
+                    tooltip={t('pages.grc.rules.manualReviewTemplateTip')}
+                  >
+                    <Input.TextArea rows={4} placeholder={MANUAL_EXAMPLE.review_template} />
+                  </Form.Item>
+                )}
+              </Form.Item>
+
               {/* Builtin scope/evidence fields (also shown for json_logic as advanced) */}
               <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
-                {({ getFieldValue }) => getFieldValue('evaluator_type') !== 'json_logic' && (
+                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
                   <>
                     <Form.Item
                       name="applicable_scope"
@@ -534,7 +582,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 </Space>
                 {testResult && (
                   <Alert
-                    type={testResult.valid === false ? 'error' : testResult.result === 'pass' ? 'success' : testResult.result === 'fail' ? 'warning' : 'error'}
+                    type={testResult.valid === false ? 'error' : testResult.result === 'pass' ? 'success' : testResult.result === 'review_required' ? 'info' : testResult.result === 'fail' ? 'warning' : 'error'}
                     showIcon
                     style={{ marginBottom: 12 }}
                     title={
@@ -543,8 +591,8 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                         : (
                           <Space>
                             <span>{t('pages.grc.rules.testResult')}:</span>
-                            <Tag color={testResult.result === 'pass' ? 'green' : testResult.result === 'fail' ? 'red' : 'orange'}>
-                              {testResult.result}
+                            <Tag color={testResult.result === 'pass' ? 'green' : testResult.result === 'review_required' ? 'blue' : testResult.result === 'fail' ? 'red' : 'orange'}>
+                              {testResult.result === 'review_required' ? t('pages.grc.rules.resultReviewRequired') : testResult.result}
                             </Tag>
                           </Space>
                         )
