@@ -27,6 +27,19 @@ const STATUS_COLORS: Record<string, string> = {
   EXCEPTION_REQUESTED: 'purple',
 }
 
+type UserRef = { id: string; email: string; full_name: string | null } | null | undefined
+
+/** Prefer full_name, then email, then fall back to the raw id. */
+function userLabel(ref: UserRef, fallbackId?: string | null): string {
+  return ref?.full_name || ref?.email || fallbackId || '-'
+}
+
+/** Prefer "code · name", then name or code, then fall back to the raw rule_id. */
+function ruleLabel(row: GrcEvaluationResult): string {
+  if (row.rule_code && row.rule_name) return `${row.rule_code} · ${row.rule_name}`
+  return row.rule_name || row.rule_code || row.rule_id
+}
+
 export function ReviewDetail() {
   const { caseId = '' } = useParams()
   const { t } = useTranslation()
@@ -116,15 +129,21 @@ export function ReviewDetail() {
         <>
           {/* Risk Overview */}
           <div style={{ marginBottom: 24 }}>
-            <Space size="large">
+            <Space size="large" align="start">
               <Statistic
                 title={t('pages.grc.reviews.riskLevel')}
                 value={caseData.risk_level}
               />
               <Statistic title={t("pages.grc.reviews.riskScore")} value={caseData.risk_score} />
-              <Tag color={STATUS_COLORS[caseData.status] ?? 'default'}>
-                {caseData.status}
-              </Tag>
+              <Statistic
+                title={t('pages.grc.reviews.status')}
+                value={caseData.status}
+                formatter={() => (
+                  <Tag color={STATUS_COLORS[caseData.status] ?? 'default'}>
+                    {caseData.status}
+                  </Tag>
+                )}
+              />
             </Space>
           </div>
 
@@ -143,10 +162,10 @@ export function ReviewDetail() {
               {caseData.agent_id ?? '-'}
             </Descriptions.Item>
             <Descriptions.Item label={t("pages.grc.reviews.requester")}>
-              {caseData.requester_id}
+              {userLabel(caseData.requester, caseData.requester_id)}
             </Descriptions.Item>
             <Descriptions.Item label={t("pages.grc.reviews.assigneeField")}>
-              {caseData.assignee_id ?? '-'}
+              {userLabel(caseData.assignee, caseData.assignee_id)}
             </Descriptions.Item>
             <Descriptions.Item label={t("pages.grc.reviews.opened")}>
               {dayjs(caseData.opened_at).format()}
@@ -172,6 +191,7 @@ export function ReviewDetail() {
                     dataIndex: 'rule_id',
                     key: 'rule_id',
                     width: 200,
+                    render: (_: string, row: GrcEvaluationResult) => ruleLabel(row),
                   },
                   {
                     title: t('pages.grc.reviews.evaluationResult'),
@@ -226,7 +246,7 @@ export function ReviewDetail() {
                         : 'orange',
                   children: (
                     <div>
-                      <strong>{d.decision}</strong> by {d.decided_by}
+                      <strong>{d.decision}</strong> by {userLabel(d.decided_by_user, d.decided_by)}
                       <br />
                       <span style={{ color: '#999' }}>
                         {dayjs(d.decided_at).format()}

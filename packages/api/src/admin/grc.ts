@@ -156,6 +156,12 @@ export interface GrcEvaluationCreate {
   idempotency_key: string
 }
 
+export interface GrcUserRef {
+  id: string
+  email: string
+  full_name: string | null
+}
+
 export interface GrcEvaluationResult {
   id: string
   evaluation_id: string
@@ -169,6 +175,8 @@ export interface GrcEvaluationResult {
   evidence: Record<string, any>
   remediation: string | null
   evaluated_at: string
+  rule_code?: string | null
+  rule_name?: string | null
 }
 
 export interface GrcReviewCase {
@@ -192,6 +200,8 @@ export interface GrcReviewCase {
   opened_at: string
   decided_at: string | null
   closed_at: string | null
+  requester?: GrcUserRef | null
+  assignee?: GrcUserRef | null
 }
 
 export interface GrcReviewDecision {
@@ -208,6 +218,7 @@ export interface GrcReviewDecision {
   request_id: string | null
   source_ip: string | null
   user_agent: string | null
+  decided_by_user?: GrcUserRef | null
 }
 
 export interface GrcReviewDecisionCreate {
