@@ -276,32 +276,34 @@ export function ExceptionManagement() {
         </Button>
       </Space>
 
-      <Space size="large" style={{ marginBottom: 16 }}>
-        <Statistic
-          title={t('pages.grc.exceptions.statTotal')}
-          value={report?.total ?? 0}
-        />
-        <Statistic
-          title={t('pages.grc.exceptions.statActive')}
-          value={report?.active_count ?? 0}
-          styles={{ content: { color: '#389e0d' } }}
-        />
-        <Statistic
-          title={t('pages.grc.exceptions.statRequested')}
-          value={report?.by_status?.requested ?? 0}
-          styles={{ content: { color: '#1890ff' } }}
-        />
-        <Statistic
-          title={t('pages.grc.exceptions.statRevoked')}
-          value={report?.by_status?.revoked ?? 0}
-          styles={{ content: { color: '#faad14' } }}
-        />
-        <Statistic
-          title={t('pages.grc.exceptions.statExpired')}
-          value={report?.expired_count ?? 0}
-          styles={{ content: { color: '#8c8c8c' } }}
-        />
-      </Space>
+      <div style={{ marginBottom: 16 }}>
+        <Space size="large">
+          <Statistic
+            title={t('pages.grc.exceptions.statTotal')}
+            value={report?.total ?? 0}
+          />
+          <Statistic
+            title={t('pages.grc.exceptions.statActive')}
+            value={report?.active_count ?? 0}
+            styles={{ content: { color: '#389e0d' } }}
+          />
+          <Statistic
+            title={t('pages.grc.exceptions.statRequested')}
+            value={report?.by_status?.requested ?? 0}
+            styles={{ content: { color: '#1890ff' } }}
+          />
+          <Statistic
+            title={t('pages.grc.exceptions.statRevoked')}
+            value={report?.by_status?.revoked ?? 0}
+            styles={{ content: { color: '#faad14' } }}
+          />
+          <Statistic
+            title={t('pages.grc.exceptions.statExpired')}
+            value={report?.expired_count ?? 0}
+            styles={{ content: { color: '#8c8c8c' } }}
+          />
+        </Space>
+      </div>
 
       <Table
         rowKey="id"
