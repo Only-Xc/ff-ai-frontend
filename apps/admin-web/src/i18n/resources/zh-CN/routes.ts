@@ -31,7 +31,7 @@ export default {
   'routes.grc.rules.title': '合规规则库',
   'routes.grc.rules.subtitle': '管理合规规则版本和发布',
   'routes.grc.reviews.title': '审批队列',
-  'routes.grc.reviews.subtitle': '待审批、已审批和逾期审批',
+  'routes.grc.reviews.subtitle': '集中管理各状态的合规审批案件',
   'routes.grc.exceptions.title': '例外管理',
   'routes.grc.exceptions.subtitle': '申请、审批和监控合规例外',
   'routes.grc.reports.title': '治理报表',

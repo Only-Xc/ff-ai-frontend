@@ -31,7 +31,7 @@ export default {
   'routes.grc.rules.title': 'Compliance Rules',
   'routes.grc.rules.subtitle': 'Manage compliance rule versions and publishing',
   'routes.grc.reviews.title': 'Review Queue',
-  'routes.grc.reviews.subtitle': 'Pending, approved and overdue approvals',
+  'routes.grc.reviews.subtitle': 'Manage compliance review cases across all statuses',
   'routes.grc.exceptions.title': 'Exceptions',
   'routes.grc.exceptions.subtitle': 'Request, approve and monitor compliance exceptions',
   'routes.grc.reports.title': 'Governance Reports',

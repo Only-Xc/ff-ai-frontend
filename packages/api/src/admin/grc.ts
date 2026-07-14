@@ -488,6 +488,7 @@ export interface GrcReviewCaseListQuery extends PaginationQuery {
   risk_level?: RiskLevel
   assignee_id?: string
   organization_id?: string
+  keyword?: string
 }
 
 export type GrcReviewCaseList = ListResult<GrcReviewCase>

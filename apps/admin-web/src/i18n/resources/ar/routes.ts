@@ -31,7 +31,7 @@ export default {
   'routes.grc.rules.title': 'مكتبة القواعد',
   'routes.grc.rules.subtitle': 'إدارة إصدارات قواعد الامتثال والنشر',
   'routes.grc.reviews.title': 'قائمة المراجعة',
-  'routes.grc.reviews.subtitle': 'الموافقات المعلقة والموافق عليها والمتأخرة',
+  'routes.grc.reviews.subtitle': 'إدارة حالات مراجعة الامتثال بمختلف الحالات',
   'routes.grc.exceptions.title': 'الاستثناءات',
   'routes.grc.exceptions.subtitle': 'طلب والموافقة ومراقبة استثناءات الامتثال',
   'routes.grc.reports.title': 'تقارير الحوكمة',
