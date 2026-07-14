@@ -512,6 +512,7 @@ export interface GrcExceptionListQuery extends PaginationQuery {
   status?: ExceptionStatus
   rule_id?: string
   organization_id?: string
+  keyword?: string
 }
 
 export type GrcExceptionList = ListResult<GrcException>
