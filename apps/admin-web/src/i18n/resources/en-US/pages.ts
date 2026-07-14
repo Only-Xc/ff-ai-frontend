@@ -757,6 +757,7 @@ export default {
   'pages.grc.reviews.evaluationResult': 'Result',
   'pages.grc.reviews.evaluationSeverity': 'Severity',
   'pages.grc.reviews.evaluationMessage': 'Message',
+  'pages.grc.reviews.evaluationEvidence': 'Evidence Detail',
   'pages.grc.reviews.approve': 'Approve',
   'pages.grc.reviews.approveWithConditions': 'Approve with Conditions',
   'pages.grc.reviews.reject': 'Reject',

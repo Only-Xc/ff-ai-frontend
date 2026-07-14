@@ -288,6 +288,20 @@ export function ReviewDetail() {
                     ellipsis: true,
                   },
                 ]}
+                expandable={{
+                  rowExpandable: (row: GrcEvaluationResult) =>
+                    !!row.evidence && Object.keys(row.evidence).length > 0,
+                  expandedRowRender: (row: GrcEvaluationResult) => (
+                    <div>
+                      <Typography.Text strong>
+                        {t('pages.grc.reviews.evaluationEvidence')}
+                      </Typography.Text>
+                      <Typography.Paragraph code copyable style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>
+                        {JSON.stringify(row.evidence, null, 2)}
+                      </Typography.Paragraph>
+                    </div>
+                  ),
+                }}
                 pagination={false}
               />
             </div>

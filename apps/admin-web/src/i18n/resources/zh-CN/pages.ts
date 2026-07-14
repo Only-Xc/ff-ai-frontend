@@ -742,6 +742,7 @@ export default {
   'pages.grc.reviews.evaluationResult': '结果',
   'pages.grc.reviews.evaluationSeverity': '严重性',
   'pages.grc.reviews.evaluationMessage': '消息',
+  'pages.grc.reviews.evaluationEvidence': '证据明细',
   'pages.grc.reviews.approve': '批准',
   'pages.grc.reviews.approveWithConditions': '附条件批准',
   'pages.grc.reviews.reject': '拒绝',

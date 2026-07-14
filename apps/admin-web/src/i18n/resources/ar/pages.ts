@@ -755,6 +755,7 @@ export default {
   'pages.grc.reviews.evaluationResult': 'النتيجة',
   'pages.grc.reviews.evaluationSeverity': 'الخطورة',
   'pages.grc.reviews.evaluationMessage': 'الرسالة',
+  'pages.grc.reviews.evaluationEvidence': 'تفاصيل الأدلة',
   'pages.grc.reviews.approve': 'موافقة',
   'pages.grc.reviews.approveWithConditions': 'موافقة مشروطة',
   'pages.grc.reviews.reject': 'رفض',
