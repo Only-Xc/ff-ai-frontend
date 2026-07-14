@@ -69,20 +69,6 @@ export default function OrganizationPage() {
     return filter(treeQuery.data)
   }, [treeQuery.data, keyword])
 
-  // Flatten tree for list mode: { org, level }[]
-  const flatList = useMemo(() => {
-    if (!filteredTreeData.length) return []
-    const result: { org: OrganizationNode; level: number }[] = []
-    function flatten(nodes: OrganizationNode[], level: number) {
-      for (const node of nodes) {
-        result.push({ org: node, level })
-        if (node.children?.length) flatten(node.children, level + 1)
-      }
-    }
-    flatten(filteredTreeData, 0)
-    return result
-  }, [filteredTreeData])
-
   // ─── Mutations ───
   const createMutation = useMutation({
     mutationFn: adminOrganizations_create,
@@ -336,7 +322,7 @@ export default function OrganizationPage() {
                 rowKey="id"
                 size="middle"
                 columns={columns}
-                dataSource={flatList.map(({ org }) => org)}
+                dataSource={filteredTreeData}
                 loading={treeQuery.isFetching}
                 pagination={false}
               />
