@@ -451,11 +451,31 @@ export interface GrcRuleValidateResult {
   examples?: {
     applicable_scope?: Record<string, unknown>
     evidence_requirements?: Record<string, unknown>
+    evaluator_config?: Record<string, unknown>
   }
 }
 
 export const validateRuleEvaluatorRequest = (body: GrcRuleValidateBody) =>
   createRequest<GrcRuleValidateResult>('POST', '/api/v1/admin/grc/rules/validate', { data: body })
+
+export interface GrcRuleTestBody {
+  evaluator_type?: string
+  evaluator_config?: Record<string, unknown>
+  applicable_scope?: Record<string, unknown>
+  evidence_requirements?: Record<string, unknown>
+  input_snapshot?: Record<string, unknown>
+}
+
+export interface GrcRuleTestResult {
+  valid: boolean
+  errors?: string[]
+  result?: 'pass' | 'fail' | 'error'
+  message?: string
+  evidence?: Record<string, unknown>
+}
+
+export const testRuleEvaluatorRequest = (body: GrcRuleTestBody) =>
+  createRequest<GrcRuleTestResult>('POST', '/api/v1/admin/grc/rules/test', { data: body })
 
 export interface GrcEvaluationListQuery extends PaginationQuery {
   agent_id?: string

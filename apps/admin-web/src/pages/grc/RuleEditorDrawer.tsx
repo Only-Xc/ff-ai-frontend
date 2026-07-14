@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { App, Alert, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Typography } from 'antd'
+import { App, Alert, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Tag, Typography } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
 import {
@@ -8,9 +8,11 @@ import {
   type GrcRuleCreate,
   type GrcRuleUpdate,
   type GrcRuleVersionCreate,
+  type GrcRuleTestResult,
   grcRule_create,
   grcRule_update,
   grcRule_validate,
+  grcRule_test,
   grcRuleVersion_create,
   grcRuleVersion_publish,
   grcRuleVersion_retire,
@@ -69,12 +71,33 @@ const EVALUATOR_EXAMPLES: Record<string, {
   owner_sla_rollback: { requiredFields: [], applicableScope: {}, evidenceRequirements: {} },
 }
 
-const formatJson = (value: Record<string, unknown>) => JSON.stringify(value, null, 2)
+const JSON_LOGIC_EXAMPLE = {
+  expression: {
+    and: [
+      { '==': [{ var: 'data_classification' }, 'restricted'] },
+      { '!': { in: [{ var: 'target_model' }, { var: 'approved_models' }] } },
+    ],
+  },
+  fail_message: '受限数据不能发送给未批准模型',
+  pass_message: '数据路由合规',
+}
+
+const JSON_LOGIC_TEST_SNAPSHOT_EXAMPLE = {
+  data_classification: 'restricted',
+  target_model: 'gpt-x',
+  approved_models: ['claude-opus-4-8'],
+}
+
+const formatJson = (value: unknown) => JSON.stringify(value, null, 2)
 
 type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'evaluator_config' | 'evidence_requirements'> & {
   evaluator?: string
   applicable_scope?: string
   evidence_requirements?: string
+  json_expression?: string
+  json_fail_message?: string
+  json_pass_message?: string
+  test_input_snapshot?: string
 }
 
 const parseJsonObject = (value?: string) => {
@@ -87,13 +110,27 @@ const buildVersionPayload = (data: RuleVersionFormValues): GrcRuleVersionCreate 
     evaluator,
     applicable_scope,
     evidence_requirements,
+    json_expression,
+    json_fail_message,
+    json_pass_message,
+    test_input_snapshot: _,
     ...rest
   } = data
+
+  let evaluator_config: Record<string, unknown> = {}
+  if (rest.evaluator_type === 'json_logic') {
+    const expression = json_expression?.trim() ? JSON.parse(json_expression) : {}
+    evaluator_config = { expression }
+    if (json_fail_message) evaluator_config.fail_message = json_fail_message
+    if (json_pass_message) evaluator_config.pass_message = json_pass_message
+  } else if (rest.evaluator_type === 'builtin' && evaluator) {
+    evaluator_config = { evaluator }
+  }
 
   return {
     ...rest,
     applicable_scope: parseJsonObject(applicable_scope),
-    evaluator_config: evaluator ? { evaluator } : {},
+    evaluator_config,
     evidence_requirements: parseJsonObject(evidence_requirements),
   }
 }
@@ -109,6 +146,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   const [form] = Form.useForm()
   const [versionForm] = Form.useForm()
   const [showVersionForm, setShowVersionForm] = useState(false)
+  const [testResult, setTestResult] = useState<GrcRuleTestResult | null>(null)
 
   const isEdit = !!rule
 
@@ -131,6 +169,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
       onSuccess()
       versionForm.resetFields()
       setShowVersionForm(false)
+      setTestResult(null)
     },
     onError: () => {
       message.error(t('pages.grc.rules.versionCreateFailed'))
@@ -154,18 +193,58 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
     },
   })
 
+  const testMutation = useMutation({
+    mutationFn: grcRule_test,
+    onSuccess: (data) => {
+      setTestResult(data)
+    },
+    onError: () => {
+      message.error(t('pages.grc.rules.testFailed'))
+    },
+  })
+
   const handleSubmit = () => {
     form.validateFields().then(values => {
       saveMutation.mutate(values)
     })
   }
 
-  const applyEvaluatorExample = (evaluator: string) => {
+  const applyBuiltinExample = (evaluator: string) => {
     const example = EVALUATOR_EXAMPLES[evaluator]
     if (!example) return
     versionForm.setFieldsValue({
       applicable_scope: formatJson(example.applicableScope),
       evidence_requirements: formatJson(example.evidenceRequirements),
+    })
+  }
+
+  const applyJsonLogicExample = () => {
+    versionForm.setFieldsValue({
+      json_expression: formatJson(JSON_LOGIC_EXAMPLE.expression),
+      json_fail_message: JSON_LOGIC_EXAMPLE.fail_message,
+      json_pass_message: JSON_LOGIC_EXAMPLE.pass_message,
+      test_input_snapshot: formatJson(JSON_LOGIC_TEST_SNAPSHOT_EXAMPLE),
+    })
+  }
+
+  const handleTestRule = () => {
+    const values = versionForm.getFieldsValue() as RuleVersionFormValues
+    let payload: GrcRuleVersionCreate
+    let snapshot: Record<string, unknown>
+    try {
+      payload = buildVersionPayload(values)
+      snapshot = parseJsonObject(values.test_input_snapshot)
+    } catch {
+      message.error(t('pages.grc.rules.invalidJson'))
+      return
+    }
+    setTestResult(null)
+    testMutation.mutate({
+      evaluator_type: payload.evaluator_type,
+      evaluator_config: payload.evaluator_config,
+      applicable_scope: payload.applicable_scope,
+      evidence_requirements: payload.evidence_requirements,
+      input_snapshot: snapshot,
     })
   }
 
@@ -282,6 +361,10 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 evaluator: 'plaintext_secrets_detected',
                 applicable_scope: '{}',
                 evidence_requirements: '{}',
+                json_expression: '',
+                json_fail_message: '',
+                json_pass_message: '',
+                test_input_snapshot: '{}',
                 block_on_fail: false,
                 exception_allowed: true,
               }}
@@ -314,9 +397,29 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
               <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type || prev.evaluator !== next.evaluator}>
                 {({ getFieldValue }) => {
                   const evaluatorType = getFieldValue('evaluator_type')
-                  const evaluator = getFieldValue('evaluator')
-                  const example = EVALUATOR_EXAMPLES[evaluator]
-                  if (evaluatorType !== 'builtin') {
+                  if (evaluatorType === 'json_logic') {
+                    return (
+                      <Alert
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: 16 }}
+                        title={t('pages.grc.rules.jsonLogicGuideTitle')}
+                        description={(
+                          <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                            <Typography.Text>{t('pages.grc.rules.jsonLogicGuideDescription')}</Typography.Text>
+                            <div>
+                              <Typography.Text strong>{t('pages.grc.rules.jsonLogicExpressionExample')}</Typography.Text>
+                              <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(JSON_LOGIC_EXAMPLE.expression)}</Typography.Paragraph>
+                            </div>
+                            <Button size="small" onClick={applyJsonLogicExample}>
+                              {t('pages.grc.rules.applyJsonLogicExample')}
+                            </Button>
+                          </Space>
+                        )}
+                      />
+                    )
+                  }
+                  if (evaluatorType === 'manual') {
                     return (
                       <Alert
                         type="warning"
@@ -326,6 +429,8 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                       />
                     )
                   }
+                  const evaluator = getFieldValue('evaluator')
+                  const example = EVALUATOR_EXAMPLES[evaluator]
                   if (!example) return null
                   return (
                     <Alert
@@ -347,7 +452,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                             <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideEvidenceExample')}</Typography.Text>
                             <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.evidenceRequirements)}</Typography.Paragraph>
                           </div>
-                          <Button size="small" onClick={() => applyEvaluatorExample(evaluator)}>
+                          <Button size="small" onClick={() => applyBuiltinExample(evaluator)}>
                             {t('pages.grc.rules.applyEvaluatorExample')}
                           </Button>
                         </Space>
@@ -356,19 +461,51 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                   )
                 }}
               </Form.Item>
-              <Form.Item
-                label={t('pages.grc.rules.applicableScope')}
-                tooltip={t('pages.grc.rules.applicableScopeTip')}
-              >
-                <Input.TextArea rows={4} placeholder='{ "allowed_domains": ["api.example.com"] }' />
+
+              {/* json_logic-specific fields */}
+              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'json_logic' && (
+                  <>
+                    <Form.Item
+                      name="json_expression"
+                      label={t('pages.grc.rules.jsonLogicExpression')}
+                      tooltip={t('pages.grc.rules.jsonLogicExpressionTip')}
+                      rules={[{ required: true, message: t('pages.grc.rules.jsonLogicExpression') }]}
+                    >
+                      <Input.TextArea rows={6} placeholder='{ "and": [ { "==": [{"var":"x"}, 1] } ] }' />
+                    </Form.Item>
+                    <Form.Item name="json_fail_message" label={t('pages.grc.rules.jsonLogicFailMessage')}>
+                      <Input />
+                    </Form.Item>
+                    <Form.Item name="json_pass_message" label={t('pages.grc.rules.jsonLogicPassMessage')}>
+                      <Input />
+                    </Form.Item>
+                  </>
+                )}
               </Form.Item>
-              <Form.Item
-                name="evidence_requirements"
-                label={t('pages.grc.rules.evidenceRequirements')}
-                tooltip={t('pages.grc.rules.evidenceRequirementsTip')}
-              >
-                <Input.TextArea rows={3} placeholder='{ "required_controls": ["approval_step"] }' />
+
+              {/* Builtin scope/evidence fields (also shown for json_logic as advanced) */}
+              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+                {({ getFieldValue }) => getFieldValue('evaluator_type') !== 'json_logic' && (
+                  <>
+                    <Form.Item
+                      name="applicable_scope"
+                      label={t('pages.grc.rules.applicableScope')}
+                      tooltip={t('pages.grc.rules.applicableScopeTip')}
+                    >
+                      <Input.TextArea rows={4} placeholder='{ "allowed_domains": ["api.example.com"] }' />
+                    </Form.Item>
+                    <Form.Item
+                      name="evidence_requirements"
+                      label={t('pages.grc.rules.evidenceRequirements')}
+                      tooltip={t('pages.grc.rules.evidenceRequirementsTip')}
+                    >
+                      <Input.TextArea rows={3} placeholder='{ "required_controls": ["approval_step"] }' />
+                    </Form.Item>
+                  </>
+                )}
               </Form.Item>
+
               <Form.Item name="block_on_fail" label={t('pages.grc.rules.blockOnFail')} valuePropName="checked">
                 <Switch />
               </Form.Item>
@@ -378,6 +515,64 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
               <Form.Item name="change_note" label={t('pages.grc.rules.changeNote')}>
                 <Input.TextArea rows={2} />
               </Form.Item>
+
+              {/* Test rule section */}
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #f0f0f0' }}>
+                <Typography.Text strong>{t('pages.grc.rules.testRule')}</Typography.Text>
+                <Form.Item
+                  name="test_input_snapshot"
+                  label={t('pages.grc.rules.testInputSnapshot')}
+                  tooltip={t('pages.grc.rules.testInputSnapshotTip')}
+                  style={{ marginTop: 8 }}
+                >
+                  <Input.TextArea rows={4} placeholder='{ "data_classification": "restricted" }' />
+                </Form.Item>
+                <Space style={{ marginBottom: 12 }}>
+                  <Button onClick={handleTestRule} loading={testMutation.isPending}>
+                    {t('pages.grc.rules.runTest')}
+                  </Button>
+                </Space>
+                {testResult && (
+                  <Alert
+                    type={testResult.valid === false ? 'error' : testResult.result === 'pass' ? 'success' : testResult.result === 'fail' ? 'warning' : 'error'}
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                    title={
+                      testResult.valid === false
+                        ? t('pages.grc.rules.validationFailed')
+                        : (
+                          <Space>
+                            <span>{t('pages.grc.rules.testResult')}:</span>
+                            <Tag color={testResult.result === 'pass' ? 'green' : testResult.result === 'fail' ? 'red' : 'orange'}>
+                              {testResult.result}
+                            </Tag>
+                          </Space>
+                        )
+                    }
+                    description={(
+                      <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+                        {testResult.valid === false && testResult.errors?.length ? (
+                          <Typography.Text>{testResult.errors.join('; ')}</Typography.Text>
+                        ) : null}
+                        {testResult.message ? (
+                          <Typography.Text>
+                            {t('pages.grc.rules.testMessage')}: {testResult.message}
+                          </Typography.Text>
+                        ) : null}
+                        {testResult.evidence ? (
+                          <div>
+                            <Typography.Text strong>{t('pages.grc.rules.testEvidence')}</Typography.Text>
+                            <Typography.Paragraph code copyable style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
+                              {formatJson(testResult.evidence)}
+                            </Typography.Paragraph>
+                          </div>
+                        ) : null}
+                      </Space>
+                    )}
+                  />
+                )}
+              </div>
+
               <Button
                 type="primary"
                 loading={versionMutation.isPending}

@@ -27,6 +27,8 @@ import {
   type GrcRuleVersion,
   type GrcRuleVersionCreate,
   type GrcRuleVersionPublish,
+  type GrcRuleTestBody,
+  type GrcRuleTestResult,
   type GrcTreatmentReport,
   type RiskLevel,
   type ExceptionStatus,
@@ -73,6 +75,7 @@ import {
   updateRiskProfileRequest,
   updateTreatmentRequest,
   validateRuleEvaluatorRequest,
+  testRuleEvaluatorRequest,
   verifyAuditChainRequest,
   verifyTreatmentRequest,
 } from '@ff-ai-frontend/api'
@@ -109,6 +112,8 @@ export type {
   GrcRuleVersion,
   GrcRuleVersionCreate,
   GrcRuleVersionPublish,
+  GrcRuleTestBody,
+  GrcRuleTestResult,
   ExceptionStatus,
   RiskLevel,
 }
@@ -149,6 +154,7 @@ export const grcRuleVersion_create = request(createGrcRuleVersionRequest)
 export const grcRuleVersion_publish = request(publishGrcRuleVersionRequest)
 export const grcRuleVersion_retire = request(retireGrcRuleVersionRequest)
 export const grcRule_validate = request(validateRuleEvaluatorRequest)
+export const grcRule_test = request(testRuleEvaluatorRequest)
 
 // Evaluations
 export const grcEvaluations_create = request(createEvaluationRequest)
