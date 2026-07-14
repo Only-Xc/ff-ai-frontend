@@ -611,5 +611,36 @@ export const verifyAuditChainRequest = (fromId?: number, toId?: number) => {
   const params: Record<string, any> = {}
   if (fromId) params.from_id = String(fromId)
   if (toId) params.to_id = String(toId)
-  return createRequest<{ total_checked: number; chain_intact: boolean; broken_links: any[] }>('GET', '/api/v1/admin/grc/audit-events/verify-chain', { params })
+  return createRequest<{
+    from_id: number
+    to_id: number
+    chain_valid: boolean
+    events_in_range: number
+    broken_at: number | null
+  }>('GET', '/api/v1/admin/grc/audit-events/verify-chain', { params })
 }
+
+// ============ Reports export ============
+export interface GrcReportExportBody {
+  report_type: string
+  format: 'csv' | 'xlsx'
+}
+
+export interface GrcReportExportJob {
+  job_id: string
+  status: string
+  format?: string
+  report_type?: string
+}
+
+export interface GrcReportExportStatus {
+  job_id: string
+  status: string
+  download_url?: string
+}
+
+export const exportReportRequest = (body: GrcReportExportBody) =>
+  createRequest<GrcReportExportJob>('POST', '/api/v1/admin/grc/reports/exports', { data: body })
+
+export const getExportStatusRequest = (jobId: string) =>
+  createRequest<GrcReportExportStatus>('GET', path`/api/v1/admin/grc/reports/exports/${jobId}`)

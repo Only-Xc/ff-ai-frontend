@@ -46,6 +46,8 @@ import {
   getExceptionReportRequest,
   getEvaluationRequest,
   getEvaluationResultsRequest,
+  getExportStatusRequest,
+  exportReportRequest,
   getRiskDistributionRequest,
   getGrcRuleRequest,
   getRiskProfileRequest,
@@ -191,6 +193,8 @@ export const grcReports_complianceTrend = request(getComplianceTrendRequest)
 export const grcReports_reviewSla = request(getReviewSlaReportRequest)
 export const grcReports_exceptions = request(getExceptionReportRequest)
 export const grcReports_treatments = request(getTreatmentReportRequest)
+export const grcReports_export = request(exportReportRequest)
+export const grcReports_exportStatus = request(getExportStatusRequest)
 
 // Audit
 export const grcAuditEvents_list = request(listAuditEventsRequest)
