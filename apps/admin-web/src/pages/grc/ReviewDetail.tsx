@@ -1,7 +1,22 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
-import { App, Button, Descriptions, Drawer, Form, Input, Select, Space, Statistic, Table, Tag, Timeline, Typography } from 'antd'
+import {
+  Alert,
+  App,
+  Button,
+  Descriptions,
+  Drawer,
+  Form,
+  Input,
+  Select,
+  Space,
+  Statistic,
+  Table,
+  Tag,
+  Timeline,
+  Typography,
+} from 'antd'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 
@@ -40,6 +55,53 @@ function ruleLabel(row: GrcEvaluationResult): string {
   return row.rule_name || row.rule_code || row.rule_id
 }
 
+const DECISION_IMPACTS: Record<string, { title: string; color: string; items: string[] }> = {
+  APPROVED: {
+    title: 'approve',
+    color: 'success',
+    items: [
+      'agentWillDeploy',
+      'releaseAuthGenerated',
+      'taskWillComplete',
+    ],
+  },
+  APPROVED_WITH_CONDITIONS: {
+    title: 'approveWithConditions',
+    color: 'warning',
+    items: [
+      'conditionsMustBeMet',
+      'agentBlockedUntilConditionsMet',
+    ],
+  },
+  REJECTED: {
+    title: 'reject',
+    color: 'error',
+    items: [
+      'taskWillFail',
+      'agentStaysInSandbox',
+      'cannotRedeployWithoutNewReview',
+    ],
+  },
+  REMEDIATION_REQUIRED: {
+    title: 'requireRemediation',
+    color: 'warning',
+    items: [
+      'agentRemainsBlocked',
+      'taskRemainsPending',
+      'canRepromptAfterFix',
+    ],
+  },
+  EXCEPTION_REQUESTED: {
+    title: 'requestException',
+    color: 'processing',
+    items: [
+      'exceptionUnderReview',
+      'blockedRulesStillActive',
+      'separateApprovalRequired',
+    ],
+  },
+}
+
 export function ReviewDetail() {
   const { caseId = '' } = useParams()
   const { t } = useTranslation()
@@ -67,6 +129,7 @@ export function ReviewDetail() {
   })
 
   const [decisionOpen, setDecisionOpen] = useState(false)
+  const [selectedDecision, setSelectedDecision] = useState<string | undefined>()
   const [form] = Form.useForm()
 
   const decideMutation = useMutation({
@@ -271,6 +334,7 @@ export function ReviewDetail() {
         <Form form={form} layout="vertical">
           <Form.Item name="decision" label={t("pages.grc.reviews.decision")} rules={[{ required: true }]}>
             <Select
+              onChange={setSelectedDecision}
               options={[
                 { value: 'APPROVED', label: t('pages.grc.reviews.approve') },
                 {
@@ -297,6 +361,23 @@ export function ReviewDetail() {
             <Input.TextArea rows={4} />
           </Form.Item>
         </Form>
+
+        {selectedDecision && DECISION_IMPACTS[selectedDecision] && (
+          <Alert
+            style={{ marginBottom: 16, marginTop: 8 }}
+            type={DECISION_IMPACTS[selectedDecision].color as 'success' | 'warning' | 'error' | 'info' | 'processing'}
+            showIcon
+            message={t(`pages.grc.reviews.impactPreview.${DECISION_IMPACTS[selectedDecision].title}`)}
+            description={
+              <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
+                {DECISION_IMPACTS[selectedDecision].items.map((key) => (
+                  <li key={key}>{t(`pages.grc.reviews.impactPreview.${key}`)}</li>
+                ))}
+              </ul>
+            }
+          />
+        )}
+
         <div
           style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}
         >
