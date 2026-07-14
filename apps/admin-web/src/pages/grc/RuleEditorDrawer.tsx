@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { App, Alert, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Tag, Typography } from 'antd'
+import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Tag, Typography } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
 import {
@@ -8,15 +8,17 @@ import {
   type GrcRuleCreate,
   type GrcRuleUpdate,
   type GrcRuleVersionCreate,
-  type GrcRuleTestResult,
   grcRule_create,
   grcRule_update,
   grcRule_validate,
-  grcRule_test,
   grcRuleVersion_create,
   grcRuleVersion_publish,
   grcRuleVersion_retire,
 } from '@/api/grc'
+
+import { RuleTestPanel } from './RuleTestPanel'
+import { RuleTemplatePicker } from './RuleTemplatePicker'
+import type { RuleTemplate } from './ruleTemplates'
 
 const CATEGORIES = ['privacy', 'security', 'safety', 'model', 'data', 'tool', 'deployment', 'access_control', 'logging', 'human_oversight', 'legal', 'operational']
 const SEVERITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
@@ -158,7 +160,33 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   const [form] = Form.useForm()
   const [versionForm] = Form.useForm()
   const [showVersionForm, setShowVersionForm] = useState(false)
-  const [testResult, setTestResult] = useState<GrcRuleTestResult | null>(null)
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
+
+  const handleTemplateSelect = (template: RuleTemplate) => {
+    // Apply template values to the version form
+    const formValues: Record<string, unknown> = {
+      evaluator_type: template.evaluator_type,
+      severity: template.severity,
+      risk_score: template.risk_score,
+      block_on_fail: template.block_on_fail,
+      applicable_scope: JSON.stringify(template.applicable_scope),
+      evidence_requirements: JSON.stringify(template.evidence_requirements),
+    }
+
+    if (template.evaluator_type === 'builtin' && template.evaluator) {
+      formValues.evaluator = template.evaluator
+    } else if (template.evaluator_type === 'json_logic') {
+      const cfg = template.evaluator_config ?? {}
+      formValues.json_expression = JSON.stringify(cfg.expression ?? {}, null, 2)
+      formValues.json_fail_message = (cfg as Record<string, unknown>).fail_message ?? ''
+      formValues.json_pass_message = (cfg as Record<string, unknown>).pass_message ?? ''
+    } else if (template.evaluator_type === 'manual') {
+      formValues.manual_review_template = template.review_template ?? ''
+    }
+
+    versionForm.setFieldsValue(formValues)
+    message.success(t('pages.grc.rules.templateApplied'))
+  }
 
   const isEdit = !!rule
 
@@ -181,7 +209,6 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
       onSuccess()
       versionForm.resetFields()
       setShowVersionForm(false)
-      setTestResult(null)
     },
     onError: () => {
       message.error(t('pages.grc.rules.versionCreateFailed'))
@@ -202,16 +229,6 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
     onSuccess: () => {
       message.success(t('pages.grc.rules.versionRetired'))
       onSuccess()
-    },
-  })
-
-  const testMutation = useMutation({
-    mutationFn: grcRule_test,
-    onSuccess: (data) => {
-      setTestResult(data)
-    },
-    onError: () => {
-      message.error(t('pages.grc.rules.testFailed'))
     },
   })
 
@@ -247,27 +264,6 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
         user_impact: '可能影响最终用户回答',
         mitigations: ['人工复核', '紧急停止开关'],
       }),
-    })
-  }
-
-  const handleTestRule = () => {
-    const values = versionForm.getFieldsValue() as RuleVersionFormValues
-    let payload: GrcRuleVersionCreate
-    let snapshot: Record<string, unknown>
-    try {
-      payload = buildVersionPayload(values)
-      snapshot = parseJsonObject(values.test_input_snapshot)
-    } catch {
-      message.error(t('pages.grc.rules.invalidJson'))
-      return
-    }
-    setTestResult(null)
-    testMutation.mutate({
-      evaluator_type: payload.evaluator_type,
-      evaluator_config: payload.evaluator_config,
-      applicable_scope: payload.applicable_scope,
-      evidence_requirements: payload.evidence_requirements,
-      input_snapshot: snapshot,
     })
   }
 
@@ -368,8 +364,11 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
               </Popconfirm>
             </Space>
           )}
-          <Button type="dashed" block onClick={() => setShowVersionForm(!showVersionForm)}>
+          <Button type="dashed" block onClick={() => setShowVersionForm(!showVersionForm)} style={{ marginBottom: 8 }}>
             {showVersionForm ? t('pages.grc.rules.hide') : t('pages.grc.rules.newVersion')}
+          </Button>
+          <Button type="dashed" block onClick={() => setShowTemplatePicker(true)}>
+            {t('pages.grc.rules.fromTemplate')}
           </Button>
           {showVersionForm && (
             <Form
@@ -564,62 +563,31 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 <Input.TextArea rows={2} />
               </Form.Item>
 
-              {/* Test rule section */}
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px dashed #f0f0f0' }}>
-                <Typography.Text strong>{t('pages.grc.rules.testRule')}</Typography.Text>
-                <Form.Item
-                  name="test_input_snapshot"
-                  label={t('pages.grc.rules.testInputSnapshot')}
-                  tooltip={t('pages.grc.rules.testInputSnapshotTip')}
-                  style={{ marginTop: 8 }}
-                >
-                  <Input.TextArea rows={4} placeholder='{ "data_classification": "restricted" }' />
-                </Form.Item>
-                <Space style={{ marginBottom: 12 }}>
-                  <Button onClick={handleTestRule} loading={testMutation.isPending}>
-                    {t('pages.grc.rules.runTest')}
-                  </Button>
-                </Space>
-                {testResult && (
-                  <Alert
-                    type={testResult.valid === false ? 'error' : testResult.result === 'pass' ? 'success' : testResult.result === 'review_required' ? 'info' : testResult.result === 'fail' ? 'warning' : 'error'}
-                    showIcon
-                    style={{ marginBottom: 12 }}
-                    title={
-                      testResult.valid === false
-                        ? t('pages.grc.rules.validationFailed')
-                        : (
-                          <Space>
-                            <span>{t('pages.grc.rules.testResult')}:</span>
-                            <Tag color={testResult.result === 'pass' ? 'green' : testResult.result === 'review_required' ? 'blue' : testResult.result === 'fail' ? 'red' : 'orange'}>
-                              {testResult.result === 'review_required' ? t('pages.grc.rules.resultReviewRequired') : testResult.result}
-                            </Tag>
-                          </Space>
-                        )
-                    }
-                    description={(
-                      <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-                        {testResult.valid === false && testResult.errors?.length ? (
-                          <Typography.Text>{testResult.errors.join('; ')}</Typography.Text>
-                        ) : null}
-                        {testResult.message ? (
-                          <Typography.Text>
-                            {t('pages.grc.rules.testMessage')}: {testResult.message}
-                          </Typography.Text>
-                        ) : null}
-                        {testResult.evidence ? (
-                          <div>
-                            <Typography.Text strong>{t('pages.grc.rules.testEvidence')}</Typography.Text>
-                            <Typography.Paragraph code copyable style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>
-                              {formatJson(testResult.evidence)}
-                            </Typography.Paragraph>
-                          </div>
-                        ) : null}
-                      </Space>
-                    )}
-                  />
-                )}
-              </div>
+              {/* Test rule section - extracted to RuleTestPanel */}
+              <RuleTestPanel
+                evaluatorType={versionForm.getFieldValue('evaluator_type') ?? 'builtin'}
+                evaluatorConfig={
+                  versionForm.getFieldValue('evaluator_type') === 'json_logic'
+                    ? (() => {
+                        try {
+                          const expr = versionForm.getFieldValue('json_expression')
+                          const cfg: Record<string, unknown> = { expression: expr ? JSON.parse(expr) : {} }
+                          const fail = versionForm.getFieldValue('json_fail_message')
+                          const pass = versionForm.getFieldValue('json_pass_message')
+                          if (fail) cfg.fail_message = fail
+                          if (pass) cfg.pass_message = pass
+                          return cfg
+                        } catch {
+                          return {}
+                        }
+                      })()
+                    : versionForm.getFieldValue('evaluator_type') === 'manual'
+                      ? { review_required: true, review_template: versionForm.getFieldValue('manual_review_template') || MANUAL_EXAMPLE.review_template }
+                      : { evaluator: versionForm.getFieldValue('evaluator') }
+                }
+                applicableScope={parseJsonObject(versionForm.getFieldValue('applicable_scope'))}
+                evidenceRequirements={parseJsonObject(versionForm.getFieldValue('evidence_requirements'))}
+              />
 
               <Button
                 type="primary"
@@ -632,6 +600,11 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
           )}
         </div>
       )}
+      <RuleTemplatePicker
+        open={showTemplatePicker}
+        onClose={() => setShowTemplatePicker(false)}
+        onSelect={handleTemplateSelect}
+      />
     </Drawer>
   )
 }

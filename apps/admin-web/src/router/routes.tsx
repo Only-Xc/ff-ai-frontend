@@ -255,6 +255,43 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/grc/rules/:ruleId',
+    element: lazyLoad(() => import('@/pages/grc/RuleDetail')),
+    handle: {
+      title: 'Rule Detail',
+      titleKey: 'routes.grc.rules.detail.title',
+      navKey: 'grc-rules',
+      hideInMenu: true,
+      permission: 'admin.grc.rules.read',
+    },
+  },
+  {
+    path: '/grc/evaluations',
+    element: lazyLoad(() => import('@/pages/grc/EvaluationList')),
+    handle: {
+      title: 'Evaluations',
+      titleKey: 'routes.grc.evaluations.title',
+      subtitleKey: 'routes.grc.evaluations.subtitle',
+      icon: <DeploymentUnitOutlined />,
+      navKey: 'grc-evaluations',
+      navOrder: 9.5,
+      hideInBreadcrumb: true,
+      permission: 'admin.grc.evaluations.read',
+      menuCode: 'menu.admin.grc',
+    },
+  },
+  {
+    path: '/grc/evaluations/:evaluationId',
+    element: lazyLoad(() => import('@/pages/grc/EvaluationDetail')),
+    handle: {
+      title: 'Evaluation Detail',
+      titleKey: 'routes.grc.evaluations.detail.title',
+      navKey: 'grc-evaluations',
+      hideInMenu: true,
+      permission: 'admin.grc.evaluations.read',
+    },
+  },
+  {
     path: '/grc/exceptions',
     element: lazyLoad(() => import('@/pages/grc/ExceptionManagement')),
     handle: {

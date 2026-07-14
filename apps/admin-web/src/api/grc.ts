@@ -29,6 +29,8 @@ import {
   type GrcRuleVersionPublish,
   type GrcRuleTestBody,
   type GrcRuleTestResult,
+  type GrcRuleStatsResponse,
+  type GrcRuleVersionList,
   type GrcTreatmentReport,
   type RiskLevel,
   type ExceptionStatus,
@@ -70,6 +72,8 @@ import {
   rerunEvaluationRequest,
   retireGrcRuleVersionRequest,
   revokeExceptionRequest,
+  ruleVersionsRequest,
+  ruleStatsRequest,
   submitReviewDecisionRequest,
   updateGrcRuleRequest,
   updateRiskProfileRequest,
@@ -114,8 +118,11 @@ export type {
   GrcRuleVersionPublish,
   GrcRuleTestBody,
   GrcRuleTestResult,
-  ExceptionStatus,
+  GrcRuleStatsResponse,
+  GrcRuleVersionList,
+  GrcEvaluationCreate,
   RiskLevel,
+  ExceptionStatus,
 }
 
 export const grcKeys = {
@@ -125,6 +132,8 @@ export const grcKeys = {
   riskProfile: (id: string) => [...grcKeys.all, 'riskProfile', id] as const,
   rules: (query: Record<string, unknown>) => [...grcKeys.all, 'rules', query] as const,
   rule: (id: string) => [...grcKeys.all, 'rule', id] as const,
+  ruleVersions: (ruleId: string) => [...grcKeys.all, 'ruleVersions', ruleId] as const,
+  ruleStats: (ruleId: string) => [...grcKeys.all, 'ruleStats', ruleId] as const,
   evaluations: (query: Record<string, unknown>) => [...grcKeys.all, 'evaluations', query] as const,
   evaluation: (id: string) => [...grcKeys.all, 'evaluation', id] as const,
   reviewCases: (query: Record<string, unknown>) => [...grcKeys.all, 'reviewCases', query] as const,
@@ -155,6 +164,8 @@ export const grcRuleVersion_publish = request(publishGrcRuleVersionRequest)
 export const grcRuleVersion_retire = request(retireGrcRuleVersionRequest)
 export const grcRule_validate = request(validateRuleEvaluatorRequest)
 export const grcRule_test = request(testRuleEvaluatorRequest)
+export const grcRuleVersions_list = request(ruleVersionsRequest)
+export const grcRuleStats_get = request(ruleStatsRequest)
 
 // Evaluations
 export const grcEvaluations_create = request(createEvaluationRequest)

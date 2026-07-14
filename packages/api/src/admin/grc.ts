@@ -148,12 +148,32 @@ export interface GrcEvaluation {
   created_at: string
 }
 
+export interface GrcRuleVersionList extends ListResult<GrcRuleVersion> {}
+
+export const ruleVersionsRequest = (ruleId: string) =>
+  createRequest<GrcRuleVersionList>('GET', path`/api/v1/admin/grc/rules/${ruleId}/versions`)
+
+export interface GrcRuleStatsResponse {
+  rule_id: string
+  total_evaluations: number
+  pass_count: number
+  fail_count: number
+  error_count: number
+  review_required_count: number
+  recent_results: GrcEvaluationResult[]
+  recent_results_count: number
+}
+
+export const ruleStatsRequest = (ruleId: string) =>
+  createRequest<GrcRuleStatsResponse>('GET', path`/api/v1/admin/grc/rules/${ruleId}/stats`)
+
 export interface GrcEvaluationCreate {
   agent_id: string
   task_id?: string | null
   trigger_type: string
   organization_id?: string | null
   idempotency_key: string
+  input_snapshot?: Record<string, any>
 }
 
 export interface GrcUserRef {
