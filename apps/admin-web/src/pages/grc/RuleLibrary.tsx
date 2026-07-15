@@ -47,6 +47,7 @@ export function RuleLibrary() {
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingRule, setEditingRule] = useState<GrcRule | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<RuleTemplate | null>(null)
   const [category, setCategory] = useState<string | undefined>(undefined)
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined)
   const [keyword, setKeyword] = useState<string>('')
@@ -77,6 +78,7 @@ export function RuleLibrary() {
 
   const handleTemplateSelect = (template: RuleTemplate) => {
     setEditingRule(null)
+    setSelectedTemplate(template)
     setDrawerOpen(true)
   }
 
@@ -109,7 +111,7 @@ export function RuleLibrary() {
       render: (r: GrcRule) => (r.current_severity ? <Tag>{r.current_severity}</Tag> : '-'),
     },
     {
-      title: t('pages.grc.rules.status'),
+      title: t('pages.grc.rules.ruleActive'),
       key: 'status',
       width: 100,
       render: (r: GrcRule) => (
@@ -125,12 +127,12 @@ export function RuleLibrary() {
       render: (_: unknown, r: GrcRule) => (
         <Space>
           {hasPermission('admin.grc.rules.update') && (
-            <Button size="small" onClick={() => { setEditingRule(r); setDrawerOpen(true) }}>
+            <Button size="small" onClick={() => { setEditingRule(r); setSelectedTemplate(null); setDrawerOpen(true) }}>
               {t('pages.grc.rules.edit')}
             </Button>
           )}
           {hasPermission('admin.grc.rules.create') && (
-            <Button size="small" onClick={() => { setEditingRule(r); setDrawerOpen(true) }}>
+            <Button size="small" onClick={() => { setEditingRule(r); setSelectedTemplate(null); setDrawerOpen(true) }}>
               {t('pages.grc.rules.createVersion')}
             </Button>
           )}
@@ -151,7 +153,7 @@ export function RuleLibrary() {
               <Button onClick={() => setTemplatePickerOpen(true)}>
                 {t('pages.grc.rules.fromTemplate')}
               </Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingRule(null); setDrawerOpen(true) }}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingRule(null); setSelectedTemplate(null); setDrawerOpen(true) }}>
                 {t('pages.grc.common.create')}
               </Button>
             </>
@@ -207,7 +209,8 @@ export function RuleLibrary() {
       <RuleEditorDrawer
         open={drawerOpen}
         rule={editingRule}
-        onClose={() => { setDrawerOpen(false); setEditingRule(null) }}
+        template={selectedTemplate}
+        onClose={() => { setDrawerOpen(false); setEditingRule(null); setSelectedTemplate(null) }}
         onSuccess={() => queryClient.invalidateQueries({ queryKey: ['grc', 'rules'] })}
       />
       <RuleTemplatePicker

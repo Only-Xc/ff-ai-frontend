@@ -76,6 +76,7 @@ export interface GrcRuleCreate {
   category: string
   description?: string | null
   organization_id?: string | null
+  initial_version?: GrcRuleVersionCreate | null
 }
 
 export interface GrcRuleUpdate {

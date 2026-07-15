@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Typography } from 'antd'
 import { useMutation } from '@tanstack/react-query'
@@ -97,6 +97,24 @@ const MANUAL_EXAMPLE = {
 
 const formatJson = (value: unknown) => JSON.stringify(value, null, 2)
 
+// Default values for a first/new version form.
+const DEFAULT_VERSION_VALUES = {
+  version: 1,
+  severity: 'MEDIUM',
+  risk_score: 25,
+  evaluator_type: 'builtin',
+  evaluator: 'plaintext_secrets_detected',
+  applicable_scope: '{}',
+  evidence_requirements: '{}',
+  json_expression: '',
+  json_fail_message: '',
+  json_pass_message: '',
+  manual_review_template: MANUAL_EXAMPLE.review_template,
+  test_input_snapshot: '{}',
+  block_on_fail: false,
+  exception_allowed: true,
+}
+
 type RuleVersionFormValues = Omit<GrcRuleVersionCreate, 'applicable_scope' | 'evaluator_config' | 'evidence_requirements'> & {
   evaluator?: string
   applicable_scope?: string
@@ -149,9 +167,10 @@ const buildVersionPayload = (data: RuleVersionFormValues): GrcRuleVersionCreate 
   }
 }
 
-export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
+export function RuleEditorDrawer({ open, rule, template, onClose, onSuccess }: {
   open: boolean
   rule: GrcRule | null
+  template?: RuleTemplate | null
   onClose: () => void
   onSuccess: () => void
 }) {
@@ -162,43 +181,77 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
   const [showVersionForm, setShowVersionForm] = useState(false)
   const [showTemplatePicker, setShowTemplatePicker] = useState(false)
 
-  const handleTemplateSelect = (template: RuleTemplate) => {
+  const isEdit = !!rule
+
+  const applyTemplate = (tmpl: RuleTemplate) => {
     // Apply template values to the version form
     const formValues: Record<string, unknown> = {
-      evaluator_type: template.evaluator_type,
-      severity: template.severity,
-      risk_score: template.risk_score,
-      block_on_fail: template.block_on_fail,
-      applicable_scope: JSON.stringify(template.applicable_scope),
-      evidence_requirements: JSON.stringify(template.evidence_requirements),
+      evaluator_type: tmpl.evaluator_type,
+      severity: tmpl.severity,
+      risk_score: tmpl.risk_score,
+      block_on_fail: tmpl.block_on_fail,
+      applicable_scope: JSON.stringify(tmpl.applicable_scope),
+      evidence_requirements: JSON.stringify(tmpl.evidence_requirements),
     }
 
-    if (template.evaluator_type === 'builtin' && template.evaluator) {
-      formValues.evaluator = template.evaluator
-    } else if (template.evaluator_type === 'json_logic') {
-      const cfg = template.evaluator_config ?? {}
+    if (tmpl.evaluator_type === 'builtin' && tmpl.evaluator) {
+      formValues.evaluator = tmpl.evaluator
+    } else if (tmpl.evaluator_type === 'json_logic') {
+      const cfg = tmpl.evaluator_config ?? {}
       formValues.json_expression = JSON.stringify(cfg.expression ?? {}, null, 2)
       formValues.json_fail_message = (cfg as Record<string, unknown>).fail_message ?? ''
       formValues.json_pass_message = (cfg as Record<string, unknown>).pass_message ?? ''
-    } else if (template.evaluator_type === 'manual') {
-      formValues.manual_review_template = template.review_template ?? ''
+    } else if (tmpl.evaluator_type === 'manual') {
+      formValues.manual_review_template = tmpl.review_template ?? ''
     }
 
     versionForm.setFieldsValue(formValues)
+  }
+
+  const handleTemplateSelect = (tmpl: RuleTemplate) => {
+    setShowVersionForm(true)
+    applyTemplate(tmpl)
     message.success(t('pages.grc.rules.templateApplied'))
   }
 
-  const isEdit = !!rule
+  // Prefill create-mode forms and apply the incoming template (if any) each time the drawer opens.
+  useEffect(() => {
+    if (!open || isEdit) return
+    form.setFieldsValue({ code: '', name: '', category: 'security', description: '' })
+    versionForm.setFieldsValue({ ...DEFAULT_VERSION_VALUES })
+    if (template) {
+      form.setFieldsValue({ name: t(template.labelKey) })
+      applyTemplate(template)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, template, isEdit])
+
+  // Sync edit-mode form values whenever the drawer opens for a (different) rule.
+  // The drawer is always mounted, so initialValues alone would go stale across rules.
+  useEffect(() => {
+    if (!open || !isEdit || !rule) return
+    form.setFieldsValue({ name: rule.name, description: rule.description, is_active: rule.is_active })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, rule?.id])
 
   const saveMutation = useMutation({
-    mutationFn: (data: GrcRuleCreate | GrcRuleUpdate) =>
-      isEdit && rule
-        ? grcRule_update(rule.id, data as GrcRuleUpdate)
-        : grcRule_create(data as GrcRuleCreate),
+    mutationFn: (data: GrcRuleUpdate) => grcRule_update(rule!.id, data),
     onSuccess: () => {
-      message.success(isEdit ? t('pages.grc.rules.ruleUpdated') : t('pages.grc.rules.ruleCreated'))
+      message.success(t('pages.grc.rules.ruleUpdated'))
       onSuccess()
       onClose()
+    },
+  })
+
+  const createMutation = useMutation({
+    mutationFn: (ruleData: GrcRuleCreate) => grcRule_create(ruleData),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.ruleCreated'))
+      onSuccess()
+      onClose()
+    },
+    onError: (err: Error) => {
+      message.error(err.message || t('pages.grc.rules.versionCreateFailed'))
     },
   })
 
@@ -232,9 +285,49 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
     },
   })
 
+  // Validate an evaluator config against the backend; returns true if it may proceed.
+  const validateEvaluator = async (payload: GrcRuleVersionCreate): Promise<boolean> => {
+    try {
+      const validation = await grcRule_validate({
+        evaluator_type: payload.evaluator_type,
+        evaluator_config: payload.evaluator_config,
+        applicable_scope: payload.applicable_scope,
+        evidence_requirements: payload.evidence_requirements,
+      })
+      if (!validation.valid) {
+        message.error(`${t('pages.grc.rules.validationFailed')}: ${validation.errors.join('; ')}`)
+        return false
+      }
+      if (validation.warnings?.length) {
+        message.warning(`${t('pages.grc.rules.validationWarnings')}: ${validation.warnings.join('; ')}`)
+      } else {
+        message.success(t('pages.grc.rules.validationPassed'))
+      }
+      return true
+    } catch {
+      message.error(t('pages.grc.rules.validationFailed'))
+      return false
+    }
+  }
+
   const handleSubmit = () => {
-    form.validateFields().then(values => {
-      saveMutation.mutate(values)
+    if (isEdit) {
+      form.validateFields().then(values => {
+        saveMutation.mutate(values as GrcRuleUpdate)
+      })
+      return
+    }
+    // Create mode: build the rule shell + its first version in one call.
+    Promise.all([form.validateFields(), versionForm.validateFields()]).then(async ([ruleValues, versionValues]) => {
+      let versionPayload: GrcRuleVersionCreate
+      try {
+        versionPayload = buildVersionPayload({ ...(versionValues as RuleVersionFormValues), version: 1 })
+      } catch {
+        message.error(t('pages.grc.rules.invalidJson'))
+        return
+      }
+      if (!(await validateEvaluator(versionPayload))) return
+      createMutation.mutate({ ...(ruleValues as GrcRuleCreate), initial_version: versionPayload })
     })
   }
 
@@ -276,29 +369,212 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
         message.error(t('pages.grc.rules.invalidJson'))
         return
       }
-
-      try {
-        const validation = await grcRule_validate({
-          evaluator_type: payload.evaluator_type,
-          evaluator_config: payload.evaluator_config,
-          applicable_scope: payload.applicable_scope,
-          evidence_requirements: payload.evidence_requirements,
-        })
-        if (!validation.valid) {
-          message.error(`${t('pages.grc.rules.validationFailed')}: ${validation.errors.join('; ')}`)
-          return
-        }
-        if (validation.warnings?.length) {
-          message.warning(`${t('pages.grc.rules.validationWarnings')}: ${validation.warnings.join('; ')}`)
-        } else {
-          message.success(t('pages.grc.rules.validationPassed'))
-        }
-        versionMutation.mutate(payload)
-      } catch {
-        message.error(t('pages.grc.rules.validationFailed'))
-      }
+      if (!(await validateEvaluator(payload))) return
+      versionMutation.mutate(payload)
     })
   }
+
+  // Shared version-config fields, reused by create mode and the edit-mode "new version" form.
+  const versionFields = (
+    <>
+      <Form.Item name="version" label={t('pages.grc.rules.version')} rules={[{ required: true }]}>
+        <InputNumber min={1} disabled={!isEdit} />
+      </Form.Item>
+      <Form.Item name="severity" label={t('pages.grc.rules.severity')} rules={[{ required: true }]}>
+        <Select options={SEVERITIES.map(s => ({ value: s, label: s }))} />
+      </Form.Item>
+      <Form.Item name="risk_score" label={t('pages.grc.rules.riskScore')} rules={[{ required: true, type: 'number', min: 0, max: 100 }]}>
+        <InputNumber min={0} max={100} />
+      </Form.Item>
+      <Form.Item name="evaluator_type" label={t('pages.grc.rules.evaluatorType')} rules={[{ required: true }]}>
+        <Select options={EVALUATOR_TYPES.map(type => ({ value: type, label: t(`pages.grc.rules.evaluatorType_${type}`) }))} />
+      </Form.Item>
+      <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+        {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
+          <Form.Item name="evaluator" label={t('pages.grc.rules.builtinEvaluator')} rules={[{ required: true }]}>
+            <Select
+              showSearch
+              options={BUILTIN_EVALUATORS.map(evaluator => ({
+                value: evaluator,
+                label: t(`pages.grc.rules.evaluator_${evaluator}`),
+              }))}
+            />
+          </Form.Item>
+        )}
+      </Form.Item>
+      <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type || prev.evaluator !== next.evaluator}>
+        {({ getFieldValue }) => {
+          const evaluatorType = getFieldValue('evaluator_type')
+          if (evaluatorType === 'json_logic') {
+            return (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                title={t('pages.grc.rules.jsonLogicGuideTitle')}
+                description={(
+                  <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                    <Typography.Text>{t('pages.grc.rules.jsonLogicGuideDescription')}</Typography.Text>
+                    <div>
+                      <Typography.Text strong>{t('pages.grc.rules.jsonLogicExpressionExample')}</Typography.Text>
+                      <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(JSON_LOGIC_EXAMPLE.expression)}</Typography.Paragraph>
+                    </div>
+                    <Button size="small" onClick={applyJsonLogicExample}>
+                      {t('pages.grc.rules.applyJsonLogicExample')}
+                    </Button>
+                  </Space>
+                )}
+              />
+            )
+          }
+          if (evaluatorType === 'manual') {
+            return (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                title={t('pages.grc.rules.manualGuideTitle')}
+                description={(
+                  <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                    <Typography.Text>{t('pages.grc.rules.manualGuideDescription')}</Typography.Text>
+                    <Typography.Text>
+                      {t('pages.grc.rules.manualPendingDescription')}
+                    </Typography.Text>
+                    <Button size="small" onClick={applyManualExample}>
+                      {t('pages.grc.rules.applyManualExample')}
+                    </Button>
+                  </Space>
+                )}
+              />
+            )
+          }
+          const evaluator = getFieldValue('evaluator')
+          const example = EVALUATOR_EXAMPLES[evaluator]
+          if (!example) return null
+          return (
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              title={t('pages.grc.rules.evaluatorGuideTitle')}
+              description={(
+                <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                  <Typography.Text>{t(`pages.grc.rules.evaluatorDesc_${evaluator}`)}</Typography.Text>
+                  <Typography.Text>
+                    {t('pages.grc.rules.evaluatorGuideRequiredFields')}: {example.requiredFields.length ? example.requiredFields.join(', ') : t('pages.grc.rules.noRequiredFields')}
+                  </Typography.Text>
+                  <div>
+                    <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideApplicableScopeExample')}</Typography.Text>
+                    <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.applicableScope)}</Typography.Paragraph>
+                  </div>
+                  <div>
+                    <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideEvidenceExample')}</Typography.Text>
+                    <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.evidenceRequirements)}</Typography.Paragraph>
+                  </div>
+                  <Button size="small" onClick={() => applyBuiltinExample(evaluator)}>
+                    {t('pages.grc.rules.applyEvaluatorExample')}
+                  </Button>
+                </Space>
+              )}
+            />
+          )
+        }}
+      </Form.Item>
+
+      {/* json_logic-specific fields */}
+      <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+        {({ getFieldValue }) => getFieldValue('evaluator_type') === 'json_logic' && (
+          <>
+            <Form.Item
+              name="json_expression"
+              label={t('pages.grc.rules.jsonLogicExpression')}
+              tooltip={t('pages.grc.rules.jsonLogicExpressionTip')}
+              rules={[{ required: true, message: t('pages.grc.rules.jsonLogicExpression') }]}
+            >
+              <Input.TextArea rows={6} placeholder='{ "and": [ { "==": [{"var":"x"}, 1] } ] }' />
+            </Form.Item>
+            <Form.Item name="json_fail_message" label={t('pages.grc.rules.jsonLogicFailMessage')}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="json_pass_message" label={t('pages.grc.rules.jsonLogicPassMessage')}>
+              <Input />
+            </Form.Item>
+          </>
+        )}
+      </Form.Item>
+
+      {/* manual-specific fields */}
+      <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+        {({ getFieldValue }) => getFieldValue('evaluator_type') === 'manual' && (
+          <Form.Item
+            name="manual_review_template"
+            label={t('pages.grc.rules.manualReviewTemplate')}
+            tooltip={t('pages.grc.rules.manualReviewTemplateTip')}
+          >
+            <Input.TextArea rows={4} placeholder={MANUAL_EXAMPLE.review_template} />
+          </Form.Item>
+        )}
+      </Form.Item>
+
+      {/* Builtin scope/evidence fields */}
+      <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
+        {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
+          <>
+            <Form.Item
+              name="applicable_scope"
+              label={t('pages.grc.rules.applicableScope')}
+              tooltip={t('pages.grc.rules.applicableScopeTip')}
+            >
+              <Input.TextArea rows={4} placeholder='{ "allowed_domains": ["api.example.com"] }' />
+            </Form.Item>
+            <Form.Item
+              name="evidence_requirements"
+              label={t('pages.grc.rules.evidenceRequirements')}
+              tooltip={t('pages.grc.rules.evidenceRequirementsTip')}
+            >
+              <Input.TextArea rows={3} placeholder='{ "required_controls": ["approval_step"] }' />
+            </Form.Item>
+          </>
+        )}
+      </Form.Item>
+
+      <Form.Item name="block_on_fail" label={t('pages.grc.rules.blockOnFail')} valuePropName="checked">
+        <Switch />
+      </Form.Item>
+      <Form.Item name="exception_allowed" label={t('pages.grc.rules.exceptionAllowed')} valuePropName="checked">
+        <Switch />
+      </Form.Item>
+      <Form.Item name="change_note" label={t('pages.grc.rules.changeNote')}>
+        <Input.TextArea rows={2} />
+      </Form.Item>
+
+      {/* Test rule section - extracted to RuleTestPanel */}
+      <RuleTestPanel
+        evaluatorType={versionForm.getFieldValue('evaluator_type') ?? 'builtin'}
+        evaluatorConfig={
+          versionForm.getFieldValue('evaluator_type') === 'json_logic'
+            ? (() => {
+                try {
+                  const expr = versionForm.getFieldValue('json_expression')
+                  const cfg: Record<string, unknown> = { expression: expr ? JSON.parse(expr) : {} }
+                  const fail = versionForm.getFieldValue('json_fail_message')
+                  const pass = versionForm.getFieldValue('json_pass_message')
+                  if (fail) cfg.fail_message = fail
+                  if (pass) cfg.pass_message = pass
+                  return cfg
+                } catch {
+                  return {}
+                }
+              })()
+            : versionForm.getFieldValue('evaluator_type') === 'manual'
+              ? { review_required: true, review_template: versionForm.getFieldValue('manual_review_template') || MANUAL_EXAMPLE.review_template }
+              : { evaluator: versionForm.getFieldValue('evaluator') }
+        }
+        applicableScope={parseJsonObject(versionForm.getFieldValue('applicable_scope'))}
+        evidenceRequirements={parseJsonObject(versionForm.getFieldValue('evidence_requirements'))}
+      />
+    </>
+  )
 
   return (
     <Drawer
@@ -309,13 +585,13 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
       footer={
         <Space>
           <Button onClick={onClose}>{t('pages.grc.common.cancel')}</Button>
-          <Button type="primary" onClick={handleSubmit} loading={saveMutation.isPending}>
+          <Button type="primary" onClick={handleSubmit} loading={isEdit ? saveMutation.isPending : createMutation.isPending}>
             {t('pages.grc.common.save')}
           </Button>
         </Space>
       }
     >
-      <Form form={form} layout="vertical" initialValues={isEdit ? { name: rule?.name, description: rule?.description } : { code: '', name: '', category: 'security', description: '' }}>
+      <Form form={form} layout="vertical" initialValues={isEdit ? { name: rule?.name, description: rule?.description, is_active: rule?.is_active } : { code: '', name: '', category: 'security', description: '' }}>
         {!isEdit && (
           <Form.Item name="code" label={t('pages.grc.rules.ruleCode')} rules={[{ required: true }]}>
             <Input placeholder="GRC-SEC-001" />
@@ -342,7 +618,31 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
         <Form.Item name="description" label={t('pages.grc.rules.description')}>
           <Input.TextArea rows={3} />
         </Form.Item>
+        {isEdit && (
+          <Form.Item name="is_active" label={t('pages.grc.rules.ruleActive')} valuePropName="checked" tooltip={t('pages.grc.rules.ruleActiveTip')}>
+            <Switch checkedChildren={t('pages.grc.rules.enabled')} unCheckedChildren={t('pages.grc.rules.disabled')} />
+          </Form.Item>
+        )}
       </Form>
+
+      {/* Create mode: first version fields (prefilled from template when provided) */}
+      {!isEdit && (
+        <div style={{ marginTop: 8, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
+          <Space style={{ marginBottom: 12 }} align="center">
+            <Typography.Text strong>{t('pages.grc.rules.firstVersionConfig')}</Typography.Text>
+            <Button size="small" onClick={() => setShowTemplatePicker(true)}>
+              {t('pages.grc.rules.fromTemplate')}
+            </Button>
+          </Space>
+          <Form
+            form={versionForm}
+            layout="vertical"
+            initialValues={{ ...DEFAULT_VERSION_VALUES }}
+          >
+            {versionFields}
+          </Form>
+        </div>
+      )}
 
       {/* Version management section (edit mode only) */}
       {isEdit && rule && (
@@ -402,202 +702,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 exception_allowed: true,
               }}
             >
-              <Form.Item name="version" label={t('pages.grc.rules.version')} rules={[{ required: true }]}>
-                <InputNumber min={1} />
-              </Form.Item>
-              <Form.Item name="severity" label={t('pages.grc.rules.severity')} rules={[{ required: true }]}>
-                <Select options={SEVERITIES.map(s => ({ value: s, label: s }))} />
-              </Form.Item>
-              <Form.Item name="risk_score" label={t('pages.grc.rules.riskScore')} rules={[{ required: true, type: 'number', min: 0, max: 100 }]}>
-                <InputNumber min={0} max={100} />
-              </Form.Item>
-              <Form.Item name="evaluator_type" label={t('pages.grc.rules.evaluatorType')} rules={[{ required: true }]}>
-                <Select options={EVALUATOR_TYPES.map(type => ({ value: type, label: t(`pages.grc.rules.evaluatorType_${type}`) }))} />
-              </Form.Item>
-              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
-                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
-                  <Form.Item name="evaluator" label={t('pages.grc.rules.builtinEvaluator')} rules={[{ required: true }]}>
-                    <Select
-                      showSearch
-                      options={BUILTIN_EVALUATORS.map(evaluator => ({
-                        value: evaluator,
-                        label: t(`pages.grc.rules.evaluator_${evaluator}`),
-                      }))}
-                    />
-                  </Form.Item>
-                )}
-              </Form.Item>
-              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type || prev.evaluator !== next.evaluator}>
-                {({ getFieldValue }) => {
-                  const evaluatorType = getFieldValue('evaluator_type')
-                  if (evaluatorType === 'json_logic') {
-                    return (
-                      <Alert
-                        type="info"
-                        showIcon
-                        style={{ marginBottom: 16 }}
-                        title={t('pages.grc.rules.jsonLogicGuideTitle')}
-                        description={(
-                          <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                            <Typography.Text>{t('pages.grc.rules.jsonLogicGuideDescription')}</Typography.Text>
-                            <div>
-                              <Typography.Text strong>{t('pages.grc.rules.jsonLogicExpressionExample')}</Typography.Text>
-                              <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(JSON_LOGIC_EXAMPLE.expression)}</Typography.Paragraph>
-                            </div>
-                            <Button size="small" onClick={applyJsonLogicExample}>
-                              {t('pages.grc.rules.applyJsonLogicExample')}
-                            </Button>
-                          </Space>
-                        )}
-                      />
-                    )
-                  }
-                  if (evaluatorType === 'manual') {
-                    return (
-                      <Alert
-                        type="info"
-                        showIcon
-                        style={{ marginBottom: 16 }}
-                        title={t('pages.grc.rules.manualGuideTitle')}
-                        description={(
-                          <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                            <Typography.Text>{t('pages.grc.rules.manualGuideDescription')}</Typography.Text>
-                            <Typography.Text>
-                              {t('pages.grc.rules.manualPendingDescription')}
-                            </Typography.Text>
-                            <Button size="small" onClick={applyManualExample}>
-                              {t('pages.grc.rules.applyManualExample')}
-                            </Button>
-                          </Space>
-                        )}
-                      />
-                    )
-                  }
-                  const evaluator = getFieldValue('evaluator')
-                  const example = EVALUATOR_EXAMPLES[evaluator]
-                  if (!example) return null
-                  return (
-                    <Alert
-                      type="info"
-                      showIcon
-                      style={{ marginBottom: 16 }}
-                      title={t('pages.grc.rules.evaluatorGuideTitle')}
-                      description={(
-                        <Space orientation="vertical" size={8} style={{ width: '100%' }}>
-                          <Typography.Text>{t(`pages.grc.rules.evaluatorDesc_${evaluator}`)}</Typography.Text>
-                          <Typography.Text>
-                            {t('pages.grc.rules.evaluatorGuideRequiredFields')}: {example.requiredFields.length ? example.requiredFields.join(', ') : t('pages.grc.rules.noRequiredFields')}
-                          </Typography.Text>
-                          <div>
-                            <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideApplicableScopeExample')}</Typography.Text>
-                            <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.applicableScope)}</Typography.Paragraph>
-                          </div>
-                          <div>
-                            <Typography.Text strong>{t('pages.grc.rules.evaluatorGuideEvidenceExample')}</Typography.Text>
-                            <Typography.Paragraph code copyable style={{ marginBottom: 4 }}>{formatJson(example.evidenceRequirements)}</Typography.Paragraph>
-                          </div>
-                          <Button size="small" onClick={() => applyBuiltinExample(evaluator)}>
-                            {t('pages.grc.rules.applyEvaluatorExample')}
-                          </Button>
-                        </Space>
-                      )}
-                    />
-                  )
-                }}
-              </Form.Item>
-
-              {/* json_logic-specific fields */}
-              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
-                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'json_logic' && (
-                  <>
-                    <Form.Item
-                      name="json_expression"
-                      label={t('pages.grc.rules.jsonLogicExpression')}
-                      tooltip={t('pages.grc.rules.jsonLogicExpressionTip')}
-                      rules={[{ required: true, message: t('pages.grc.rules.jsonLogicExpression') }]}
-                    >
-                      <Input.TextArea rows={6} placeholder='{ "and": [ { "==": [{"var":"x"}, 1] } ] }' />
-                    </Form.Item>
-                    <Form.Item name="json_fail_message" label={t('pages.grc.rules.jsonLogicFailMessage')}>
-                      <Input />
-                    </Form.Item>
-                    <Form.Item name="json_pass_message" label={t('pages.grc.rules.jsonLogicPassMessage')}>
-                      <Input />
-                    </Form.Item>
-                  </>
-                )}
-              </Form.Item>
-
-              {/* manual-specific fields */}
-              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
-                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'manual' && (
-                  <Form.Item
-                    name="manual_review_template"
-                    label={t('pages.grc.rules.manualReviewTemplate')}
-                    tooltip={t('pages.grc.rules.manualReviewTemplateTip')}
-                  >
-                    <Input.TextArea rows={4} placeholder={MANUAL_EXAMPLE.review_template} />
-                  </Form.Item>
-                )}
-              </Form.Item>
-
-              {/* Builtin scope/evidence fields (also shown for json_logic as advanced) */}
-              <Form.Item noStyle shouldUpdate={(prev, next) => prev.evaluator_type !== next.evaluator_type}>
-                {({ getFieldValue }) => getFieldValue('evaluator_type') === 'builtin' && (
-                  <>
-                    <Form.Item
-                      name="applicable_scope"
-                      label={t('pages.grc.rules.applicableScope')}
-                      tooltip={t('pages.grc.rules.applicableScopeTip')}
-                    >
-                      <Input.TextArea rows={4} placeholder='{ "allowed_domains": ["api.example.com"] }' />
-                    </Form.Item>
-                    <Form.Item
-                      name="evidence_requirements"
-                      label={t('pages.grc.rules.evidenceRequirements')}
-                      tooltip={t('pages.grc.rules.evidenceRequirementsTip')}
-                    >
-                      <Input.TextArea rows={3} placeholder='{ "required_controls": ["approval_step"] }' />
-                    </Form.Item>
-                  </>
-                )}
-              </Form.Item>
-
-              <Form.Item name="block_on_fail" label={t('pages.grc.rules.blockOnFail')} valuePropName="checked">
-                <Switch />
-              </Form.Item>
-              <Form.Item name="exception_allowed" label={t('pages.grc.rules.exceptionAllowed')} valuePropName="checked">
-                <Switch />
-              </Form.Item>
-              <Form.Item name="change_note" label={t('pages.grc.rules.changeNote')}>
-                <Input.TextArea rows={2} />
-              </Form.Item>
-
-              {/* Test rule section - extracted to RuleTestPanel */}
-              <RuleTestPanel
-                evaluatorType={versionForm.getFieldValue('evaluator_type') ?? 'builtin'}
-                evaluatorConfig={
-                  versionForm.getFieldValue('evaluator_type') === 'json_logic'
-                    ? (() => {
-                        try {
-                          const expr = versionForm.getFieldValue('json_expression')
-                          const cfg: Record<string, unknown> = { expression: expr ? JSON.parse(expr) : {} }
-                          const fail = versionForm.getFieldValue('json_fail_message')
-                          const pass = versionForm.getFieldValue('json_pass_message')
-                          if (fail) cfg.fail_message = fail
-                          if (pass) cfg.pass_message = pass
-                          return cfg
-                        } catch {
-                          return {}
-                        }
-                      })()
-                    : versionForm.getFieldValue('evaluator_type') === 'manual'
-                      ? { review_required: true, review_template: versionForm.getFieldValue('manual_review_template') || MANUAL_EXAMPLE.review_template }
-                      : { evaluator: versionForm.getFieldValue('evaluator') }
-                }
-                applicableScope={parseJsonObject(versionForm.getFieldValue('applicable_scope'))}
-                evidenceRequirements={parseJsonObject(versionForm.getFieldValue('evidence_requirements'))}
-              />
+              {versionFields}
 
               <Button
                 type="primary"
