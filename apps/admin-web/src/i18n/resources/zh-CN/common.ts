@@ -5,6 +5,7 @@ export default {
   'common.actions.retry': '重试',
   'common.actions.reset': '重置',
   'common.actions.cancel': '取消',
+  'common.actions.confirm': '确认',
   'common.actions.save': '保存',
   'common.actions.create': '创建',
   'common.actions.delete': '删除',

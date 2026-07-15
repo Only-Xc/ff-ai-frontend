@@ -5,6 +5,7 @@ export default {
   'common.actions.retry': 'Retry',
   'common.actions.reset': 'Reset',
   'common.actions.cancel': 'Cancel',
+  'common.actions.confirm': 'Confirm',
   'common.actions.save': 'Save',
   'common.actions.create': 'Create',
   'common.actions.delete': 'Delete',

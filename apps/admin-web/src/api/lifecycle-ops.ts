@@ -10,14 +10,13 @@ import {
 import { request } from './_request'
 
 export type {
-  DemoteAgent,
   DemoteAgentPayload,
   HotLifecycleCandidate,
   IdleLifecycleCandidate,
   LifecycleHotCandidateListQuery,
   LifecycleIdleCandidateListQuery,
-  PromoteAgent,
   PromoteAgentPayload,
+  StageSwitchRequestAck,
 } from '@ff-ai-frontend/api'
 
 export const adminAgentsKeys = {

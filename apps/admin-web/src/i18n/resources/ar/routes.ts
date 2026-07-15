@@ -40,6 +40,17 @@ export default {
   'routes.grc.exceptions.subtitle': 'طلب والموافقة ومراقبة استثناءات الامتثال',
   'routes.grc.reports.title': 'تقارير الحوكمة',
   'routes.grc.reports.subtitle': 'توزيع المخاطر واتجاهات الامتثال ومؤشرات الموافقة',
+  'routes.stageSwitch.requests.title': 'تبديل المرحلة',
+  'routes.stageSwitch.requests.subtitle':
+    'سير الموافقة متعدد الأطراف وحالة التنفيذ للترقية والتخفيض',
+  'routes.stageSwitch.requestDetail.title': 'تفاصيل تبديل المرحلة',
+  'routes.stageSwitch.templates.title': 'قوالب الموافقة',
+  'routes.stageSwitch.templates.subtitle':
+    'تهيئة عقد الموافقة وسياسات التذكير لتبديل المرحلة',
+  'routes.stageSwitch.templateEditor.title': 'محرر قالب الموافقة',
+  'routes.stageSwitch.notifications.title': 'مركز الإشعارات',
+  'routes.stageSwitch.notifications.subtitle':
+    'مراجعة إشعارات الموافقة والتنفيذ لتبديل المرحلة',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
 }

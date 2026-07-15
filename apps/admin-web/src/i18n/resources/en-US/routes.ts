@@ -40,6 +40,17 @@ export default {
   'routes.grc.exceptions.subtitle': 'Request, approve and monitor compliance exceptions',
   'routes.grc.reports.title': 'Governance Reports',
   'routes.grc.reports.subtitle': 'Risk distribution, compliance trends and review SLA',
+  'routes.stageSwitch.requests.title': 'Stage Switch',
+  'routes.stageSwitch.requests.subtitle':
+    'Multi-party approval flow and execution status for promote and demote',
+  'routes.stageSwitch.requestDetail.title': 'Stage Switch Detail',
+  'routes.stageSwitch.templates.title': 'Approval Templates',
+  'routes.stageSwitch.templates.subtitle':
+    'Configure approval nodes and reminder policies for stage switches',
+  'routes.stageSwitch.templateEditor.title': 'Approval Template Editor',
+  'routes.stageSwitch.notifications.title': 'Notification Center',
+  'routes.stageSwitch.notifications.subtitle':
+    'Review stage switch approval and execution notifications',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
 }

@@ -5,6 +5,7 @@ import pickBy from 'lodash-es/pickBy'
 import trim from 'lodash-es/trim'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 import { useEventCallback } from 'usehooks-ts'
 
 import {
@@ -38,6 +39,7 @@ export function LifecycleOps() {
   const { t } = useTranslation()
   const { styles } = useLifecycleOpsStyles()
   const { message } = App.useApp()
+  const navigate = useNavigate()
   const operatorId = useAuthStore((state) => state.user?.id)
   const [filterForm] = Form.useForm<FilterValues>()
   const [demoteCandidate, setDemoteCandidate] =
@@ -99,9 +101,13 @@ export function LifecycleOps() {
     onSuccess: (result) => {
       invalidateCandidates()
       closeDemoteModal()
-      void message.success(
-        result.message || t('pages.lifecycle.messages.demoteSuccess'),
-      )
+      void message.success(t('pages.lifecycle.messages.demoteRequested'))
+      if (result.request_id) {
+        void navigate(`/stage-switch/requests/${result.request_id}`)
+      }
+    },
+    onError: (error) => {
+      void message.error(getErrorMessage(error, t))
     },
   })
 
@@ -128,13 +134,13 @@ export function LifecycleOps() {
     onSuccess: (result) => {
       invalidateCandidates()
       closePromoteModal()
-      void message.success(
-        result.task_id
-          ? t('pages.lifecycle.messages.deploymentCreatedWithTask', {
-              taskId: result.task_id,
-            })
-          : result.message || t('pages.lifecycle.messages.deploymentCreated'),
-      )
+      void message.success(t('pages.lifecycle.messages.promoteRequested'))
+      if (result.request_id) {
+        void navigate(`/stage-switch/requests/${result.request_id}`)
+      }
+    },
+    onError: (error) => {
+      void message.error(getErrorMessage(error, t))
     },
   })
 

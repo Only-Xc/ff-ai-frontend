@@ -32,11 +32,16 @@ export interface DemoteAgentPayload {
   operator_id?: string
 }
 
-export interface DemoteAgent {
+/**
+ * Lifecycle demote/promote now enqueue a stage-switch approval request
+ * (HTTP 202) instead of switching the stage synchronously.
+ */
+export interface StageSwitchRequestAck {
+  request_id: string
+  request_no: string
+  approval_status: string
+  execution_status: string
   message: string
-  agent_id: string
-  current_status: string
-  previous_status: string
 }
 
 export interface PromoteAgentPayload {
@@ -47,14 +52,6 @@ export interface PromoteAgentPayload {
     memory?: string
   }
   operator_id?: string
-}
-
-export interface PromoteAgent {
-  message: string
-  task_id: string
-  agent_id: string
-  target_status: string
-  previous_status: string
 }
 
 export const listAdminIdleLifecycleCandidatesRequest = (
@@ -79,15 +76,19 @@ export const demoteAdminAgentRequest = (
   agentId: string,
   data: DemoteAgentPayload,
 ) =>
-  createRequest<DemoteAgent>('POST', path`/api/admin/agents/${agentId}/demote`, {
-    data,
-  })
+  createRequest<StageSwitchRequestAck>(
+    'POST',
+    path`/api/admin/agents/${agentId}/demote`,
+    {
+      data,
+    },
+  )
 
 export const promoteAdminAgentRequest = (
   agentId: string,
   data: PromoteAgentPayload,
 ) =>
-  createRequest<PromoteAgent>(
+  createRequest<StageSwitchRequestAck>(
     'POST',
     path`/api/admin/agents/${agentId}/promote`,
     { data },

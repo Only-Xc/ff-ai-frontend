@@ -5,6 +5,7 @@ export default {
   'common.actions.retry': 'إعادة المحاولة',
   'common.actions.reset': 'إعادة ضبط',
   'common.actions.cancel': 'إلغاء',
+  'common.actions.confirm': 'تأكيد',
   'common.actions.save': 'حفظ',
   'common.actions.create': 'إنشاء',
   'common.actions.delete': 'حذف',
