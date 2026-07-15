@@ -447,6 +447,9 @@ export default {
   'pages.examManagement.validation.required': '必填',
   'pages.forbidden.subtitle': '你没有访问当前页面的权限。',
   'pages.forbidden.backHome': '返回首页',
+  'pages.forbidden.logout': '退出登录',
+  'pages.forbidden.noAccessSubtitle':
+    '当前账号没有可访问的管理台页面，请退出登录后使用其他账号，或联系管理员分配权限。',
   'pages.rbac.title': '角色权限',
   'pages.rbac.subtitle': '管理系统角色、权限分配和用户授权。',
   'pages.rbac.notice.title': 'RBAC 基础能力已接入',

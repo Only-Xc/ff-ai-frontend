@@ -4,6 +4,11 @@ export default {
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',
   'pages.notFound.subtitle': 'الصفحة غير موجودة أو تم نقلها.',
   'pages.notFound.backHome': 'العودة للرئيسية',
+  'pages.forbidden.subtitle': 'ليس لديك إذن للوصول إلى هذه الصفحة.',
+  'pages.forbidden.backHome': 'العودة للرئيسية',
+  'pages.forbidden.logout': 'تسجيل الخروج',
+  'pages.forbidden.noAccessSubtitle':
+    'لا يمكن لهذا الحساب الوصول إلى أي صفحة في وحدة التحكم الإدارية. يرجى تسجيل الخروج واستخدام حساب آخر، أو التواصل مع المسؤول لمنح الصلاحيات.',
   'pages.routeBoundary.loading': 'جار تحميل الصفحة',
   'pages.routeBoundary.chunkLoadFailed': 'فشل تحميل موارد الصفحة',
   'pages.routeBoundary.renderFailed': 'فشل عرض الصفحة',

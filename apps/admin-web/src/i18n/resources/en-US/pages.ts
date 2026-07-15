@@ -464,6 +464,9 @@ export default {
   'pages.examManagement.validation.required': 'Required',
   'pages.forbidden.subtitle': 'You do not have permission to access this page.',
   'pages.forbidden.backHome': 'Back home',
+  'pages.forbidden.logout': 'Sign out',
+  'pages.forbidden.noAccessSubtitle':
+    'This account cannot access any admin console page. Please sign out and use another account, or ask an administrator to grant permissions.',
   'pages.rbac.title': 'Role & Permissions',
   'pages.rbac.subtitle': 'Manage system roles, permission assignments, and user authorization.',
   'pages.rbac.notice.title': 'RBAC foundation connected',
