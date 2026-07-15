@@ -26,9 +26,11 @@ import {
   grcReports_exceptions,
   grcReports_reviewSla,
   grcReports_riskDistribution,
+  grcReports_ruleHits,
   grcReports_treatments,
   type GrcAuditEvent,
   type GrcRiskDistributionItem,
+  type GrcRuleHitsReportItem,
   type TreatmentStatus,
   type TreatmentType,
 } from '@/api/grc'
@@ -97,6 +99,11 @@ export function GovernanceReports() {
   const treatmentQuery = useQuery({
     queryKey: ['grc', 'reports', 'treatments', days, orgId],
     queryFn: () => grcReports_treatments(days, orgId ?? undefined),
+  })
+
+  const ruleHitsQuery = useQuery({
+    queryKey: ['grc', 'reports', 'rule-hits', days, orgId],
+    queryFn: () => grcReports_ruleHits(days, orgId ?? undefined),
   })
 
   const auditQuery = useQuery({
@@ -433,6 +440,87 @@ export function GovernanceReports() {
               </Row>
             </Space>
           )}
+        </Card>
+      ),
+    },
+    {
+      key: 'rule-hits',
+      label: t('pages.grc.reports.ruleHits'),
+      children: (
+        <Card>
+          <Table<GrcRuleHitsReportItem>
+            size="small"
+            dataSource={ruleHitsQuery.data ?? []}
+            loading={ruleHitsQuery.isFetching}
+            rowKey="rule_id"
+            locale={{ emptyText: t('pages.grc.reports.ruleHitsNoData') }}
+            columns={[
+              {
+                title: t('pages.grc.rules.code'),
+                dataIndex: 'rule_code',
+                key: 'rule_code',
+                width: 120,
+              },
+              {
+                title: t('pages.grc.rules.name'),
+                dataIndex: 'rule_name',
+                key: 'rule_name',
+                ellipsis: true,
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsTotal'),
+                dataIndex: 'total_evaluations',
+                key: 'total_evaluations',
+                width: 100,
+                sorter: (a, b) => a.total_evaluations - b.total_evaluations,
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsPass'),
+                dataIndex: 'pass_count',
+                key: 'pass_count',
+                width: 80,
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsFail'),
+                dataIndex: 'fail_count',
+                key: 'fail_count',
+                width: 80,
+                sorter: (a, b) => a.fail_count - b.fail_count,
+                defaultSortOrder: 'descend',
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsError'),
+                dataIndex: 'error_count',
+                key: 'error_count',
+                width: 80,
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsReviewReq'),
+                dataIndex: 'review_required_count',
+                key: 'review_required_count',
+                width: 100,
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsRate'),
+                dataIndex: 'hit_rate',
+                key: 'hit_rate',
+                width: 100,
+                render: (v: number) => (
+                  <Tag color={v > 50 ? 'red' : v > 20 ? 'orange' : v > 0 ? 'blue' : 'green'}>
+                    {v}%
+                  </Tag>
+                ),
+              },
+              {
+                title: t('pages.grc.reports.ruleHitsLastHit'),
+                dataIndex: 'last_evaluated_at',
+                key: 'last_evaluated_at',
+                width: 170,
+                render: (v: string | null) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-'),
+              },
+            ]}
+            pagination={false}
+          />
         </Card>
       ),
     },

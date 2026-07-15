@@ -389,6 +389,19 @@ export interface GrcTreatmentReport {
   closure_rate: number
 }
 
+export interface GrcRuleHitsReportItem {
+  rule_id: string
+  rule_code: string
+  rule_name: string
+  total_evaluations: number
+  pass_count: number
+  fail_count: number
+  error_count: number
+  review_required_count: number
+  hit_rate: number
+  last_evaluated_at: string | null
+}
+
 export interface AgentReleaseStatus {
   agent_id: string
   last_evaluation_id: string | null
@@ -629,6 +642,12 @@ export const getTreatmentReportRequest = (days = 30, organizationId?: string) =>
   const params: Record<string, any> = { days: String(days) }
   if (organizationId) params.organization_id = organizationId
   return createRequest<GrcTreatmentReport>('GET', '/api/v1/admin/grc/reports/treatments', { params })
+}
+
+export const getRuleHitsReportRequest = (days = 30, organizationId?: string) => {
+  const params: Record<string, any> = { days: String(days) }
+  if (organizationId) params.organization_id = organizationId
+  return createRequest<GrcRuleHitsReportItem[]>('GET', '/api/v1/admin/grc/reports/rule-hits', { params })
 }
 
 export interface GrcAuditEventListQuery extends PaginationQuery {

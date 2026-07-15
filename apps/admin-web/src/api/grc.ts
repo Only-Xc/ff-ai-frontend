@@ -57,6 +57,7 @@ import {
   getRiskProfileRequest,
   getReviewCaseRequest,
   getReviewSlaReportRequest,
+  getRuleHitsReportRequest,
   getTreatmentReportRequest,
   listAuditEventsRequest,
   listExceptionsRequest,
@@ -118,6 +119,7 @@ export type {
   GrcRuleVersionPublish,
   GrcRuleTestBody,
   GrcRuleTestResult,
+  GrcRuleHitsReportItem,
   GrcRuleStatsResponse,
   GrcRuleVersionList,
   GrcEvaluationCreate,
@@ -212,6 +214,9 @@ export const grcReports_exceptions = request(getExceptionReportRequest)
 export const grcReports_treatments = request(getTreatmentReportRequest)
 export const grcReports_export = request(exportReportRequest)
 export const grcReports_exportStatus = request(getExportStatusRequest)
+
+// Rule hits
+export const grcReports_ruleHits = request(getRuleHitsReportRequest)
 
 // Audit
 export const grcAuditEvents_list = request(listAuditEventsRequest)
