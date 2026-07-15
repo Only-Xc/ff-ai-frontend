@@ -25,11 +25,15 @@ export function PermissionTree({
 
   const treeData = useMemo(() => {
     const filtered = search
-      ? permissions.filter(
-          (p) =>
-            p.name.toLowerCase().includes(search.toLowerCase()) ||
-            p.code.toLowerCase().includes(search.toLowerCase()),
-        )
+      ? permissions.filter((p) => {
+          const label = search.toLowerCase()
+          const name = t(`pages.rbac.permissions.${p.code}`, p.name)
+          return (
+            name.toLowerCase().includes(label) ||
+            p.name.toLowerCase().includes(label) ||
+            p.code.toLowerCase().includes(label)
+          )
+        })
       : permissions
 
     const groups = new Map<string, Permission[]>()
@@ -40,19 +44,19 @@ export function PermissionTree({
     }
 
     return Array.from(groups.entries()).map(([group, items]) => ({
-      title: group,
+      title: t(`pages.rbac.permissionGroups.${group}`, group),
       key: `group:${group}`,
       children: items.map((p) => ({
         title: (
           <span className="flex items-center justify-between">
-            <span>{p.name}</span>
+            <span>{t(`pages.rbac.permissions.${p.code}`, p.name)}</span>
             <span className="text-xs text-gray-400">{p.code}</span>
           </span>
         ),
         key: p.id,
       })),
     })) as DataNode[]
-  }, [permissions, search])
+  }, [permissions, search, t])
 
   return (
     <div className="flex h-full flex-col">
