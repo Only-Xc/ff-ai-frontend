@@ -25,6 +25,13 @@ const STATUS_COLORS: Record<string, string> = {
   retired: 'red',
 }
 
+const SEVERITY_COLORS: Record<string, string> = {
+  LOW: 'green',
+  MEDIUM: 'blue',
+  HIGH: 'orange',
+  CRITICAL: 'red',
+}
+
 const RESULT_COLORS: Record<string, string> = {
   pass: 'green',
   fail: 'red',
@@ -161,19 +168,55 @@ export function RuleDetail() {
         </Tag>
         {latestVer && (
           <Tag color={STATUS_COLORS[latestVer.status] ?? 'default'}>
-            v{latestVer.version} · {latestVer.status}
+            v{latestVer.version} · {t(`pages.grc.rules.status_${latestVer.status}`, latestVer.status)}
           </Tag>
         )}
         <Tag>{rule.category}</Tag>
       </Space>
 
       {/* KPI Cards */}
-      <Space size="middle" style={{ marginBottom: 24 }} wrap>
-        <Statistic title={t('pages.grc.rules.evaluatorType')} value={latestVer?.evaluator_type ?? '-'} />
-        <Statistic title={t('pages.grc.rules.severity')} value={latestVer?.severity ?? '-'} />
-        <Statistic title={t('pages.grc.rules.blockOnFail')} value={latestVer?.block_on_fail ? 'Yes' : 'No'} />
-        <Statistic title={t('pages.grc.rules.exceptionAllowed')} value={latestVer?.exception_allowed ? 'Yes' : 'No'} />
-      </Space>
+      <Descriptions
+        column={{ xs: 1, sm: 2, md: 4 }}
+        style={{ marginBottom: 24 }}
+        items={[
+          {
+            key: 'evaluatorType',
+            label: t('pages.grc.rules.evaluatorType'),
+            children: latestVer?.evaluator_type
+              ? t(`pages.grc.rules.evaluatorType_${latestVer.evaluator_type}`, latestVer.evaluator_type)
+              : '-',
+          },
+          {
+            key: 'severity',
+            label: t('pages.grc.rules.severity'),
+            children: latestVer?.severity ? (
+              <Tag color={SEVERITY_COLORS[latestVer.severity] ?? 'default'} style={{ marginInlineEnd: 0 }}>
+                {latestVer.severity}
+              </Tag>
+            ) : (
+              '-'
+            ),
+          },
+          {
+            key: 'blockOnFail',
+            label: t('pages.grc.rules.blockOnFail'),
+            children: (
+              <Tag color={latestVer?.block_on_fail ? 'red' : 'default'} style={{ marginInlineEnd: 0 }}>
+                {latestVer?.block_on_fail ? t('pages.grc.common.yes') : t('pages.grc.common.no')}
+              </Tag>
+            ),
+          },
+          {
+            key: 'exceptionAllowed',
+            label: t('pages.grc.rules.exceptionAllowed'),
+            children: (
+              <Tag color={latestVer?.exception_allowed ? 'green' : 'default'} style={{ marginInlineEnd: 0 }}>
+                {latestVer?.exception_allowed ? t('pages.grc.common.yes') : t('pages.grc.common.no')}
+              </Tag>
+            ),
+          },
+        ]}
+      />
 
       <Tabs
         defaultActiveKey="overview"

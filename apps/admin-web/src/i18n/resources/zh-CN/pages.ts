@@ -1047,6 +1047,8 @@ export default {
   'pages.grc.common.search': '搜索',
   'pages.grc.common.filter': '筛选',
   'pages.grc.common.refresh': '刷新',
+  'pages.grc.common.yes': '是',
+  'pages.grc.common.no': '否',
   'pages.grc.common.totalItems': '共 {{count}} 条',
   'pages.grc.common.noData': '暂无数据',
   'pages.grc.common.loading': '加载中',

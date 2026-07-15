@@ -1062,6 +1062,8 @@ export default {
   'pages.grc.common.search': 'Search',
   'pages.grc.common.filter': 'Filter',
   'pages.grc.common.refresh': 'Refresh',
+  'pages.grc.common.yes': 'Yes',
+  'pages.grc.common.no': 'No',
   'pages.grc.common.totalItems': '{{count}} items',
   'pages.grc.common.noData': 'No data',
   'pages.grc.common.loading': 'Loading',

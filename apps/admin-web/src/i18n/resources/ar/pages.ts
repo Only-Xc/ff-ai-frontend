@@ -1060,6 +1060,8 @@ export default {
   'pages.grc.common.search': 'بحث',
   'pages.grc.common.filter': 'تصفية',
   'pages.grc.common.refresh': 'تحديث',
+  'pages.grc.common.yes': 'نعم',
+  'pages.grc.common.no': 'لا',
   'pages.grc.common.totalItems': '{{count}} عنصر',
   'pages.grc.common.noData': 'لا توجد بيانات',
   'pages.grc.common.loading': 'جارٍ التحميل',
