@@ -11,9 +11,10 @@ import {
   Tag,
   message,
 } from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 
-import { PageContainer } from '@ff-ai-frontend/components'
+import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import {
   grcEvaluations_list,
   grcEvaluation_rerun,
@@ -55,14 +56,15 @@ export function EvaluationList() {
     result: '',
     risk_level: '',
   })
+  const [committedAgentId, setCommittedAgentId] = useState<string>('')
   const [modalOpen, setModalOpen] = useState(false)
   const [rerunning, setRerunning] = useState<string | null>(null)
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['grc', 'evaluations', { ...filters, skip, limit }],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['grc', 'evaluations', { agent_id: committedAgentId, result: filters.result, risk_level: filters.risk_level, skip, limit }],
     queryFn: () =>
       grcEvaluations_list({
-        agent_id: filters.agent_id || undefined,
+        agent_id: committedAgentId || undefined,
         result: (filters.result as EvaluationResultType | undefined) || undefined,
         risk_level: (filters.risk_level as RiskLevelType | undefined) || undefined,
         skip,
@@ -79,6 +81,11 @@ export function EvaluationList() {
     },
     onError: () => setRerunning(null),
   })
+
+  const handleReset = () => {
+    setFilters({ agent_id: '', result: '', risk_level: '' })
+    setCommittedAgentId('')
+  }
 
   const columns = [
     {
@@ -142,31 +149,35 @@ export function EvaluationList() {
   const evaluations = data?.data ?? []
 
   return (
-    <PageContainer
-      header={{
-        title: t('routes.grc.evaluations.title'),
-        subtitle: t('routes.grc.evaluations.subtitle'),
-        extra: hasPermission('admin.grc.evaluations.run') ? (
-          <Button type="primary" onClick={() => setModalOpen(true)}>
-            {t('pages.grc.evaluations.manualRun')}
-          </Button>
-        ) : undefined,
-      }}
-    >
+    <PageContainer>
+      <PageHeader
+        title={t('routes.grc.evaluations.title')}
+        subtitle={t('routes.grc.evaluations.subtitle')}
+      >
+        {hasPermission('admin.grc.evaluations.run') && (
+          <Space>
+            <Button type="primary" onClick={() => setModalOpen(true)}>
+              {t('pages.grc.evaluations.manualRun')}
+            </Button>
+          </Space>
+        )}
+      </PageHeader>
       {/* Filters */}
       <Space style={{ marginBottom: 16 }} wrap>
-        <Input
+        <Input.Search
           placeholder={t('pages.grc.evaluations.filterAgentId')}
           value={filters.agent_id}
           onChange={e => setFilters(f => ({ ...f, agent_id: e.target.value }))}
-          style={{ width: 180 }}
+          onSearch={v => setCommittedAgentId(v.trim())}
+          allowClear
+          style={{ width: 260 }}
         />
         <Select
           placeholder={t('pages.grc.evaluations.filterResult')}
           value={filters.result || undefined}
           onChange={v => setFilters(f => ({ ...f, result: v || '' }))}
           allowClear
-          style={{ width: 150 }}
+          style={{ width: 180 }}
           options={[
             { value: 'PASS', label: 'PASS' },
             { value: 'PASS_WITH_NOTICE', label: 'PASS_WITH_NOTICE' },
@@ -188,6 +199,10 @@ export function EvaluationList() {
             { value: 'CRITICAL', label: 'CRITICAL' },
           ]}
         />
+        <Button onClick={handleReset}>{t('pages.grc.common.reset')}</Button>
+        <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+          {t('pages.grc.common.refresh')}
+        </Button>
       </Space>
 
       <Table

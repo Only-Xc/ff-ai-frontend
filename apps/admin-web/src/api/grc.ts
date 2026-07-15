@@ -29,6 +29,7 @@ import {
   type GrcRuleVersionPublish,
   type GrcRuleTestBody,
   type GrcRuleTestResult,
+  type GrcRuleHitsReportItem,
   type GrcRuleStatsResponse,
   type GrcRuleVersionList,
   type GrcTreatmentReport,
@@ -122,7 +123,6 @@ export type {
   GrcRuleHitsReportItem,
   GrcRuleStatsResponse,
   GrcRuleVersionList,
-  GrcEvaluationCreate,
   RiskLevel,
   ExceptionStatus,
 }
