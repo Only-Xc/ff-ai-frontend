@@ -1,19 +1,23 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
-import { Descriptions, Space, Statistic, Table, Tag, Typography, Button, Alert, Tabs, Spin } from 'antd'
+import { App, Descriptions, Popconfirm, Space, Statistic, Table, Tag, Typography, Button, Alert, Tabs, Spin } from 'antd'
 import dayjs from 'dayjs'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import {
   grcRule_get,
   grcRuleVersions_list,
   grcRuleStats_get,
+  grcRuleVersion_publish,
+  grcRuleVersion_retire,
   type GrcRuleVersion,
   type GrcRuleStatsResponse,
 } from '@/api/grc'
 import { usePermission } from '@/hooks/usePermission'
 import { RuleTestPanel } from './RuleTestPanel'
+import { RuleEditorDrawer } from './RuleEditorDrawer'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'default',
@@ -43,7 +47,10 @@ export function RuleDetail() {
   const { t } = useTranslation()
   const { ruleId } = useParams<{ ruleId: string }>()
   const { hasPermission } = usePermission()
+  const { message } = App.useApp()
   const qc = useQueryClient()
+
+  const [editorOpen, setEditorOpen] = useState(false)
 
   const { data: rule, isLoading: ruleLoading } = useQuery({
     queryKey: ['grc', 'rule', ruleId!],
@@ -66,6 +73,33 @@ export function RuleDetail() {
   const versions: GrcRuleVersion[] = versionsData?.data ?? []
   const statsData: GrcRuleStatsResponse | undefined = stats as GrcRuleStatsResponse | undefined
 
+  const handleRefresh = () => {
+    qc.invalidateQueries({ queryKey: ['grc', 'rule', ruleId!] })
+    qc.invalidateQueries({ queryKey: ['grc', 'ruleVersions', ruleId!] })
+    qc.invalidateQueries({ queryKey: ['grc', 'ruleStats', ruleId!] })
+    message.success(t('pages.grc.common.refresh'))
+  }
+
+  const latestVersion = versions[0]?.version
+
+  const publishMutation = useMutation({
+    mutationFn: () => grcRuleVersion_publish(ruleId!, latestVersion!, { change_note: '' }),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.versionPublished'))
+      handleRefresh()
+    },
+    onError: (err: Error) => message.error(err.message),
+  })
+
+  const retireMutation = useMutation({
+    mutationFn: () => grcRuleVersion_retire(ruleId!, latestVersion!),
+    onSuccess: () => {
+      message.success(t('pages.grc.rules.versionRetired'))
+      handleRefresh()
+    },
+    onError: (err: Error) => message.error(err.message),
+  })
+
   if (ruleLoading || !rule) {
     return (
       <PageContainer>
@@ -75,12 +109,6 @@ export function RuleDetail() {
   }
 
   const latestVer = versions[0]
-
-  const handleRefresh = () => {
-    qc.invalidateQueries({ queryKey: ['grc', 'rule', ruleId!] })
-    qc.invalidateQueries({ queryKey: ['grc', 'ruleVersions', ruleId!] })
-    qc.invalidateQueries({ queryKey: ['grc', 'ruleStats', ruleId!] })
-  }
 
   return (
     <PageContainer>
@@ -99,16 +127,30 @@ export function RuleDetail() {
             {t('pages.grc.common.refresh')}
           </Button>
           {hasPermission('admin.grc.rules.update') && (
-            <Button type="primary">{t('pages.grc.rules.edit')}</Button>
+            <Button type="primary" onClick={() => setEditorOpen(true)}>{t('pages.grc.rules.edit')}</Button>
           )}
           {hasPermission('admin.grc.rules.create') && latestVer?.status !== 'published' && (
-            <Button onClick={() => {}}>{t('pages.grc.rules.createVersion')}</Button>
+            <Button onClick={() => setEditorOpen(true)}>{t('pages.grc.rules.createVersion')}</Button>
           )}
           {hasPermission('admin.grc.rules.publish') && latestVer?.status === 'draft' && (
-            <Button type="primary">{t('pages.grc.rules.publish')}</Button>
+            <Popconfirm
+              title={t('pages.grc.rules.publishConfirm')}
+              onConfirm={() => publishMutation.mutate()}
+              okText={t('pages.grc.common.confirm')}
+              cancelText={t('pages.grc.common.cancel')}
+            >
+              <Button type="primary" loading={publishMutation.isPending}>{t('pages.grc.rules.publish')}</Button>
+            </Popconfirm>
           )}
           {hasPermission('admin.grc.rules.publish') && latestVer?.status === 'published' && (
-            <Button danger>{t('pages.grc.rules.retire')}</Button>
+            <Popconfirm
+              title={t('pages.grc.rules.retireConfirm')}
+              onConfirm={() => retireMutation.mutate()}
+              okText={t('pages.grc.common.confirm')}
+              cancelText={t('pages.grc.common.cancel')}
+            >
+              <Button danger loading={retireMutation.isPending}>{t('pages.grc.rules.retire')}</Button>
+            </Popconfirm>
           )}
         </Space>
       </PageHeader>
@@ -250,6 +292,13 @@ export function RuleDetail() {
             ),
           },
         ]}
+      />
+
+      <RuleEditorDrawer
+        open={editorOpen}
+        rule={rule}
+        onClose={() => setEditorOpen(false)}
+        onSuccess={handleRefresh}
       />
     </PageContainer>
   )

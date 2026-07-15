@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Tag, Typography } from 'antd'
+import { Alert, App, Button, Drawer, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Typography } from 'antd'
 import { useMutation } from '@tanstack/react-query'
 
 import {
@@ -321,6 +321,16 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
             <Input placeholder="GRC-SEC-001" />
           </Form.Item>
         )}
+        {isEdit && (
+          <>
+            <Form.Item label={t('pages.grc.rules.ruleCode')}>
+              <Input value={rule?.code} disabled />
+            </Form.Item>
+            <Form.Item label={t('pages.grc.rules.category')}>
+              <Input value={rule?.category} disabled />
+            </Form.Item>
+          </>
+        )}
         <Form.Item name="name" label={t('pages.grc.rules.name')} rules={[{ required: true }]}>
           <Input />
         </Form.Item>
@@ -353,7 +363,7 @@ export function RuleEditorDrawer({ open, rule, onClose, onSuccess }: {
                 </Button>
               </Popconfirm>
               <Popconfirm
-                title={t('pages.grc.rules.publishConfirm')}
+                title={t('pages.grc.rules.retireConfirm')}
                 onConfirm={() => retireMutation.mutate(rule.current_version!)}
                 okText={t('pages.grc.common.confirm')}
                 cancelText={t('pages.grc.common.cancel')}
