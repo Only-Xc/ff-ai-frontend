@@ -10,6 +10,7 @@ export default {
   'routes.tickets.title': '全局工单',
   'routes.opsMetrics.title': '运营大盘',
   'routes.lifecycleOps.title': '生命周期调度',
+  'routes.dataAccess.title': '数据接入',
   'routes.examCenter.title': '考试中心',
   'routes.exams.title': '考试管理',
   'routes.examDetail.title': '试卷详情',

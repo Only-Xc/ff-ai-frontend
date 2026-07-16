@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link } from 'react-router'
-import { App, Descriptions, Popconfirm, Space, Statistic, Table, Tag, Typography, Button, Alert, Tabs, Spin } from 'antd'
+import { Alert, App, Breadcrumb, Button, Descriptions, Popconfirm, Space, Spin, Statistic, Table, Tabs, Tag, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -119,15 +119,20 @@ export function RuleDetail() {
 
   return (
     <PageContainer>
+      <Breadcrumb
+        className="mb-3"
+        items={[
+          {
+            title: (
+              <Link to="/grc/rules">{t('pages.grc.rules.title')}</Link>
+            ),
+          },
+          { title: rule.code },
+        ]}
+      />
       <PageHeader
         title={rule.code}
         subtitle={rule.name}
-        breadcrumb={{
-          items: [
-            { title: <Link to="/grc/rules">{t('pages.grc.rules.title')}</Link> },
-            { title: rule.code },
-          ],
-        }}
       >
         <Space>
           <Button onClick={handleRefresh}>

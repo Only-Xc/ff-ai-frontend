@@ -1,10 +1,22 @@
-import { Alert, Button, Drawer, Form, Input, InputNumber, Select, Skeleton, Space } from 'antd'
+import {
+  Alert,
+  Button,
+  Drawer,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Skeleton,
+  Space,
+} from 'antd'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type {
+  KnowledgeChunkMethod,
   KnowledgeDataset,
   KnowledgeDatasetCreatePayload,
+  KnowledgePermission,
 } from '@/api/knowledge'
 
 import {
@@ -13,13 +25,13 @@ import {
 } from '../constants'
 
 interface DatasetFormValues {
-  chunk_method?: string
+  chunk_method?: KnowledgeChunkMethod
   chunk_token_num?: number
   delimiter?: string
   description?: string
   embedding_model?: string
   name: string
-  permission?: string
+  permission?: KnowledgePermission
 }
 
 export interface DatasetFormDrawerProps {

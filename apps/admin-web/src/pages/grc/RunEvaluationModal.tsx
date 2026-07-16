@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Modal,
@@ -7,7 +6,7 @@ import {
   Button,
   message,
 } from 'antd'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { v4 as uuidv4 } from 'uuid'
 
 import { grcEvaluations_create } from '@/api/grc'
@@ -20,7 +19,6 @@ interface RunEvaluationModalProps {
 
 export function RunEvaluationModal({ open, onClose, onSuccess }: RunEvaluationModalProps) {
   const { t } = useTranslation()
-  const qc = useQueryClient()
   const [form] = Form.useForm()
 
   const mutation = useMutation({

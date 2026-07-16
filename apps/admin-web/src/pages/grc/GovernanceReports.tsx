@@ -66,7 +66,7 @@ const REPORT_TYPES = [
 
 export function GovernanceReports() {
   const { t } = useTranslation()
-  const { message, modal } = App.useApp()
+  const { message } = App.useApp()
   const orgId = useAuthStore((state) => state.organizationIds[0])
   const [days, setDays] = useState(30)
 
@@ -133,15 +133,15 @@ export function GovernanceReports() {
 
   const exportMutation = useMutation({
     mutationFn: async () => {
-      const resp = await requestClient.post(
-        '/api/v1/admin/grc/reports/exports',
-        {
+      return requestClient<Blob>({
+        method: 'POST',
+        url: '/api/v1/admin/grc/reports/exports',
+        data: {
           report_type: exportType,
           format: exportFormat,
         },
-        { responseType: 'blob' },
-      )
-      return resp as Blob
+        responseType: 'blob',
+      })
     },
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob)

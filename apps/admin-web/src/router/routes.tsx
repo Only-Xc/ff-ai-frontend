@@ -1,5 +1,6 @@
 import {
   AppstoreOutlined,
+  DatabaseOutlined,
   DeploymentUnitOutlined,
   FileDoneOutlined,
   FileTextOutlined,
@@ -109,6 +110,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/data-access',
+    element: lazyLoad(() => import('@/pages/data-access/DataAccessConsole')),
+    handle: {
+      title: 'Data Access',
+      titleKey: 'routes.dataAccess.title',
+      icon: <DatabaseOutlined />,
+      navKey: 'data-access',
+      navOrder: 6,
+      hideInBreadcrumb: true,
+    },
+  },
+  {
     handle: {
       title: 'Exam Center',
       titleKey: 'routes.examCenter.title',
@@ -116,7 +129,7 @@ export const appRoutes: AppRouteObject[] = [
       menuType: 'catalog',
       menuMode: 'submenu',
       navKey: 'exam-center',
-      navOrder: 6,
+      navOrder: 7,
       hideInBreadcrumb: true,
       permission: 'admin.exams.read',
       menuCode: 'menu.admin.exam_center',
@@ -147,7 +160,9 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/exam-attempts',
-        element: lazyLoad(() => import('@/pages/exam-management/AttemptOverview')),
+        element: lazyLoad(
+          () => import('@/pages/exam-management/AttemptOverview'),
+        ),
         handle: {
           title: 'Exam Attempts',
           titleKey: 'routes.examAttempts.title',

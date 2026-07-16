@@ -9,6 +9,7 @@ export default {
   'routes.tickets.title': 'التذاكر العامة',
   'routes.opsMetrics.title': 'مقاييس التشغيل',
   'routes.lifecycleOps.title': 'تشغيل دورة الحياة',
+  'routes.dataAccess.title': 'الوصول إلى البيانات',
   'routes.examCenter.title': 'مركز الاختبارات',
   'routes.exams.title': 'إدارة الاختبارات',
   'routes.examDetail.title': 'تفاصيل الاختبار',

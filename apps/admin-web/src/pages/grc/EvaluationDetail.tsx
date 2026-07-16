@@ -1,11 +1,13 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, Link } from 'react-router'
+import { Link, useParams } from 'react-router'
 import {
   Alert,
+  Breadcrumb,
   Button,
   Descriptions,
   Space,
+  Spin,
   Statistic,
   Table,
   Tag,
@@ -68,39 +70,49 @@ export function EvaluationDetail() {
   })
 
   const results: GrcEvaluationResult[] = resultsData?.data ?? []
-  const { page, pageSize, onPageChange } = usePaginationParams({ defaultPageSize: 10 })
+  const { current, handleChange, pageSize } = usePaginationParams({
+    defaultPageSize: 10,
+  })
 
   const paginatedResults = useMemo(() => {
-    const start = (page - 1) * pageSize
+    const start = (current - 1) * pageSize
     return results.slice(start, start + pageSize)
-  }, [results, page, pageSize])
+  }, [current, pageSize, results])
 
   if (evalLoading || !evaluation) {
-    return <PageContainer loading />
+    return (
+      <PageContainer className="flex min-h-48 items-center justify-center p-6">
+        <Spin />
+      </PageContainer>
+    )
   }
 
   return (
-    <PageContainer
-      header={{
-        title: evaluation.id.slice(0, 8),
-        subtitle: evaluation.agent_id,
-        breadcrumb: {
-          items: [
-            { title: <Link to="/grc/evaluations">{t('routes.grc.evaluations.title')}</Link> },
-            { title: evaluation.id.slice(0, 8) },
-          ],
-        },
-        extra: (
-          <Space>
-            {hasPermission('admin.grc.evaluations.run') && (
-              <Button type="primary" onClick={() => rerunMutation.mutate()}>
-                {t('pages.grc.evaluations.rerun')}
-              </Button>
-            )}
-          </Space>
-        ),
-      }}
-    >
+    <div>
+      <Breadcrumb
+        className="mb-3"
+        items={[
+          {
+            title: (
+              <Link to="/grc/evaluations">
+                {t('routes.grc.evaluations.title')}
+              </Link>
+            ),
+          },
+          { title: evaluation.id.slice(0, 8) },
+        ]}
+      />
+      <PageHeader
+        title={evaluation.id.slice(0, 8)}
+        subtitle={evaluation.agent_id}
+      >
+        {hasPermission('admin.grc.evaluations.run') ? (
+          <Button type="primary" onClick={() => rerunMutation.mutate()}>
+            {t('pages.grc.evaluations.rerun')}
+          </Button>
+        ) : null}
+      </PageHeader>
+      <PageContainer className="p-4">
       {/* Summary row */}
       <Space size="large" style={{ marginBottom: 24 }}>
         <Statistic
@@ -109,7 +121,15 @@ export function EvaluationDetail() {
             <Tag color={RESULT_COLORS[evaluation.result] ?? 'default'}>{evaluation.result}</Tag>
           )}
         />
-        <Statistic title={t('pages.grc.reviews.riskLevel')} value={evaluation.risk_level} />
+        <Statistic
+          title={t('pages.grc.reviews.riskLevel')}
+          value={evaluation.risk_level}
+          valueRender={() => (
+            <Tag color={RISK_COLORS[evaluation.risk_level] ?? 'default'}>
+              {evaluation.risk_level}
+            </Tag>
+          )}
+        />
         <Statistic title={t('pages.grc.reviews.riskScore')} value={evaluation.risk_score} />
         <Statistic title={t('pages.grc.evaluations.agentId')} value={evaluation.agent_id} />
         <Statistic title={t('pages.grc.evaluations.triggerType')} value={evaluation.trigger_type} />
@@ -143,10 +163,10 @@ export function EvaluationDetail() {
           dataSource={paginatedResults}
           rowKey="id"
           pagination={{
-            current: page,
+            current,
             pageSize,
             total: results.length,
-            onChange: onPageChange,
+            onChange: handleChange,
             showSizeChanger: false,
           }}
           expandable={{
@@ -186,7 +206,8 @@ export function EvaluationDetail() {
       ) : (
         <Alert message={t('pages.grc.evaluations.noResults')} type="info" />
       )}
-    </PageContainer>
+      </PageContainer>
+    </div>
   )
 }
 

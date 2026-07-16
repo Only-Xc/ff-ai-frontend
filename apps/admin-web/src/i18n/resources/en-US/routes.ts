@@ -9,6 +9,7 @@ export default {
   'routes.tickets.title': 'Global Tickets',
   'routes.opsMetrics.title': 'Ops Metrics',
   'routes.lifecycleOps.title': 'Lifecycle Ops',
+  'routes.dataAccess.title': 'Data Access',
   'routes.examCenter.title': 'Exam Center',
   'routes.exams.title': 'Exam Management',
   'routes.examDetail.title': 'Exam Detail',

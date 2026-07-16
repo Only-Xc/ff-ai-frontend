@@ -8,7 +8,7 @@ import {
   Typography,
   Input,
 } from 'antd'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { grcRule_test } from '@/api/grc'
 import type { GrcRuleTestResult } from '@/api/grc'
@@ -33,7 +33,6 @@ export function RuleTestPanel({
   onTestResult,
 }: RuleTestPanelProps) {
   const { t } = useTranslation()
-  const qc = useQueryClient()
   const [snapshot, setSnapshot] = useState(
     () => JSON.stringify(defaultSnapshot || {}, null, 2),
   )

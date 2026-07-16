@@ -5,7 +5,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 
 const target = 'http://127.0.0.1:11499'
-// const target = 'http://120.48.2.177:56978'
 
 // https://vite.dev/config/
 export default defineConfig({

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import {
   Alert,
+  type AlertProps,
   App,
   Button,
   Descriptions,
@@ -55,7 +56,10 @@ function ruleLabel(row: GrcEvaluationResult): string {
   return row.rule_name || row.rule_code || row.rule_id
 }
 
-const DECISION_IMPACTS: Record<string, { title: string; color: string; items: string[] }> = {
+const DECISION_IMPACTS: Record<
+  string,
+  { title: string; color: AlertProps['type']; items: string[] }
+> = {
   APPROVED: {
     title: 'approve',
     color: 'success',
@@ -93,7 +97,7 @@ const DECISION_IMPACTS: Record<string, { title: string; color: string; items: st
   },
   EXCEPTION_REQUESTED: {
     title: 'requestException',
-    color: 'processing',
+    color: 'info',
     items: [
       'exceptionUnderReview',
       'blockedRulesStillActive',
@@ -381,7 +385,7 @@ export function ReviewDetail() {
         {selectedDecision && DECISION_IMPACTS[selectedDecision] && (
           <Alert
             style={{ marginBottom: 16, marginTop: 8 }}
-            type={DECISION_IMPACTS[selectedDecision].color as 'success' | 'warning' | 'error' | 'info' | 'processing'}
+            type={DECISION_IMPACTS[selectedDecision].color}
             showIcon
             message={t(`pages.grc.reviews.impactPreview.${DECISION_IMPACTS[selectedDecision].title}`)}
             description={

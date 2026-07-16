@@ -1,5 +1,6 @@
 import {
   type AgentReleaseStatus,
+  type EvaluationResult,
   type GrcAuditEvent,
   type GrcComplianceTrendItem,
   type GrcDashboardOverview,
@@ -34,6 +35,8 @@ import {
   type GrcRuleVersionList,
   type GrcTreatmentReport,
   type RiskLevel,
+  type TreatmentStatus,
+  type TreatmentType,
   type ExceptionStatus,
   type GrcExceptionList,
   assignReviewCaseRequest,
@@ -90,6 +93,7 @@ import { request } from './_request'
 
 export type {
   AgentReleaseStatus,
+  EvaluationResult,
   GrcAuditEvent,
   GrcComplianceTrendItem,
   GrcDashboardOverview,
@@ -124,6 +128,8 @@ export type {
   GrcRuleStatsResponse,
   GrcRuleVersionList,
   RiskLevel,
+  TreatmentStatus,
+  TreatmentType,
   ExceptionStatus,
 }
 
