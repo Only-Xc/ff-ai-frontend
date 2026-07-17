@@ -23,7 +23,8 @@ WORKDIR /app
 
 ARG APP_NAME
 
-RUN pnpm config set store-dir /pnpm/store
+RUN pnpm config set store-dir /pnpm/store && \
+    pnpm config set minimum-release-age 0
 
 COPY --from=pruner /app/out/json/ .
 
