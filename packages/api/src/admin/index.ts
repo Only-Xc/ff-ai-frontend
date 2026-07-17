@@ -1,3 +1,4 @@
+export * from './data-access.js'
 export * from './exam.js'
 export * from './grc.js'
 export * from './lifecycle-ops.js'

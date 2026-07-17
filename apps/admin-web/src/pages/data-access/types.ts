@@ -1,36 +1,22 @@
-export type DataSourceType = 'postgresql' | 'http-api'
+import type {
+  AccessEndpointMode as ApiAccessEndpointMode,
+  AccessEndpointParameterType,
+  AccessEndpointStatus as ApiAccessEndpointStatus,
+  AdminAccessEndpoint,
+  AdminDataSource,
+  DataSourceHealth,
+  DataSourceType as ApiDataSourceType,
+} from '@/api/data-access'
+
+export type DataSourceType = ApiDataSourceType
 export type DataSourceStatus = 'active' | 'draft' | 'degraded'
-export type HealthStatus = 'healthy' | 'unknown' | 'unhealthy'
+export type HealthStatus = DataSourceHealth
 
-export interface DataSourceRecord {
-  id: string
-  name: string
-  type: DataSourceType
-  environment: '生产' | '预发' | '开发'
-  endpoint: string
-  status: DataSourceStatus
-  health: HealthStatus
-  latencyMs?: number
-  lastTestedAt?: string
-  owner: string
-}
+export type DataSourceRecord = AdminDataSource
 
-export type EndpointStatus = 'published' | 'draft' | 'deprecated'
-export type EndpointMode = 'PASSTHROUGH' | 'LANDING'
-
-export interface AccessEndpointRecord {
-  id: string
-  code: string
-  name: string
-  sourceId: string
-  sourceName: string
-  mode: EndpointMode
-  fieldCount: number
-  status: EndpointStatus
-  version: number
-  requestCountToday: number
-  updatedAt: string
-}
+export type EndpointStatus = ApiAccessEndpointStatus
+export type EndpointMode = ApiAccessEndpointMode
+export type AccessEndpointRecord = AdminAccessEndpoint
 
 export type PolicyStatus = 'published' | 'draft'
 
@@ -51,15 +37,33 @@ export interface P0Capability {
   module: string
   name: string
   implementation: string
-  status: '待接入' | '待开发'
+  status: '已完成' | '待接入' | '待开发'
 }
 
 export interface DataSourceFormValues {
   name: string
+  code: string
   type: DataSourceType
-  environment: DataSourceRecord['environment']
-  endpoint: string
-  owner: string
+  credentialRef?: string
+  host?: string
+  port?: number
+  database?: string
+  username?: string
+  schemaName?: string
+  sslMode?: 'disable' | 'prefer' | 'require' | 'verify-ca' | 'verify-full'
+  connectTimeoutSeconds?: number
+  poolSize?: number
+  baseUrl?: string
+  healthMethod?: 'GET' | 'POST'
+  healthPath?: string
+  healthQueryJson?: string
+  healthBodyJson?: string
+  healthExpectedStatus?: number
+  metadataPath?: string
+  authType?: 'none' | 'bearer' | 'api_key'
+  authHeader?: string
+  timeoutSeconds?: number
+  verifyTls?: boolean
 }
 
 export interface EndpointFormValues {
@@ -67,6 +71,18 @@ export interface EndpointFormValues {
   code: string
   sourceId: string
   mode: EndpointMode
+  table?: string
+  path?: string
+  method?: 'GET' | 'POST'
+  availableFields: string[]
+  parameters: EndpointParameterFormValues[]
+}
+
+export interface EndpointParameterFormValues {
+  name: string
+  type: AccessEndpointParameterType
+  required: boolean
+  target: string
 }
 
 export interface PolicyFormValues {

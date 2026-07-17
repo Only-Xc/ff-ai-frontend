@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 
 const target = 'http://127.0.0.1:11499'
+const dataIngestionTarget = 'http://127.0.0.1:8016'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -19,7 +20,16 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
   ],
   server: {
+    host: '127.0.0.1',
     proxy: {
+      '/api/v1/data-sources': {
+        target: dataIngestionTarget,
+        changeOrigin: true,
+      },
+      '/api/v1/access-endpoints': {
+        target: dataIngestionTarget,
+        changeOrigin: true,
+      },
       '/api/chat/ws': {
         target: target.replace(/^http/, 'ws'),
         ws: true,

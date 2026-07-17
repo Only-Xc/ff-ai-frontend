@@ -28,6 +28,10 @@
       "types": "./src/admin/index.ts",
       "import": "./src/admin/index.ts"
     },
+    "./admin/data-access": {
+      "types": "./src/admin/data-access.ts",
+      "import": "./src/admin/data-access.ts"
+    },
     "./admin/exam": {
       "types": "./src/admin/exam.ts",
       "import": "./src/admin/exam.ts"
