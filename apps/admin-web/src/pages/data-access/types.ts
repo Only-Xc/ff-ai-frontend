@@ -32,14 +32,6 @@ export interface FieldPolicyRecord {
   updatedAt: string
 }
 
-export interface P0Capability {
-  id: number
-  module: string
-  name: string
-  implementation: string
-  status: '已完成' | '待接入' | '待开发'
-}
-
 export interface DataSourceFormValues {
   name: string
   code: string

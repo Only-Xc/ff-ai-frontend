@@ -1,4 +1,10 @@
 export default {
+  'pages.dataAccess.apisix.role':
+    'يتحقق من رموز JWT ويوجه الطلبات المقبولة إلى بوابة صلاحيات الحقول.',
+  'pages.dataAccess.status.connected': 'متصل',
+  'pages.dataAccess.status.notConfigured': 'غير مهيأ',
+  'pages.dataAccess.status.unavailable': 'غير متاح',
+  'pages.dataAccess.status.checking': 'جارٍ التحقق',
   'pages.shell.usageSubtitle':
     'راجع استهلاك الموارد وحدود الخطة والفواتير والرصيد.',
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',

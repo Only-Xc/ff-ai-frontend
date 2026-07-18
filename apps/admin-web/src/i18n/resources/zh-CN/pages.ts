@@ -1,4 +1,9 @@
 export default {
+  'pages.dataAccess.apisix.role': 'JWT 校验与路由转发，放行后进入自研字段权限网关。',
+  'pages.dataAccess.status.connected': '已接入',
+  'pages.dataAccess.status.notConfigured': '未配置',
+  'pages.dataAccess.status.unavailable': '不可用',
+  'pages.dataAccess.status.checking': '检测中',
   'pages.shell.usageSubtitle': '查看资源消耗、套餐额度、账单与余额',
   'pages.shell.defaultSubtitle': '查看平台任务、应用和资源状态',
   'pages.notFound.subtitle': '页面不存在或已被移动',

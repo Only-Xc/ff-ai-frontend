@@ -6,7 +6,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
-  FileProtectOutlined,
   FilterOutlined,
   LinkOutlined,
   PlusOutlined,
@@ -42,12 +41,14 @@ import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 
-import { initialPolicies, initialUsageRecords, p0Capabilities } from './mock'
+import { initialPolicies, initialUsageRecords } from './mock'
 import { useAccessEndpoints } from './hooks/useAccessEndpoints'
 import { useDataSources } from './hooks/useDataSources'
+import { useDataIngestionIntegrations } from './hooks/useDataIngestionIntegrations'
 import type {
   AccessEndpointRecord,
   DataSourceFormValues,
@@ -262,6 +263,7 @@ function OverflowText({
 
 export function DataAccessConsole() {
   const { message, modal } = App.useApp()
+  const { t } = useTranslation()
   const [sourceForm] = Form.useForm<DataSourceFormValues>()
   const sourceType = Form.useWatch('type', sourceForm)
   const sourceAuthType = Form.useWatch('authType', sourceForm)
@@ -302,6 +304,7 @@ export function DataAccessConsole() {
     deprecateEndpoint,
     deprecatingEndpointId,
   } = useAccessEndpoints()
+  const integrationsQuery = useDataIngestionIntegrations()
   const [policies, setPolicies] = useState(initialPolicies)
   const [usageRecords] = useState(initialUsageRecords)
   const [sourceDrawerOpen, setSourceDrawerOpen] = useState(false)
@@ -311,7 +314,6 @@ export function DataAccessConsole() {
   const [editingEndpointId, setEditingEndpointId] = useState<string>()
   const [editingPolicyId, setEditingPolicyId] = useState<string>()
   const [previewEndpoint, setPreviewEndpoint] = useState<AccessEndpointRecord>()
-  const [p0DrawerOpen, setP0DrawerOpen] = useState(false)
   const [metadataSource, setMetadataSource] = useState<DataSourceRecord>()
   const [simulationPolicy, setSimulationPolicy] = useState<FieldPolicyRecord>()
   const [simulationFields, setSimulationFields] = useState<string[]>([])
@@ -319,6 +321,28 @@ export function DataAccessConsole() {
     effect: 'ALLOW' | 'DENY'
     deniedFields: string[]
   }>()
+
+  const apisixIntegrationStatus = integrationsQuery.isPending
+    ? 'checking'
+    : (integrationsQuery.data?.apisix.status ?? 'unavailable')
+  const apisixStatusMeta = {
+    connected: {
+      color: 'green',
+      label: t('pages.dataAccess.status.connected'),
+    },
+    not_configured: {
+      color: 'blue',
+      label: t('pages.dataAccess.status.notConfigured'),
+    },
+    checking: {
+      color: 'processing',
+      label: t('pages.dataAccess.status.checking'),
+    },
+    unavailable: {
+      color: 'red',
+      label: t('pages.dataAccess.status.unavailable'),
+    },
+  }[apisixIntegrationStatus]
 
   const healthySourceCount = sources.filter(
     (source) => source.health === 'healthy',
@@ -1030,27 +1054,6 @@ export function DataAccessConsole() {
     },
   ]
 
-  const p0Columns: TableProps<(typeof p0Capabilities)[number]>['columns'] = [
-    { title: '#', dataIndex: 'id', width: 54 },
-    { title: '模块', dataIndex: 'module', width: 120 },
-    { title: 'P0 能力', dataIndex: 'name' },
-    { title: '实现方式', dataIndex: 'implementation', width: 170 },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      width: 90,
-      render: (value: string) => (
-        <Tag
-          color={
-            value === '已完成' ? 'green' : value === '待接入' ? 'blue' : 'gold'
-          }
-        >
-          {value}
-        </Tag>
-      ),
-    },
-  ]
-
   const usageColumns: TableProps<UsageRecord>['columns'] = [
     {
       title: '使用人',
@@ -1139,12 +1142,6 @@ export function DataAccessConsole() {
         subtitle="统一管理数据源、接入端点与字段权限策略，首版覆盖功能表中的 P0 核心工作流。"
       >
         <Space wrap>
-          <Button
-            icon={<FileProtectOutlined />}
-            onClick={() => setP0DrawerOpen(true)}
-          >
-            查看 P0 范围
-          </Button>
           {WORKSPACE_META[workspace].createLabel ? (
             <Button icon={<PlusOutlined />} type="primary" onClick={openCreate}>
               {WORKSPACE_META[workspace].createLabel}
@@ -1200,9 +1197,9 @@ export function DataAccessConsole() {
           <FoundationItem
             icon={<CloudServerOutlined />}
             name="Apache APISIX"
-            role="JWT 校验与路由转发，放行后进入自研字段权限网关。"
-            status="待接入"
-            statusColor="blue"
+            role={t('pages.dataAccess.apisix.role')}
+            status={apisixStatusMeta.label}
+            statusColor={apisixStatusMeta.color}
           />
           <FoundationItem
             icon={<LinkOutlined />}
@@ -1215,7 +1212,7 @@ export function DataAccessConsole() {
             icon={<SafetyCertificateOutlined />}
             name="自研数据网关"
             role="租户识别、端点校验、参数化查询与统一拒绝响应。"
-            status="方案就绪"
+            status="已接入"
             statusColor="green"
           />
         </div>
@@ -2148,30 +2145,6 @@ export function DataAccessConsole() {
             )}
           </Space>
         ) : null}
-      </Drawer>
-
-      <Drawer
-        destroyOnHidden
-        open={p0DrawerOpen}
-        size="large"
-        title="数据接入层 P0 开发范围"
-        onClose={() => setP0DrawerOpen(false)}
-      >
-        <Alert
-          showIcon
-          className="mb-4"
-          title="本界面基于 Excel 中 16 条 P0 需求构建"
-          description="当前为前端交互版本，外部组件与控制面 API 均以 mock 状态展示。"
-          type="info"
-        />
-        <Table
-          columns={p0Columns}
-          dataSource={p0Capabilities}
-          pagination={false}
-          rowKey="id"
-          scroll={{ x: 680 }}
-          size="small"
-        />
       </Drawer>
     </div>
   )

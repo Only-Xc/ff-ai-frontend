@@ -1,4 +1,10 @@
 export default {
+  'pages.dataAccess.apisix.role':
+    'Validates JWTs and routes approved requests into the field permission gateway.',
+  'pages.dataAccess.status.connected': 'Connected',
+  'pages.dataAccess.status.notConfigured': 'Not configured',
+  'pages.dataAccess.status.unavailable': 'Unavailable',
+  'pages.dataAccess.status.checking': 'Checking',
   'pages.shell.usageSubtitle':
     'Review resource usage, plan quotas, billing, and balance.',
   'pages.shell.defaultSubtitle':

@@ -4,6 +4,28 @@ export type DataSourceType = 'postgresql' | 'http_api'
 export type DataSourceStatus = 'active' | 'draft' | 'degraded'
 export type DataSourceHealth = 'healthy' | 'unknown' | 'unhealthy'
 
+export type DataIngestionIntegrationStatus =
+  | 'connected'
+  | 'not_configured'
+  | 'unavailable'
+
+export type DataIngestionIntegrationStatusReason =
+  | 'route_ready'
+  | 'not_configured'
+  | 'route_not_ready'
+  | 'unreachable'
+
+export interface DataIngestionIntegrationStatusItem {
+  status: DataIngestionIntegrationStatus
+  reason: DataIngestionIntegrationStatusReason
+  checked_at: string
+  latency_ms: number | null
+}
+
+export interface DataIngestionIntegrationsStatus {
+  apisix: DataIngestionIntegrationStatusItem
+}
+
 export interface PostgreSQLDataSourceConfig {
   type: 'postgresql'
   host: string
@@ -209,6 +231,12 @@ export type DataAccessContextHeaders = Record<string, string> & {
   'X-FF-Subject-ID': string
   'X-FF-Subject-Type': 'user' | 'service'
 }
+
+export const getDataIngestionIntegrationsRequest = () =>
+  createRequest<DataIngestionIntegrationsStatus>(
+    'GET',
+    '/api/v1/data-ingestion/integrations',
+  )
 
 export const listAdminDataSourcesRequest = (
   params: AdminDataSourceListQuery,
