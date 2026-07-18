@@ -1,10 +1,52 @@
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
 
+const EXAM_PLUGIN_ACCESS_BASE = '/api/v1/plugins/examapi'
+const EXAM_PLUGIN_API_BASE = `${EXAM_PLUGIN_ACCESS_BASE}/proxy`
+
+function examPluginApiPath(apiPath: string) {
+  return `${EXAM_PLUGIN_API_BASE}${apiPath}`
+}
+
 export type TenantQuestionType = 'single' | 'multiple' | 'true_false'
 export type TenantExamMode = 'fixed' | 'random'
 export type TenantAttemptStatus = 'in_progress' | 'submitted'
 export type TenantQuestionDifficulty = 'easy' | 'medium' | 'hard'
+export type TenantExamPluginInstallationStatus =
+  | 'registered'
+  | 'pending'
+  | 'installing'
+  | 'installed'
+  | 'starting'
+  | 'enabled'
+  | 'healthy'
+  | 'unhealthy'
+  | 'disabled'
+  | 'failed'
+  | string
+export type TenantExamPluginServiceStatus =
+  | 'starting'
+  | 'healthy'
+  | 'unhealthy'
+  | 'disabled'
+  | 'deleted'
+  | string
+
+export interface TenantExamPluginServiceHealth {
+  service_id: string
+  service_name: string
+  status: TenantExamPluginServiceStatus
+  http_status: number | null
+  latency_ms: number | null
+  openapi_hash: string | null
+  error: string | null
+}
+
+export interface TenantExamPluginHealth {
+  installation_id: string
+  status: TenantExamPluginInstallationStatus
+  services: TenantExamPluginServiceHealth[]
+}
 
 export interface TenantExamQuestionOption {
   key: string
@@ -121,22 +163,30 @@ export type TenantAttemptHistoryQuery = {
 export type TenantExamList = ListResult<TenantExamPaper>
 export type TenantAttemptList = ListResult<TenantAttemptSummary>
 
+export const getTenantExamPluginHealthRequest = () =>
+  createRequest<TenantExamPluginHealth>('GET', `${EXAM_PLUGIN_ACCESS_BASE}/health`, {
+    meta: { skipGlobalErrorToast: true },
+  })
+
 export const listTenantExamsRequest = (params: TenantExamListQuery) =>
-  createRequest<TenantExamList>('GET', '/api/exam/exams', { params })
+  createRequest<TenantExamList>('GET', examPluginApiPath('/exams'), { params })
 
 export const getTenantExamRequest = (paperId: string) =>
-  createRequest<TenantExamPaperDetail>('GET', path`/api/exam/exams/${paperId}`)
+  createRequest<TenantExamPaperDetail>(
+    'GET',
+    examPluginApiPath(path`/exams/${paperId}`),
+  )
 
 export const createTenantAttemptRequest = (paperId: string) =>
   createRequest<TenantAttemptStartResponse>(
     'POST',
-    path`/api/exam/exams/${paperId}/attempts`,
+    examPluginApiPath(path`/exams/${paperId}/attempts`),
   )
 
 export const getTenantAttemptRequest = (attemptId: string) =>
   createRequest<TenantAttemptState>(
     'GET',
-    path`/api/exam/attempts/${attemptId}`,
+    examPluginApiPath(path`/attempts/${attemptId}`),
     { meta: { skipGlobalErrorToast: true } },
   )
 
@@ -146,7 +196,7 @@ export const submitTenantAttemptRequest = (
 ) =>
   createRequest<TenantAttemptResult>(
     'POST',
-    path`/api/exam/attempts/${attemptId}/submit`,
+    examPluginApiPath(path`/attempts/${attemptId}/submit`),
     { data, meta: { skipGlobalErrorToast: true } },
   )
 
@@ -156,15 +206,15 @@ export const saveTenantAttemptAnswersRequest = (
 ) =>
   createRequest<TenantAttemptState>(
     'PATCH',
-    path`/api/exam/attempts/${attemptId}/answers`,
+    examPluginApiPath(path`/attempts/${attemptId}/answers`),
     { data, meta: { skipGlobalErrorToast: true } },
   )
 
 export const listTenantAttemptsRequest = (params: TenantAttemptHistoryQuery) =>
-  createRequest<TenantAttemptList>('GET', '/api/exam/attempts', { params })
+  createRequest<TenantAttemptList>('GET', examPluginApiPath('/attempts'), { params })
 
 export const getTenantAttemptResultRequest = (attemptId: string) =>
   createRequest<TenantAttemptResult>(
     'GET',
-    path`/api/exam/attempts/${attemptId}/result`,
+    examPluginApiPath(path`/attempts/${attemptId}/result`),
   )

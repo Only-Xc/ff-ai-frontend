@@ -338,6 +338,7 @@ export default {
   'pages.exam.errors.listLoadFailed': 'Exam list failed to load',
   'pages.exam.errors.missingAttemptId': 'Missing attempt ID',
   'pages.exam.errors.missingPaperId': 'Missing paper ID',
+  'pages.exam.errors.pluginUnavailable': 'Exam plugin is unavailable. Check that examapi is enabled and healthy.',
   'pages.exam.errors.resultLoadFailed': 'Result failed to load',
   'pages.exam.errors.saveFailed': 'Save failed',
   'pages.exam.errors.startFailed': 'Failed to start exam',

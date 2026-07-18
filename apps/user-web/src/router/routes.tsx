@@ -188,17 +188,14 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/attempts',
-        element: lazyLoad(() => import('@/pages/exam/AttemptHistory')),
+        element: <Navigate replace to="/exams?tab=attempts" />,
         handle: {
           title: 'Attempt History',
           titleKey: 'routes.attempts.title',
-          icon: <FileTextOutlined />,
-          menuType: 'menu',
-          navKey: 'attempts',
-          navOrder: 6,
+          navKey: 'exams',
+          hideInMenu: true,
           hideInBreadcrumb: true,
           permission: 'user.attempts.read',
-          menuCode: 'menu.user.attempts',
         },
       },
       {

@@ -28,6 +28,23 @@ export const useExamStyles = createStyles(({ css }) => ({
     box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
     contain: paint;
   `,
+  mergedTabs: css`
+    flex-shrink: 0;
+    padding: 14px 20px 0;
+
+    .ant-tabs-nav {
+      margin: 0;
+
+      &::before {
+        border-bottom-color: var(--ant-color-border-secondary);
+      }
+    }
+
+    .ant-tabs-tab {
+      padding: 0 0 12px;
+      font-weight: 600;
+    }
+  `,
   questionGrid: css`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));

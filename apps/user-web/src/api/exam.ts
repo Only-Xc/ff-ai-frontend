@@ -1,5 +1,6 @@
 import {
   createTenantAttemptRequest,
+  getTenantExamPluginHealthRequest,
   getTenantAttemptRequest,
   getTenantAttemptResultRequest,
   getTenantExamRequest,
@@ -29,6 +30,10 @@ export type {
   TenantExamMode,
   TenantExamPaper,
   TenantExamPaperDetail,
+  TenantExamPluginHealth,
+  TenantExamPluginInstallationStatus,
+  TenantExamPluginServiceHealth,
+  TenantExamPluginServiceStatus,
   TenantExamQuestionOption,
   TenantExamQuestionResultOption,
   TenantQuestionDifficulty,
@@ -39,6 +44,7 @@ export type {
 
 export const tenantExamKeys = {
   all: ['tenant-exams'] as const,
+  pluginHealth: () => [...tenantExamKeys.all, 'plugin-health'] as const,
   lists: () => [...tenantExamKeys.all, 'list'] as const,
   list: (query: TenantExamListQuery) =>
     [...tenantExamKeys.lists(), query] as const,
@@ -53,6 +59,7 @@ export const tenantExamKeys = {
     [...tenantExamKeys.attemptLists(), 'mine', query] as const,
 }
 
+export const tenantExamPlugin_getHealth = request(getTenantExamPluginHealthRequest)
 export const tenantExams_list = request(listTenantExamsRequest)
 export const tenantExams_get = request(getTenantExamRequest)
 export const tenantAttempts_create = request(createTenantAttemptRequest)

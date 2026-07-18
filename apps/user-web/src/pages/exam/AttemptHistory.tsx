@@ -26,10 +26,30 @@ interface AttemptHistoryFilterValues {
   status?: TenantAttemptStatus
 }
 
+interface AttemptHistoryPanelProps {
+  enabled?: boolean
+}
+
 export function AttemptHistory() {
-  const navigate = useNavigate()
   const { t } = useTranslation()
   const { styles } = useExamStyles()
+
+  return (
+    <div className={styles.pageShell}>
+      <PageHeader
+        title={t('pages.exam.history.title')}
+        subtitle={t('pages.exam.history.subtitle')}
+      />
+      <PageContainer className={styles.workSurface}>
+        <AttemptHistoryPanel />
+      </PageContainer>
+    </div>
+  )
+}
+
+export function AttemptHistoryPanel({ enabled = true }: AttemptHistoryPanelProps) {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
   const pagination = usePaginationParams()
   const [form] = Form.useForm<AttemptHistoryFilterValues>()
   const [filters, setFilters] = useState<AttemptHistoryFilterValues>({})
@@ -41,12 +61,14 @@ export function AttemptHistory() {
   const listQuery = useQuery({
     queryKey: tenantExamKeys.myAttempts(listParams),
     queryFn: () => tenantAttempts_list(listParams),
+    enabled,
     placeholderData: keepPreviousData,
   })
 
   const papersQuery = useQuery({
     queryKey: tenantExamKeys.list({ skip: 0, limit: 100, sort: 'created_at:desc' }),
     queryFn: () => tenantExams_list({ skip: 0, limit: 100, sort: 'created_at:desc' }),
+    enabled,
   })
 
   const columns: TableProps<TenantAttemptSummary>['columns'] = [
@@ -111,90 +133,91 @@ export function AttemptHistory() {
   ]
 
   return (
-    <div className={styles.pageShell}>
-      <PageHeader
-        title={t('pages.exam.history.title')}
-        subtitle={t('pages.exam.history.subtitle')}
-      >
-        <Button icon={<ReloadOutlined />} loading={listQuery.isFetching} onClick={() => void listQuery.refetch()}>
+    <>
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-b-(--ant-color-border-secondary) px-5 py-3">
+        <Form<AttemptHistoryFilterValues>
+          className="flex-1"
+          form={form}
+          layout="inline"
+          onFinish={(values) => {
+            setFilters(values)
+            pagination.reset()
+          }}
+        >
+          <Form.Item name="paper_id">
+            <Select
+              allowClear
+              className="w-72"
+              disabled={!enabled}
+              loading={papersQuery.isFetching}
+              options={(papersQuery.data?.data ?? []).map((paper) => ({
+                label: paper.title,
+                value: paper.id,
+              }))}
+              placeholder={t('pages.exam.filters.paper')}
+              showSearch
+              optionFilterProp="label"
+            />
+          </Form.Item>
+          <Form.Item name="status">
+            <Select
+              allowClear
+              className="w-36"
+              disabled={!enabled}
+              options={[
+                { label: t('pages.exam.status.inProgress'), value: 'in_progress' },
+                { label: t('pages.exam.status.submitted'), value: 'submitted' },
+              ]}
+              placeholder={t('pages.exam.filters.status')}
+            />
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button disabled={!enabled} htmlType="submit" type="primary">
+                {t('pages.exam.actions.search')}
+              </Button>
+              <Button
+                disabled={!enabled}
+                onClick={() => {
+                  form.resetFields()
+                  setFilters({})
+                  pagination.reset()
+                }}
+              >
+                {t('common.actions.reset')}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+        <Button
+          disabled={!enabled}
+          icon={<ReloadOutlined />}
+          loading={listQuery.isFetching}
+          onClick={() => void listQuery.refetch()}
+        >
           {t('common.actions.refresh')}
         </Button>
-      </PageHeader>
-      <PageContainer className={styles.workSurface}>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-4 border-b border-b-(--ant-color-border-secondary) px-5 py-3">
-          <Form<AttemptHistoryFilterValues>
-            className="flex-1"
-            form={form}
-            layout="inline"
-            onFinish={(values) => {
-              setFilters(values)
-              pagination.reset()
-            }}
-          >
-            <Form.Item name="paper_id">
-              <Select
-                allowClear
-                className="w-72"
-                loading={papersQuery.isFetching}
-                options={(papersQuery.data?.data ?? []).map((paper) => ({
-                  label: paper.title,
-                  value: paper.id,
-                }))}
-                placeholder={t('pages.exam.filters.paper')}
-                showSearch
-                optionFilterProp="label"
-              />
-            </Form.Item>
-            <Form.Item name="status">
-              <Select
-                allowClear
-                className="w-36"
-                options={[
-                  { label: t('pages.exam.status.inProgress'), value: 'in_progress' },
-                  { label: t('pages.exam.status.submitted'), value: 'submitted' },
-                ]}
-                placeholder={t('pages.exam.filters.status')}
-              />
-            </Form.Item>
-            <Form.Item>
-              <Space>
-                <Button htmlType="submit" type="primary">
-                  {t('pages.exam.actions.search')}
-                </Button>
-                <Button
-                  onClick={() => {
-                    form.resetFields()
-                    setFilters({})
-                    pagination.reset()
-                  }}
-                >
-                  {t('common.actions.reset')}
-                </Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </div>
-        {listQuery.isError ? (
-          <Alert showIcon className="m-5" message={t('pages.exam.errors.historyLoadFailed')} type="error" />
-        ) : null}
-        <TableScrollYWrapper className="min-h-0 flex-1">
-          <Table<TenantAttemptSummary>
-            columns={columns}
-            dataSource={listQuery.data?.data ?? []}
-            loading={listQuery.isFetching}
-            pagination={false}
-            rowKey="id"
-            scroll={{ x: 1100 }}
-          />
-        </TableScrollYWrapper>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
-          <Typography.Text type="secondary">
-            {t('common.labels.totalCount', { total: listQuery.data?.count ?? 0 })}
-          </Typography.Text>
-          <Pagination {...pagination.props} total={listQuery.data?.count ?? 0} />
-        </div>
-      </PageContainer>
-    </div>
+      </div>
+      {listQuery.isError ? (
+        <Alert showIcon className="m-5" message={t('pages.exam.errors.historyLoadFailed')} type="error" />
+      ) : null}
+      <TableScrollYWrapper className="min-h-0 flex-1">
+        <Table<TenantAttemptSummary>
+          columns={columns}
+          dataSource={listQuery.data?.data ?? []}
+          loading={listQuery.isFetching}
+          pagination={false}
+          rowKey="id"
+          scroll={{ x: 1100 }}
+        />
+      </TableScrollYWrapper>
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
+        <Typography.Text type="secondary">
+          {t('common.labels.totalCount', { total: listQuery.data?.count ?? 0 })}
+        </Typography.Text>
+        <Pagination {...pagination.props} total={listQuery.data?.count ?? 0} />
+      </div>
+    </>
   )
 }
 

@@ -322,6 +322,7 @@ export default {
   'pages.exam.errors.listLoadFailed': '试卷列表加载失败',
   'pages.exam.errors.missingAttemptId': '缺少答题记录 ID',
   'pages.exam.errors.missingPaperId': '缺少试卷 ID',
+  'pages.exam.errors.pluginUnavailable': '考试插件不可用，请确认 examapi 插件已启用且服务健康',
   'pages.exam.errors.resultLoadFailed': '结果加载失败',
   'pages.exam.errors.saveFailed': '保存失败',
   'pages.exam.errors.startFailed': '开始考试失败',

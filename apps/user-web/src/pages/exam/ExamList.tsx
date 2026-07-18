@@ -1,41 +1,68 @@
-import { FileTextOutlined, PlayCircleOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Alert, Button, Pagination, Space, Table, Tag, Typography } from 'antd'
+import { PlayCircleOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Alert, Button, Pagination, Space, Table, Tabs, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 import {
   tenantAttempts_create,
   tenantExamKeys,
+  tenantExamPlugin_getHealth,
   tenantExams_list,
   type TenantExamListQuery,
   type TenantExamMode,
+  type TenantExamPluginHealth,
   type TenantExamPaper,
 } from '@/api/exam'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { globalMessage } from '@/utils/message'
 import { PageContainer, PageHeader, TableScrollYWrapper } from '@ff-ai-frontend/components'
 
+import { AttemptHistoryPanel } from './AttemptHistory'
 import { useExamStyles } from './styles'
+
+const EXAM_TAB_KEYS = ['exams', 'attempts'] as const
+type ExamTabKey = (typeof EXAM_TAB_KEYS)[number]
 
 export function ExamList() {
   const { styles } = useExamStyles()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { t } = useTranslation()
   const pagination = usePaginationParams()
+  const activeTab = getActiveExamTab(searchParams.get('tab'))
 
   const listParams = useMemo<TenantExamListQuery>(
     () => ({ ...pagination.query, sort: 'created_at:desc' }),
     [pagination.query],
   )
 
+  const pluginHealthQuery = useQuery({
+    queryKey: tenantExamKeys.pluginHealth(),
+    queryFn: tenantExamPlugin_getHealth,
+    retry: 1,
+    staleTime: 30_000,
+  })
+  const isPluginReady = isExamPluginReady(pluginHealthQuery.data)
+  const isPluginUnavailable =
+    pluginHealthQuery.isError || (pluginHealthQuery.isSuccess && !isPluginReady)
+
   const listQuery = useQuery({
     queryKey: tenantExamKeys.list(listParams),
     queryFn: () => tenantExams_list(listParams),
+    enabled: isPluginReady,
     placeholderData: keepPreviousData,
   })
+
+  const refreshExams = () => {
+    void pluginHealthQuery.refetch().then((result) => {
+      if (isExamPluginReady(result.data)) {
+        void listQuery.refetch()
+      }
+    })
+  }
 
   const startMutation = useMutation({
     mutationFn: tenantAttempts_create,
@@ -111,6 +138,7 @@ export function ExamList() {
       render: (_, record) => (
         <Button
           icon={<PlayCircleOutlined />}
+          disabled={!isPluginReady}
           loading={startMutation.isPending && startMutation.variables === record.id}
           type="primary"
           onClick={() => startMutation.mutate(record.id)}
@@ -127,38 +155,73 @@ export function ExamList() {
         title={t('pages.exam.list.title')}
         subtitle={t('pages.exam.list.subtitle')}
       >
-        <Space>
-          <Button icon={<FileTextOutlined />} onClick={() => void navigate('/attempts')}>
-            {t('pages.exam.actions.attemptHistory')}
-          </Button>
-          <Button icon={<ReloadOutlined />} loading={listQuery.isFetching} onClick={() => void listQuery.refetch()}>
+        {activeTab === 'exams' ? (
+          <Button
+            icon={<ReloadOutlined />}
+            loading={pluginHealthQuery.isFetching || listQuery.isFetching}
+            onClick={refreshExams}
+          >
             {t('common.actions.refresh')}
           </Button>
-        </Space>
+        ) : null}
       </PageHeader>
 
       <PageContainer className={styles.workSurface}>
-        {listQuery.isError ? (
-          <Alert showIcon className="m-5" message={t('pages.exam.errors.listLoadFailed')} type="error" />
+        <Tabs
+          activeKey={activeTab}
+          className={styles.mergedTabs}
+          items={[
+            { key: 'exams', label: t('pages.exam.list.title') },
+            { key: 'attempts', label: t('pages.exam.history.title') },
+          ]}
+          tabBarGutter={20}
+          onChange={(key) => {
+            setSearchParams(key === 'attempts' ? { tab: 'attempts' } : {})
+          }}
+        />
+        {isPluginUnavailable ? (
+          <Alert showIcon className="m-5" message={t('pages.exam.errors.pluginUnavailable')} type="error" />
         ) : null}
-        <TableScrollYWrapper className="min-h-0 flex-1">
-          <Table<TenantExamPaper>
-            columns={columns}
-            dataSource={listQuery.data?.data ?? []}
-            loading={listQuery.isFetching}
-            pagination={false}
-            rowKey="id"
-            scroll={{ x: 1020 }}
-          />
-        </TableScrollYWrapper>
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
-          <Typography.Text type="secondary">
-            {t('common.labels.totalCount', { total: listQuery.data?.count ?? 0 })}
-          </Typography.Text>
-          <Pagination {...pagination.props} total={listQuery.data?.count ?? 0} />
-        </div>
+        {activeTab === 'exams' ? (
+          <>
+            {listQuery.isError ? (
+              <Alert showIcon className="m-5" message={t('pages.exam.errors.listLoadFailed')} type="error" />
+            ) : null}
+            <TableScrollYWrapper className="min-h-0 flex-1">
+              <Table<TenantExamPaper>
+                columns={columns}
+                dataSource={listQuery.data?.data ?? []}
+                loading={pluginHealthQuery.isLoading || listQuery.isFetching}
+                pagination={false}
+                rowKey="id"
+                scroll={{ x: 1020 }}
+              />
+            </TableScrollYWrapper>
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-t-(--ant-color-border-secondary) px-5 py-3">
+              <Typography.Text type="secondary">
+                {t('common.labels.totalCount', { total: listQuery.data?.count ?? 0 })}
+              </Typography.Text>
+              <Pagination {...pagination.props} total={listQuery.data?.count ?? 0} />
+            </div>
+          </>
+        ) : (
+          <AttemptHistoryPanel enabled={isPluginReady} />
+        )}
       </PageContainer>
     </div>
+  )
+}
+
+function getActiveExamTab(value: string | null): ExamTabKey {
+  return EXAM_TAB_KEYS.includes(value as ExamTabKey) ? (value as ExamTabKey) : 'exams'
+}
+
+function isExamPluginReady(health: TenantExamPluginHealth | undefined) {
+  if (!health) return false
+  return (
+    health.status === 'enabled' &&
+    health.services.length > 0 &&
+    health.services.every((service) => service.status === 'healthy')
   )
 }
 

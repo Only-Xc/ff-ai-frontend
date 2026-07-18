@@ -333,6 +333,7 @@ export default {
   'pages.exam.errors.listLoadFailed': 'فشل تحميل قائمة الاختبارات',
   'pages.exam.errors.missingAttemptId': 'معرف المحاولة مفقود',
   'pages.exam.errors.missingPaperId': 'معرف الاختبار مفقود',
+  'pages.exam.errors.pluginUnavailable': 'إضافة الاختبارات غير متاحة. تأكد من تفعيل examapi وأن الخدمة سليمة.',
   'pages.exam.errors.resultLoadFailed': 'فشل تحميل النتيجة',
   'pages.exam.errors.saveFailed': 'فشل الحفظ',
   'pages.exam.errors.startFailed': 'فشل بدء الاختبار',
