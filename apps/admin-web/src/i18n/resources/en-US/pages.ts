@@ -5,6 +5,315 @@ export default {
   'pages.dataAccess.status.notConfigured': 'Not configured',
   'pages.dataAccess.status.unavailable': 'Unavailable',
   'pages.dataAccess.status.checking': 'Checking',
+  'pages.dataAccess.title': 'Data Access Console',
+  'pages.dataAccess.subtitle':
+    'Manage data sources, access endpoints, and field permission policies.',
+  'pages.dataAccess.actions.createSource': 'New data source',
+  'pages.dataAccess.actions.createEndpoint': 'New endpoint',
+  'pages.dataAccess.actions.createPolicy': 'New policy',
+  'pages.dataAccess.actions.test': 'Test',
+  'pages.dataAccess.actions.metadata': 'Metadata',
+  'pages.dataAccess.actions.configure': 'Configure',
+  'pages.dataAccess.actions.delete': 'Delete',
+  'pages.dataAccess.actions.cancel': 'Cancel',
+  'pages.dataAccess.actions.confirmPublish': 'Publish',
+  'pages.dataAccess.actions.confirmDeprecate': 'Deprecate',
+  'pages.dataAccess.actions.preview': 'Preview',
+  'pages.dataAccess.actions.edit': 'Edit',
+  'pages.dataAccess.actions.publish': 'Publish',
+  'pages.dataAccess.actions.publishNewVersion': 'Publish new version',
+  'pages.dataAccess.actions.deprecate': 'Deprecate',
+  'pages.dataAccess.actions.simulate': 'Simulate',
+  'pages.dataAccess.actions.retry': 'Retry',
+  'pages.dataAccess.actions.refresh': 'Refresh current list',
+  'pages.dataAccess.actions.saveConfig': 'Save configuration',
+  'pages.dataAccess.actions.saveDraft': 'Save draft',
+  'pages.dataAccess.actions.saveChanges': 'Save changes',
+  'pages.dataAccess.actions.addParameter': 'Add parameter',
+  'pages.dataAccess.actions.removeParameter': 'Remove parameter',
+  'pages.dataAccess.actions.editConfig': 'Edit configuration',
+  'pages.dataAccess.actions.runSimulation': 'Run simulation',
+  'pages.dataAccess.common.unknownSource': 'Unknown data source',
+  'pages.dataAccess.common.yes': 'Yes',
+  'pages.dataAccess.common.no': 'No',
+  'pages.dataAccess.common.on': 'On',
+  'pages.dataAccess.common.off': 'Off',
+  'pages.dataAccess.common.optional': 'optional',
+  'pages.dataAccess.common.listSeparator': ', ',
+  'pages.dataAccess.status.source.active': 'Enabled',
+  'pages.dataAccess.status.source.draft': 'Draft',
+  'pages.dataAccess.status.source.degraded': 'Degraded',
+  'pages.dataAccess.status.health.healthy': 'Healthy',
+  'pages.dataAccess.status.health.unknown': 'Not tested',
+  'pages.dataAccess.status.health.unhealthy': 'Connection failed',
+  'pages.dataAccess.status.endpoint.published': 'Published',
+  'pages.dataAccess.status.endpoint.draft': 'Draft',
+  'pages.dataAccess.status.endpoint.deprecated': 'Deprecated',
+  'pages.dataAccess.status.policy.published': 'Published',
+  'pages.dataAccess.status.policy.draft': 'Draft',
+  'pages.dataAccess.usage.target.endpoint': 'Endpoint',
+  'pages.dataAccess.usage.target.database': 'Database',
+  'pages.dataAccess.search.sources':
+    'Search data source name, code, or connection address',
+  'pages.dataAccess.search.endpoints':
+    'Search endpoint name, code, or data source',
+  'pages.dataAccess.search.policies': 'Search policy, endpoint, or subject',
+  'pages.dataAccess.search.usage': 'Search user, account, or access target',
+  'pages.dataAccess.filters.allTypes': 'All types',
+  'pages.dataAccess.filters.allStatuses': 'All statuses',
+  'pages.dataAccess.columns.source': 'Data source',
+  'pages.dataAccess.columns.type': 'Type',
+  'pages.dataAccess.columns.code': 'Code',
+  'pages.dataAccess.columns.status': 'Status',
+  'pages.dataAccess.columns.health': 'Connection health',
+  'pages.dataAccess.columns.lastTested': 'Last tested',
+  'pages.dataAccess.columns.actions': 'Actions',
+  'pages.dataAccess.columns.endpoint': 'Access endpoint',
+  'pages.dataAccess.columns.mode': 'Mode',
+  'pages.dataAccess.columns.fields': 'Fields',
+  'pages.dataAccess.columns.version': 'Version',
+  'pages.dataAccess.columns.updatedAt': 'Updated at',
+  'pages.dataAccess.columns.policy': 'Field policy',
+  'pages.dataAccess.columns.subject': 'Bound subject',
+  'pages.dataAccess.columns.allowedFields': 'Allowed fields',
+  'pages.dataAccess.columns.deniedFields': 'Denied fields',
+  'pages.dataAccess.columns.user': 'User',
+  'pages.dataAccess.columns.accessType': 'Access type',
+  'pages.dataAccess.columns.accessTarget': 'Access target',
+  'pages.dataAccess.columns.usedAt': 'Accessed at',
+  'pages.dataAccess.columns.resource': 'Resource',
+  'pages.dataAccess.columns.resourceType': 'Resource type',
+  'pages.dataAccess.columns.dataType': 'Data type',
+  'pages.dataAccess.columns.nullable': 'Nullable',
+  'pages.dataAccess.units.fields': '{{count}} fields',
+  'pages.dataAccess.time.justNow': 'Just now',
+  'pages.dataAccess.messages.connectionSucceeded':
+    'Connection test passed for {{name}}',
+  'pages.dataAccess.messages.connectionSucceededWithLatency':
+    'Connection test passed for {{name}} in {{latency}} ms',
+  'pages.dataAccess.messages.sourceUpdated':
+    'Data source configuration updated',
+  'pages.dataAccess.messages.sourceCreated': 'Data source draft created',
+  'pages.dataAccess.messages.sourceDeleted': 'Data source deleted',
+  'pages.dataAccess.messages.endpointUpdated':
+    'Access endpoint configuration updated',
+  'pages.dataAccess.messages.endpointCreated': 'Access endpoint draft created',
+  'pages.dataAccess.messages.endpointPublished':
+    '{{name}} published as v{{version}}',
+  'pages.dataAccess.messages.endpointDeleted': 'Access endpoint draft deleted',
+  'pages.dataAccess.messages.endpointDeprecated': '{{name}} deprecated',
+  'pages.dataAccess.messages.policyUpdated': 'Field policy updated',
+  'pages.dataAccess.messages.policyCreated': 'Field policy draft created',
+  'pages.dataAccess.messages.policyPublished': '{{name}} published',
+  'pages.dataAccess.messages.listRefreshed': 'List refreshed',
+  'pages.dataAccess.confirm.deleteSource.title': 'Delete data source',
+  'pages.dataAccess.confirm.deleteSource.content':
+    'Delete “{{name}}”? Data sources referenced by access endpoints cannot be deleted.',
+  'pages.dataAccess.confirm.publishEndpoint.title': 'Publish access endpoint',
+  'pages.dataAccess.confirm.publishEndpoint.newVersionTitle':
+    'Publish endpoint version v{{version}}',
+  'pages.dataAccess.confirm.publishEndpoint.content':
+    'Publishing creates immutable snapshot v{{version}}. Continue?',
+  'pages.dataAccess.confirm.deleteEndpoint.title':
+    'Delete access endpoint draft',
+  'pages.dataAccess.confirm.deleteEndpoint.content':
+    'Delete “{{name}}”? This action cannot be undone.',
+  'pages.dataAccess.confirm.deprecateEndpoint.title':
+    'Deprecate published endpoint',
+  'pages.dataAccess.confirm.deprecateEndpoint.content':
+    'After “{{name}}” is deprecated, it will reject new calls while retaining historical versions.',
+  'pages.dataAccess.validation.jsonObject': 'Enter a JSON object',
+  'pages.dataAccess.validation.jsonInvalid': 'Invalid JSON format',
+  'pages.dataAccess.validation.selectValidSource': 'Select a valid data source',
+  'pages.dataAccess.validation.sourceNameRequired': 'Enter a data source name',
+  'pages.dataAccess.validation.sourceCodeRequired': 'Enter a data source code',
+  'pages.dataAccess.validation.codePattern':
+    'Start with a lowercase letter and use only letters, numbers, underscores, or hyphens',
+  'pages.dataAccess.validation.postgresHostRequired':
+    'Enter the PostgreSQL host',
+  'pages.dataAccess.validation.databaseRequired': 'Enter the database name',
+  'pages.dataAccess.validation.usernameRequired':
+    'Enter the read-only username',
+  'pages.dataAccess.validation.httpUrlRequired': 'Enter the HTTP API URL',
+  'pages.dataAccess.validation.httpUrlComplete': 'Enter a complete HTTP(S) URL',
+  'pages.dataAccess.validation.credentialRequired':
+    'Credentials are required when authentication is enabled',
+  'pages.dataAccess.validation.endpointNameRequired': 'Enter an endpoint name',
+  'pages.dataAccess.validation.endpointCodeRequired': 'Enter an endpoint code',
+  'pages.dataAccess.validation.sourceRequired': 'Select a data source',
+  'pages.dataAccess.validation.tableRequired': 'Enter the table to query',
+  'pages.dataAccess.validation.tablePattern':
+    'Use table or schema.table format',
+  'pages.dataAccess.validation.apiPathRequired': 'Enter the API path',
+  'pages.dataAccess.validation.apiPathPattern': 'The path must start with /',
+  'pages.dataAccess.validation.fieldsRequired':
+    'Configure at least one exposed field',
+  'pages.dataAccess.validation.parameterNameRequired': 'Enter a parameter name',
+  'pages.dataAccess.validation.parameterNamePattern':
+    'Invalid parameter name format',
+  'pages.dataAccess.validation.mappingRequired': 'Configure a mapping',
+  'pages.dataAccess.metrics.sources.label': 'Data sources',
+  'pages.dataAccess.metrics.sources.note': 'PostgreSQL / HTTP API',
+  'pages.dataAccess.metrics.health.label': 'Healthy connections',
+  'pages.dataAccess.metrics.health.note': '{{count}} need attention',
+  'pages.dataAccess.metrics.endpoints.label': 'Published endpoints',
+  'pages.dataAccess.metrics.endpoints.note':
+    '{{count}} endpoints have unpublished changes',
+  'pages.dataAccess.metrics.policies.label': 'Active policies',
+  'pages.dataAccess.metrics.policies.note': 'Field permissions deny by default',
+  'pages.dataAccess.foundation.title': 'Core request path',
+  'pages.dataAccess.foundation.openDalRole':
+    'Provides consistent operator creation, capability detection, and resource cleanup through a stable connector SPI.',
+  'pages.dataAccess.foundation.gatewayName': 'In-house data gateway',
+  'pages.dataAccess.foundation.gatewayRole':
+    'Performs tenant identification, endpoint validation, parameterized queries, and consistent denial responses.',
+  'pages.dataAccess.tabs.sources': 'Data sources ({{count}})',
+  'pages.dataAccess.tabs.endpoints': 'Access endpoints ({{count}})',
+  'pages.dataAccess.tabs.policies': 'Field policies ({{count}})',
+  'pages.dataAccess.tabs.usage': 'Usage records ({{count}})',
+  'pages.dataAccess.errors.sourceList': 'Failed to load data sources',
+  'pages.dataAccess.errors.endpointList': 'Failed to load access endpoints',
+  'pages.dataAccess.endpoint.hasDraftChanges': 'Unpublished changes',
+  'pages.dataAccess.sourceForm.editTitle': 'Configure data source',
+  'pages.dataAccess.sourceForm.createTitle': 'New data source',
+  'pages.dataAccess.sourceForm.connectorTitle': 'Supported connectors',
+  'pages.dataAccess.sourceForm.connectorDescription':
+    'Supports PostgreSQL and HTTP APIs. Sensitive credentials can be entered during creation and are never shown in lists after saving.',
+  'pages.dataAccess.sourceForm.name': 'Data source name',
+  'pages.dataAccess.sourceForm.namePlaceholder':
+    'Example: Customer center read replica',
+  'pages.dataAccess.sourceForm.code': 'Data source code',
+  'pages.dataAccess.sourceForm.codeHelp':
+    'Must be unique within the tenant and cannot be changed after creation. Use a stable English identifier.',
+  'pages.dataAccess.sourceForm.connectorType': 'Connector type',
+  'pages.dataAccess.sourceForm.host': 'Host',
+  'pages.dataAccess.sourceForm.port': 'Port',
+  'pages.dataAccess.sourceForm.database': 'Database',
+  'pages.dataAccess.sourceForm.username': 'Username',
+  'pages.dataAccess.sourceForm.sslMode': 'SSL mode',
+  'pages.dataAccess.sourceForm.connectTimeout': 'Connection timeout (seconds)',
+  'pages.dataAccess.sourceForm.poolSize': 'Connection pool size',
+  'pages.dataAccess.sourceForm.baseUrlHelp':
+    'The Base URL defines the upstream host and optional path prefix. The probe path is only used for connection tests and does not restrict endpoint paths.',
+  'pages.dataAccess.sourceForm.healthMethod': 'Probe method',
+  'pages.dataAccess.sourceForm.healthPath': 'Probe path',
+  'pages.dataAccess.sourceForm.expectedStatus': 'Expected status',
+  'pages.dataAccess.sourceForm.healthQuery': 'Probe query parameters',
+  'pages.dataAccess.sourceForm.healthQueryHelp':
+    'Optional JSON object supported by both GET and POST probes.',
+  'pages.dataAccess.sourceForm.healthBody': 'Probe JSON body',
+  'pages.dataAccess.sourceForm.healthBodyHelp':
+    'JSON object for side-effect-free POST probes only.',
+  'pages.dataAccess.sourceForm.metadataPath': 'Metadata path',
+  'pages.dataAccess.sourceForm.metadataPathHelp':
+    'Optional. When empty, metadata is inferred from the JSON response of the probe request above.',
+  'pages.dataAccess.sourceForm.authType': 'Authentication type',
+  'pages.dataAccess.sourceForm.authNone': 'No authentication',
+  'pages.dataAccess.sourceForm.authHeader': 'Authentication header',
+  'pages.dataAccess.sourceForm.timeout': 'Timeout (seconds)',
+  'pages.dataAccess.sourceForm.verifyTls': 'Verify TLS certificate',
+  'pages.dataAccess.sourceForm.credential':
+    'Credential token / password / API key',
+  'pages.dataAccess.sourceForm.credentialEditHelp':
+    'Leave empty to retain the existing credential, or enter a new value to replace it.',
+  'pages.dataAccess.sourceForm.credentialCreateHelp':
+    'Enter a database password, Bearer token value, or API key. The value is not shown in lists after saving.',
+  'pages.dataAccess.sourceForm.credentialPlaceholder':
+    'Paste a token, API key, or database password',
+  'pages.dataAccess.metadata.title': '{{name}} · Metadata',
+  'pages.dataAccess.metadata.error': 'Metadata discovery failed',
+  'pages.dataAccess.endpointForm.editTitle': 'Edit access endpoint',
+  'pages.dataAccess.endpointForm.createTitle': 'New access endpoint',
+  'pages.dataAccess.endpointForm.name': 'Endpoint name',
+  'pages.dataAccess.endpointForm.namePlaceholder':
+    'Example: Customer profile query',
+  'pages.dataAccess.endpointForm.code': 'Endpoint code',
+  'pages.dataAccess.endpointForm.codeHelp':
+    'Must be unique within the tenant, cannot be changed after creation, and is used in the gateway request path.',
+  'pages.dataAccess.endpointForm.source': 'Data source',
+  'pages.dataAccess.endpointForm.sourcePlaceholder':
+    'Select a configured data source',
+  'pages.dataAccess.endpointForm.mode': 'Access mode',
+  'pages.dataAccess.endpointForm.passthrough': 'Real-time passthrough',
+  'pages.dataAccess.endpointForm.table': 'Query table',
+  'pages.dataAccess.endpointForm.tableHelp':
+    'Use schema.table, for example public.customers',
+  'pages.dataAccess.endpointForm.apiPath': 'API path',
+  'pages.dataAccess.endpointForm.method': 'Request method',
+  'pages.dataAccess.endpointForm.fields': 'Exposed fields',
+  'pages.dataAccess.endpointForm.fieldsHelp':
+    'Press Enter after each field. Only these fields may be returned by the endpoint.',
+  'pages.dataAccess.endpointForm.parameters': 'Request parameters',
+  'pages.dataAccess.endpointForm.noParameters':
+    'This endpoint currently accepts no request parameters',
+  'pages.dataAccess.endpointForm.targetPlaceholder':
+    'Target column, e.g. customer_id',
+  'pages.dataAccess.endpointForm.required': 'Required',
+  'pages.dataAccess.parameterTypes.string': 'String',
+  'pages.dataAccess.parameterTypes.integer': 'Integer',
+  'pages.dataAccess.parameterTypes.number': 'Number',
+  'pages.dataAccess.parameterTypes.boolean': 'Boolean',
+  'pages.dataAccess.mapping.query': 'Query parameter',
+  'pages.dataAccess.mapping.body': 'Body field',
+  'pages.dataAccess.preview.title': 'Access endpoint preview',
+  'pages.dataAccess.preview.publishedWithChanges':
+    'This endpoint is published and has unpublished configuration changes',
+  'pages.dataAccess.preview.published':
+    'This endpoint is published and available through the data gateway',
+  'pages.dataAccess.preview.deprecated':
+    'This endpoint is deprecated; historical published snapshots are retained',
+  'pages.dataAccess.preview.draft':
+    'This endpoint is still a draft and will not be available until published',
+  'pages.dataAccess.preview.notPublished': 'Not published',
+  'pages.dataAccess.preview.callPath': 'Request path',
+  'pages.dataAccess.policyForm.editTitle': 'Edit field policy',
+  'pages.dataAccess.policyForm.createTitle': 'New field policy',
+  'pages.dataAccess.policyForm.name': 'Policy name',
+  'pages.dataAccess.policyForm.namePlaceholder':
+    'Example: Support read-only fields',
+  'pages.dataAccess.policyForm.endpoint': 'Access endpoint',
+  'pages.dataAccess.policyForm.subject': 'Bound subject',
+  'pages.dataAccess.policyForm.subjectPlaceholder': 'Role: customer_service',
+  'pages.dataAccess.policyForm.allowedFields': 'Allowed response fields',
+  'pages.dataAccess.policyForm.fieldsPlaceholder':
+    'Enter a field name and press Enter',
+  'pages.dataAccess.simulation.title': 'Field permission simulation',
+  'pages.dataAccess.simulation.requestFields': 'Fields in this request',
+  'pages.dataAccess.simulation.allowTitle': 'ALLOW · Request allowed',
+  'pages.dataAccess.simulation.allowDescription':
+    '{{count}} fields may be returned. The gateway will generate a field allowlist.',
+  'pages.dataAccess.simulation.denyDescription':
+    'Fields {{fields}} are not permitted. The gateway rejected the request; downstream_called=false.',
+  'pages.dataAccess.simulation.noDownstreamTitle':
+    'Simulation does not call downstream services',
+  'pages.dataAccess.simulation.noDownstreamDescription':
+    'The system evaluates tenant, endpoint, and field policies without accessing a real data source.',
+  'pages.dataAccess.mock.policy.customerServiceName':
+    'Customer service base-field access',
+  'pages.dataAccess.mock.policy.orderOperationsName':
+    'Order operations query access',
+  'pages.dataAccess.mock.policy.partnerApplicationName':
+    'Partner application access',
+  'pages.dataAccess.mock.subject.customerServiceRole': 'Role: customer_service',
+  'pages.dataAccess.mock.subject.orderOperatorRole': 'Role: order_operator',
+  'pages.dataAccess.mock.subject.partnerApplicationService':
+    'Service account: partner_app',
+  'pages.dataAccess.mock.time.today1002': 'Today 10:02',
+  'pages.dataAccess.mock.time.yesterday1745': 'Yesterday 17:45',
+  'pages.dataAccess.mock.time.today0840': 'Today 08:40',
+  'pages.dataAccess.mock.user.zhangWei': 'Zhang Wei',
+  'pages.dataAccess.mock.user.orderOperationsService':
+    'Order operations service',
+  'pages.dataAccess.mock.user.liNa': 'Li Na',
+  'pages.dataAccess.mock.user.customerServiceWorkspace':
+    'Customer service workspace',
+  'pages.dataAccess.mock.user.wangQiang': 'Wang Qiang',
+  'pages.dataAccess.mock.user.analyticsService': 'Analytics service',
+  'pages.dataAccess.mock.target.customerProfile': 'Customer profile query',
+  'pages.dataAccess.mock.target.orderAnalyticsDatabase':
+    'Order analytics database',
+  'pages.dataAccess.mock.target.orderSearch': 'Order search',
+  'pages.dataAccess.mock.target.crmPrimaryDatabase': 'CRM primary database',
   'pages.shell.usageSubtitle':
     'Review resource usage, plan quotas, billing, and balance.',
   'pages.shell.defaultSubtitle':

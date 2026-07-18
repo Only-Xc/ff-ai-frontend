@@ -39,7 +39,7 @@ import {
 } from 'antd'
 import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -81,66 +81,108 @@ const SOURCE_TYPE_META = {
 
 const SOURCE_STATUS_META: Record<
   DataSourceStatus,
-  { label: string; color: string }
+  { labelKey: string; color: string }
 > = {
-  active: { label: '已启用', color: 'green' },
-  draft: { label: '草稿', color: 'default' },
-  degraded: { label: '异常', color: 'red' },
+  active: { labelKey: 'pages.dataAccess.status.source.active', color: 'green' },
+  draft: { labelKey: 'pages.dataAccess.status.source.draft', color: 'default' },
+  degraded: {
+    labelKey: 'pages.dataAccess.status.source.degraded',
+    color: 'red',
+  },
 }
 
-const HEALTH_META: Record<HealthStatus, { label: string; color: string }> = {
-  healthy: { label: '健康', color: 'green' },
-  unknown: { label: '未测试', color: 'default' },
-  unhealthy: { label: '连接失败', color: 'red' },
+const HEALTH_META: Record<HealthStatus, { labelKey: string; color: string }> = {
+  healthy: {
+    labelKey: 'pages.dataAccess.status.health.healthy',
+    color: 'green',
+  },
+  unknown: {
+    labelKey: 'pages.dataAccess.status.health.unknown',
+    color: 'default',
+  },
+  unhealthy: {
+    labelKey: 'pages.dataAccess.status.health.unhealthy',
+    color: 'red',
+  },
 }
 
 const ENDPOINT_STATUS_META: Record<
   EndpointStatus,
-  { label: string; color: string }
+  { labelKey: string; color: string }
 > = {
-  published: { label: '已发布', color: 'green' },
-  draft: { label: '草稿', color: 'gold' },
-  deprecated: { label: '已废弃', color: 'default' },
+  published: {
+    labelKey: 'pages.dataAccess.status.endpoint.published',
+    color: 'green',
+  },
+  draft: { labelKey: 'pages.dataAccess.status.endpoint.draft', color: 'gold' },
+  deprecated: {
+    labelKey: 'pages.dataAccess.status.endpoint.deprecated',
+    color: 'default',
+  },
 }
 
 const POLICY_STATUS_META: Record<
   PolicyStatus,
-  { label: string; color: string }
+  { labelKey: string; color: string }
 > = {
-  published: { label: '已发布', color: 'green' },
-  draft: { label: '草稿', color: 'gold' },
+  published: {
+    labelKey: 'pages.dataAccess.status.policy.published',
+    color: 'green',
+  },
+  draft: { labelKey: 'pages.dataAccess.status.policy.draft', color: 'gold' },
 }
 
 const USAGE_TARGET_META: Record<
   UsageTargetType,
-  { label: string; color: string }
+  { labelKey: string; color: string }
 > = {
-  endpoint: { label: '接口', color: 'blue' },
-  database: { label: '数据库', color: 'cyan' },
+  endpoint: {
+    labelKey: 'pages.dataAccess.usage.target.endpoint',
+    color: 'blue',
+  },
+  database: {
+    labelKey: 'pages.dataAccess.usage.target.database',
+    color: 'cyan',
+  },
 }
 
 const WORKSPACE_META: Record<
   WorkspaceKey,
-  { createLabel?: string; searchPlaceholder: string }
+  { createLabelKey?: string; searchPlaceholderKey: string }
 > = {
   sources: {
-    createLabel: '新建数据源',
-    searchPlaceholder: '搜索数据源名称、编码或连接地址',
+    createLabelKey: 'pages.dataAccess.actions.createSource',
+    searchPlaceholderKey: 'pages.dataAccess.search.sources',
   },
   endpoints: {
-    createLabel: '新建端点',
-    searchPlaceholder: '搜索端点名称、编码或数据源',
+    createLabelKey: 'pages.dataAccess.actions.createEndpoint',
+    searchPlaceholderKey: 'pages.dataAccess.search.endpoints',
   },
   policies: {
-    createLabel: '新建策略',
-    searchPlaceholder: '搜索策略、端点或主体',
+    createLabelKey: 'pages.dataAccess.actions.createPolicy',
+    searchPlaceholderKey: 'pages.dataAccess.search.policies',
   },
   usage: {
-    searchPlaceholder: '搜索使用人、账号或访问对象',
+    searchPlaceholderKey: 'pages.dataAccess.search.usage',
   },
 }
 
-function validateOptionalJsonObject(_rule: unknown, value?: string) {
+const I18N_VALUE_PREFIX = 'i18n:'
+
+function localizeRecordValue(
+  value: string,
+  translate: (key: string) => string,
+) {
+  return value.startsWith(I18N_VALUE_PREFIX)
+    ? translate(value.slice(I18N_VALUE_PREFIX.length))
+    : value
+}
+
+function validateOptionalJsonObject(
+  value: string | undefined,
+  objectMessage: string,
+  formatMessage: string,
+) {
   if (!value?.trim()) return Promise.resolve()
   try {
     const parsed: unknown = JSON.parse(value)
@@ -149,11 +191,11 @@ function validateOptionalJsonObject(_rule: unknown, value?: string) {
       parsed === null ||
       Array.isArray(parsed)
     ) {
-      return Promise.reject(new Error('请输入 JSON 对象'))
+      return Promise.reject(new Error(objectMessage))
     }
     return Promise.resolve()
   } catch {
-    return Promise.reject(new Error('JSON 格式不正确'))
+    return Promise.reject(new Error(formatMessage))
   }
 }
 
@@ -264,6 +306,10 @@ function OverflowText({
 export function DataAccessConsole() {
   const { message, modal } = App.useApp()
   const { t } = useTranslation()
+  const localizeValue = useCallback(
+    (value: string) => localizeRecordValue(value, t),
+    [t],
+  )
   const [sourceForm] = Form.useForm<DataSourceFormValues>()
   const sourceType = Form.useWatch('type', sourceForm)
   const sourceAuthType = Form.useWatch('authType', sourceForm)
@@ -399,12 +445,14 @@ export function DataAccessConsole() {
         const matchesStatus = !statusFilter || policy.status === statusFilter
         const matchesSearch =
           !normalizedSearch ||
-          [policy.name, policy.endpointCode, policy.subject].some((value) =>
-            value.toLowerCase().includes(normalizedSearch),
-          )
+          [
+            localizeValue(policy.name),
+            policy.endpointCode,
+            localizeValue(policy.subject),
+          ].some((value) => value.toLowerCase().includes(normalizedSearch))
         return matchesStatus && matchesSearch
       }),
-    [normalizedSearch, policies, statusFilter],
+    [localizeValue, normalizedSearch, policies, statusFilter],
   )
 
   const filteredUsageRecords = useMemo(
@@ -414,14 +462,14 @@ export function DataAccessConsole() {
         const matchesSearch =
           !normalizedSearch ||
           [
-            record.userName,
+            localizeValue(record.userName),
             record.userAccount,
-            record.targetName,
+            localizeValue(record.targetName),
             record.targetCode,
           ].some((value) => value.toLowerCase().includes(normalizedSearch))
         return matchesType && matchesSearch
       }),
-    [normalizedSearch, statusFilter, usageRecords],
+    [localizeValue, normalizedSearch, statusFilter, usageRecords],
   )
 
   const runConnectionTest = async (source: DataSourceRecord) => {
@@ -429,7 +477,14 @@ export function DataAccessConsole() {
       const result = await testSource(source.id)
       if (result.success) {
         void message.success(
-          `${source.name} 连接测试通过${result.latency_ms === null ? '' : `，${result.latency_ms} ms`}`,
+          result.latency_ms === null
+            ? t('pages.dataAccess.messages.connectionSucceeded', {
+                name: source.name,
+              })
+            : t('pages.dataAccess.messages.connectionSucceededWithLatency', {
+                name: source.name,
+                latency: result.latency_ms,
+              }),
         )
       } else {
         void message.error(result.message)
@@ -475,10 +530,10 @@ export function DataAccessConsole() {
           sourceId: editingSourceId,
           data: { name: payload.name, config: payload.config },
         })
-        void message.success('数据源配置已更新')
+        void message.success(t('pages.dataAccess.messages.sourceUpdated'))
       } else {
         await createSource(payload)
-        void message.success('数据源草稿已创建')
+        void message.success(t('pages.dataAccess.messages.sourceCreated'))
       }
     } catch {
       return
@@ -491,14 +546,16 @@ export function DataAccessConsole() {
 
   const confirmDeleteDataSource = (source: DataSourceRecord) => {
     modal.confirm({
-      title: '删除数据源',
-      content: `确认删除“${source.name}”？已被接入端点引用的数据源无法删除。`,
-      okText: '删除',
+      title: t('pages.dataAccess.confirm.deleteSource.title'),
+      content: t('pages.dataAccess.confirm.deleteSource.content', {
+        name: source.name,
+      }),
+      okText: t('pages.dataAccess.actions.delete'),
       okButtonProps: { danger: true },
-      cancelText: '取消',
+      cancelText: t('pages.dataAccess.actions.cancel'),
       onOk: async () => {
         await deleteSource(source.id)
-        void message.success('数据源已删除')
+        void message.success(t('pages.dataAccess.messages.sourceDeleted'))
       },
     })
   }
@@ -536,7 +593,7 @@ export function DataAccessConsole() {
   const submitEndpoint = async (values: EndpointFormValues) => {
     const sourceType = sourceById.get(values.sourceId)?.source_type
     if (!sourceType) {
-      void message.error('请选择有效的数据源')
+      void message.error(t('pages.dataAccess.validation.selectValidSource'))
       return
     }
     const payload = accessEndpointFormToPayload(values, sourceType)
@@ -547,10 +604,10 @@ export function DataAccessConsole() {
           endpointId: editingEndpointId,
           data: updatePayload,
         })
-        void message.success('接入端点配置已更新')
+        void message.success(t('pages.dataAccess.messages.endpointUpdated'))
       } else {
         await createEndpoint(payload)
-        void message.success('接入端点草稿已创建')
+        void message.success(t('pages.dataAccess.messages.endpointCreated'))
       }
     } catch {
       return
@@ -565,42 +622,59 @@ export function DataAccessConsole() {
     const version = endpoint.published_version + 1
     modal.confirm({
       title: endpoint.published_version
-        ? `发布端点新版本 v${version}`
-        : '发布接入端点',
-      content: `发布后将生成不可变快照 v${version}，确认继续？`,
-      okText: '确认发布',
-      cancelText: '取消',
+        ? t('pages.dataAccess.confirm.publishEndpoint.newVersionTitle', {
+            version,
+          })
+        : t('pages.dataAccess.confirm.publishEndpoint.title'),
+      content: t('pages.dataAccess.confirm.publishEndpoint.content', {
+        version,
+      }),
+      okText: t('pages.dataAccess.actions.confirmPublish'),
+      cancelText: t('pages.dataAccess.actions.cancel'),
       onOk: async () => {
         await publishEndpoint(endpoint.id)
-        void message.success(`${endpoint.name} 已发布 v${version}`)
+        void message.success(
+          t('pages.dataAccess.messages.endpointPublished', {
+            name: endpoint.name,
+            version,
+          }),
+        )
       },
     })
   }
 
   const confirmDeleteEndpoint = (endpoint: AccessEndpointRecord) => {
     modal.confirm({
-      title: '删除接入端点草稿',
-      content: `确认删除“${endpoint.name}”？该操作无法撤销。`,
-      okText: '删除',
+      title: t('pages.dataAccess.confirm.deleteEndpoint.title'),
+      content: t('pages.dataAccess.confirm.deleteEndpoint.content', {
+        name: endpoint.name,
+      }),
+      okText: t('pages.dataAccess.actions.delete'),
       okButtonProps: { danger: true },
-      cancelText: '取消',
+      cancelText: t('pages.dataAccess.actions.cancel'),
       onOk: async () => {
         await deleteEndpoint(endpoint.id)
-        void message.success('接入端点草稿已删除')
+        void message.success(t('pages.dataAccess.messages.endpointDeleted'))
       },
     })
   }
 
   const confirmDeprecateEndpoint = (endpoint: AccessEndpointRecord) => {
     modal.confirm({
-      title: '废弃已发布端点',
-      content: `废弃“${endpoint.name}”后将不再接受新调用，历史版本会保留。`,
-      okText: '确认废弃',
+      title: t('pages.dataAccess.confirm.deprecateEndpoint.title'),
+      content: t('pages.dataAccess.confirm.deprecateEndpoint.content', {
+        name: endpoint.name,
+      }),
+      okText: t('pages.dataAccess.actions.confirmDeprecate'),
       okButtonProps: { danger: true },
-      cancelText: '取消',
+      cancelText: t('pages.dataAccess.actions.cancel'),
       onOk: async () => {
         await deprecateEndpoint(endpoint.id)
-        void message.success(`${endpoint.name} 已废弃`)
+        void message.success(
+          t('pages.dataAccess.messages.endpointDeprecated', {
+            name: endpoint.name,
+          }),
+        )
       },
     })
   }
@@ -619,9 +693,9 @@ export function DataAccessConsole() {
   const openEditPolicy = (policy: FieldPolicyRecord) => {
     setEditingPolicyId(policy.id)
     policyForm.setFieldsValue({
-      name: policy.name,
+      name: localizeValue(policy.name),
       endpointCode: policy.endpointCode,
-      subject: policy.subject,
+      subject: localizeValue(policy.subject),
       allowedFields: policy.allowedFields,
     })
     setPolicyModalOpen(true)
@@ -632,11 +706,11 @@ export function DataAccessConsole() {
       setPolicies((current) =>
         current.map((policy) =>
           policy.id === editingPolicyId
-            ? { ...policy, ...values, updatedAt: '刚刚' }
+            ? { ...policy, ...values, updatedAt: '__just_now__' }
             : policy,
         ),
       )
-      void message.success('字段策略配置已更新')
+      void message.success(t('pages.dataAccess.messages.policyUpdated'))
     } else {
       setPolicies((current) => [
         {
@@ -645,11 +719,11 @@ export function DataAccessConsole() {
           deniedFields: [],
           status: 'draft',
           version: 1,
-          updatedAt: '刚刚',
+          updatedAt: '__just_now__',
         },
         ...current,
       ])
-      void message.success('字段策略草稿已创建')
+      void message.success(t('pages.dataAccess.messages.policyCreated'))
     }
 
     setEditingPolicyId(undefined)
@@ -661,11 +735,15 @@ export function DataAccessConsole() {
     setPolicies((current) =>
       current.map((item) =>
         item.id === policy.id
-          ? { ...item, status: 'published', updatedAt: '刚刚' }
+          ? { ...item, status: 'published', updatedAt: '__just_now__' }
           : item,
       ),
     )
-    void message.success(`${policy.name} 已发布`)
+    void message.success(
+      t('pages.dataAccess.messages.policyPublished', {
+        name: localizeValue(policy.name),
+      }),
+    )
   }
 
   const openSimulation = (policy: FieldPolicyRecord) => {
@@ -687,7 +765,7 @@ export function DataAccessConsole() {
 
   const sourceColumns: TableProps<DataSourceRecord>['columns'] = [
     {
-      title: '数据源',
+      title: t('pages.dataAccess.columns.source'),
       dataIndex: 'name',
       width: 240,
       align: 'center',
@@ -706,7 +784,7 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '类型',
+      title: t('pages.dataAccess.columns.type'),
       dataIndex: 'source_type',
       width: 120,
       align: 'center',
@@ -717,31 +795,33 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '编码',
+      title: t('pages.dataAccess.columns.code'),
       dataIndex: 'code',
       width: 150,
       align: 'center',
       render: (value: string) => <OverflowText code>{value}</OverflowText>,
     },
     {
-      title: '状态',
+      title: t('pages.dataAccess.columns.status'),
       dataIndex: 'status',
       width: 100,
       align: 'center',
       render: (value: DataSourceStatus) => (
         <Tag color={SOURCE_STATUS_META[value].color}>
-          {SOURCE_STATUS_META[value].label}
+          {t(SOURCE_STATUS_META[value].labelKey)}
         </Tag>
       ),
     },
     {
-      title: '连接健康',
+      title: t('pages.dataAccess.columns.health'),
       dataIndex: 'health',
       width: 150,
       align: 'center',
       render: (value: HealthStatus, record) => (
         <Space align="center" size={6}>
-          <Tag color={HEALTH_META[value].color}>{HEALTH_META[value].label}</Tag>
+          <Tag color={HEALTH_META[value].color}>
+            {t(HEALTH_META[value].labelKey)}
+          </Tag>
           {record.latency_ms !== null ? (
             <Typography.Text type="secondary">
               {record.latency_ms} ms
@@ -751,7 +831,7 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '最近测试',
+      title: t('pages.dataAccess.columns.lastTested'),
       dataIndex: 'last_tested_at',
       width: 170,
       align: 'center',
@@ -759,7 +839,7 @@ export function DataAccessConsole() {
         value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: '操作',
+      title: t('pages.dataAccess.columns.actions'),
       key: 'action',
       fixed: 'right',
       width: 290,
@@ -772,21 +852,21 @@ export function DataAccessConsole() {
             type="link"
             onClick={() => void runConnectionTest(record)}
           >
-            测试
+            {t('pages.dataAccess.actions.test')}
           </Button>
           <Button
             icon={<EyeOutlined />}
             type="link"
             onClick={() => void openMetadata(record)}
           >
-            元数据
+            {t('pages.dataAccess.actions.metadata')}
           </Button>
           <Button
             icon={<SettingOutlined />}
             type="link"
             onClick={() => openEditDataSource(record)}
           >
-            配置
+            {t('pages.dataAccess.actions.configure')}
           </Button>
           <Button
             danger
@@ -795,7 +875,7 @@ export function DataAccessConsole() {
             type="link"
             onClick={() => confirmDeleteDataSource(record)}
           >
-            删除
+            {t('pages.dataAccess.actions.delete')}
           </Button>
         </Space>
       ),
@@ -804,7 +884,7 @@ export function DataAccessConsole() {
 
   const endpointColumns: TableProps<AccessEndpointRecord>['columns'] = [
     {
-      title: '接入端点',
+      title: t('pages.dataAccess.columns.endpoint'),
       dataIndex: 'name',
       width: 230,
       align: 'center',
@@ -821,18 +901,19 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '数据源',
+      title: t('pages.dataAccess.columns.source'),
       dataIndex: 'source_id',
       width: 170,
       align: 'center',
       render: (value: string) => (
         <OverflowText>
-          {sourceById.get(value)?.name ?? '未知数据源'}
+          {sourceById.get(value)?.name ??
+            t('pages.dataAccess.common.unknownSource')}
         </OverflowText>
       ),
     },
     {
-      title: '模式',
+      title: t('pages.dataAccess.columns.mode'),
       dataIndex: 'mode',
       width: 130,
       align: 'center',
@@ -841,44 +922,47 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '字段',
+      title: t('pages.dataAccess.columns.fields'),
       dataIndex: 'available_fields',
       width: 90,
       align: 'center',
-      render: (value: string[]) => `${value.length} 个`,
+      render: (value: string[]) =>
+        t('pages.dataAccess.units.fields', { count: value.length }),
     },
     {
-      title: '版本',
+      title: t('pages.dataAccess.columns.version'),
       dataIndex: 'published_version',
       width: 80,
       align: 'center',
       render: (value: number) => (value ? `v${value}` : '-'),
     },
     {
-      title: '状态',
+      title: t('pages.dataAccess.columns.status'),
       dataIndex: 'status',
       width: 130,
       align: 'center',
       render: (value: EndpointStatus, record) => (
         <Space align="center" orientation="vertical" size={2}>
           <Tag color={ENDPOINT_STATUS_META[value].color}>
-            {ENDPOINT_STATUS_META[value].label}
+            {t(ENDPOINT_STATUS_META[value].labelKey)}
           </Tag>
           {value === 'published' && record.has_draft_changes ? (
-            <Typography.Text type="warning">有待发布修改</Typography.Text>
+            <Typography.Text type="warning">
+              {t('pages.dataAccess.endpoint.hasDraftChanges')}
+            </Typography.Text>
           ) : null}
         </Space>
       ),
     },
     {
-      title: '更新时间',
+      title: t('pages.dataAccess.columns.updatedAt'),
       dataIndex: 'updated_at',
       width: 170,
       align: 'center',
       render: (value: string) => dayjs(value).format('YYYY-MM-DD HH:mm'),
     },
     {
-      title: '操作',
+      title: t('pages.dataAccess.columns.actions'),
       key: 'action',
       fixed: 'right',
       width: 360,
@@ -894,7 +978,7 @@ export function DataAccessConsole() {
               type="link"
               onClick={() => setPreviewEndpoint(record)}
             >
-              预览
+              {t('pages.dataAccess.actions.preview')}
             </Button>
             {record.status !== 'deprecated' ? (
               <Button
@@ -902,7 +986,7 @@ export function DataAccessConsole() {
                 type="link"
                 onClick={() => openEditEndpoint(record)}
               >
-                编辑
+                {t('pages.dataAccess.actions.edit')}
               </Button>
             ) : null}
             {canPublish ? (
@@ -912,7 +996,9 @@ export function DataAccessConsole() {
                 type="link"
                 onClick={() => confirmPublishEndpoint(record)}
               >
-                {record.published_version ? '发布新版' : '发布'}
+                {record.published_version
+                  ? t('pages.dataAccess.actions.publishNewVersion')
+                  : t('pages.dataAccess.actions.publish')}
               </Button>
             ) : null}
             {record.published_version === 0 ? (
@@ -923,7 +1009,7 @@ export function DataAccessConsole() {
                 type="link"
                 onClick={() => confirmDeleteEndpoint(record)}
               >
-                删除
+                {t('pages.dataAccess.actions.delete')}
               </Button>
             ) : null}
             {record.status === 'published' ? (
@@ -934,7 +1020,7 @@ export function DataAccessConsole() {
                 type="link"
                 onClick={() => confirmDeprecateEndpoint(record)}
               >
-                废弃
+                {t('pages.dataAccess.actions.deprecate')}
               </Button>
             ) : null}
           </Space>
@@ -945,7 +1031,7 @@ export function DataAccessConsole() {
 
   const policyColumns: TableProps<FieldPolicyRecord>['columns'] = [
     {
-      title: '字段策略',
+      title: t('pages.dataAccess.columns.policy'),
       dataIndex: 'name',
       width: 230,
       align: 'center',
@@ -956,20 +1042,22 @@ export function DataAccessConsole() {
           orientation="vertical"
           size={1}
         >
-          <OverflowText strong>{value}</OverflowText>
+          <OverflowText strong>{localizeValue(value)}</OverflowText>
           <OverflowText type="secondary">{record.endpointCode}</OverflowText>
         </Space>
       ),
     },
     {
-      title: '绑定主体',
+      title: t('pages.dataAccess.columns.subject'),
       dataIndex: 'subject',
       width: 220,
       align: 'center',
-      render: (value: string) => <OverflowText>{value}</OverflowText>,
+      render: (value: string) => (
+        <OverflowText>{localizeValue(value)}</OverflowText>
+      ),
     },
     {
-      title: '允许字段',
+      title: t('pages.dataAccess.columns.allowedFields'),
       dataIndex: 'allowedFields',
       width: 270,
       align: 'center',
@@ -987,39 +1075,49 @@ export function DataAccessConsole() {
       ),
     },
     {
-      title: '拒绝字段',
+      title: t('pages.dataAccess.columns.deniedFields'),
       dataIndex: 'deniedFields',
       width: 160,
       align: 'center',
       render: (value: string[]) =>
-        value.length ? <Tag color="red">{value.length} 个</Tag> : '-',
+        value.length ? (
+          <Tag color="red">
+            {t('pages.dataAccess.units.fields', { count: value.length })}
+          </Tag>
+        ) : (
+          '-'
+        ),
     },
     {
-      title: '版本',
+      title: t('pages.dataAccess.columns.version'),
       dataIndex: 'version',
       width: 80,
       align: 'center',
       render: (value: number) => `v${value}`,
     },
     {
-      title: '状态',
+      title: t('pages.dataAccess.columns.status'),
       dataIndex: 'status',
       width: 100,
       align: 'center',
       render: (value: PolicyStatus) => (
         <Tag color={POLICY_STATUS_META[value].color}>
-          {POLICY_STATUS_META[value].label}
+          {t(POLICY_STATUS_META[value].labelKey)}
         </Tag>
       ),
     },
     {
-      title: '更新时间',
+      title: t('pages.dataAccess.columns.updatedAt'),
       dataIndex: 'updatedAt',
       width: 130,
       align: 'center',
+      render: (value: string) =>
+        value === '__just_now__'
+          ? t('pages.dataAccess.time.justNow')
+          : localizeValue(value),
     },
     {
-      title: '操作',
+      title: t('pages.dataAccess.columns.actions'),
       key: 'action',
       fixed: 'right',
       width: 250,
@@ -1031,14 +1129,14 @@ export function DataAccessConsole() {
             type="link"
             onClick={() => openSimulation(record)}
           >
-            模拟
+            {t('pages.dataAccess.actions.simulate')}
           </Button>
           <Button
             icon={<EditOutlined />}
             type="link"
             onClick={() => openEditPolicy(record)}
           >
-            编辑
+            {t('pages.dataAccess.actions.edit')}
           </Button>
           {record.status === 'draft' ? (
             <Button
@@ -1046,7 +1144,7 @@ export function DataAccessConsole() {
               type="link"
               onClick={() => publishPolicy(record)}
             >
-              发布
+              {t('pages.dataAccess.actions.publish')}
             </Button>
           ) : null}
         </Space>
@@ -1056,7 +1154,7 @@ export function DataAccessConsole() {
 
   const usageColumns: TableProps<UsageRecord>['columns'] = [
     {
-      title: '使用人',
+      title: t('pages.dataAccess.columns.user'),
       dataIndex: 'userName',
       width: 260,
       align: 'center',
@@ -1067,24 +1165,24 @@ export function DataAccessConsole() {
           orientation="vertical"
           size={1}
         >
-          <OverflowText strong>{value}</OverflowText>
+          <OverflowText strong>{localizeValue(value)}</OverflowText>
           <OverflowText type="secondary">{record.userAccount}</OverflowText>
         </Space>
       ),
     },
     {
-      title: '访问类型',
+      title: t('pages.dataAccess.columns.accessType'),
       dataIndex: 'targetType',
       width: 130,
       align: 'center',
       render: (value: UsageTargetType) => (
         <Tag color={USAGE_TARGET_META[value].color}>
-          {USAGE_TARGET_META[value].label}
+          {t(USAGE_TARGET_META[value].labelKey)}
         </Tag>
       ),
     },
     {
-      title: '访问对象',
+      title: t('pages.dataAccess.columns.accessTarget'),
       dataIndex: 'targetName',
       align: 'center',
       render: (value: string, record) => (
@@ -1094,13 +1192,13 @@ export function DataAccessConsole() {
           orientation="vertical"
           size={1}
         >
-          <OverflowText strong>{value}</OverflowText>
+          <OverflowText strong>{localizeValue(value)}</OverflowText>
           <OverflowText code>{record.targetCode}</OverflowText>
         </Space>
       ),
     },
     {
-      title: '使用时间',
+      title: t('pages.dataAccess.columns.usedAt'),
       dataIndex: 'usedAt',
       width: 190,
       align: 'center',
@@ -1111,21 +1209,21 @@ export function DataAccessConsole() {
     workspace === 'sources'
       ? Object.entries(SOURCE_STATUS_META).map(([value, meta]) => ({
           value,
-          label: meta.label,
+          label: t(meta.labelKey),
         }))
       : workspace === 'endpoints'
         ? Object.entries(ENDPOINT_STATUS_META).map(([value, meta]) => ({
             value,
-            label: meta.label,
+            label: t(meta.labelKey),
           }))
         : workspace === 'policies'
           ? Object.entries(POLICY_STATUS_META).map(([value, meta]) => ({
               value,
-              label: meta.label,
+              label: t(meta.labelKey),
             }))
           : Object.entries(USAGE_TARGET_META).map(([value, meta]) => ({
               value,
-              label: meta.label,
+              label: t(meta.labelKey),
             }))
 
   const openCreate = () => {
@@ -1138,13 +1236,13 @@ export function DataAccessConsole() {
     <div className="h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full overflow-y-auto pb-4 pe-1 [scrollbar-gutter:stable]">
       <PageHeader
         className="mb-3 rounded-lg border border-(--border) bg-(--panel) px-4 py-3"
-        title="数据接入控制台"
-        subtitle="统一管理数据源、接入端点与字段权限策略，首版覆盖功能表中的 P0 核心工作流。"
+        title={t('pages.dataAccess.title')}
+        subtitle={t('pages.dataAccess.subtitle')}
       >
         <Space wrap>
-          {WORKSPACE_META[workspace].createLabel ? (
+          {WORKSPACE_META[workspace].createLabelKey ? (
             <Button icon={<PlusOutlined />} type="primary" onClick={openCreate}>
-              {WORKSPACE_META[workspace].createLabel}
+              {t(WORKSPACE_META[workspace].createLabelKey)}
             </Button>
           ) : null}
         </Space>
@@ -1153,29 +1251,33 @@ export function DataAccessConsole() {
       <div className="grid grid-cols-4 gap-2.5 max-[1100px]:grid-cols-2 max-[620px]:grid-cols-1">
         <MetricTile
           icon={<DatabaseOutlined />}
-          label="数据源"
-          note="PostgreSQL / HTTP API"
+          label={t('pages.dataAccess.metrics.sources.label')}
+          note={t('pages.dataAccess.metrics.sources.note')}
           tone="blue"
           value={sourceTotal}
         />
         <MetricTile
           icon={<CheckCircleOutlined />}
-          label="连接健康"
-          note={`${Math.max(sourceTotal - healthySourceCount, 0)} 个需处理`}
+          label={t('pages.dataAccess.metrics.health.label')}
+          note={t('pages.dataAccess.metrics.health.note', {
+            count: Math.max(sourceTotal - healthySourceCount, 0),
+          })}
           tone="green"
           value={healthySourceCount}
         />
         <MetricTile
           icon={<ApiOutlined />}
-          label="已发布端点"
-          note={`${endpoints.filter((item) => item.has_draft_changes).length} 个端点有待发布修改`}
+          label={t('pages.dataAccess.metrics.endpoints.label')}
+          note={t('pages.dataAccess.metrics.endpoints.note', {
+            count: endpoints.filter((item) => item.has_draft_changes).length,
+          })}
           tone="purple"
           value={publishedEndpointCount}
         />
         <MetricTile
           icon={<SafetyCertificateOutlined />}
-          label="生效策略"
-          note="字段权限默认拒绝"
+          label={t('pages.dataAccess.metrics.policies.label')}
+          note={t('pages.dataAccess.metrics.policies.note')}
           tone="orange"
           value={publishedPolicyCount}
         />
@@ -1183,15 +1285,9 @@ export function DataAccessConsole() {
 
       <PageContainer className="mt-2.5 rounded-lg! p-3.5">
         <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <Typography.Text strong>核心链路</Typography.Text>
-            <Typography.Text className="ms-2 text-xs!" type="secondary">
-              P0 基础组件与自研安全边界
-            </Typography.Text>
-          </div>
-          <Tag className="m-0! rounded-md!" color="purple">
-            P0 · 16 项
-          </Tag>
+          <Typography.Text strong>
+            {t('pages.dataAccess.foundation.title')}
+          </Typography.Text>
         </div>
         <div className="grid grid-cols-3 gap-2.5 max-[980px]:grid-cols-1">
           <FoundationItem
@@ -1204,15 +1300,15 @@ export function DataAccessConsole() {
           <FoundationItem
             icon={<LinkOutlined />}
             name="Apache OpenDAL"
-            role="统一 Operator 创建、能力检测与资源释放，通过稳定 SPI 接入连接器。"
-            status="已接入"
+            role={t('pages.dataAccess.foundation.openDalRole')}
+            status={t('pages.dataAccess.status.connected')}
             statusColor="green"
           />
           <FoundationItem
             icon={<SafetyCertificateOutlined />}
-            name="自研数据网关"
-            role="租户识别、端点校验、参数化查询与统一拒绝响应。"
-            status="已接入"
+            name={t('pages.dataAccess.foundation.gatewayName')}
+            role={t('pages.dataAccess.foundation.gatewayRole')}
+            status={t('pages.dataAccess.status.connected')}
             statusColor="green"
           />
         </div>
@@ -1223,10 +1319,28 @@ export function DataAccessConsole() {
           activeKey={workspace}
           className="[&_.ant-tabs-nav]:mb-0! [&_.ant-tabs-nav]:px-4 [&_.ant-tabs-tab]:py-3! [&_.ant-tabs-content-holder]:min-h-0"
           items={[
-            { key: 'sources', label: `数据源 (${sourceTotal})` },
-            { key: 'endpoints', label: `接入端点 (${endpointTotal})` },
-            { key: 'policies', label: `字段策略 (${policies.length})` },
-            { key: 'usage', label: `使用记录 (${usageRecords.length})` },
+            {
+              key: 'sources',
+              label: t('pages.dataAccess.tabs.sources', { count: sourceTotal }),
+            },
+            {
+              key: 'endpoints',
+              label: t('pages.dataAccess.tabs.endpoints', {
+                count: endpointTotal,
+              }),
+            },
+            {
+              key: 'policies',
+              label: t('pages.dataAccess.tabs.policies', {
+                count: policies.length,
+              }),
+            },
+            {
+              key: 'usage',
+              label: t('pages.dataAccess.tabs.usage', {
+                count: usageRecords.length,
+              }),
+            },
           ]}
           onChange={(key) => {
             setWorkspace(key as WorkspaceKey)
@@ -1240,7 +1354,7 @@ export function DataAccessConsole() {
             allowClear
             className="max-w-88"
             prefix={<SearchOutlined className="text-(--dark-text)" />}
-            placeholder={WORKSPACE_META[workspace].searchPlaceholder}
+            placeholder={t(WORKSPACE_META[workspace].searchPlaceholderKey)}
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
           />
@@ -1248,15 +1362,19 @@ export function DataAccessConsole() {
             allowClear
             className="w-34"
             options={statusOptions}
-            placeholder={workspace === 'usage' ? '全部类型' : '全部状态'}
+            placeholder={
+              workspace === 'usage'
+                ? t('pages.dataAccess.filters.allTypes')
+                : t('pages.dataAccess.filters.allStatuses')
+            }
             suffixIcon={<FilterOutlined />}
             value={statusFilter}
             onChange={setStatusFilter}
           />
           <div className="ms-auto">
-            <Tooltip title="刷新当前列表">
+            <Tooltip title={t('pages.dataAccess.actions.refresh')}>
               <Button
-                aria-label="刷新当前列表"
+                aria-label={t('pages.dataAccess.actions.refresh')}
                 icon={<ReloadOutlined />}
                 loading={workspace === 'sources' && sourceListQuery.isFetching}
                 onClick={() => {
@@ -1264,7 +1382,9 @@ export function DataAccessConsole() {
                     void sourceListQuery.refetch()
                     return
                   }
-                  void message.success('列表已刷新')
+                  void message.success(
+                    t('pages.dataAccess.messages.listRefreshed'),
+                  )
                 }}
               />
             </Tooltip>
@@ -1282,10 +1402,10 @@ export function DataAccessConsole() {
                       size="small"
                       onClick={() => void sourceListQuery.refetch()}
                     >
-                      重试
+                      {t('pages.dataAccess.actions.retry')}
                     </Button>
                   }
-                  title="数据源列表加载失败"
+                  title={t('pages.dataAccess.errors.sourceList')}
                   type="error"
                 />
               ) : null}
@@ -1312,10 +1432,10 @@ export function DataAccessConsole() {
                       size="small"
                       onClick={() => void endpointListQuery.refetch()}
                     >
-                      重试
+                      {t('pages.dataAccess.actions.retry')}
                     </Button>
                   }
-                  title="接入端点列表加载失败"
+                  title={t('pages.dataAccess.errors.endpointList')}
                   type="error"
                 />
               ) : null}
@@ -1362,14 +1482,20 @@ export function DataAccessConsole() {
         forceRender
         open={sourceDrawerOpen}
         size="large"
-        title={editingSourceId ? '配置数据源' : '新建数据源'}
+        title={
+          editingSourceId
+            ? t('pages.dataAccess.sourceForm.editTitle')
+            : t('pages.dataAccess.sourceForm.createTitle')
+        }
         extra={
           <Button
             loading={createPending || updatePending}
             type="primary"
             onClick={() => sourceForm.submit()}
           >
-            {editingSourceId ? '保存配置' : '保存草稿'}
+            {editingSourceId
+              ? t('pages.dataAccess.actions.saveConfig')
+              : t('pages.dataAccess.actions.saveDraft')}
           </Button>
         }
         onClose={() => {
@@ -1381,33 +1507,52 @@ export function DataAccessConsole() {
         <Alert
           showIcon
           className="mb-5"
-          title="P0 连接器范围"
-          description="首版开放 PostgreSQL 与 HTTP API。敏感凭据可在创建时明文录入，保存后列表不回显原值。"
+          title={t('pages.dataAccess.sourceForm.connectorTitle')}
+          description={t('pages.dataAccess.sourceForm.connectorDescription')}
           type="info"
         />
         <Form
           form={sourceForm}
           layout="vertical"
-          requiredMark="optional"
+          requiredMark={(label, { required }) => (
+            <Space size={4}>
+              {label}
+              {!required ? (
+                <Typography.Text type="secondary">
+                  ({t('pages.dataAccess.common.optional')})
+                </Typography.Text>
+              ) : null}
+            </Space>
+          )}
           onFinish={(values) => void submitDataSource(values)}
         >
           <Form.Item
-            label="数据源名称"
+            label={t('pages.dataAccess.sourceForm.name')}
             name="name"
-            rules={[{ required: true, message: '请输入数据源名称' }]}
+            rules={[
+              {
+                required: true,
+                message: t('pages.dataAccess.validation.sourceNameRequired'),
+              },
+            ]}
           >
-            <Input placeholder="例如：客户中心只读库" />
+            <Input
+              placeholder={t('pages.dataAccess.sourceForm.namePlaceholder')}
+            />
           </Form.Item>
           <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
             <Form.Item
-              extra="同一租户内必须唯一，创建后不可修改。建议使用稳定的英文业务标识。"
-              label="数据源编码"
+              extra={t('pages.dataAccess.sourceForm.codeHelp')}
+              label={t('pages.dataAccess.sourceForm.code')}
               name="code"
               rules={[
-                { required: true, message: '请输入数据源编码' },
+                {
+                  required: true,
+                  message: t('pages.dataAccess.validation.sourceCodeRequired'),
+                },
                 {
                   pattern: /^[a-z][a-z0-9_-]*$/,
-                  message: '使用小写字母开头，只包含字母、数字、下划线或连字符',
+                  message: t('pages.dataAccess.validation.codePattern'),
                 },
               ]}
             >
@@ -1417,7 +1562,7 @@ export function DataAccessConsole() {
               />
             </Form.Item>
             <Form.Item
-              label="连接器类型"
+              label={t('pages.dataAccess.sourceForm.connectorType')}
               name="type"
               rules={[{ required: true }]}
             >
@@ -1435,16 +1580,21 @@ export function DataAccessConsole() {
             <>
               <div className="grid grid-cols-[1fr_140px] gap-x-3 max-[560px]:grid-cols-1">
                 <Form.Item
-                  label="主机"
+                  label={t('pages.dataAccess.sourceForm.host')}
                   name="host"
                   rules={[
-                    { required: true, message: '请输入 PostgreSQL 主机' },
+                    {
+                      required: true,
+                      message: t(
+                        'pages.dataAccess.validation.postgresHostRequired',
+                      ),
+                    },
                   ]}
                 >
                   <Input placeholder="db.internal" />
                 </Form.Item>
                 <Form.Item
-                  label="端口"
+                  label={t('pages.dataAccess.sourceForm.port')}
                   name="port"
                   rules={[{ required: true }]}
                 >
@@ -1453,9 +1603,16 @@ export function DataAccessConsole() {
               </div>
               <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
                 <Form.Item
-                  label="数据库"
+                  label={t('pages.dataAccess.sourceForm.database')}
                   name="database"
-                  rules={[{ required: true, message: '请输入数据库名' }]}
+                  rules={[
+                    {
+                      required: true,
+                      message: t(
+                        'pages.dataAccess.validation.databaseRequired',
+                      ),
+                    },
+                  ]}
                 >
                   <Input placeholder="customer" />
                 </Form.Item>
@@ -1468,24 +1625,38 @@ export function DataAccessConsole() {
                 </Form.Item>
               </div>
               <Form.Item
-                label="用户名"
+                label={t('pages.dataAccess.sourceForm.username')}
                 name="username"
-                rules={[{ required: true, message: '请输入只读用户名' }]}
+                rules={[
+                  {
+                    required: true,
+                    message: t('pages.dataAccess.validation.usernameRequired'),
+                  },
+                ]}
               >
                 <Input placeholder="reader" />
               </Form.Item>
               <div className="grid grid-cols-3 gap-x-3 max-[700px]:grid-cols-1">
-                <Form.Item label="SSL 模式" name="sslMode">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.sslMode')}
+                  name="sslMode"
+                >
                   <Select
                     options={['disable', 'prefer', 'require'].map((value) => ({
                       value,
                     }))}
                   />
                 </Form.Item>
-                <Form.Item label="连接超时（秒）" name="connectTimeoutSeconds">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.connectTimeout')}
+                  name="connectTimeoutSeconds"
+                >
                   <InputNumber className="w-full" max={60} min={1} />
                 </Form.Item>
-                <Form.Item label="连接池大小" name="poolSize">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.poolSize')}
+                  name="poolSize"
+                >
                   <InputNumber className="w-full" max={20} min={1} />
                 </Form.Item>
               </div>
@@ -1493,18 +1664,27 @@ export function DataAccessConsole() {
           ) : (
             <>
               <Form.Item
-                extra="Base URL 定义上游主机和可选路径前缀；探测路径只用于连接测试，不限制端点路径。"
+                extra={t('pages.dataAccess.sourceForm.baseUrlHelp')}
                 label="Base URL"
                 name="baseUrl"
                 rules={[
-                  { required: true, message: '请输入 HTTP API 地址' },
-                  { type: 'url', message: '请输入完整的 HTTP(S) URL' },
+                  {
+                    required: true,
+                    message: t('pages.dataAccess.validation.httpUrlRequired'),
+                  },
+                  {
+                    type: 'url',
+                    message: t('pages.dataAccess.validation.httpUrlComplete'),
+                  },
                 ]}
               >
                 <Input placeholder="https://api.example.com" />
               </Form.Item>
               <div className="grid grid-cols-[140px_1fr_140px] gap-x-3 max-[700px]:grid-cols-1">
-                <Form.Item label="探测方法" name="healthMethod">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.healthMethod')}
+                  name="healthMethod"
+                >
                   <Select
                     options={[
                       { value: 'GET', label: 'GET' },
@@ -1518,14 +1698,14 @@ export function DataAccessConsole() {
                   />
                 </Form.Item>
                 <Form.Item
-                  label="探测路径"
+                  label={t('pages.dataAccess.sourceForm.healthPath')}
                   name="healthPath"
                   rules={[{ required: true }]}
                 >
                   <Input placeholder="/health" />
                 </Form.Item>
                 <Form.Item
-                  label="预期状态码"
+                  label={t('pages.dataAccess.sourceForm.expectedStatus')}
                   name="healthExpectedStatus"
                   rules={[{ required: true }]}
                 >
@@ -1533,10 +1713,19 @@ export function DataAccessConsole() {
                 </Form.Item>
               </div>
               <Form.Item
-                extra="可选，必须是 JSON 对象，GET 和 POST 探测均可使用。"
-                label="探测 Query 参数"
+                extra={t('pages.dataAccess.sourceForm.healthQueryHelp')}
+                label={t('pages.dataAccess.sourceForm.healthQuery')}
                 name="healthQueryJson"
-                rules={[{ validator: validateOptionalJsonObject }]}
+                rules={[
+                  {
+                    validator: (_rule, value?: string) =>
+                      validateOptionalJsonObject(
+                        value,
+                        t('pages.dataAccess.validation.jsonObject'),
+                        t('pages.dataAccess.validation.jsonInvalid'),
+                      ),
+                  },
+                ]}
               >
                 <Input.TextArea
                   autoSize={{ minRows: 2, maxRows: 6 }}
@@ -1545,10 +1734,19 @@ export function DataAccessConsole() {
               </Form.Item>
               {sourceHealthMethod === 'POST' ? (
                 <Form.Item
-                  extra="仅用于无副作用的 POST 探测，必须是 JSON 对象。"
-                  label="探测 JSON Body"
+                  extra={t('pages.dataAccess.sourceForm.healthBodyHelp')}
+                  label={t('pages.dataAccess.sourceForm.healthBody')}
                   name="healthBodyJson"
-                  rules={[{ validator: validateOptionalJsonObject }]}
+                  rules={[
+                    {
+                      validator: (_rule, value?: string) =>
+                        validateOptionalJsonObject(
+                          value,
+                          t('pages.dataAccess.validation.jsonObject'),
+                          t('pages.dataAccess.validation.jsonInvalid'),
+                        ),
+                    },
+                  ]}
                 >
                   <Input.TextArea
                     autoSize={{ minRows: 3, maxRows: 8 }}
@@ -1557,36 +1755,51 @@ export function DataAccessConsole() {
                 </Form.Item>
               ) : null}
               <Form.Item
-                extra="可选；留空时使用上述探测请求的 JSON 响应推断元数据。"
-                label="元数据路径"
+                extra={t('pages.dataAccess.sourceForm.metadataPathHelp')}
+                label={t('pages.dataAccess.sourceForm.metadataPath')}
                 name="metadataPath"
               >
                 <Input placeholder="/metadata" />
               </Form.Item>
               <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
-                <Form.Item label="鉴权方式" name="authType">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.authType')}
+                  name="authType"
+                >
                   <Select
                     options={[
-                      { label: '无鉴权', value: 'none' },
+                      {
+                        label: t('pages.dataAccess.sourceForm.authNone'),
+                        value: 'none',
+                      },
                       { label: 'Bearer Token', value: 'bearer' },
                       { label: 'API Key', value: 'api_key' },
                     ]}
                   />
                 </Form.Item>
-                <Form.Item label="鉴权请求头" name="authHeader">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.authHeader')}
+                  name="authHeader"
+                >
                   <Input placeholder="Authorization / X-API-Key" />
                 </Form.Item>
               </div>
               <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
-                <Form.Item label="超时（秒）" name="timeoutSeconds">
+                <Form.Item
+                  label={t('pages.dataAccess.sourceForm.timeout')}
+                  name="timeoutSeconds"
+                >
                   <InputNumber className="w-full" max={60} min={1} />
                 </Form.Item>
                 <Form.Item
-                  label="TLS 证书校验"
+                  label={t('pages.dataAccess.sourceForm.verifyTls')}
                   name="verifyTls"
                   valuePropName="checked"
                 >
-                  <Switch checkedChildren="开" unCheckedChildren="关" />
+                  <Switch
+                    checkedChildren={t('pages.dataAccess.common.on')}
+                    unCheckedChildren={t('pages.dataAccess.common.off')}
+                  />
                 </Form.Item>
               </div>
             </>
@@ -1595,10 +1808,10 @@ export function DataAccessConsole() {
             <Form.Item
               extra={
                 editingSourceId
-                  ? '留空将保留已有凭据；填写新值会覆盖原凭据。'
-                  : '可直接填写数据库密码、Bearer Token 本体或 API Key，保存后不会在列表回显。'
+                  ? t('pages.dataAccess.sourceForm.credentialEditHelp')
+                  : t('pages.dataAccess.sourceForm.credentialCreateHelp')
               }
-              label="凭据 Token / 密码 / API Key"
+              label={t('pages.dataAccess.sourceForm.credential')}
               name="credentialRef"
               rules={[
                 {
@@ -1606,11 +1819,15 @@ export function DataAccessConsole() {
                     sourceType === 'http_api' &&
                     sourceAuthType !== 'none' &&
                     !editingSourceId,
-                  message: '开启鉴权时需要填写凭据',
+                  message: t('pages.dataAccess.validation.credentialRequired'),
                 },
               ]}
             >
-              <Input.Password placeholder="粘贴 token、API key 或数据库密码" />
+              <Input.Password
+                placeholder={t(
+                  'pages.dataAccess.sourceForm.credentialPlaceholder',
+                )}
+              />
             </Form.Item>
           ) : null}
         </Form>
@@ -1620,7 +1837,9 @@ export function DataAccessConsole() {
         destroyOnHidden
         footer={null}
         open={Boolean(metadataSource)}
-        title={`${metadataSource?.name ?? ''} · 元数据`}
+        title={t('pages.dataAccess.metadata.title', {
+          name: metadataSource?.name ?? '',
+        })}
         width={760}
         onCancel={() => {
           setMetadataSource(undefined)
@@ -1631,21 +1850,40 @@ export function DataAccessConsole() {
           <Alert
             showIcon
             className="mb-3"
-            title="元数据探测失败"
+            title={t('pages.dataAccess.metadata.error')}
             type="error"
           />
         ) : null}
         <Table
           columns={[
-            { title: '资源', dataIndex: 'resource', width: 180 },
-            { title: '资源类型', dataIndex: 'resourceType', width: 120 },
-            { title: '字段', dataIndex: 'field', width: 180 },
-            { title: '数据类型', dataIndex: 'dataType', width: 150 },
             {
-              title: '可空',
+              title: t('pages.dataAccess.columns.resource'),
+              dataIndex: 'resource',
+              width: 180,
+            },
+            {
+              title: t('pages.dataAccess.columns.resourceType'),
+              dataIndex: 'resourceType',
+              width: 120,
+            },
+            {
+              title: t('pages.dataAccess.columns.fields'),
+              dataIndex: 'field',
+              width: 180,
+            },
+            {
+              title: t('pages.dataAccess.columns.dataType'),
+              dataIndex: 'dataType',
+              width: 150,
+            },
+            {
+              title: t('pages.dataAccess.columns.nullable'),
               dataIndex: 'nullable',
               width: 80,
-              render: (nullable: boolean) => (nullable ? '是' : '否'),
+              render: (nullable: boolean) =>
+                nullable
+                  ? t('pages.dataAccess.common.yes')
+                  : t('pages.dataAccess.common.no'),
             },
           ]}
           dataSource={(metadataMutation.data?.resources ?? []).flatMap(
@@ -1683,9 +1921,17 @@ export function DataAccessConsole() {
         forceRender
         confirmLoading={createEndpointPending || updateEndpointPending}
         open={endpointModalOpen}
-        title={editingEndpointId ? '编辑接入端点' : '新建接入端点'}
-        okText={editingEndpointId ? '保存修改' : '保存草稿'}
-        cancelText="取消"
+        title={
+          editingEndpointId
+            ? t('pages.dataAccess.endpointForm.editTitle')
+            : t('pages.dataAccess.endpointForm.createTitle')
+        }
+        okText={
+          editingEndpointId
+            ? t('pages.dataAccess.actions.saveChanges')
+            : t('pages.dataAccess.actions.saveDraft')
+        }
+        cancelText={t('pages.dataAccess.actions.cancel')}
         width={760}
         onCancel={() => {
           setEndpointModalOpen(false)
@@ -1701,21 +1947,35 @@ export function DataAccessConsole() {
         >
           <div className="grid grid-cols-2 gap-x-3 max-[640px]:grid-cols-1">
             <Form.Item
-              label="端点名称"
+              label={t('pages.dataAccess.endpointForm.name')}
               name="name"
-              rules={[{ required: true, message: '请输入端点名称' }]}
+              rules={[
+                {
+                  required: true,
+                  message: t(
+                    'pages.dataAccess.validation.endpointNameRequired',
+                  ),
+                },
+              ]}
             >
-              <Input placeholder="例如：客户资料查询" />
+              <Input
+                placeholder={t('pages.dataAccess.endpointForm.namePlaceholder')}
+              />
             </Form.Item>
             <Form.Item
-              extra="同一租户内必须唯一，创建后不可修改，并用于网关调用路径。"
-              label="端点编码"
+              extra={t('pages.dataAccess.endpointForm.codeHelp')}
+              label={t('pages.dataAccess.endpointForm.code')}
               name="code"
               rules={[
-                { required: true, message: '请输入端点编码' },
+                {
+                  required: true,
+                  message: t(
+                    'pages.dataAccess.validation.endpointCodeRequired',
+                  ),
+                },
                 {
                   pattern: /^[a-z][a-z0-9_-]*$/,
-                  message: '以小写字母开头，只包含字母、数字、下划线或连字符',
+                  message: t('pages.dataAccess.validation.codePattern'),
                 },
               ]}
             >
@@ -1725,12 +1985,19 @@ export function DataAccessConsole() {
               />
             </Form.Item>
             <Form.Item
-              label="数据源"
+              label={t('pages.dataAccess.endpointForm.source')}
               name="sourceId"
-              rules={[{ required: true, message: '请选择数据源' }]}
+              rules={[
+                {
+                  required: true,
+                  message: t('pages.dataAccess.validation.sourceRequired'),
+                },
+              ]}
             >
               <Select
-                placeholder="选择已配置的数据源"
+                placeholder={t(
+                  'pages.dataAccess.endpointForm.sourcePlaceholder',
+                )}
                 options={sources.map((source) => ({
                   value: source.id,
                   label: `${source.name} · ${SOURCE_TYPE_META[source.source_type].label}`,
@@ -1745,25 +2012,35 @@ export function DataAccessConsole() {
               />
             </Form.Item>
             <Form.Item
-              label="接入模式"
+              label={t('pages.dataAccess.endpointForm.mode')}
               name="mode"
               rules={[{ required: true }]}
             >
-              <Select options={[{ value: 'PASSTHROUGH', label: '实时透传' }]} />
+              <Select
+                options={[
+                  {
+                    value: 'PASSTHROUGH',
+                    label: t('pages.dataAccess.endpointForm.passthrough'),
+                  },
+                ]}
+              />
             </Form.Item>
           </div>
 
           {endpointSourceType === 'postgresql' ? (
             <Form.Item
-              extra="可使用 schema.table，例如 public.customers"
-              label="查询表"
+              extra={t('pages.dataAccess.endpointForm.tableHelp')}
+              label={t('pages.dataAccess.endpointForm.table')}
               name="table"
               rules={[
-                { required: true, message: '请输入要查询的表' },
+                {
+                  required: true,
+                  message: t('pages.dataAccess.validation.tableRequired'),
+                },
                 {
                   pattern:
                     /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/,
-                  message: '仅支持 table 或 schema.table 格式',
+                  message: t('pages.dataAccess.validation.tablePattern'),
                 },
               ]}
             >
@@ -1774,17 +2051,23 @@ export function DataAccessConsole() {
           {endpointSourceType === 'http_api' ? (
             <div className="grid grid-cols-[1fr_140px] gap-x-3 max-[640px]:grid-cols-1">
               <Form.Item
-                label="API 路径"
+                label={t('pages.dataAccess.endpointForm.apiPath')}
                 name="path"
                 rules={[
-                  { required: true, message: '请输入 API 路径' },
-                  { pattern: /^\/[^\s]*$/, message: '路径必须以 / 开头' },
+                  {
+                    required: true,
+                    message: t('pages.dataAccess.validation.apiPathRequired'),
+                  },
+                  {
+                    pattern: /^\/[^\s]*$/,
+                    message: t('pages.dataAccess.validation.apiPathPattern'),
+                  },
                 ]}
               >
                 <Input placeholder="/customers/profile" />
               </Form.Item>
               <Form.Item
-                label="请求方法"
+                label={t('pages.dataAccess.endpointForm.method')}
                 name="method"
                 rules={[{ required: true }]}
               >
@@ -1799,15 +2082,15 @@ export function DataAccessConsole() {
           ) : null}
 
           <Form.Item
-            extra="输入后按回车添加，这些是端点允许返回的字段"
-            label="公开字段"
+            extra={t('pages.dataAccess.endpointForm.fieldsHelp')}
+            label={t('pages.dataAccess.endpointForm.fields')}
             name="availableFields"
             rules={[
               {
                 required: true,
                 type: 'array',
                 min: 1,
-                message: '请至少配置一个公开字段',
+                message: t('pages.dataAccess.validation.fieldsRequired'),
               },
             ]}
           >
@@ -1822,7 +2105,9 @@ export function DataAccessConsole() {
             {(fields, { add, remove }) => (
               <Space className="w-full" orientation="vertical" size={8}>
                 <div className="flex items-center justify-between">
-                  <Typography.Text strong>请求参数</Typography.Text>
+                  <Typography.Text strong>
+                    {t('pages.dataAccess.endpointForm.parameters')}
+                  </Typography.Text>
                   <Button
                     icon={<PlusOutlined />}
                     size="small"
@@ -1837,13 +2122,13 @@ export function DataAccessConsole() {
                       })
                     }
                   >
-                    添加参数
+                    {t('pages.dataAccess.actions.addParameter')}
                   </Button>
                 </div>
                 {fields.length === 0 ? (
                   <Alert
                     showIcon
-                    title="该端点当前不接收请求参数"
+                    title={t('pages.dataAccess.endpointForm.noParameters')}
                     type="info"
                   />
                 ) : null}
@@ -1857,10 +2142,17 @@ export function DataAccessConsole() {
                       className="mb-0!"
                       name={[name, 'name']}
                       rules={[
-                        { required: true, message: '请输入参数名' },
+                        {
+                          required: true,
+                          message: t(
+                            'pages.dataAccess.validation.parameterNameRequired',
+                          ),
+                        },
                         {
                           pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
-                          message: '参数名格式不正确',
+                          message: t(
+                            'pages.dataAccess.validation.parameterNamePattern',
+                          ),
                         },
                       ]}
                     >
@@ -1874,10 +2166,22 @@ export function DataAccessConsole() {
                     >
                       <Select
                         options={[
-                          { value: 'string', label: '字符串' },
-                          { value: 'integer', label: '整数' },
-                          { value: 'number', label: '数值' },
-                          { value: 'boolean', label: '布尔' },
+                          {
+                            value: 'string',
+                            label: t('pages.dataAccess.parameterTypes.string'),
+                          },
+                          {
+                            value: 'integer',
+                            label: t('pages.dataAccess.parameterTypes.integer'),
+                          },
+                          {
+                            value: 'number',
+                            label: t('pages.dataAccess.parameterTypes.number'),
+                          },
+                          {
+                            value: 'boolean',
+                            label: t('pages.dataAccess.parameterTypes.boolean'),
+                          },
                           { value: 'uuid', label: 'UUID' },
                         ]}
                       />
@@ -1886,17 +2190,34 @@ export function DataAccessConsole() {
                       {...restField}
                       className="mb-0!"
                       name={[name, 'target']}
-                      rules={[{ required: true, message: '请配置映射' }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: t(
+                            'pages.dataAccess.validation.mappingRequired',
+                          ),
+                        },
+                      ]}
                     >
                       {endpointSourceType === 'http_api' ? (
                         <Select
                           options={[
-                            { value: 'query', label: 'Query 参数' },
-                            { value: 'body', label: 'Body 字段' },
+                            {
+                              value: 'query',
+                              label: t('pages.dataAccess.mapping.query'),
+                            },
+                            {
+                              value: 'body',
+                              label: t('pages.dataAccess.mapping.body'),
+                            },
                           ]}
                         />
                       ) : (
-                        <Input placeholder="对应列，customer_id" />
+                        <Input
+                          placeholder={t(
+                            'pages.dataAccess.endpointForm.targetPlaceholder',
+                          )}
+                        />
                       )}
                     </Form.Item>
                     <Form.Item
@@ -1905,11 +2226,13 @@ export function DataAccessConsole() {
                       name={[name, 'required']}
                       valuePropName="checked"
                     >
-                      <Checkbox>必填</Checkbox>
+                      <Checkbox>
+                        {t('pages.dataAccess.endpointForm.required')}
+                      </Checkbox>
                     </Form.Item>
                     <Button
                       danger
-                      aria-label="删除参数"
+                      aria-label={t('pages.dataAccess.actions.removeParameter')}
                       icon={<DeleteOutlined />}
                       type="text"
                       onClick={() => remove(name)}
@@ -1926,7 +2249,7 @@ export function DataAccessConsole() {
         destroyOnHidden
         open={Boolean(previewEndpoint)}
         size="large"
-        title="接入端点预览"
+        title={t('pages.dataAccess.preview.title')}
         extra={
           previewEndpoint && previewEndpoint.status !== 'deprecated' ? (
             <Button
@@ -1938,7 +2261,7 @@ export function DataAccessConsole() {
                 openEditEndpoint(endpoint)
               }}
             >
-              编辑配置
+              {t('pages.dataAccess.actions.editConfig')}
             </Button>
           ) : null
         }
@@ -1958,11 +2281,11 @@ export function DataAccessConsole() {
               title={
                 previewEndpoint.status === 'published'
                   ? previewEndpoint.has_draft_changes
-                    ? '该端点已发布，当前配置有待发布修改'
-                    : '该端点已发布，可通过数据网关访问'
+                    ? t('pages.dataAccess.preview.publishedWithChanges')
+                    : t('pages.dataAccess.preview.published')
                   : previewEndpoint.status === 'deprecated'
-                    ? '该端点已废弃，历史发布快照仍保留'
-                    : '该端点仍为草稿，发布后才会对外提供服务'
+                    ? t('pages.dataAccess.preview.deprecated')
+                    : t('pages.dataAccess.preview.draft')
               }
             />
             <Descriptions
@@ -1971,12 +2294,12 @@ export function DataAccessConsole() {
               items={[
                 {
                   key: 'name',
-                  label: '端点名称',
+                  label: t('pages.dataAccess.endpointForm.name'),
                   children: previewEndpoint.name,
                 },
                 {
                   key: 'code',
-                  label: '端点编码',
+                  label: t('pages.dataAccess.endpointForm.code'),
                   children: (
                     <Typography.Text code>
                       {previewEndpoint.endpoint_code}
@@ -1985,38 +2308,38 @@ export function DataAccessConsole() {
                 },
                 {
                   key: 'source',
-                  label: '数据源',
+                  label: t('pages.dataAccess.endpointForm.source'),
                   children:
                     sourceById.get(previewEndpoint.source_id)?.name ??
-                    '未知数据源',
+                    t('pages.dataAccess.common.unknownSource'),
                 },
                 {
                   key: 'mode',
-                  label: '接入模式',
+                  label: t('pages.dataAccess.endpointForm.mode'),
                   children: previewEndpoint.mode,
                 },
                 {
                   key: 'version',
-                  label: '版本',
+                  label: t('pages.dataAccess.columns.version'),
                   children: previewEndpoint.published_version
                     ? `v${previewEndpoint.published_version}`
-                    : '尚未发布',
+                    : t('pages.dataAccess.preview.notPublished'),
                 },
                 {
                   key: 'fields',
-                  label: '公开字段',
+                  label: t('pages.dataAccess.endpointForm.fields'),
                   children: previewEndpoint.available_fields.length
                     ? previewEndpoint.available_fields.join(', ')
                     : '-',
                 },
                 {
                   key: 'status',
-                  label: '状态',
+                  label: t('pages.dataAccess.columns.status'),
                   children: (
                     <Tag
                       color={ENDPOINT_STATUS_META[previewEndpoint.status].color}
                     >
-                      {ENDPOINT_STATUS_META[previewEndpoint.status].label}
+                      {t(ENDPOINT_STATUS_META[previewEndpoint.status].labelKey)}
                     </Tag>
                   ),
                 },
@@ -2024,9 +2347,11 @@ export function DataAccessConsole() {
               size="small"
             />
             <div>
-              <Typography.Text strong>调用路径</Typography.Text>
+              <Typography.Text strong>
+                {t('pages.dataAccess.preview.callPath')}
+              </Typography.Text>
               <pre className="mt-2 overflow-x-auto rounded-lg border border-(--border) bg-(--control-subtle-bg) p-3 text-xs leading-5 text-(--text)">
-                {`POST /api/v1/data-gateway/endpoints/${previewEndpoint.endpoint_code}/query`}
+                {`POST /api/v1/data-gateway/${previewEndpoint.endpoint_code}`}
               </pre>
             </div>
           </Space>
@@ -2037,9 +2362,17 @@ export function DataAccessConsole() {
         destroyOnHidden
         forceRender
         open={policyModalOpen}
-        title={editingPolicyId ? '编辑字段策略' : '新建字段策略'}
-        okText={editingPolicyId ? '保存修改' : '保存草稿'}
-        cancelText="取消"
+        title={
+          editingPolicyId
+            ? t('pages.dataAccess.policyForm.editTitle')
+            : t('pages.dataAccess.policyForm.createTitle')
+        }
+        okText={
+          editingPolicyId
+            ? t('pages.dataAccess.actions.saveChanges')
+            : t('pages.dataAccess.actions.saveDraft')
+        }
+        cancelText={t('pages.dataAccess.actions.cancel')}
         onCancel={() => {
           setPolicyModalOpen(false)
           setEditingPolicyId(undefined)
@@ -2048,11 +2381,17 @@ export function DataAccessConsole() {
         onOk={() => policyForm.submit()}
       >
         <Form form={policyForm} layout="vertical" onFinish={submitPolicy}>
-          <Form.Item label="策略名称" name="name" rules={[{ required: true }]}>
-            <Input placeholder="例如：客服只读字段" />
+          <Form.Item
+            label={t('pages.dataAccess.policyForm.name')}
+            name="name"
+            rules={[{ required: true }]}
+          >
+            <Input
+              placeholder={t('pages.dataAccess.policyForm.namePlaceholder')}
+            />
           </Form.Item>
           <Form.Item
-            label="接入端点"
+            label={t('pages.dataAccess.policyForm.endpoint')}
             name="endpointCode"
             rules={[{ required: true }]}
           >
@@ -2064,18 +2403,23 @@ export function DataAccessConsole() {
             />
           </Form.Item>
           <Form.Item
-            label="绑定主体"
+            label={t('pages.dataAccess.policyForm.subject')}
             name="subject"
             rules={[{ required: true }]}
           >
-            <Input placeholder="角色：customer_service" />
+            <Input
+              placeholder={t('pages.dataAccess.policyForm.subjectPlaceholder')}
+            />
           </Form.Item>
           <Form.Item
-            label="允许返回字段"
+            label={t('pages.dataAccess.policyForm.allowedFields')}
             name="allowedFields"
             rules={[{ required: true }]}
           >
-            <Select mode="tags" placeholder="输入字段名后回车" />
+            <Select
+              mode="tags"
+              placeholder={t('pages.dataAccess.policyForm.fieldsPlaceholder')}
+            />
           </Form.Item>
         </Form>
       </Modal>
@@ -2084,10 +2428,10 @@ export function DataAccessConsole() {
         destroyOnHidden
         open={Boolean(simulationPolicy)}
         size="large"
-        title="字段权限模拟"
+        title={t('pages.dataAccess.simulation.title')}
         extra={
           <Button type="primary" onClick={runPolicySimulation}>
-            执行模拟
+            {t('pages.dataAccess.actions.runSimulation')}
           </Button>
         }
         onClose={() => setSimulationPolicy(undefined)}
@@ -2096,14 +2440,17 @@ export function DataAccessConsole() {
           <Space className="w-full" orientation="vertical" size={18}>
             <div className="rounded-lg border border-(--border) bg-(--control-subtle-bg) p-4">
               <Typography.Title level={5} className="mt-0! mb-1!">
-                {simulationPolicy.name}
+                {localizeValue(simulationPolicy.name)}
               </Typography.Title>
               <Typography.Text type="secondary">
-                {simulationPolicy.subject} · {simulationPolicy.endpointCode}
+                {localizeValue(simulationPolicy.subject)} ·{' '}
+                {simulationPolicy.endpointCode}
               </Typography.Text>
             </div>
             <div>
-              <Typography.Text strong>本次请求字段</Typography.Text>
+              <Typography.Text strong>
+                {t('pages.dataAccess.simulation.requestFields')}
+              </Typography.Text>
               <Checkbox.Group
                 className="mt-3 grid w-full grid-cols-2 gap-2 max-[520px]:grid-cols-1"
                 options={Array.from(
@@ -2126,21 +2473,29 @@ export function DataAccessConsole() {
                 }
                 title={
                   simulationDecision.effect === 'ALLOW'
-                    ? 'ALLOW · 请求允许'
+                    ? t('pages.dataAccess.simulation.allowTitle')
                     : 'DENY · FIELD_PERMISSION_DENIED'
                 }
                 description={
                   simulationDecision.effect === 'ALLOW'
-                    ? `允许返回 ${simulationFields.length} 个字段，网关将生成字段白名单。`
-                    : `字段 ${simulationDecision.deniedFields.join('、')} 无权限，请求已在网关拒绝；downstream_called=false。`
+                    ? t('pages.dataAccess.simulation.allowDescription', {
+                        count: simulationFields.length,
+                      })
+                    : t('pages.dataAccess.simulation.denyDescription', {
+                        fields: simulationDecision.deniedFields.join(
+                          t('pages.dataAccess.common.listSeparator'),
+                        ),
+                      })
                 }
               />
             ) : (
               <Alert
                 showIcon
                 type="info"
-                title="模拟不会调用下游"
-                description="系统仅执行租户、端点与字段策略决策，不访问真实数据源。"
+                title={t('pages.dataAccess.simulation.noDownstreamTitle')}
+                description={t(
+                  'pages.dataAccess.simulation.noDownstreamDescription',
+                )}
               />
             )}
           </Space>
