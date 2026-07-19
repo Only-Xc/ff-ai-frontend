@@ -1585,4 +1585,10 @@ export default {
   'pages.grc.riskLevel.medium': 'Medium',
   'pages.grc.riskLevel.high': 'High',
   'pages.grc.riskLevel.critical': 'Critical',
+  'pages.dataAccess.errors.policyList': 'Failed to load field policies',
+  'pages.dataAccess.errors.usageList': 'Failed to load usage records',
+  'pages.dataAccess.errors.policyNotFound': 'Original policy not found',
+  'pages.dataAccess.validation.selectValidEndpoint': 'Select a valid access endpoint',
+  'pages.dataAccess.empty.policies': 'No field policies yet',
+  'pages.dataAccess.empty.usage': 'No usage records yet',
 }

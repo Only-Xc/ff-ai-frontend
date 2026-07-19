@@ -29,14 +29,29 @@ function createStorageApi(storage: Storage): StorageApi {
         return undefined
       }
 
-      const data = JSON.parse(item) as StorageValue<T>
+      // Legacy payloads (e.g. raw JWTs set before the {value, expiresAt} wrapper
+      // existed) are stored as bare strings and fail JSON.parse. Fall back to
+      // returning the raw value so they keep flowing through typed callers
+      // (e.g. local.get<string>(...)) without crashing the store initializer.
+      let data: { value?: T; expiresAt?: number } | unknown
+      try {
+        data = JSON.parse(item)
+      } catch {
+        return item as unknown as T
+      }
 
-      if (data.expiresAt !== undefined && Date.now() >= data.expiresAt) {
+      if (data === null || typeof data !== 'object') {
+        return undefined
+      }
+
+      const wrapper = data as StorageValue<T>
+
+      if (wrapper.expiresAt !== undefined && Date.now() >= wrapper.expiresAt) {
         storage.removeItem(key)
         return undefined
       }
 
-      return data.value
+      return wrapper.value
     },
     remove(key: string) {
       storage.removeItem(key)

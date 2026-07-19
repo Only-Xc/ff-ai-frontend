@@ -274,6 +274,7 @@ export default {
   'pages.dataAccess.simulation.allowTitle': 'ALLOW · الطلب مسموح',
   'pages.dataAccess.simulation.allowDescription':
     'يمكن إرجاع {{count}} حقول. ستنشئ البوابة قائمة سماح للحقول.',
+  'pages.dataAccess.simulation.denyTitle': 'DENY · تم رفض إذن الحقل',
   'pages.dataAccess.simulation.denyDescription':
     'الحقول {{fields}} غير مسموحة. رفضت البوابة الطلب؛ downstream_called=false.',
   'pages.dataAccess.simulation.noDownstreamTitle':
@@ -1577,4 +1578,10 @@ export default {
   'pages.grc.riskLevel.medium': 'متوسط',
   'pages.grc.riskLevel.high': 'مرتفع',
   'pages.grc.riskLevel.critical': 'حرج',
+  'pages.dataAccess.errors.policyList': 'فشل تحميل سياسات الحقول',
+  'pages.dataAccess.errors.usageList': 'فشل تحميل سجلات الاستخدام',
+  'pages.dataAccess.errors.policyNotFound': 'لم يتم العثور على السياسة الأصلية',
+  'pages.dataAccess.validation.selectValidEndpoint': 'اختر نقطة وصول صالحة',
+  'pages.dataAccess.empty.policies': 'لا توجد سياسات حقول حتى الآن',
+  'pages.dataAccess.empty.usage': 'لا توجد سجلات استخدام حتى الآن',
 }

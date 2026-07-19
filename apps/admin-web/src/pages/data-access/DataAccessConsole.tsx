@@ -44,11 +44,18 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { useAuthStore } from '@/store/useAuth'
 
-import { initialPolicies, initialUsageRecords } from './mock'
 import { useAccessEndpoints } from './hooks/useAccessEndpoints'
 import { useDataSources } from './hooks/useDataSources'
 import { useDataIngestionIntegrations } from './hooks/useDataIngestionIntegrations'
+import { useFieldPolicies } from './hooks/useFieldPolicies'
+import { useDataAccessLogs } from './hooks/useDataAccessLogs'
+import {
+  buildFieldPolicyCreateBody,
+  buildFieldPolicyUpdateBody,
+  fieldPolicyToRecord,
+} from './utils/fieldPolicies'
 import type {
   AccessEndpointRecord,
   DataSourceFormValues,
@@ -317,6 +324,7 @@ export function DataAccessConsole() {
   const [endpointForm] = Form.useForm<EndpointFormValues>()
   const endpointSourceId = Form.useWatch('sourceId', endpointForm)
   const [policyForm] = Form.useForm<PolicyFormValues>()
+  const organizations = useAuthStore((state) => state.organizations)
   const [workspace, setWorkspace] = useState<WorkspaceKey>('sources')
   const [searchText, setSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>()
@@ -351,8 +359,30 @@ export function DataAccessConsole() {
     deprecatingEndpointId,
   } = useAccessEndpoints()
   const integrationsQuery = useDataIngestionIntegrations()
-  const [policies, setPolicies] = useState(initialPolicies)
-  const [usageRecords] = useState(initialUsageRecords)
+  const {
+    listQuery: fieldPolicyListQuery,
+    records: fieldPolicyRecords,
+    policiesCount,
+    isLoading: fieldPoliciesLoading,
+    isError: fieldPoliciesError,
+    refetch: refetchFieldPolicies,
+    createPolicy,
+    createPending: createPolicyPending,
+    updatePolicy,
+    updatePending: updatePolicyPending,
+    publishingPolicyId,
+    publishPolicyAsync,
+    simulatePolicy,
+    simulating: simulatingPolicy,
+  } = useFieldPolicies()
+  const {
+    listQuery: accessLogsListQuery,
+    records: accessLogSourceRecords,
+    count: accessLogsCount,
+    isLoading: accessLogsLoading,
+    isError: accessLogsError,
+    refetch: refetchAccessLogs,
+  } = useDataAccessLogs()
   const [sourceDrawerOpen, setSourceDrawerOpen] = useState(false)
   const [endpointModalOpen, setEndpointModalOpen] = useState(false)
   const [policyModalOpen, setPolicyModalOpen] = useState(false)
@@ -396,6 +426,46 @@ export function DataAccessConsole() {
   const publishedEndpointCount = endpoints.filter(
     (endpoint) => endpoint.status === 'published',
   ).length
+  // Backend FieldPolicyPublic exposes endpoint_id only; resolve the code via
+  // the access-endpoints list (same page already loads it) so policy columns
+  // are readable instead of showing the UUID.
+  const endpointCodeById = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const endpoint of endpoints) {
+      if (endpoint.id) map[endpoint.id] = endpoint.endpoint_code
+    }
+    return map
+  }, [endpoints])
+  const tenantDisplayName = useMemo(() => {
+    const tenant =
+      organizations.find((item) => item.type === 'tenant' && item.is_primary) ??
+      organizations.find((item) => item.type === 'tenant') ??
+      organizations.find((item) => item.is_primary) ??
+      organizations[0]
+    return tenant?.name
+  }, [organizations])
+  const policies: FieldPolicyRecord[] = useMemo(
+    () =>
+      fieldPolicyRecords.map((policy) =>
+        fieldPolicyToRecord(policy, endpointCodeById, tenantDisplayName),
+      ),
+    [fieldPolicyRecords, endpointCodeById, tenantDisplayName],
+  )
+  const policyTotal = policiesCount
+  const accessLogRecords: UsageRecord[] = useMemo(
+    () =>
+      accessLogSourceRecords.map((log) => ({
+        id: log.id,
+        userName: log.user_name,
+        userAccount: log.user_account,
+        targetType:
+          log.target_type === 'endpoint' ? 'endpoint' : 'database',
+        targetName: log.target_name,
+        targetCode: log.target_code,
+        usedAt: log.accessed_at,
+      })),
+    [accessLogSourceRecords],
+  )
   const publishedPolicyCount = policies.filter(
     (policy) => policy.status === 'published',
   ).length
@@ -457,7 +527,7 @@ export function DataAccessConsole() {
 
   const filteredUsageRecords = useMemo(
     () =>
-      usageRecords.filter((record) => {
+      accessLogRecords.filter((record) => {
         const matchesType = !statusFilter || record.targetType === statusFilter
         const matchesSearch =
           !normalizedSearch ||
@@ -469,7 +539,7 @@ export function DataAccessConsole() {
           ].some((value) => value.toLowerCase().includes(normalizedSearch))
         return matchesType && matchesSearch
       }),
-    [localizeValue, normalizedSearch, statusFilter, usageRecords],
+    [accessLogRecords, localizeValue, normalizedSearch, statusFilter],
   )
 
   const runConnectionTest = async (source: DataSourceRecord) => {
@@ -695,55 +765,92 @@ export function DataAccessConsole() {
     policyForm.setFieldsValue({
       name: localizeValue(policy.name),
       endpointCode: policy.endpointCode,
-      subject: localizeValue(policy.subject),
+      subject: policy.subjectId,
       allowedFields: policy.allowedFields,
     })
     setPolicyModalOpen(true)
   }
 
   const submitPolicy = (values: PolicyFormValues) => {
+    const endpoint = endpoints.find(
+      (item) => item.endpoint_code === values.endpointCode,
+    )
+    if (!endpoint) {
+      void message.error(t('pages.dataAccess.validation.selectValidEndpoint'))
+      return
+    }
+    const endpointVersion = endpoint.published_version
+    const baseBody = buildFieldPolicyCreateBody({
+      endpointCode: values.endpointCode,
+      endpointVersion,
+      form: values,
+    })
+
     if (editingPolicyId) {
-      setPolicies((current) =>
-        current.map((policy) =>
-          policy.id === editingPolicyId
-            ? { ...policy, ...values, updatedAt: '__just_now__' }
-            : policy,
-        ),
-      )
-      void message.success(t('pages.dataAccess.messages.policyUpdated'))
-    } else {
-      setPolicies((current) => [
-        {
-          id: `policy-${Date.now()}`,
-          ...values,
-          deniedFields: [],
-          status: 'draft',
-          version: 1,
-          updatedAt: '__just_now__',
-        },
-        ...current,
-      ])
-      void message.success(t('pages.dataAccess.messages.policyCreated'))
+      const current = policies.find((policy) => policy.id === editingPolicyId)
+      if (!current) {
+        void message.error(t('pages.dataAccess.errors.policyNotFound'))
+        return
+      }
+      const updateBody = buildFieldPolicyUpdateBody({
+        endpointCode: values.endpointCode,
+        endpointVersion,
+        form: values,
+        expectedVersion: current.version,
+      })
+      void updatePolicy({
+        policyId: editingPolicyId,
+        data: updateBody,
+      })
+        .then(() => {
+          void message.success(t('pages.dataAccess.messages.policyUpdated'))
+        })
+        .catch((error: unknown) => {
+          void message.error(
+            error instanceof Error ? error.message : String(error),
+          )
+        })
+        .finally(() => {
+          setEditingPolicyId(undefined)
+          policyForm.resetFields()
+          setPolicyModalOpen(false)
+        })
+      return
     }
 
-    setEditingPolicyId(undefined)
-    policyForm.resetFields()
-    setPolicyModalOpen(false)
+    void createPolicy(baseBody)
+      .then(() => {
+        void message.success(t('pages.dataAccess.messages.policyCreated'))
+      })
+      .catch((caught: unknown) => {
+        const messageText =
+          caught instanceof Error ? caught.message : String(caught)
+        void message.error(messageText)
+      })
+      .finally(() => {
+        setEditingPolicyId(undefined)
+        policyForm.resetFields()
+        setPolicyModalOpen(false)
+      })
   }
 
-  const publishPolicy = (policy: FieldPolicyRecord) => {
-    setPolicies((current) =>
-      current.map((item) =>
-        item.id === policy.id
-          ? { ...item, status: 'published', updatedAt: '__just_now__' }
-          : item,
-      ),
-    )
-    void message.success(
-      t('pages.dataAccess.messages.policyPublished', {
-        name: localizeValue(policy.name),
-      }),
-    )
+  const handlePublishPolicy = (policy: FieldPolicyRecord) => {
+    void publishPolicyAsync({
+      policyId: policy.id,
+      data: { expected_version: policy.version },
+    })
+      .then(() => {
+        void message.success(
+          t('pages.dataAccess.messages.policyPublished', {
+            name: localizeValue(policy.name),
+          }),
+        )
+      })
+      .catch((caught: unknown) => {
+        const messageText =
+          caught instanceof Error ? caught.message : String(caught)
+        void message.error(messageText)
+      })
   }
 
   const openSimulation = (policy: FieldPolicyRecord) => {
@@ -754,13 +861,25 @@ export function DataAccessConsole() {
 
   const runPolicySimulation = () => {
     if (!simulationPolicy) return
-    const deniedFields = simulationFields.filter(
-      (field) => !simulationPolicy.allowedFields.includes(field),
-    )
-    setSimulationDecision({
-      effect: deniedFields.length ? 'DENY' : 'ALLOW',
-      deniedFields,
+    void simulatePolicy({
+      endpoint_code: simulationPolicy.endpointCode,
+      endpoint_version: simulationPolicy.endpointVersion,
+      subject_type: simulationPolicy.subjectType,
+      subject_id: simulationPolicy.subjectId,
+      requested_fields: simulationFields,
+      policy_id: simulationPolicy.id,
     })
+      .then((result) => {
+        setSimulationDecision({
+          effect: result.effect,
+          deniedFields: result.denied_fields,
+        })
+      })
+      .catch((caught: unknown) => {
+        const messageText =
+          caught instanceof Error ? caught.message : String(caught)
+        void message.error(messageText)
+      })
   }
 
   const sourceColumns: TableProps<DataSourceRecord>['columns'] = [
@@ -1141,8 +1260,9 @@ export function DataAccessConsole() {
           {record.status === 'draft' ? (
             <Button
               icon={<RocketOutlined />}
+              loading={publishingPolicyId === record.id}
               type="link"
-              onClick={() => publishPolicy(record)}
+              onClick={() => handlePublishPolicy(record)}
             >
               {t('pages.dataAccess.actions.publish')}
             </Button>
@@ -1332,13 +1452,13 @@ export function DataAccessConsole() {
             {
               key: 'policies',
               label: t('pages.dataAccess.tabs.policies', {
-                count: policies.length,
+                count: policyTotal,
               }),
             },
             {
               key: 'usage',
               label: t('pages.dataAccess.tabs.usage', {
-                count: usageRecords.length,
+                count: accessLogsCount,
               }),
             },
           ]}
@@ -1376,10 +1496,29 @@ export function DataAccessConsole() {
               <Button
                 aria-label={t('pages.dataAccess.actions.refresh')}
                 icon={<ReloadOutlined />}
-                loading={workspace === 'sources' && sourceListQuery.isFetching}
+                loading={
+                  (workspace === 'sources' && sourceListQuery.isFetching) ||
+                  (workspace === 'endpoints' &&
+                    endpointListQuery.isFetching) ||
+                  (workspace === 'policies' &&
+                    fieldPolicyListQuery.isFetching) ||
+                  (workspace === 'usage' && accessLogsListQuery.isFetching)
+                }
                 onClick={() => {
                   if (workspace === 'sources') {
                     void sourceListQuery.refetch()
+                    return
+                  }
+                  if (workspace === 'endpoints') {
+                    void endpointListQuery.refetch()
+                    return
+                  }
+                  if (workspace === 'policies') {
+                    refetchFieldPolicies()
+                    return
+                  }
+                  if (workspace === 'usage') {
+                    refetchAccessLogs()
                     return
                   }
                   void message.success(
@@ -1453,26 +1592,74 @@ export function DataAccessConsole() {
             </Space>
           ) : null}
           {workspace === 'policies' ? (
-            <Table
-              columns={policyColumns}
-              dataSource={filteredPolicies}
-              pagination={{ pageSize: 6, showSizeChanger: false }}
-              rowKey="id"
-              scroll={{ x: 1220 }}
-              size="small"
-              tableLayout="fixed"
-            />
+            <Space className="w-full" orientation="vertical" size={10}>
+              {fieldPoliciesError ? (
+                <Alert
+                  showIcon
+                  action={
+                    <Button
+                      size="small"
+                      onClick={() => refetchFieldPolicies()}
+                    >
+                      {t('pages.dataAccess.actions.retry')}
+                    </Button>
+                  }
+                  title={t('pages.dataAccess.errors.policyList')}
+                  type="error"
+                />
+              ) : null}
+              <Table
+                columns={policyColumns}
+                dataSource={filteredPolicies}
+                loading={fieldPoliciesLoading}
+                locale={{
+                  emptyText:
+                    policyTotal === 0
+                      ? t('pages.dataAccess.empty.policies')
+                      : undefined,
+                }}
+                pagination={{ pageSize: 6, showSizeChanger: false }}
+                rowKey="id"
+                scroll={{ x: 1220 }}
+                size="small"
+                tableLayout="fixed"
+              />
+            </Space>
           ) : null}
           {workspace === 'usage' ? (
-            <Table
-              columns={usageColumns}
-              dataSource={filteredUsageRecords}
-              pagination={{ pageSize: 8, showSizeChanger: false }}
-              rowKey="id"
-              scroll={{ x: 900 }}
-              size="small"
-              tableLayout="fixed"
-            />
+            <Space className="w-full" orientation="vertical" size={10}>
+              {accessLogsError ? (
+                <Alert
+                  showIcon
+                  action={
+                    <Button
+                      size="small"
+                      onClick={() => refetchAccessLogs()}
+                    >
+                      {t('pages.dataAccess.actions.retry')}
+                    </Button>
+                  }
+                  title={t('pages.dataAccess.errors.usageList')}
+                  type="error"
+                />
+              ) : null}
+              <Table
+                columns={usageColumns}
+                dataSource={filteredUsageRecords}
+                loading={accessLogsLoading}
+                locale={{
+                  emptyText:
+                    accessLogsCount === 0
+                      ? t('pages.dataAccess.empty.usage')
+                      : undefined,
+                }}
+                pagination={{ pageSize: 8, showSizeChanger: false }}
+                rowKey="id"
+                scroll={{ x: 900 }}
+                size="small"
+                tableLayout="fixed"
+              />
+            </Space>
           ) : null}
         </div>
       </PageContainer>
@@ -2373,6 +2560,7 @@ export function DataAccessConsole() {
             : t('pages.dataAccess.actions.saveDraft')
         }
         cancelText={t('pages.dataAccess.actions.cancel')}
+        confirmLoading={createPolicyPending || updatePolicyPending}
         onCancel={() => {
           setPolicyModalOpen(false)
           setEditingPolicyId(undefined)
@@ -2430,7 +2618,11 @@ export function DataAccessConsole() {
         size="large"
         title={t('pages.dataAccess.simulation.title')}
         extra={
-          <Button type="primary" onClick={runPolicySimulation}>
+          <Button
+            loading={simulatingPolicy}
+            type="primary"
+            onClick={runPolicySimulation}
+          >
             {t('pages.dataAccess.actions.runSimulation')}
           </Button>
         }
@@ -2474,7 +2666,7 @@ export function DataAccessConsole() {
                 title={
                   simulationDecision.effect === 'ALLOW'
                     ? t('pages.dataAccess.simulation.allowTitle')
-                    : 'DENY · FIELD_PERMISSION_DENIED'
+                    : t('pages.dataAccess.simulation.denyTitle')
                 }
                 description={
                   simulationDecision.effect === 'ALLOW'

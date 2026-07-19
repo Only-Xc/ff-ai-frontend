@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 
-import type { AuthUser, CurrentRbacProfile } from '@ff-ai-frontend/api'
+import type {
+  AuthUser,
+  CurrentOrganization,
+  CurrentRbacProfile,
+} from '@ff-ai-frontend/api'
 import { local } from '@ff-ai-frontend/utils'
 import { rbacProfile_get } from '@/api/rbac'
 
@@ -12,6 +16,7 @@ interface AuthState {
   roleCodes: string[]
   permissionCodes: string[]
   menuCodes: string[]
+  organizations: CurrentOrganization[]
   organizationIds: string[]
   setToken: (accessToken: string) => void
   setUserInfo: (user: AuthUser | null) => void
@@ -37,6 +42,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
     roleCodes: [],
     permissionCodes: [],
     menuCodes: [],
+    organizations: [],
     organizationIds: [],
     setToken: (nextAccessToken) => {
       local.set(AUTH_TOKEN_STORAGE_KEY, nextAccessToken)
@@ -52,6 +58,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         roleCodes: profile?.role_codes ?? [],
         permissionCodes: profile?.permission_codes ?? [],
         menuCodes: profile?.menu_codes ?? [],
+        organizations: profile?.organizations ?? [],
         organizationIds: profile?.organizations.map((item) => item.id) ?? [],
       })
     },
@@ -83,6 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         roleCodes: [],
         permissionCodes: [],
         menuCodes: [],
+        organizations: [],
         organizationIds: [],
       })
     },
@@ -93,6 +101,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           roleCodes: profile.role_codes ?? [],
           permissionCodes: profile.permission_codes ?? [],
           menuCodes: profile.menu_codes ?? [],
+          organizations: profile.organizations ?? [],
           organizationIds: profile.organizations.map((item) => item.id) ?? [],
         })
       } catch {

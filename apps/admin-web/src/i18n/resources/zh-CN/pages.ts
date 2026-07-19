@@ -1531,4 +1531,10 @@ export default {
   'pages.grc.riskLevel.medium': '中',
   'pages.grc.riskLevel.high': '高',
   'pages.grc.riskLevel.critical': '严重',
+  'pages.dataAccess.errors.policyList': '字段策略加载失败',
+  'pages.dataAccess.errors.usageList': '使用记录加载失败',
+  'pages.dataAccess.errors.policyNotFound': '找不到原始策略',
+  'pages.dataAccess.validation.selectValidEndpoint': '请选择有效的接入端点',
+  'pages.dataAccess.empty.policies': '暂无字段策略',
+  'pages.dataAccess.empty.usage': '暂无使用记录',
 }

@@ -1,6 +1,7 @@
 import {
   createAdminAccessEndpointRequest,
   createAdminDataSourceRequest,
+  createFieldPolicyRequest,
   deleteAdminAccessEndpointRequest,
   deleteAdminDataSourceRequest,
   deprecateAdminAccessEndpointRequest,
@@ -8,16 +9,32 @@ import {
   getDataIngestionIntegrationsRequest,
   listAdminAccessEndpointsRequest,
   listAdminDataSourcesRequest,
+  listDataAccessAccessLogsRequest,
+  listFieldPoliciesRequest,
   publishAdminAccessEndpointRequest,
+  publishFieldPolicyRequest,
+  simulateFieldPolicyRequest,
   testAdminDataSourceRequest,
   updateAdminAccessEndpointRequest,
   updateAdminDataSourceRequest,
+  updateFieldPolicyRequest,
   type AdminAccessEndpointCreateBody,
   type AdminAccessEndpointListQuery,
   type AdminAccessEndpointUpdateBody,
   type AdminDataSourceCreateBody,
   type AdminDataSourceListQuery,
   type AdminDataSourceUpdateBody,
+  type DataAccessAccessLogList,
+  type DataAccessAccessLogListQuery,
+  type FieldPolicy,
+  type FieldPolicyCreateBody,
+  type FieldPolicyList,
+  type FieldPolicyListQuery,
+  type FieldPolicyPublishBody,
+  type FieldPolicyPublishResult,
+  type FieldPolicySimulateBody,
+  type FieldPolicySimulationResult,
+  type FieldPolicyUpdateBody,
 } from '@ff-ai-frontend/api'
 
 import { request } from './_request'
@@ -114,4 +131,73 @@ export const adminAccessEndpointKeys = {
   lists: () => [...adminAccessEndpointKeys.all, 'list'] as const,
   list: (query: AdminAccessEndpointListQuery) =>
     [...adminAccessEndpointKeys.lists(), query] as const,
+}
+
+export type {
+  FieldPolicy,
+  FieldPolicyCreateBody,
+  FieldPolicyEffect,
+  FieldPolicyList,
+  FieldPolicyListQuery,
+  FieldPolicyPublishBody,
+  FieldPolicyPublishResult,
+  FieldPolicySimulateBody,
+  FieldPolicySimulationResult,
+  FieldPolicyStatus,
+  FieldPolicySubjectType,
+  FieldPolicyUpdateBody,
+  DataAccessAccessLog,
+  DataAccessAccessLogList,
+  DataAccessAccessLogListQuery,
+} from '@ff-ai-frontend/api'
+
+export const adminFieldPolicies_list: (
+  params: FieldPolicyListQuery,
+) => Promise<FieldPolicyList> = request((params: FieldPolicyListQuery) =>
+  listFieldPoliciesRequest(params),
+)
+export const adminFieldPolicies_create: (
+  data: FieldPolicyCreateBody,
+) => Promise<FieldPolicy> = request((data: FieldPolicyCreateBody) =>
+  createFieldPolicyRequest(data),
+)
+export const adminFieldPolicies_update: (
+  policyId: string,
+  data: FieldPolicyUpdateBody,
+) => Promise<FieldPolicy> = request(
+  (policyId: string, data: FieldPolicyUpdateBody) =>
+    updateFieldPolicyRequest(policyId, data),
+)
+export const adminFieldPolicies_publish: (
+  policyId: string,
+  data: FieldPolicyPublishBody,
+) => Promise<FieldPolicyPublishResult> = request(
+  (policyId: string, data: FieldPolicyPublishBody) =>
+    publishFieldPolicyRequest(policyId, data),
+)
+export const adminFieldPolicies_simulate: (
+  data: FieldPolicySimulateBody,
+) => Promise<FieldPolicySimulationResult> = request(
+  (data: FieldPolicySimulateBody) => simulateFieldPolicyRequest(data),
+)
+
+export const adminFieldPolicyKeys = {
+  all: ['admin-field-policies'] as const,
+  lists: () => [...adminFieldPolicyKeys.all, 'list'] as const,
+  list: (query: FieldPolicyListQuery) =>
+    [...adminFieldPolicyKeys.lists(), query] as const,
+}
+
+export const adminAccessLogs_list: (
+  params: DataAccessAccessLogListQuery,
+) => Promise<DataAccessAccessLogList> = request(
+  (params: DataAccessAccessLogListQuery) =>
+    listDataAccessAccessLogsRequest(params),
+)
+
+export const adminAccessLogKeys = {
+  all: ['admin-data-access-logs'] as const,
+  lists: () => [...adminAccessLogKeys.all, 'list'] as const,
+  list: (query: DataAccessAccessLogListQuery) =>
+    [...adminAccessLogKeys.lists(), query] as const,
 }

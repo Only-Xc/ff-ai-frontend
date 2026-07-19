@@ -351,3 +351,191 @@ export const deprecateAdminAccessEndpointRequest = (
     path`/api/v1/access-endpoints/${endpointId}/deprecate`,
     { headers },
   )
+
+export type FieldPolicyEffect = 'ALLOW' | 'DENY'
+export type FieldPolicyStatus = 'DRAFT' | 'PUBLISHED'
+export type FieldPolicySubjectType = 'user' | 'service'
+
+export interface FieldPolicy {
+  id: string
+  tenant_id: string
+  endpoint_id: string
+  name: string
+  endpoint_version: number
+  subject_type: FieldPolicySubjectType
+  subject_id: string
+  effect: FieldPolicyEffect
+  fields: string[]
+  status: FieldPolicyStatus
+  version: number
+  created_at: string
+  updated_at: string
+}
+
+export interface FieldPolicyList {
+  data: FieldPolicy[]
+  count: number
+}
+
+export interface FieldPolicyListQuery {
+  skip?: number
+  limit?: number
+  status?: FieldPolicyStatus
+  search?: string
+}
+
+export interface FieldPolicyCreateBody {
+  endpoint_code: string
+  name: string
+  endpoint_version: number
+  subject_type: FieldPolicySubjectType
+  subject_id: string
+  effect: FieldPolicyEffect
+  fields: string[]
+}
+
+export interface FieldPolicyUpdateBody {
+  expected_version: number
+  name?: string
+  endpoint_version?: number
+  subject_type?: FieldPolicySubjectType
+  subject_id?: string
+  effect?: FieldPolicyEffect
+  fields?: string[]
+}
+
+export interface FieldPolicyPublishBody {
+  expected_version: number
+}
+
+export interface FieldPolicyPublishResult {
+  id: string
+  policy_id: string
+  policy_version: number
+  tenant_id: string
+  endpoint_id: string
+  name: string
+  endpoint_version: number
+  subject_type: FieldPolicySubjectType
+  subject_id: string
+  effect: FieldPolicyEffect
+  fields: string[]
+  published_at: string
+  content_hash: string
+}
+
+export interface FieldPolicySimulateBody {
+  endpoint_code: string
+  endpoint_version: number
+  subject_type: FieldPolicySubjectType
+  subject_id: string
+  requested_fields: string[]
+  policy_id?: string
+  policy_version?: number
+}
+
+export interface FieldPolicySimulationResult {
+  effect: FieldPolicyEffect
+  allowed_fields: string[]
+  denied_fields: string[]
+  policy_id: string | null
+  policy_version: number | null
+}
+
+export const listFieldPoliciesRequest = (
+  params: FieldPolicyListQuery,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<FieldPolicyList>(
+    'GET',
+    '/api/v1/data-ingestion/field-policies',
+    { params, headers },
+  )
+
+export const createFieldPolicyRequest = (
+  data: FieldPolicyCreateBody,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<FieldPolicy>(
+    'POST',
+    '/api/v1/data-ingestion/field-policies',
+    { data, headers },
+  )
+
+export const updateFieldPolicyRequest = (
+  policyId: string,
+  data: FieldPolicyUpdateBody,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<FieldPolicy>(
+    'PATCH',
+    path`/api/v1/data-ingestion/field-policies/${policyId}`,
+    { data, headers },
+  )
+
+export const publishFieldPolicyRequest = (
+  policyId: string,
+  data: FieldPolicyPublishBody,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<FieldPolicyPublishResult>(
+    'POST',
+    path`/api/v1/data-ingestion/field-policies/${policyId}/publish`,
+    { data, headers },
+  )
+
+export const simulateFieldPolicyRequest = (
+  data: FieldPolicySimulateBody,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<FieldPolicySimulationResult>(
+    'POST',
+    '/api/v1/data-ingestion/field-policies/simulate',
+    { data, headers },
+  )
+
+export interface DataAccessAccessLogTargetType {
+  target_type: 'endpoint' | 'database'
+}
+
+export interface DataAccessAccessLog {
+  id: string
+  tenant_id: string
+  user_id: string
+  user_name: string
+  user_account: string
+  subject_type: FieldPolicySubjectType
+  subject_id: string
+  target_type: 'endpoint' | 'database'
+  target_id: string
+  target_name: string
+  target_code: string
+  accessed_at: string
+  effect: FieldPolicyEffect
+  allowed_fields: string[]
+  denied_fields: string[]
+  latency_ms: number | null
+}
+
+export interface DataAccessAccessLogList {
+  data: DataAccessAccessLog[]
+  count: number
+}
+
+export interface DataAccessAccessLogListQuery {
+  skip?: number
+  limit?: number
+  target_type?: 'endpoint' | 'database'
+  subject_id?: string
+  since?: string
+}
+
+export const listDataAccessAccessLogsRequest = (
+  params: DataAccessAccessLogListQuery,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<DataAccessAccessLogList>(
+    'GET',
+    '/api/v1/data-ingestion/access-logs',
+    { params, headers },
+  )

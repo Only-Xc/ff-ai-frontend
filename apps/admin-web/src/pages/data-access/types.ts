@@ -5,6 +5,7 @@ import type {
   AdminAccessEndpoint,
   AdminDataSource,
   DataSourceHealth,
+  FieldPolicySubjectType,
   DataSourceType as ApiDataSourceType,
 } from '@/api/data-access'
 
@@ -24,7 +25,10 @@ export interface FieldPolicyRecord {
   id: string
   name: string
   endpointCode: string
+  endpointVersion: number
   subject: string
+  subjectType: FieldPolicySubjectType
+  subjectId: string
   allowedFields: string[]
   deniedFields: string[]
   status: PolicyStatus
