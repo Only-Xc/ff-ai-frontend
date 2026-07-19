@@ -407,6 +407,44 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/production/approvals',
+    element: lazyLoad(() => import('@/pages/production/ProductionQueue')),
+    handle: {
+      title: 'Production Approval',
+      titleKey: 'routes.production.approvals.title',
+      subtitleKey: 'routes.production.approvals.subtitle',
+      icon: <SafetyCertificateOutlined />,
+      navKey: 'production-approvals',
+      navOrder: 12.9,
+      hideInBreadcrumb: true,
+      permission: 'admin.production.read',
+      menuCode: 'menu.admin.production',
+    },
+  },
+  {
+    path: '/production/approvals/:approvalId',
+    element: lazyLoad(() => import('@/pages/production/ProductionDetail')),
+    handle: {
+      title: 'Production Detail',
+      titleKey: 'routes.production.approvalDetail.title',
+      navKey: 'production-approvals',
+      hideInMenu: true,
+      permission: 'admin.production.read',
+    },
+  },
+  {
+    path: '/production/rollback',
+    element: lazyLoad(() => import('@/pages/production/ProductionRollback')),
+    handle: {
+      title: 'Rollback',
+      titleKey: 'routes.production.rollback.title',
+      subtitleKey: 'routes.production.rollback.subtitle',
+      navKey: 'production-approvals',
+      hideInMenu: true,
+      permission: 'admin.production.rollback',
+    },
+  },
+  {
     path: '/tickets/:taskId/intervention',
     element: lazyLoad(
       () => import('@/pages/intervention-workbench/InterventionWorkbench'),

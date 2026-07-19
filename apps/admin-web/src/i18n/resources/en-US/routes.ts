@@ -54,4 +54,11 @@ export default {
     'Review stage switch approval and execution notifications',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': 'Production Approval',
+  'routes.production.approvals.subtitle': 'Approve agent releases for production',
+  'routes.production.approvalDetail.title': 'Approval Detail',
+  'routes.production.rollback.title': 'Production Rollback',
+  'routes.production.rollback.subtitle': 'Decommission a production agent',
+
 }

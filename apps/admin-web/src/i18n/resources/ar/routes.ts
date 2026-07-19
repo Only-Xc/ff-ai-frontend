@@ -54,4 +54,11 @@ export default {
     'مراجعة إشعارات الموافقة والتنفيذ لتبديل المرحلة',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': 'موافقة النشر للإنتاج',
+  'routes.production.approvals.subtitle': 'اعتمد إصدارات الوكلاء للإنتاج',
+  'routes.production.approvalDetail.title': 'تفاصيل الموافقة',
+  'routes.production.rollback.title': 'سحب الإنتاج',
+  'routes.production.rollback.subtitle': 'سحب وكيل من الإنتاج',
+
 }

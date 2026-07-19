@@ -51,4 +51,11 @@ export default {
   'routes.stageSwitch.notifications.subtitle': '查看阶段切换审批与执行通知',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': '生产发布审批',
+  'routes.production.approvals.subtitle': '审批智能体上线发布',
+  'routes.production.approvalDetail.title': '审批详情',
+  'routes.production.rollback.title': '生产撤回',
+  'routes.production.rollback.subtitle': '撤回已上线智能体',
+
 }
