@@ -32,17 +32,20 @@ const STATUS_TO_FRONTEND: Record<FieldPolicyStatus, PolicyStatus> = {
 export function fieldPolicyToRecord(
   policy: FieldPolicy,
   endpointCodeById?: Record<string, string>,
-  subjectDisplayName?: string,
+  subjectDisplayNameById?: Record<string, string>,
+  gatewayBaseUrl = 'http://127.0.0.1:19080/api/v1/data-gateway',
 ): FieldPolicyRecord {
   const { allowedFields, deniedFields } = splitAllowedDenied(policy)
   const resolvedCode =
     endpointCodeById?.[policy.endpoint_id] ??
     (policy.endpoint_id ? policy.endpoint_id.slice(0, 8) : '')
+  const subjectDisplayName = subjectDisplayNameById?.[policy.subject_id]
   return {
     id: policy.id,
     name: policy.name,
     endpointCode: resolvedCode,
     endpointVersion: policy.endpoint_version,
+    gatewayUrl: `${gatewayBaseUrl.replace(/\/$/, '')}/${resolvedCode}`,
     subject: subjectDisplayName ?? policy.subject_id,
     subjectType: policy.subject_type,
     subjectId: policy.subject_id,

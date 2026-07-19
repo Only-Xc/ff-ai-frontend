@@ -473,6 +473,16 @@ export const updateFieldPolicyRequest = (
     { data, headers },
   )
 
+export const deleteFieldPolicyRequest = (
+  policyId: string,
+  headers?: DataAccessContextHeaders,
+) =>
+  createRequest<void>(
+    'DELETE',
+    path`/api/v1/data-ingestion/field-policies/${policyId}`,
+    { headers },
+  )
+
 export const publishFieldPolicyRequest = (
   policyId: string,
   data: FieldPolicyPublishBody,

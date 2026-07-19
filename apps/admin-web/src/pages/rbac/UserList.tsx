@@ -1,23 +1,27 @@
 import {
+  KeyOutlined,
   PlusOutlined,
   ReloadOutlined,
   SafetyCertificateOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
-import { Button, Card, Form, Input, message, Popconfirm, Space, Table, Tag, Typography } from 'antd'
+import { Button, Card, Form, Input, message, Modal, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import type { TableProps } from 'antd'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
   adminRoles_list,
+  adminUsers_issueDataGatewayToken,
   adminUsers_create,
   adminUsers_delete,
   adminUsers_list,
   adminUsers_update,
   rbacKeys,
   userRoles_list,
+  type DataGatewayToken,
   type User,
   type UserCreateBody,
   type UserListQuery,
@@ -27,6 +31,7 @@ import {
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useAuthStore } from '@/store/useAuth'
 import { UserFormDrawer } from './UserFormDrawer'
 import { UserRoleDrawer } from './UserRoleDrawer'
 
@@ -76,6 +81,9 @@ export default function UserList() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { hasPermission } = usePermission()
+  const isCurrentUserSuperuser = useAuthStore((state) =>
+    Boolean(state.user?.is_superuser),
+  )
   const pagination = usePaginationParams({ defaultPageSize: 20 })
 
   const [filters, setFilters] = useState<{ keyword?: string }>({})
@@ -88,6 +96,10 @@ export default function UserList() {
   const [permTarget, setPermTarget] = useState<{
     userId: string
     userName: string
+  } | null>(null)
+  const [gatewayTokenTarget, setGatewayTokenTarget] = useState<{
+    user: User
+    token: DataGatewayToken
   } | null>(null)
 
   const listParams = useMemo<UserListQuery>(
@@ -136,6 +148,10 @@ export default function UserList() {
     },
   })
 
+  const issueGatewayTokenMutation = useMutation({
+    mutationFn: adminUsers_issueDataGatewayToken,
+  })
+
   const handleSearch = (value: string) => {
     setFilters((prev) => ({ ...prev, keyword: value || undefined }))
     pagination.reset()
@@ -155,9 +171,15 @@ export default function UserList() {
     } else if (formDrawerState.userId) {
       await updateMutation.mutateAsync({
         userId: formDrawerState.userId,
-        data: values as UserUpdateBody,
+        data: values,
       })
     }
+  }
+
+  const openGatewayTokenModal = async (user: User) => {
+    const token = await issueGatewayTokenMutation.mutateAsync(user.id)
+    setGatewayTokenTarget({ user, token })
+    message.success(t('pages.rbac.messages.gatewayTokenIssued'))
   }
 
   const columns: TableProps<User>['columns'] = [
@@ -167,7 +189,9 @@ export default function UserList() {
       key: 'full_name',
       render: (value: string | null, record) => (
         <Space direction="vertical" size={0}>
-          <Typography.Text strong>{value || t('pages.rbac.columns.noName')}</Typography.Text>
+          <Typography.Text strong>
+            {value ?? t('pages.rbac.columns.noName')}
+          </Typography.Text>
           <Typography.Text className="text-xs" type="secondary">
             {record.email}
           </Typography.Text>
@@ -215,10 +239,10 @@ export default function UserList() {
     {
       title: t('pages.rbac.columns.action'),
       key: 'action',
-      width: 220,
+      width: 300,
       render: (_, record) => (
         <Space size={2}>
-          {hasPermission('admin.users.update') && (
+          {isCurrentUserSuperuser && hasPermission('admin.users.update') && (
             <Button
               size="small"
               type="link"
@@ -234,7 +258,7 @@ export default function UserList() {
               onClick={() =>
                 setPermTarget({
                   userId: record.id,
-                  userName: record.full_name || record.email,
+                  userName: record.full_name ?? record.email,
                 })
               }
               title={t('pages.rbac.actions.assignRoles')}
@@ -242,11 +266,27 @@ export default function UserList() {
               <TeamOutlined />
             </Button>
           )}
+          {hasPermission('admin.users.update') && (
+            <Button
+              icon={<KeyOutlined />}
+              loading={
+                issueGatewayTokenMutation.isPending &&
+                issueGatewayTokenMutation.variables === record.id
+              }
+              size="small"
+              type="link"
+              onClick={() => {
+                void openGatewayTokenModal(record)
+              }}
+            >
+              {t('pages.rbac.actions.gatewayToken')}
+            </Button>
+          )}
           {hasPermission('admin.users.delete') && !record.is_superuser && (
             <Popconfirm
               title={t('pages.rbac.actions.deleteConfirmTitle')}
               description={t('pages.rbac.actions.deleteConfirmDescription', {
-                name: record.full_name || record.email,
+                name: record.full_name ?? record.email,
               })}
               onConfirm={() => deleteMutation.mutate(record.id)}
               okText={t('common.actions.delete')}
@@ -286,7 +326,9 @@ export default function UserList() {
           )}
           <Button
             icon={<ReloadOutlined />}
-            onClick={() => usersQuery.refetch()}
+            onClick={() => {
+              void usersQuery.refetch()
+            }}
             loading={usersQuery.isFetching}
           >
             {t('pages.rbac.actions.refresh')}
@@ -346,6 +388,52 @@ export default function UserList() {
           onClose={() => setPermTarget(null)}
         />
       )}
+
+      <Modal
+        destroyOnHidden
+        footer={null}
+        open={Boolean(gatewayTokenTarget)}
+        title={t('pages.rbac.gatewayToken.title')}
+        width={720}
+        onCancel={() => setGatewayTokenTarget(null)}
+      >
+        {gatewayTokenTarget ? (
+          <Space className="w-full" direction="vertical" size={12}>
+            <Typography.Text type="secondary">
+              {t('pages.rbac.gatewayToken.description', {
+                name:
+                  gatewayTokenTarget.user.full_name ??
+                  gatewayTokenTarget.user.email,
+              })}
+            </Typography.Text>
+            <Space size={8} wrap>
+              <Tag color="blue">
+                {t('pages.rbac.gatewayToken.subject', {
+                  value: gatewayTokenTarget.token.subject_id,
+                })}
+              </Tag>
+              <Tag color="cyan">
+                {t('pages.rbac.gatewayToken.expiresAt', {
+                  value: dayjs(gatewayTokenTarget.token.expires_at).format(
+                    'YYYY-MM-DD HH:mm',
+                  ),
+                })}
+              </Tag>
+            </Space>
+            <Typography.Paragraph
+              className="max-h-56 overflow-auto rounded-lg border border-(--border) bg-(--control-subtle-bg) p-3!"
+              copyable={{ text: gatewayTokenTarget.token.access_token }}
+            >
+              <Typography.Text code>
+                {gatewayTokenTarget.token.access_token}
+              </Typography.Text>
+            </Typography.Paragraph>
+            <Typography.Text type="secondary">
+              {t('pages.rbac.gatewayToken.usageHint')}
+            </Typography.Text>
+          </Space>
+        ) : null}
+      </Modal>
     </PageContainer>
   )
 }

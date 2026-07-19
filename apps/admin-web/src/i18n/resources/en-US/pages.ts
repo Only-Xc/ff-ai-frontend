@@ -77,6 +77,7 @@ export default {
   'pages.dataAccess.columns.subject': 'Bound subject',
   'pages.dataAccess.columns.allowedFields': 'Allowed fields',
   'pages.dataAccess.columns.deniedFields': 'Denied fields',
+  'pages.dataAccess.columns.gatewayUrl': 'Published URL',
   'pages.dataAccess.columns.user': 'User',
   'pages.dataAccess.columns.accessType': 'Access type',
   'pages.dataAccess.columns.accessTarget': 'Access target',
@@ -87,6 +88,9 @@ export default {
   'pages.dataAccess.columns.nullable': 'Nullable',
   'pages.dataAccess.units.fields': '{{count}} fields',
   'pages.dataAccess.time.justNow': 'Just now',
+  'pages.dataAccess.policies.gatewayRuleTitle': 'Field policy call rules',
+  'pages.dataAccess.policies.gatewayRuleDescription':
+    'After a field policy is published, call the published URL with POST only. The request header must be Authorization: Bearer <data gateway token>, and the JSON body should include requested_fields and parameters. A normal login token cannot be used directly for the data gateway.',
   'pages.dataAccess.messages.connectionSucceeded':
     'Connection test passed for {{name}}',
   'pages.dataAccess.messages.connectionSucceededWithLatency':
@@ -100,24 +104,27 @@ export default {
   'pages.dataAccess.messages.endpointCreated': 'Access endpoint draft created',
   'pages.dataAccess.messages.endpointPublished':
     '{{name}} published as v{{version}}',
-  'pages.dataAccess.messages.endpointDeleted': 'Access endpoint draft deleted',
+  'pages.dataAccess.messages.endpointDeleted': 'Access endpoint deleted',
   'pages.dataAccess.messages.endpointDeprecated': '{{name}} deprecated',
   'pages.dataAccess.messages.policyUpdated': 'Field policy updated',
   'pages.dataAccess.messages.policyCreated': 'Field policy draft created',
   'pages.dataAccess.messages.policyPublished': '{{name}} published',
+  'pages.dataAccess.messages.policyDeleted': 'Field policy deleted',
   'pages.dataAccess.messages.listRefreshed': 'List refreshed',
   'pages.dataAccess.confirm.deleteSource.title': 'Delete data source',
   'pages.dataAccess.confirm.deleteSource.content':
-    'Delete “{{name}}”? Data sources referenced by access endpoints cannot be deleted.',
+    'Delete “{{name}}”? This also deletes access endpoints, field policies, and field policy snapshots that depend on it. This action cannot be undone.',
   'pages.dataAccess.confirm.publishEndpoint.title': 'Publish access endpoint',
   'pages.dataAccess.confirm.publishEndpoint.newVersionTitle':
     'Publish endpoint version v{{version}}',
   'pages.dataAccess.confirm.publishEndpoint.content':
     'Publishing creates immutable snapshot v{{version}}. Continue?',
-  'pages.dataAccess.confirm.deleteEndpoint.title':
-    'Delete access endpoint draft',
+  'pages.dataAccess.confirm.deleteEndpoint.title': 'Delete access endpoint',
   'pages.dataAccess.confirm.deleteEndpoint.content':
-    'Delete “{{name}}”? This action cannot be undone.',
+    'Delete “{{name}}”? This also deletes field policies and field policy snapshots bound to this endpoint. This action cannot be undone.',
+  'pages.dataAccess.confirm.deletePolicy.title': 'Delete field policy',
+  'pages.dataAccess.confirm.deletePolicy.content':
+    'Delete “{{name}}”? This only deletes the field policy and its published snapshots. The access endpoint is not deleted.',
   'pages.dataAccess.confirm.deprecateEndpoint.title':
     'Deprecate published endpoint',
   'pages.dataAccess.confirm.deprecateEndpoint.content':
@@ -222,6 +229,13 @@ export default {
     'Paste a token, API key, or database password',
   'pages.dataAccess.metadata.title': '{{name}} · Metadata',
   'pages.dataAccess.metadata.error': 'Metadata discovery failed',
+  'pages.dataAccess.metadata.connection': 'Connection',
+  'pages.dataAccess.metadata.summary': 'Discovery result',
+  'pages.dataAccess.metadata.resourceCount': '{{count}} resources',
+  'pages.dataAccess.metadata.fieldCount': '{{count}} fields',
+  'pages.dataAccess.metadata.searchPlaceholder':
+    'Search table, resource type, field, or data type',
+  'pages.dataAccess.metadata.filteredCount': 'Showing {{count}} / {{total}} rows',
   'pages.dataAccess.endpointForm.editTitle': 'Edit access endpoint',
   'pages.dataAccess.endpointForm.createTitle': 'New access endpoint',
   'pages.dataAccess.endpointForm.name': 'Endpoint name',
@@ -273,7 +287,8 @@ export default {
     'Example: Support read-only fields',
   'pages.dataAccess.policyForm.endpoint': 'Access endpoint',
   'pages.dataAccess.policyForm.subject': 'Bound subject',
-  'pages.dataAccess.policyForm.subjectPlaceholder': 'Role: customer_service',
+  'pages.dataAccess.policyForm.subjectPlaceholder':
+    'Search name, email, or user UUID',
   'pages.dataAccess.policyForm.allowedFields': 'Allowed response fields',
   'pages.dataAccess.policyForm.fieldsPlaceholder':
     'Enter a field name and press Enter',
@@ -996,6 +1011,7 @@ export default {
   'pages.rbac.actions.assignUsers': 'Assign users',
   'pages.rbac.actions.assignRoles': 'Assign roles',
   'pages.rbac.actions.newUser': 'New User',
+  'pages.rbac.actions.gatewayToken': 'Gateway Token',
   'pages.rbac.actions.remove': 'Remove',
   'pages.rbac.actions.deleteConfirmTitle': 'Delete role?',
   'pages.rbac.actions.deleteConfirmDescription': 'Delete role "{{name}}"?',
@@ -1154,6 +1170,14 @@ export default {
   'pages.rbac.messages.userCreated': 'User created',
   'pages.rbac.messages.userUpdated': 'User updated',
   'pages.rbac.messages.userDeleted': 'User deleted',
+  'pages.rbac.messages.gatewayTokenIssued': 'Data gateway token generated',
+  'pages.rbac.gatewayToken.title': 'Data Gateway Token',
+  'pages.rbac.gatewayToken.description':
+    'A short-lived data gateway token has been generated for {{name}}. This token is only for data gateway calls and is not a platform login token.',
+  'pages.rbac.gatewayToken.subject': 'Subject ID: {{value}}',
+  'pages.rbac.gatewayToken.expiresAt': 'Expires at: {{value}}',
+  'pages.rbac.gatewayToken.usageHint':
+    'When calling a published endpoint, place it in the request header: Authorization: Bearer <data gateway token>.',
   'routes.rbac.organizations.title': 'Organization Management',
   'pages.rbac.orgs.title': 'Organizations',
   'pages.rbac.orgs.subtitle': 'Manage organization hierarchy, departments, and teams.',

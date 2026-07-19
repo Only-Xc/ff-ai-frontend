@@ -1,49 +1,6 @@
 import type { FieldPolicyRecord, UsageRecord } from './types'
 
-export const initialPolicies: FieldPolicyRecord[] = [
-  {
-    id: 'policy-customer-service',
-    name: 'i18n:pages.dataAccess.mock.policy.customerServiceName',
-    endpointCode: 'customer-profile',
-    endpointVersion: 1,
-    subject: 'i18n:pages.dataAccess.mock.subject.customerServiceRole',
-    subjectType: 'user',
-    subjectId: 'customer_service',
-    allowedFields: ['customer_id', 'name', 'level', 'status'],
-    deniedFields: ['mobile', 'id_card'],
-    status: 'published',
-    version: 5,
-    updatedAt: 'i18n:pages.dataAccess.mock.time.today1002',
-  },
-  {
-    id: 'policy-order-ops',
-    name: 'i18n:pages.dataAccess.mock.policy.orderOperationsName',
-    endpointCode: 'order-search',
-    endpointVersion: 1,
-    subject: 'i18n:pages.dataAccess.mock.subject.orderOperatorRole',
-    subjectType: 'user',
-    subjectId: 'order_operator',
-    allowedFields: ['order_id', 'amount', 'status', 'created_at'],
-    deniedFields: ['buyer_mobile'],
-    status: 'published',
-    version: 2,
-    updatedAt: 'i18n:pages.dataAccess.mock.time.yesterday1745',
-  },
-  {
-    id: 'policy-partner-app',
-    name: 'i18n:pages.dataAccess.mock.policy.partnerApplicationName',
-    endpointCode: 'partner-billing',
-    endpointVersion: 1,
-    subject: 'i18n:pages.dataAccess.mock.subject.partnerApplicationService',
-    subjectType: 'service',
-    subjectId: 'partner_application',
-    allowedFields: ['bill_id', 'period', 'amount'],
-    deniedFields: ['internal_cost'],
-    status: 'draft',
-    version: 1,
-    updatedAt: 'i18n:pages.dataAccess.mock.time.today0840',
-  },
-]
+export const initialPolicies: FieldPolicyRecord[] = []
 
 export const initialUsageRecords: UsageRecord[] = [
   {

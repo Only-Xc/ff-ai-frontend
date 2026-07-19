@@ -8,6 +8,7 @@ import {
   adminAccessEndpoints_list,
   adminAccessEndpoints_publish,
   adminAccessEndpoints_update,
+  adminFieldPolicyKeys,
 } from '@/api/data-access'
 import type { AdminAccessEndpointUpdateBody } from '@/api/data-access'
 
@@ -25,10 +26,12 @@ export function useAccessEndpoints() {
     queryFn: () => adminAccessEndpoints_list(ACCESS_ENDPOINT_LIST_QUERY),
   })
 
-  const invalidateLists = () =>
-    queryClient.invalidateQueries({
+  const invalidateLists = () => {
+    void queryClient.invalidateQueries({
       queryKey: adminAccessEndpointKeys.lists(),
     })
+    void queryClient.invalidateQueries({ queryKey: adminFieldPolicyKeys.lists() })
+  }
 
   const createMutation = useMutation({
     mutationFn: adminAccessEndpoints_create,

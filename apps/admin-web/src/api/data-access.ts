@@ -4,6 +4,7 @@ import {
   createFieldPolicyRequest,
   deleteAdminAccessEndpointRequest,
   deleteAdminDataSourceRequest,
+  deleteFieldPolicyRequest,
   deprecateAdminAccessEndpointRequest,
   discoverAdminDataSourceMetadataRequest,
   getDataIngestionIntegrationsRequest,
@@ -167,6 +168,11 @@ export const adminFieldPolicies_update: (
 ) => Promise<FieldPolicy> = request(
   (policyId: string, data: FieldPolicyUpdateBody) =>
     updateFieldPolicyRequest(policyId, data),
+)
+export const adminFieldPolicies_delete: (
+  policyId: string,
+) => Promise<void> = request((policyId: string) =>
+  deleteFieldPolicyRequest(policyId),
 )
 export const adminFieldPolicies_publish: (
   policyId: string,

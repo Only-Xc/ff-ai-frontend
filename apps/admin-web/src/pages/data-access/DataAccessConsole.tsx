@@ -38,13 +38,18 @@ import {
   Typography,
 } from 'antd'
 import type { TableProps } from 'antd'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
-import { useAuthStore } from '@/store/useAuth'
+import {
+  adminUsers_list,
+  rbacKeys,
+  type User,
+} from '@/api/rbac'
 
 import { useAccessEndpoints } from './hooks/useAccessEndpoints'
 import { useDataSources } from './hooks/useDataSources'
@@ -175,6 +180,12 @@ const WORKSPACE_META: Record<
 }
 
 const I18N_VALUE_PREFIX = 'i18n:'
+const DATA_GATEWAY_PUBLIC_BASE_URL =
+  'http://127.0.0.1:19080/api/v1/data-gateway'
+
+function userDisplayName(user: Pick<User, 'email' | 'full_name'>) {
+  return user.full_name ? `${user.full_name} (${user.email})` : user.email
+}
 
 function localizeRecordValue(
   value: string,
@@ -183,6 +194,19 @@ function localizeRecordValue(
   return value.startsWith(I18N_VALUE_PREFIX)
     ? translate(value.slice(I18N_VALUE_PREFIX.length))
     : value
+}
+
+function formatDataAccessDateTime(
+  value: string,
+  translate: (key: string) => string,
+) {
+  if (!value) return '-'
+  if (value === '__just_now__') return translate('pages.dataAccess.time.justNow')
+  if (value.startsWith(I18N_VALUE_PREFIX)) {
+    return localizeRecordValue(value, translate)
+  }
+  const date = dayjs(value)
+  return date.isValid() ? date.format('YYYY-MM-DD HH:mm') : value
 }
 
 function validateOptionalJsonObject(
@@ -283,6 +307,16 @@ interface OverflowTextProps {
   type?: 'secondary'
 }
 
+interface MetadataFieldRow {
+  key: string
+  resource: string
+  resourceType: string
+  field: string
+  dataType: string
+  nullable: boolean | null
+  fieldCount: number
+}
+
 function OverflowText({
   children,
   className,
@@ -324,9 +358,9 @@ export function DataAccessConsole() {
   const [endpointForm] = Form.useForm<EndpointFormValues>()
   const endpointSourceId = Form.useWatch('sourceId', endpointForm)
   const [policyForm] = Form.useForm<PolicyFormValues>()
-  const organizations = useAuthStore((state) => state.organizations)
   const [workspace, setWorkspace] = useState<WorkspaceKey>('sources')
   const [searchText, setSearchText] = useState('')
+  const [userSearchText, setUserSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>()
   const {
     sources,
@@ -372,6 +406,8 @@ export function DataAccessConsole() {
     updatePending: updatePolicyPending,
     publishingPolicyId,
     publishPolicyAsync,
+    deletePolicy,
+    deletingPolicyId,
     simulatePolicy,
     simulating: simulatingPolicy,
   } = useFieldPolicies()
@@ -383,6 +419,22 @@ export function DataAccessConsole() {
     isError: accessLogsError,
     refetch: refetchAccessLogs,
   } = useDataAccessLogs()
+  const policyUsersQuery = useQuery({
+    queryKey: rbacKeys.users({
+      keyword: userSearchText,
+      skip: 0,
+      limit: 50,
+    }),
+    queryFn: () =>
+      adminUsers_list({
+        keyword: userSearchText,
+        skip: 0,
+        limit: 50,
+      }),
+    enabled: workspace === 'policies',
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
+  })
   const [sourceDrawerOpen, setSourceDrawerOpen] = useState(false)
   const [endpointModalOpen, setEndpointModalOpen] = useState(false)
   const [policyModalOpen, setPolicyModalOpen] = useState(false)
@@ -391,6 +443,7 @@ export function DataAccessConsole() {
   const [editingPolicyId, setEditingPolicyId] = useState<string>()
   const [previewEndpoint, setPreviewEndpoint] = useState<AccessEndpointRecord>()
   const [metadataSource, setMetadataSource] = useState<DataSourceRecord>()
+  const [metadataSearchText, setMetadataSearchText] = useState('')
   const [simulationPolicy, setSimulationPolicy] = useState<FieldPolicyRecord>()
   const [simulationFields, setSimulationFields] = useState<string[]>([])
   const [simulationDecision, setSimulationDecision] = useState<{
@@ -436,20 +489,47 @@ export function DataAccessConsole() {
     }
     return map
   }, [endpoints])
-  const tenantDisplayName = useMemo(() => {
-    const tenant =
-      organizations.find((item) => item.type === 'tenant' && item.is_primary) ??
-      organizations.find((item) => item.type === 'tenant') ??
-      organizations.find((item) => item.is_primary) ??
-      organizations[0]
-    return tenant?.name
-  }, [organizations])
+  const userDisplayNameById = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const user of policyUsersQuery.data?.data ?? []) {
+      map[user.id] = userDisplayName(user)
+    }
+    return map
+  }, [policyUsersQuery.data?.data])
+  const policyUserOptions = useMemo(
+    () =>
+      (policyUsersQuery.data?.data ?? []).map((user) => ({
+        value: user.id,
+        label: (
+          <Space
+            align="center"
+            className="min-w-0 max-w-full"
+            orientation="vertical"
+            size={0}
+          >
+            <Typography.Text className="max-w-full" ellipsis>
+              {userDisplayName(user)}
+            </Typography.Text>
+            <Typography.Text className="text-xs" type="secondary">
+              {user.id}
+            </Typography.Text>
+          </Space>
+        ),
+        searchText: `${user.full_name ?? ''} ${user.email} ${user.id}`,
+      })),
+    [policyUsersQuery.data?.data],
+  )
   const policies: FieldPolicyRecord[] = useMemo(
     () =>
       fieldPolicyRecords.map((policy) =>
-        fieldPolicyToRecord(policy, endpointCodeById, tenantDisplayName),
+        fieldPolicyToRecord(
+          policy,
+          endpointCodeById,
+          userDisplayNameById,
+          DATA_GATEWAY_PUBLIC_BASE_URL,
+        ),
       ),
-    [fieldPolicyRecords, endpointCodeById, tenantDisplayName],
+    [fieldPolicyRecords, endpointCodeById, userDisplayNameById],
   )
   const policyTotal = policiesCount
   const accessLogRecords: UsageRecord[] = useMemo(
@@ -465,6 +545,66 @@ export function DataAccessConsole() {
         usedAt: log.accessed_at,
       })),
     [accessLogSourceRecords],
+  )
+  const metadataResources = useMemo(
+    () => metadataMutation.data?.resources ?? [],
+    [metadataMutation.data?.resources],
+  )
+  const metadataFieldCount = useMemo(
+    () =>
+      metadataResources.reduce(
+        (total, resource) => total + resource.fields.length,
+        0,
+      ),
+    [metadataResources],
+  )
+  const metadataRows: MetadataFieldRow[] = useMemo(
+    () =>
+      metadataResources.flatMap<MetadataFieldRow>((resource) =>
+        resource.fields.length > 0
+          ? resource.fields.map((field) => ({
+              key: `${resource.name}-${field.name}`,
+              resource: resource.name,
+              resourceType: resource.resource_type,
+              field: field.name,
+              dataType: field.data_type,
+              nullable: field.nullable,
+              fieldCount: resource.fields.length,
+            }))
+          : [
+              {
+                key: resource.name,
+                resource: resource.name,
+                resourceType: resource.resource_type,
+                field: '-',
+                dataType: '-',
+                nullable: null,
+                fieldCount: 0,
+              },
+            ],
+      ),
+    [metadataResources],
+  )
+  const normalizedMetadataSearch = metadataSearchText.trim().toLowerCase()
+  const filteredMetadataRows = useMemo(
+    () =>
+      metadataRows.filter((row) => {
+        if (!normalizedMetadataSearch) return true
+        const nullableLabel =
+          row.nullable === null
+            ? '-'
+            : row.nullable
+              ? t('pages.dataAccess.common.yes')
+              : t('pages.dataAccess.common.no')
+        return [
+          row.resource,
+          row.resourceType,
+          row.field,
+          row.dataType,
+          nullableLabel,
+        ].some((value) => value.toLowerCase().includes(normalizedMetadataSearch))
+      }),
+    [metadataRows, normalizedMetadataSearch, t],
   )
   const publishedPolicyCount = policies.filter(
     (policy) => policy.status === 'published',
@@ -518,7 +658,9 @@ export function DataAccessConsole() {
           [
             localizeValue(policy.name),
             policy.endpointCode,
+            policy.gatewayUrl,
             localizeValue(policy.subject),
+            policy.subjectId,
           ].some((value) => value.toLowerCase().includes(normalizedSearch))
         return matchesStatus && matchesSearch
       }),
@@ -632,6 +774,7 @@ export function DataAccessConsole() {
 
   const openMetadata = async (source: DataSourceRecord) => {
     setMetadataSource(source)
+    setMetadataSearchText('')
     metadataMutation.reset()
     try {
       await discoverMetadata(source.id)
@@ -724,6 +867,9 @@ export function DataAccessConsole() {
       cancelText: t('pages.dataAccess.actions.cancel'),
       onOk: async () => {
         await deleteEndpoint(endpoint.id)
+        if (previewEndpoint?.id === endpoint.id) {
+          setPreviewEndpoint(undefined)
+        }
         void message.success(t('pages.dataAccess.messages.endpointDeleted'))
       },
     })
@@ -751,6 +897,7 @@ export function DataAccessConsole() {
 
   const openCreatePolicy = () => {
     setEditingPolicyId(undefined)
+    setUserSearchText('')
     policyForm.setFieldsValue({
       name: undefined,
       endpointCode: undefined,
@@ -762,6 +909,7 @@ export function DataAccessConsole() {
 
   const openEditPolicy = (policy: FieldPolicyRecord) => {
     setEditingPolicyId(policy.id)
+    setUserSearchText('')
     policyForm.setFieldsValue({
       name: localizeValue(policy.name),
       endpointCode: policy.endpointCode,
@@ -851,6 +999,26 @@ export function DataAccessConsole() {
           caught instanceof Error ? caught.message : String(caught)
         void message.error(messageText)
       })
+  }
+
+  const confirmDeletePolicy = (policy: FieldPolicyRecord) => {
+    modal.confirm({
+      title: t('pages.dataAccess.confirm.deletePolicy.title'),
+      content: t('pages.dataAccess.confirm.deletePolicy.content', {
+        name: localizeValue(policy.name),
+      }),
+      okText: t('pages.dataAccess.actions.delete'),
+      okButtonProps: { danger: true },
+      cancelText: t('pages.dataAccess.actions.cancel'),
+      onOk: async () => {
+        await deletePolicy(policy.id)
+        if (simulationPolicy?.id === policy.id) {
+          setSimulationPolicy(undefined)
+          setSimulationDecision(undefined)
+        }
+        void message.success(t('pages.dataAccess.messages.policyDeleted'))
+      },
+    })
   }
 
   const openSimulation = (policy: FieldPolicyRecord) => {
@@ -1120,17 +1288,15 @@ export function DataAccessConsole() {
                   : t('pages.dataAccess.actions.publish')}
               </Button>
             ) : null}
-            {record.published_version === 0 ? (
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deletingEndpointId === record.id}
-                type="link"
-                onClick={() => confirmDeleteEndpoint(record)}
-              >
-                {t('pages.dataAccess.actions.delete')}
-              </Button>
-            ) : null}
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              loading={deletingEndpointId === record.id}
+              type="link"
+              onClick={() => confirmDeleteEndpoint(record)}
+            >
+              {t('pages.dataAccess.actions.delete')}
+            </Button>
             {record.status === 'published' ? (
               <Button
                 danger
@@ -1208,6 +1374,38 @@ export function DataAccessConsole() {
         ),
     },
     {
+      title: t('pages.dataAccess.columns.gatewayUrl'),
+      dataIndex: 'gatewayUrl',
+      width: 330,
+      align: 'center',
+      render: (value: string, record) =>
+        record.status === 'published' ? (
+          <Space
+            align="center"
+            className="max-w-full"
+            direction="vertical"
+            size={2}
+          >
+            <Space className="max-w-full justify-center" size={6}>
+              <Tag className="m-0! rounded-md!" color="processing">
+                POST
+              </Tag>
+              <Typography.Text
+                code
+                copyable={{ text: value }}
+                ellipsis={{ tooltip: value }}
+              >
+                {value}
+              </Typography.Text>
+            </Space>
+          </Space>
+        ) : (
+          <Typography.Text type="secondary">
+            {t('pages.dataAccess.preview.notPublished')}
+          </Typography.Text>
+        ),
+    },
+    {
       title: t('pages.dataAccess.columns.version'),
       dataIndex: 'version',
       width: 80,
@@ -1230,16 +1428,13 @@ export function DataAccessConsole() {
       dataIndex: 'updatedAt',
       width: 130,
       align: 'center',
-      render: (value: string) =>
-        value === '__just_now__'
-          ? t('pages.dataAccess.time.justNow')
-          : localizeValue(value),
+      render: (value: string) => formatDataAccessDateTime(value, t),
     },
     {
       title: t('pages.dataAccess.columns.actions'),
       key: 'action',
       fixed: 'right',
-      width: 250,
+      width: 320,
       align: 'center',
       render: (_, record) => (
         <Space size={2}>
@@ -1267,6 +1462,15 @@ export function DataAccessConsole() {
               {t('pages.dataAccess.actions.publish')}
             </Button>
           ) : null}
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            loading={deletingPolicyId === record.id}
+            type="link"
+            onClick={() => confirmDeletePolicy(record)}
+          >
+            {t('pages.dataAccess.actions.delete')}
+          </Button>
         </Space>
       ),
     },
@@ -1276,14 +1480,14 @@ export function DataAccessConsole() {
     {
       title: t('pages.dataAccess.columns.user'),
       dataIndex: 'userName',
-      width: 260,
-      align: 'center',
+      width: 240,
+      align: 'left',
       render: (value: string, record) => (
         <Space
-          align="center"
+          align="start"
           className="min-w-0 max-w-full"
           orientation="vertical"
-          size={1}
+          size={0}
         >
           <OverflowText strong>{localizeValue(value)}</OverflowText>
           <OverflowText type="secondary">{record.userAccount}</OverflowText>
@@ -1293,7 +1497,7 @@ export function DataAccessConsole() {
     {
       title: t('pages.dataAccess.columns.accessType'),
       dataIndex: 'targetType',
-      width: 130,
+      width: 110,
       align: 'center',
       render: (value: UsageTargetType) => (
         <Tag color={USAGE_TARGET_META[value].color}>
@@ -1304,13 +1508,14 @@ export function DataAccessConsole() {
     {
       title: t('pages.dataAccess.columns.accessTarget'),
       dataIndex: 'targetName',
-      align: 'center',
+      width: 260,
+      align: 'left',
       render: (value: string, record) => (
         <Space
-          align="center"
+          align="start"
           className="min-w-0 max-w-full"
           orientation="vertical"
-          size={1}
+          size={0}
         >
           <OverflowText strong>{localizeValue(value)}</OverflowText>
           <OverflowText code>{record.targetCode}</OverflowText>
@@ -1320,8 +1525,13 @@ export function DataAccessConsole() {
     {
       title: t('pages.dataAccess.columns.usedAt'),
       dataIndex: 'usedAt',
-      width: 190,
+      width: 180,
       align: 'center',
+      render: (value: string) => (
+        <Typography.Text type="secondary">
+          {formatDataAccessDateTime(value, t)}
+        </Typography.Text>
+      ),
     },
   ]
 
@@ -1593,6 +1803,14 @@ export function DataAccessConsole() {
           ) : null}
           {workspace === 'policies' ? (
             <Space className="w-full" orientation="vertical" size={10}>
+              <Alert
+                showIcon
+                message={t('pages.dataAccess.policies.gatewayRuleTitle')}
+                description={t(
+                  'pages.dataAccess.policies.gatewayRuleDescription',
+                )}
+                type="info"
+              />
               {fieldPoliciesError ? (
                 <Alert
                   showIcon
@@ -1620,7 +1838,7 @@ export function DataAccessConsole() {
                 }}
                 pagination={{ pageSize: 6, showSizeChanger: false }}
                 rowKey="id"
-                scroll={{ x: 1220 }}
+                scroll={{ x: 1770 }}
                 size="small"
                 tableLayout="fixed"
               />
@@ -1644,6 +1862,7 @@ export function DataAccessConsole() {
                 />
               ) : null}
               <Table
+                className="w-full [&_.ant-table-cell]:px-3!"
                 columns={usageColumns}
                 dataSource={filteredUsageRecords}
                 loading={accessLogsLoading}
@@ -1655,7 +1874,7 @@ export function DataAccessConsole() {
                 }}
                 pagination={{ pageSize: 8, showSizeChanger: false }}
                 rowKey="id"
-                scroll={{ x: 900 }}
+                scroll={{ x: 790 }}
                 size="small"
                 tableLayout="fixed"
               />
@@ -2021,85 +2240,170 @@ export function DataAccessConsole() {
       </Drawer>
 
       <Modal
+        centered
         destroyOnHidden
         footer={null}
         open={Boolean(metadataSource)}
         title={t('pages.dataAccess.metadata.title', {
           name: metadataSource?.name ?? '',
         })}
-        width={760}
+        width={920}
         onCancel={() => {
           setMetadataSource(undefined)
+          setMetadataSearchText('')
           metadataMutation.reset()
         }}
       >
-        {metadataMutation.isError ? (
-          <Alert
-            showIcon
-            className="mb-3"
-            title={t('pages.dataAccess.metadata.error')}
-            type="error"
+        <Space className="w-full" direction="vertical" size={12}>
+          <div className="rounded-lg border border-(--border) bg-(--control-subtle-bg) p-3">
+            <Descriptions
+              bordered
+              column={{ xs: 1, sm: 2 }}
+              items={[
+                {
+                  key: 'type',
+                  label: t('pages.dataAccess.columns.type'),
+                  children: metadataSource ? (
+                    <Tag color={SOURCE_TYPE_META[metadataSource.source_type].color}>
+                      {SOURCE_TYPE_META[metadataSource.source_type].label}
+                    </Tag>
+                  ) : (
+                    '-'
+                  ),
+                },
+                {
+                  key: 'code',
+                  label: t('pages.dataAccess.columns.code'),
+                  children: metadataSource ? (
+                    <Typography.Text code>{metadataSource.code}</Typography.Text>
+                  ) : (
+                    '-'
+                  ),
+                },
+                {
+                  key: 'connection',
+                  label: t('pages.dataAccess.metadata.connection'),
+                  children: metadataSource
+                    ? dataSourceConnectionLabel(metadataSource)
+                    : '-',
+                },
+                {
+                  key: 'summary',
+                  label: t('pages.dataAccess.metadata.summary'),
+                  children: (
+                    <Space size={6} wrap>
+                      <Tag color="blue">
+                        {t('pages.dataAccess.metadata.resourceCount', {
+                          count: metadataResources.length,
+                        })}
+                      </Tag>
+                      <Tag color="cyan">
+                        {t('pages.dataAccess.metadata.fieldCount', {
+                          count: metadataFieldCount,
+                        })}
+                      </Tag>
+                    </Space>
+                  ),
+                },
+              ]}
+              size="small"
+            />
+          </div>
+          {metadataMutation.isError ? (
+            <Alert
+              showIcon
+              title={t('pages.dataAccess.metadata.error')}
+              type="error"
+            />
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-(--border) bg-(--control-subtle-bg) px-3 py-2">
+            <Input
+              allowClear
+              className="max-w-90"
+              prefix={<SearchOutlined className="text-(--dark-text)" />}
+              placeholder={t('pages.dataAccess.metadata.searchPlaceholder')}
+              value={metadataSearchText}
+              onChange={(event) => setMetadataSearchText(event.target.value)}
+            />
+            <Typography.Text className="text-xs" type="secondary">
+              {t('pages.dataAccess.metadata.filteredCount', {
+                count: filteredMetadataRows.length,
+                total: metadataRows.length,
+              })}
+            </Typography.Text>
+          </div>
+          <Table
+            className="[&_.ant-table-cell]:px-3!"
+            columns={[
+              {
+                title: t('pages.dataAccess.columns.resource'),
+                dataIndex: 'resource',
+                width: 220,
+                fixed: 'left',
+                render: (value: string, record) => (
+                  <Space
+                    align="start"
+                    className="min-w-0 max-w-full"
+                    direction="vertical"
+                    size={0}
+                  >
+                    <OverflowText strong>{value}</OverflowText>
+                    <Typography.Text className="text-xs" type="secondary">
+                      {t('pages.dataAccess.metadata.fieldCount', {
+                        count: record.fieldCount,
+                      })}
+                    </Typography.Text>
+                  </Space>
+                ),
+              },
+              {
+                title: t('pages.dataAccess.columns.resourceType'),
+                dataIndex: 'resourceType',
+                width: 130,
+                align: 'center',
+                render: (value: string) => <Tag color="geekblue">{value}</Tag>,
+              },
+              {
+                title: t('pages.dataAccess.columns.fields'),
+                dataIndex: 'field',
+                width: 220,
+                render: (value: string) => (
+                  <OverflowText code={value !== '-'}>{value}</OverflowText>
+                ),
+              },
+              {
+                title: t('pages.dataAccess.columns.dataType'),
+                dataIndex: 'dataType',
+                width: 170,
+                render: (value: string) => (
+                  <Typography.Text type="secondary">{value}</Typography.Text>
+                ),
+              },
+              {
+                title: t('pages.dataAccess.columns.nullable'),
+                dataIndex: 'nullable',
+                width: 90,
+                align: 'center',
+                render: (nullable: boolean | null) =>
+                  nullable === null ? (
+                    '-'
+                  ) : (
+                    <Tag color={nullable ? 'default' : 'green'}>
+                      {nullable
+                        ? t('pages.dataAccess.common.yes')
+                        : t('pages.dataAccess.common.no')}
+                    </Tag>
+                  ),
+              },
+            ]}
+            dataSource={filteredMetadataRows}
+            loading={metadataMutation.isPending}
+            pagination={false}
+            scroll={{ x: 830, y: 420 }}
+            size="small"
+            tableLayout="fixed"
           />
-        ) : null}
-        <Table
-          columns={[
-            {
-              title: t('pages.dataAccess.columns.resource'),
-              dataIndex: 'resource',
-              width: 180,
-            },
-            {
-              title: t('pages.dataAccess.columns.resourceType'),
-              dataIndex: 'resourceType',
-              width: 120,
-            },
-            {
-              title: t('pages.dataAccess.columns.fields'),
-              dataIndex: 'field',
-              width: 180,
-            },
-            {
-              title: t('pages.dataAccess.columns.dataType'),
-              dataIndex: 'dataType',
-              width: 150,
-            },
-            {
-              title: t('pages.dataAccess.columns.nullable'),
-              dataIndex: 'nullable',
-              width: 80,
-              render: (nullable: boolean) =>
-                nullable
-                  ? t('pages.dataAccess.common.yes')
-                  : t('pages.dataAccess.common.no'),
-            },
-          ]}
-          dataSource={(metadataMutation.data?.resources ?? []).flatMap(
-            (resource) =>
-              resource.fields.length > 0
-                ? resource.fields.map((field) => ({
-                    key: `${resource.name}-${field.name}`,
-                    resource: resource.name,
-                    resourceType: resource.resource_type,
-                    field: field.name,
-                    dataType: field.data_type,
-                    nullable: field.nullable,
-                  }))
-                : [
-                    {
-                      key: resource.name,
-                      resource: resource.name,
-                      resourceType: resource.resource_type,
-                      field: '-',
-                      dataType: '-',
-                      nullable: true,
-                    },
-                  ],
-          )}
-          loading={metadataMutation.isPending}
-          pagination={false}
-          scroll={{ y: 440 }}
-          size="small"
-        />
+        </Space>
       </Modal>
 
       <Modal
@@ -2595,8 +2899,19 @@ export function DataAccessConsole() {
             name="subject"
             rules={[{ required: true }]}
           >
-            <Input
+            <Select
+              allowClear
+              filterOption={(input, option) =>
+                String(option?.searchText ?? '')
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              loading={policyUsersQuery.isFetching}
+              optionFilterProp="searchText"
+              options={policyUserOptions}
               placeholder={t('pages.dataAccess.policyForm.subjectPlaceholder')}
+              showSearch
+              onSearch={setUserSearchText}
             />
           </Form.Item>
           <Form.Item
@@ -2649,8 +2964,6 @@ export function DataAccessConsole() {
                   new Set([
                     ...simulationPolicy.allowedFields,
                     ...simulationPolicy.deniedFields,
-                    'mobile',
-                    'id_card',
                   ]),
                 )}
                 value={simulationFields}

@@ -26,6 +26,7 @@ export interface FieldPolicyRecord {
   name: string
   endpointCode: string
   endpointVersion: number
+  gatewayUrl: string
   subject: string
   subjectType: FieldPolicySubjectType
   subjectId: string

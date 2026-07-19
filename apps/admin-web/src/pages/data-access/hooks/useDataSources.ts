@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  adminAccessEndpointKeys,
   adminDataSourceKeys,
   adminDataSources_create,
   adminDataSources_delete,
@@ -8,6 +9,7 @@ import {
   adminDataSources_list,
   adminDataSources_test,
   adminDataSources_update,
+  adminFieldPolicyKeys,
 } from '@/api/data-access'
 import type { AdminDataSourceUpdateBody } from '@/api/data-access'
 
@@ -24,8 +26,13 @@ export function useDataSources() {
     queryFn: () => adminDataSources_list(DATA_SOURCE_LIST_QUERY),
   })
 
-  const invalidateLists = () =>
-    queryClient.invalidateQueries({ queryKey: adminDataSourceKeys.lists() })
+  const invalidateLists = () => {
+    void queryClient.invalidateQueries({ queryKey: adminDataSourceKeys.lists() })
+    void queryClient.invalidateQueries({
+      queryKey: adminAccessEndpointKeys.lists(),
+    })
+    void queryClient.invalidateQueries({ queryKey: adminFieldPolicyKeys.lists() })
+  }
 
   const createMutation = useMutation({
     mutationFn: adminDataSources_create,
