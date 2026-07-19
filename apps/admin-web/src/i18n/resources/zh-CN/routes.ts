@@ -58,4 +58,12 @@ export default {
   'routes.production.rollback.title': '生产撤回',
   'routes.production.rollback.subtitle': '撤回已上线智能体',
 
+'routes.serviceCatalog.categories.title': '服务流程目录',
+'routes.serviceCatalog.categories.subtitle': '多级分类管理',
+'routes.serviceCatalog.services.title': '服务目录',
+'routes.serviceCatalog.services.subtitle': '服务列表与搜索',
+'routes.serviceCatalog.serviceDetail.title': '服务详情',
+'routes.serviceCatalog.serviceEdit.title': '编辑服务',
+'routes.serviceCatalog.import.title': '导入',
+'routes.serviceCatalog.import.subtitle': 'Excel 批量导入与错误报告',
 }

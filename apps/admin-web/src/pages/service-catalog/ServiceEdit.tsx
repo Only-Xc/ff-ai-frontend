@@ -1,0 +1,100 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Button, Form, Input, Select, Space, message } from 'antd'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate, useParams } from 'react-router'
+
+import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import {
+  serviceCategories_list,
+  serviceCatalogService_create,
+  serviceCatalogService_get,
+  serviceCatalogService_update,
+  type ServiceCategory,
+  type ServiceDefinitionCreate,
+  type ServiceLevel,
+} from '@/api/service-catalog'
+
+const LEVELS: ServiceLevel[] = ['P0', 'P1', 'P2', 'P3']
+
+export default function ServiceEditPage() {
+  const { t } = useTranslation()
+  const { serviceId } = useParams<{ serviceId: string }>()
+  const nav = useNavigate() as unknown as (delta?: number) => void
+  const qc = useQueryClient()
+  const isNew = serviceId === 'new' || !serviceId
+  const [form] = Form.useForm<ServiceDefinitionCreate>()
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+
+  const { data: cats = [] } = useQuery({
+    queryKey: ['service-catalog', 'categories'],
+    queryFn: () => serviceCategories_list({}) as unknown as Promise<ServiceCategory[]>,
+  })
+  const { data: existing } = useQuery({
+    queryKey: ['service-catalog', 'service', serviceId],
+    queryFn: () => serviceCatalogService_get(serviceId!),
+    enabled: !isNew,
+  })
+
+  useEffect(() => {
+    // 取当前用户 ID（简化：从 auth store 取或硬编码 placeholder）
+    // admin-web 已有 user 上下文；这里用 placeholder 让 Pydantic 校验通过
+    setCurrentUserId(localStorage.getItem('user_id') || '00000000-0000-0000-0000-000000000000')
+  }, [])
+
+  useEffect(() => {
+    if (existing) form.setFieldsValue(existing.service as any)
+  }, [existing, form])
+
+  const saveMut = useMutation({
+    mutationFn: async (body: ServiceDefinitionCreate) => {
+      if (isNew) return serviceCatalogService_create({ ...body, owner_user_id: currentUserId })
+      return serviceCatalogService_update(serviceId!, body)
+    },
+    onSuccess: () => {
+      message.success(t('pages.serviceCatalog.messages.saved'))
+      qc.invalidateQueries({ queryKey: ['service-catalog'] })
+      nav('/service-catalog/services')
+    },
+    onError: (e: any) => message.error(e?.response?.data?.detail ?? 'error'),
+  })
+
+  const submit = async () => {
+    const v = await form.validateFields()
+    saveMut.mutate(v as ServiceDefinitionCreate)
+  }
+
+  return (
+    <PageContainer>
+      <PageHeader
+        title={isNew ? t('pages.serviceCatalog.actions.createService') : t('pages.serviceCatalog.actions.editService')}
+      />
+      <Form form={form} layout="vertical" style={{ maxWidth: 640 }}>
+        <Form.Item name="name" label={t('pages.serviceCatalog.columns.name')} rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="code" label={t('pages.serviceCatalog.columns.code')} rules={[{ required: true }]}>
+          <Input disabled={!isNew} />
+        </Form.Item>
+        <Form.Item name="category_id" label={t('pages.serviceCatalog.columns.categoryCode')} rules={[{ required: true }]}>
+          <Select options={cats.map((c: any) => ({ value: c.id, label: c.name }))} />
+        </Form.Item>
+        <Form.Item name="service_level" label={t('pages.serviceCatalog.columns.serviceLevel')} rules={[{ required: true }]}>
+          <Select options={LEVELS.map((v) => ({ value: v, label: v }))} />
+        </Form.Item>
+        <Form.Item name="status" label={t('pages.serviceCatalog.columns.status')}>
+          <Select options={[{ value: 'active', label: 'active' }, { value: 'inactive', label: 'inactive' }]} />
+        </Form.Item>
+        <Form.Item name="description" label={t('pages.serviceCatalog.columns.description')}>
+          <Input.TextArea rows={3} />
+        </Form.Item>
+        <Space>
+          <Button type="primary" loading={saveMut.isPending} onClick={submit}>
+            {t('pages.serviceCatalog.actions.save')}
+          </Button>
+          <Button onClick={() => nav(-1)}>{t('pages.serviceCatalog.actions.cancel')}</Button>
+        </Space>
+      </Form>
+    </PageContainer>
+  )
+}

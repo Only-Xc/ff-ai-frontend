@@ -11,7 +11,8 @@
     "format": "oxfmt . --write && oxlint --fix && eslint . --fix",
     "format:check": "oxfmt . --check",
     "preview": "vite preview",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ant-design/icons": "^6.2.2",
@@ -55,6 +56,7 @@
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "tailwindcss": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "@playwright/test": "^1.49.1"
   }
 }

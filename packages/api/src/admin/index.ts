@@ -7,3 +7,4 @@ export * from './production.js'
 export * from './skill-hub.js'
 export * from './stage-switch.js'
 export * from './ticket-kanban.js'
+export * from "./service-catalog.js"
