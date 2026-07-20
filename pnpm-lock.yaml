@@ -110,6 +110,9 @@ importers:
       oxfmt:
         specifier: 'catalog:'
         version: 0.47.0
+      playwright:
+        specifier: ^1.61.1
+        version: 1.61.1
       turbo:
         specifier: 'catalog:'
         version: 2.9.14

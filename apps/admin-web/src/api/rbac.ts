@@ -10,6 +10,7 @@ import {
   getUserRolesRequest,
   listAdminPermissionsRequest,
   listAdminRolesRequest,
+  listAssignableTenantsRequest,
   listOrganizationTreeRequest,
   listOrganizationsRequest,
   listUsersRequest,
@@ -27,7 +28,9 @@ import {
 import { request } from './_request'
 
 export type {
+  AssignableTenant,
   CurrentRbacProfile,
+  PrimaryOrganization,
   OrganizationCreateBody,
   OrganizationList,
   OrganizationListQuery,
@@ -63,6 +66,7 @@ export const rbacKeys = {
     [...rbacKeys.all, 'organizationList', query] as const,
   users: (query: UserListQuery) => [...rbacKeys.all, 'users', query] as const,
   userRoles: (userId: string) => [...rbacKeys.all, 'userRoles', userId] as const,
+  assignableTenants: () => [...rbacKeys.all, 'assignableTenants'] as const,
 }
 
 export const rbacProfile_get = request(getCurrentRbacProfileRequest)
@@ -84,3 +88,5 @@ export const adminUsers_list = request(listUsersRequest)
 export const adminUsers_create = request(createUserRequest)
 export const adminUsers_update = request(updateUserRequest)
 export const adminUsers_delete = request(deleteUserRequest)
+
+export const adminAssignableTenants_list = request(listAssignableTenantsRequest)

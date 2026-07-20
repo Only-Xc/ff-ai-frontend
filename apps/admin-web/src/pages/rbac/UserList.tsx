@@ -26,7 +26,8 @@ import {
 } from '@/api/rbac'
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
-import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useAuthStore } from '@/store/useAuth'
+import { usePaginationParams } from '@/hooks/usePaginationParams' 
 import { UserFormDrawer } from './UserFormDrawer'
 import { UserRoleDrawer } from './UserRoleDrawer'
 
@@ -79,6 +80,10 @@ export default function UserList() {
   const pagination = usePaginationParams({ defaultPageSize: 20 })
 
   const [filters, setFilters] = useState<{ keyword?: string }>({})
+  const isPlatformAdmin =
+    useAuthStore((state) => state.user?.is_superuser) === true ||
+    useAuthStore((state) => state.roleCodes).includes('system_admin')
+
   const [formDrawerState, setFormDrawerState] = useState<{
     open: boolean
     mode: 'create' | 'edit'
@@ -179,6 +184,16 @@ export default function UserList() {
       key: 'roles',
       width: 200,
       render: (_, record) => <UserRolesCell userId={record.id} />,
+    },
+    {
+      title: t('pages.rbac.columns.tenant'),
+      key: 'tenant',
+      width: 180,
+      render: (_, record) => {
+        const org = record.primary_organization
+        if (!org) return <Tag>{t('pages.rbac.status.noTenant')}</Tag>
+        return <Tag color="blue">{org.name}</Tag>
+      },
     },
     {
       title: t('pages.rbac.columns.status'),
@@ -329,6 +344,7 @@ export default function UserList() {
           open
           mode={formDrawerState.mode}
           initialValues={formDrawerState.detail}
+          isPlatformAdmin={isPlatformAdmin}
           onSubmit={handleFormSubmit}
           onClose={() =>
             setFormDrawerState({ open: false, mode: 'create' })
