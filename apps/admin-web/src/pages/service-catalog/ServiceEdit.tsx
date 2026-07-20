@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { adminOrganizations_list, adminUsers_list } from '@/api/rbac'
 import { useAuthStore } from '@/store/useAuth'
 import {
   serviceCategories_list,
@@ -32,6 +33,16 @@ export default function ServiceEditPage() {
     queryKey: ['service-catalog', 'categories'],
     queryFn: () => serviceCategories_list() as unknown as Promise<ServiceCategory[]>,
   })
+  const { data: orgsData } = useQuery({
+    queryKey: ['rbac', 'organizations', 'for-service-catalog'],
+    queryFn: () => adminOrganizations_list({ skip: 0, limit: 100 }),
+  })
+  const orgs = orgsData?.data ?? []
+  const { data: usersData } = useQuery({
+    queryKey: ['rbac', 'users', 'for-service-catalog'],
+    queryFn: () => adminUsers_list({ skip: 0, limit: 200 }),
+  })
+  const users = usersData?.data ?? []
   const { data: existing } = useQuery({
     queryKey: ['service-catalog', 'service', serviceId],
     queryFn: () => serviceCatalogService_get(serviceId!),
@@ -40,11 +51,12 @@ export default function ServiceEditPage() {
 
   useEffect(() => {
     if (existing) form.setFieldsValue(existing.service as any)
-  }, [existing, form])
+    else if (currentUser) form.setFieldsValue({ owner_user_id: currentUser.id } as any)
+  }, [existing, form, currentUser])
 
   const saveMut = useMutation({
     mutationFn: async (body: ServiceDefinitionCreate) => {
-      if (isNew) return serviceCatalogService_create({ ...body, owner_user_id: currentUser?.id ?? '' })
+      if (isNew) return serviceCatalogService_create({ ...body, owner_user_id: body.owner_user_id || currentUser?.id || '' })
       return serviceCatalogService_update(serviceId!, body)
     },
     onSuccess: () => {
@@ -74,6 +86,22 @@ export default function ServiceEditPage() {
         </Form.Item>
         <Form.Item name="category_id" label={t('pages.serviceCatalog.columns.categoryCode')} rules={[{ required: true }]}>
           <Select options={cats.map((c: any) => ({ value: c.id, label: c.name }))} />
+        </Form.Item>
+        <Form.Item name="organization_id" label={t('pages.serviceCatalog.columns.organization')}>
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="label"
+            placeholder={t('pages.serviceCatalog.actions.optionalPlaceholder')}
+            options={orgs.map((o: any) => ({ value: o.id, label: `${o.name} (${o.code})` }))}
+          />
+        </Form.Item>
+        <Form.Item name="owner_user_id" label={t('pages.serviceCatalog.columns.owner')} rules={[{ required: true }]}>
+          <Select
+            showSearch
+            optionFilterProp="label"
+            options={users.map((u: any) => ({ value: u.id, label: `${u.full_name || u.email} (${u.email})` }))}
+          />
         </Form.Item>
         <Form.Item name="service_level" label={t('pages.serviceCatalog.columns.serviceLevel')} rules={[{ required: true }]}>
           <Select options={LEVELS.map((v) => ({ value: v, label: v }))} />

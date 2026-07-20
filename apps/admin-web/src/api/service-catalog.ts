@@ -22,6 +22,7 @@ import {
   listServicesRequest,
   listSystemsRequest,
   reorderNodesRequest,
+  updateAgentLinkRequest,
   updateMaterialRequest,
   updateNodeRequest,
   updateServiceCategoryRequest,
@@ -29,6 +30,7 @@ import {
   updateSystemRequest,
   type ServiceAgentLink,
   type ServiceAgentLinkCreate,
+  type ServiceAgentLinkUpdate,
   type ServiceCategory,
   type ServiceCategoryCreate,
   type ServiceCategoryUpdate,
@@ -56,6 +58,7 @@ import { request } from './_request'
 export type {
   ServiceAgentLink,
   ServiceAgentLinkCreate,
+  ServiceAgentLinkUpdate,
   ServiceCategory,
   ServiceCategoryCreate,
   ServiceCategoryUpdate,
@@ -124,6 +127,7 @@ export const serviceSystem_delete = request(deleteSystemRequest)
 // Agent Links
 export const serviceAgentLinks_list = request(listAgentLinksRequest)
 export const serviceAgentLink_create = request(createAgentLinkRequest)
+export const serviceAgentLink_update = request(updateAgentLinkRequest)
 export const serviceAgentLink_delete = request(deleteAgentLinkRequest)
 
 // Import / Export

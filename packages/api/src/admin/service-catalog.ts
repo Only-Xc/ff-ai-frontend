@@ -178,6 +178,12 @@ export interface ServiceAgentLinkCreate {
   description?: string
 }
 
+export interface ServiceAgentLinkUpdate {
+  task_id?: string | null
+  link_type?: AgentLinkType
+  description?: string
+}
+
 export interface ServiceDetailPublic {
   service: ServiceDefinition
   nodes: ServiceProcessNode[]
@@ -340,6 +346,17 @@ export const createAgentLinkRequest = (serviceId: string, body: ServiceAgentLink
 
 export const deleteAgentLinkRequest = (serviceId: string, linkId: string) =>
   createRequest<void>('DELETE', sc`/services/${serviceId}/agent-links/${linkId}`)
+
+export const updateAgentLinkRequest = (
+  serviceId: string,
+  linkId: string,
+  body: ServiceAgentLinkUpdate,
+) =>
+  createRequest<ServiceAgentLink>(
+    'PATCH',
+    sc`/services/${serviceId}/agent-links/${linkId}`,
+    { data: body },
+  )
 
 // ──────── 导入导出 ────────
 export const exportWorkbookRequest = (params: {
