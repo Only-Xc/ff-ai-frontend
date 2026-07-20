@@ -20,5 +20,6 @@ export default {
   'common.errors.metadataJsonObject': 'metadata must be a valid JSON object',
   'common.errors.authMissingToken': 'Login response is missing access_token',
   'common.actions.search': 'Search',
+  'common.filters.all': 'All',
   'common.dateTime.longFormat': 'MMM D, YYYY HH:mm',
 }

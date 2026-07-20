@@ -41,6 +41,13 @@ export interface ProductionApproval {
   approved_at: string | null
   rejected_at: string | null
   can_current_user_decide: boolean
+  can_cancel: boolean
+}
+
+export interface ApproverRef {
+  id: string
+  name: string
+  email?: string | null
 }
 
 export interface ProductionApprovalDetail {
@@ -48,6 +55,8 @@ export interface ProductionApprovalDetail {
   qa_result_snapshot: Record<string, unknown>
   approver_role_ids: string[]
   approver_user_ids: string[]
+  approver_users: ApproverRef[]
+  approver_roles: ApproverRef[]
   decisions: Array<Record<string, unknown>>
 }
 
@@ -90,13 +99,14 @@ export interface ProductionRollbackCreatePayload {
 export interface ProductionApprovalQuery {
   status?: ProductionApprovalStatus
   agent_id?: string
+  keyword?: string
   organization_id?: string
   skip?: number
   limit?: number
 }
 
 // API calls（阶段 5 补齐）
-import { createRequest, path } from '../client.js'
+import { createRequest } from '../client.js'
 
 const PRODUCTION_PREFIX = '/api/v1/admin/production'
 
@@ -112,7 +122,7 @@ export const listProductionApprovalsRequest = (
 export const getProductionApprovalRequest = (approvalId: string) =>
   createRequest<ProductionApprovalDetail>(
     'GET',
-    path`${PRODUCTION_PREFIX}/approvals/${approvalId}`,
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}`,
   )
 
 export const createProductionApprovalRequest = (
@@ -130,7 +140,7 @@ export const submitProductionDecisionRequest = (
 ) =>
   createRequest<ProductionApprovalDetail>(
     'POST',
-    path`${PRODUCTION_PREFIX}/approvals/${approvalId}/decisions`,
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/decisions`,
     { data },
   )
 
@@ -140,8 +150,14 @@ export const cancelProductionApprovalRequest = (
 ) =>
   createRequest<ProductionApprovalDetail>(
     'POST',
-    path`${PRODUCTION_PREFIX}/approvals/${approvalId}/cancel`,
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/cancel`,
     { data },
+  )
+
+export const applyProductionApprovalRequest = (approvalId: string) =>
+  createRequest<ProductionApprovalDetail>(
+    'POST',
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/apply`,
   )
 
 export const rollbackProductionAgentRequest = (
@@ -150,6 +166,6 @@ export const rollbackProductionAgentRequest = (
 ) =>
   createRequest<ProductionRollback>(
     'POST',
-    path`${PRODUCTION_PREFIX}/agents/${agentId}/rollback`,
+    `${PRODUCTION_PREFIX}/agents/${encodeURIComponent(agentId)}/rollback`,
     { data },
   )

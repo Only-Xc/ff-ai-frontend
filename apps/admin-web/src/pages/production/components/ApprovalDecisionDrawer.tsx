@@ -1,4 +1,4 @@
-import { Alert, Button, Drawer, Form, Input, Radio, Space } from 'antd'
+import { Alert, Button, Drawer, Form, Input, Radio } from 'antd'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -74,7 +74,7 @@ export function ApprovalDecisionDrawer({
         showIcon
         className="mb-4"
         type="info"
-        title={t('pages.production.decisionDrawer.versionNotice', {
+        message={t('pages.production.decisionDrawer.versionNotice', {
           version: expectedVersion,
         })}
       />
@@ -108,7 +108,6 @@ export function ApprovalDecisionDrawer({
           <Input.TextArea rows={6} maxLength={2000} showCount />
         </Form.Item>
       </Form>
-      <Space />
     </Drawer>
   )
 }

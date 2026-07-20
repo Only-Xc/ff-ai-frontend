@@ -1,7 +1,8 @@
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Input, Space, message } from 'antd'
+import { Alert, Button, Card, Form, Input, Popconfirm, Space, message } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 
@@ -14,6 +15,7 @@ interface RollbackFormValues {
 
 export function ProductionRollback() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialAgentId = searchParams.get('agentId') ?? ''
   const [form] = Form.useForm<RollbackFormValues>()
@@ -40,7 +42,14 @@ export function ProductionRollback() {
       <PageHeader
         title={t('pages.production.rollback.title')}
         subtitle={t('pages.production.rollback.subtitle')}
-      />
+      >
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => void navigate('/production/approvals')}
+        >
+          {t('pages.production.detail.backToList')}
+        </Button>
+      </PageHeader>
       <Card>
         <Alert
           className="mb-4"
@@ -52,7 +61,6 @@ export function ProductionRollback() {
           form={form}
           layout="vertical"
           initialValues={{ agent_id: initialAgentId }}
-          onFinish={() => void handleSubmit()}
         >
           <Form.Item
             label={t('pages.production.rollback.agentIdLabel')}
@@ -70,14 +78,17 @@ export function ProductionRollback() {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button
-                danger
-                type="primary"
-                htmlType="submit"
-                loading={mutation.isPending}
+              <Popconfirm
+                title={t('pages.production.rollback.confirmTitle')}
+                okText={t('common.actions.confirm')}
+                cancelText={t('common.actions.cancel')}
+                okButtonProps={{ danger: true }}
+                onConfirm={() => void handleSubmit()}
               >
-                {t('pages.production.rollback.submit')}
-              </Button>
+                <Button danger type="primary" loading={mutation.isPending}>
+                  {t('pages.production.rollback.submit')}
+                </Button>
+              </Popconfirm>
               <Button onClick={() => form.resetFields()}>
                 {t('common.actions.cancel')}
               </Button>

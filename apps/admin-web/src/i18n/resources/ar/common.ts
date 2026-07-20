@@ -21,5 +21,6 @@ export default {
   'common.errors.authMissingToken':
     'استجابة تسجيل الدخول لا تحتوي على access_token',
   'common.actions.search': 'بحث',
+  'common.filters.all': 'الكل',
   'common.dateTime.longFormat': 'D MMM YYYY HH:mm',
 }

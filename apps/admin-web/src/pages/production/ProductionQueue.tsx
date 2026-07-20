@@ -30,33 +30,34 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { approvalStatusColor, approvalStatusLabel } from './status'
 
-const STATUS_OPTIONS: { label: string; value: ProductionApprovalStatus | '' }[] = [
-  { label: '全部', value: '' },
-  { label: 'PENDING', value: 'PENDING' },
-  { label: 'IN_REVIEW', value: 'IN_REVIEW' },
-  { label: 'APPROVED', value: 'APPROVED' },
-  { label: 'REJECTED', value: 'REJECTED' },
-  { label: 'PRECHECK_BLOCKED', value: 'PRECHECK_BLOCKED' },
+const STATUS_OPTIONS: { labelKey: string; value: ProductionApprovalStatus | '' }[] = [
+  { labelKey: 'common.filters.all', value: '' },
+  { labelKey: 'pages.production.status.PENDING', value: 'PENDING' },
+  { labelKey: 'pages.production.status.IN_REVIEW', value: 'IN_REVIEW' },
+  { labelKey: 'pages.production.status.APPROVED', value: 'APPROVED' },
+  { labelKey: 'pages.production.status.REJECTED', value: 'REJECTED' },
+  { labelKey: 'pages.production.status.PRECHECK_BLOCKED', value: 'PRECHECK_BLOCKED' },
 ]
 
 export function ProductionQueue() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { page, pageSize, setPage } = usePaginationParams()
+  const { current, pageSize, setCurrent, skip, limit } = usePaginationParams()
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<ProductionApprovalStatus | ''>('')
 
   const queryParams: ProductionApprovalQuery = useMemo(
     () => ({
-      skip: (page - 1) * pageSize,
-      limit: pageSize,
+      skip,
+      limit,
       ...(statusFilter ? { status: statusFilter as ProductionApprovalStatus } : {}),
+      ...(keyword.trim() ? { keyword: keyword.trim() } : {}),
     }),
-    [page, pageSize, statusFilter],
+    [skip, limit, statusFilter, keyword],
   )
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: [...productionKeys.list(queryParams), keyword],
+    queryKey: productionKeys.list(queryParams),
     queryFn: () => productionApprovals_list(queryParams),
     placeholderData: keepPreviousData,
   })
@@ -134,32 +135,34 @@ export function ProductionQueue() {
       <PageHeader
         title={t('routes.production.approvals.title')}
         subtitle={t('routes.production.approvals.subtitle')}
-        extra={
-          <Space>
-            <Input.Search
-              allowClear
-              placeholder={t('pages.production.queue.keywordPlaceholder')}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              style={{ width: 220 }}
-            />
-            <Select
-              value={statusFilter}
-              onChange={setStatusFilter}
-              options={STATUS_OPTIONS}
-              style={{ width: 180 }}
-              placeholder={t('pages.production.queue.status')}
-            />
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => void refetch()}
-              loading={isFetching}
-            >
-              {t('common.actions.refresh')}
-            </Button>
-          </Space>
-        }
-      />
+      >
+        <Space>
+          <Input.Search
+            allowClear
+            placeholder={t('pages.production.queue.keywordPlaceholder')}
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            style={{ width: 220 }}
+          />
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={STATUS_OPTIONS.map((item) => ({
+              value: item.value,
+              label: item.value === '' ? t('common.filters.all') : t(item.labelKey),
+            }))}
+            style={{ width: 180 }}
+            placeholder={t('pages.production.queue.status')}
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => void refetch()}
+            loading={isFetching}
+          >
+            {t('common.actions.refresh')}
+          </Button>
+        </Space>
+      </PageHeader>
       <Alert
         className="mb-4"
         type="info"
@@ -175,10 +178,10 @@ export function ProductionQueue() {
           columns={columns}
           dataSource={items}
           pagination={{
-            current: page,
+            current,
             pageSize,
             total,
-            onChange: setPage,
+            onChange: setCurrent,
           }}
         />
       )}
