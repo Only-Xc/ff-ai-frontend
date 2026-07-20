@@ -1,7 +1,8 @@
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Card, Descriptions, Empty, List, Popconfirm, Table, Tabs, Tag } from 'antd'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import {
@@ -17,6 +18,7 @@ import {
 export default function ServiceDetailPage() {
   const { t } = useTranslation()
   const { serviceId = '' } = useParams<{ serviceId: string }>()
+  const nav = useNavigate()
   const qc = useQueryClient()
   const { data: detail, isLoading } = useQuery({
     queryKey: ['service-catalog', 'service', serviceId],
@@ -57,6 +59,13 @@ export default function ServiceDetailPage() {
 
   return (
     <PageContainer>
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => nav('/service-catalog/services')}
+        style={{ marginBottom: 4 }}
+      >
+        {t('pages.serviceCatalog.actions.back')}
+      </Button>
       <PageHeader
         title={detail.service.name}
         subtitle={t('routes.serviceCatalog.serviceDetail.title')}

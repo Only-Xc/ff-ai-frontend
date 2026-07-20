@@ -1,4 +1,4 @@
-/** 服务流程目录管理端客户端 + query keys。 */
+/** 服务流程管理端客户端 + query keys。 */
 import {
   createAgentLinkRequest,
   createMaterialRequest,
@@ -37,6 +37,7 @@ import {
   type ServiceDefinitionUpdate,
   type ServiceDetailPublic,
   type ServiceImportResult,
+  type ServiceLevel,
   type ServiceListQuery,
   type ServiceListResult,
   type ServiceNodeMaterial,
@@ -63,6 +64,7 @@ export type {
   ServiceDefinitionUpdate,
   ServiceDetailPublic,
   ServiceImportResult,
+  ServiceLevel,
   ServiceListQuery,
   ServiceListResult,
   ServiceNodeMaterial,

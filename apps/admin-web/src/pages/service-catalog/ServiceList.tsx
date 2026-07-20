@@ -1,4 +1,4 @@
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Input, Modal, Select, Space, Table, Tag, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
@@ -104,6 +104,9 @@ export default function ServiceListPage() {
           <Button type="primary" icon={<PlusOutlined />}>
             {t('pages.serviceCatalog.actions.createService')}
           </Button>
+        </Link>
+        <Link to="/service-catalog/categories">
+          <Button icon={<AppstoreOutlined />}>{t('pages.serviceCatalog.actions.manageCategories')}</Button>
         </Link>
         <Link to="/service-catalog/import">
           <Button>{t('pages.serviceCatalog.actions.importFile')}</Button>

@@ -1,3 +1,4 @@
+import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
 import {
   Alert,
@@ -10,12 +11,14 @@ import {
 } from 'antd'
 import type { UploadFile } from 'antd/es/upload/interface'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { serviceCatalog_export, serviceCatalog_import } from '@/api/service-catalog'
 
 export default function ImportPanelPage() {
   const { t } = useTranslation()
+  const nav = useNavigate()
   const importMut = useMutation({
     mutationFn: (file: File) => serviceCatalog_import(file),
     onSuccess: (data: any) => {
@@ -48,6 +51,13 @@ export default function ImportPanelPage() {
 
   return (
     <PageContainer>
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => nav('/service-catalog/services')}
+        style={{ marginBottom: 4 }}
+      >
+        {t('pages.serviceCatalog.actions.back')}
+      </Button>
       <PageHeader title={t('routes.serviceCatalog.import.title')} />
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <Card title={t('pages.serviceCatalog.actions.downloadTemplate')}>

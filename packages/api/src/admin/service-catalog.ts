@@ -1,4 +1,4 @@
-/** 服务流程目录（Service Catalog）API 类型与请求工厂。 */
+/** 服务流程（Service Catalog）API 类型与请求工厂。 */
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
 
@@ -195,6 +195,14 @@ export interface ServiceImportResult {
 
 const SC_PREFIX = '/api/v1/admin/service-catalog'
 
+/**
+ * 服务目录路径模板：在 path 结果前置 SC_PREFIX。
+ * SC_PREFIX 本身含斜杠，若作为 path 的插值参数会被 encodeURIComponent 编码成 %2F，
+ * 导致 URL 变成相对路径（如 DELETE 404），故必须以静态前缀方式拼接。
+ */
+const sc = (strings: TemplateStringsArray, ...values: (string | number | boolean)[]) =>
+  SC_PREFIX + path(strings, ...values)
+
 // ──────── 分类 ────────
 export const listServiceCategoriesRequest = () =>
   createRequest<ServiceCategory[]>('GET', `${SC_PREFIX}/categories`)
@@ -205,10 +213,10 @@ export const createServiceCategoryRequest = (body: ServiceCategoryCreate) =>
 export const updateServiceCategoryRequest = (
   id: string,
   body: ServiceCategoryUpdate,
-) => createRequest<ServiceCategory>('PATCH', path`${SC_PREFIX}/categories/${id}`, { data: body })
+) => createRequest<ServiceCategory>('PATCH', sc`/categories/${id}`, { data: body })
 
 export const deleteServiceCategoryRequest = (id: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/categories/${id}`)
+  createRequest<void>('DELETE', sc`/categories/${id}`)
 
 // ──────── 服务 ────────
 export interface ServiceListQuery extends PaginationQuery {
@@ -226,22 +234,22 @@ export const createServiceRequest = (body: ServiceDefinitionCreate) =>
   createRequest<ServiceDefinition>('POST', `${SC_PREFIX}/services`, { data: body })
 
 export const getServiceDetailRequest = (id: string) =>
-  createRequest<ServiceDetailPublic>('GET', path`${SC_PREFIX}/services/${id}`)
+  createRequest<ServiceDetailPublic>('GET', sc`/services/${id}`)
 
 export const updateServiceRequest = (id: string, body: ServiceDefinitionUpdate) =>
-  createRequest<ServiceDefinition>('PATCH', path`${SC_PREFIX}/services/${id}`, { data: body })
+  createRequest<ServiceDefinition>('PATCH', sc`/services/${id}`, { data: body })
 
 export const deleteServiceRequest = (id: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/services/${id}`)
+  createRequest<void>('DELETE', sc`/services/${id}`)
 
 // ──────── 节点 ────────
 export const listNodesRequest = (serviceId: string) =>
-  createRequest<ServiceProcessNode[]>('GET', path`${SC_PREFIX}/services/${serviceId}/nodes`)
+  createRequest<ServiceProcessNode[]>('GET', sc`/services/${serviceId}/nodes`)
 
 export const createNodeRequest = (serviceId: string, body: ServiceProcessNodeCreate) =>
   createRequest<ServiceProcessNode>(
     'POST',
-    path`${SC_PREFIX}/services/${serviceId}/nodes`,
+    sc`/services/${serviceId}/nodes`,
     { data: body },
   )
 
@@ -252,28 +260,28 @@ export const updateNodeRequest = (
 ) =>
   createRequest<ServiceProcessNode>(
     'PATCH',
-    path`${SC_PREFIX}/services/${serviceId}/nodes/${nodeId}`,
+    sc`/services/${serviceId}/nodes/${nodeId}`,
     { data: body },
   )
 
 export const reorderNodesRequest = (serviceId: string, nodeIds: string[]) =>
   createRequest<ServiceProcessNode[]>(
     'PUT',
-    path`${SC_PREFIX}/services/${serviceId}/nodes/reorder`,
+    sc`/services/${serviceId}/nodes/reorder`,
     { data: nodeIds },
   )
 
 export const deleteNodeRequest = (serviceId: string, nodeId: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/services/${serviceId}/nodes/${nodeId}`)
+  createRequest<void>('DELETE', sc`/services/${serviceId}/nodes/${nodeId}`)
 
 // ──────── 材料 ────────
 export const listMaterialsRequest = (nodeId: string) =>
-  createRequest<ServiceNodeMaterial[]>('GET', path`${SC_PREFIX}/nodes/${nodeId}/materials`)
+  createRequest<ServiceNodeMaterial[]>('GET', sc`/nodes/${nodeId}/materials`)
 
 export const createMaterialRequest = (nodeId: string, body: ServiceNodeMaterialCreate) =>
   createRequest<ServiceNodeMaterial>(
     'POST',
-    path`${SC_PREFIX}/nodes/${nodeId}/materials`,
+    sc`/nodes/${nodeId}/materials`,
     { data: body },
   )
 
@@ -284,21 +292,21 @@ export const updateMaterialRequest = (
 ) =>
   createRequest<ServiceNodeMaterial>(
     'PATCH',
-    path`${SC_PREFIX}/nodes/${nodeId}/materials/${materialId}`,
+    sc`/nodes/${nodeId}/materials/${materialId}`,
     { data: body },
   )
 
 export const deleteMaterialRequest = (nodeId: string, materialId: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/nodes/${nodeId}/materials/${materialId}`)
+  createRequest<void>('DELETE', sc`/nodes/${nodeId}/materials/${materialId}`)
 
 // ──────── 涉及系统 ────────
 export const listSystemsRequest = (serviceId: string) =>
-  createRequest<ServiceRelatedSystem[]>('GET', path`${SC_PREFIX}/services/${serviceId}/systems`)
+  createRequest<ServiceRelatedSystem[]>('GET', sc`/services/${serviceId}/systems`)
 
 export const createSystemRequest = (serviceId: string, body: ServiceRelatedSystemCreate) =>
   createRequest<ServiceRelatedSystem>(
     'POST',
-    path`${SC_PREFIX}/services/${serviceId}/systems`,
+    sc`/services/${serviceId}/systems`,
     { data: body },
   )
 
@@ -309,29 +317,29 @@ export const updateSystemRequest = (
 ) =>
   createRequest<ServiceRelatedSystem>(
     'PATCH',
-    path`${SC_PREFIX}/services/${serviceId}/systems/${systemId}`,
+    sc`/services/${serviceId}/systems/${systemId}`,
     { data: body },
   )
 
 export const deleteSystemRequest = (serviceId: string, systemId: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/services/${serviceId}/systems/${systemId}`)
+  createRequest<void>('DELETE', sc`/services/${serviceId}/systems/${systemId}`)
 
 // ──────── Agent 关联 ────────
 export const listAgentLinksRequest = (serviceId: string) =>
   createRequest<ServiceAgentLink[]>(
     'GET',
-    path`${SC_PREFIX}/services/${serviceId}/agent-links`,
+    sc`/services/${serviceId}/agent-links`,
   )
 
 export const createAgentLinkRequest = (serviceId: string, body: ServiceAgentLinkCreate) =>
   createRequest<ServiceAgentLink>(
     'POST',
-    path`${SC_PREFIX}/services/${serviceId}/agent-links`,
+    sc`/services/${serviceId}/agent-links`,
     { data: body },
   )
 
 export const deleteAgentLinkRequest = (serviceId: string, linkId: string) =>
-  createRequest<void>('DELETE', path`${SC_PREFIX}/services/${serviceId}/agent-links/${linkId}`)
+  createRequest<void>('DELETE', sc`/services/${serviceId}/agent-links/${linkId}`)
 
 // ──────── 导入导出 ────────
 export const exportWorkbookRequest = (params: {
