@@ -19,6 +19,8 @@ import {
   updateRolePermissionsRequest,
   updateUserRequest,
   updateUserRolesRequest,
+  createRequest,
+  path,
   type OrganizationListQuery,
   type PermissionListQuery,
   type RoleListQuery,
@@ -52,6 +54,17 @@ export type {
   UserRoleAssignment,
   UserUpdateBody,
 } from '@ff-ai-frontend/api'
+
+export interface DataGatewayToken {
+  access_token: string
+  token_type: 'bearer'
+  expires_in: number
+  expires_at: string
+  subject_id: string
+  tenant_id: string
+  issued_for_email?: string
+  issued_for_name?: string | null
+}
 
 export const rbacKeys = {
   all: ['rbac'] as const,
@@ -88,5 +101,13 @@ export const adminUsers_list = request(listUsersRequest)
 export const adminUsers_create = request(createUserRequest)
 export const adminUsers_update = request(updateUserRequest)
 export const adminUsers_delete = request(deleteUserRequest)
+export const adminUsers_issueDataGatewayToken: (
+  userId: string,
+) => Promise<DataGatewayToken> = request((userId: string) =>
+  createRequest<DataGatewayToken>(
+    'POST',
+    path`/api/v1/data-ingestion/gateway-token/users/${userId}`,
+  ),
+)
 
 export const adminAssignableTenants_list = request(listAssignableTenantsRequest)

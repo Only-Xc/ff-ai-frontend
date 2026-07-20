@@ -77,6 +77,7 @@ export default {
   'pages.dataAccess.columns.subject': 'الجهة المرتبطة',
   'pages.dataAccess.columns.allowedFields': 'الحقول المسموحة',
   'pages.dataAccess.columns.deniedFields': 'الحقول المرفوضة',
+  'pages.dataAccess.columns.gatewayUrl': 'رابط النشر',
   'pages.dataAccess.columns.user': 'المستخدم',
   'pages.dataAccess.columns.accessType': 'نوع الوصول',
   'pages.dataAccess.columns.accessTarget': 'هدف الوصول',
@@ -87,6 +88,9 @@ export default {
   'pages.dataAccess.columns.nullable': 'يقبل قيمة فارغة',
   'pages.dataAccess.units.fields': '{{count}} حقول',
   'pages.dataAccess.time.justNow': 'الآن',
+  'pages.dataAccess.policies.gatewayRuleTitle': 'قواعد استدعاء سياسة الحقول',
+  'pages.dataAccess.policies.gatewayRuleDescription':
+    'بعد نشر سياسة الحقول، يجب استدعاء رابط النشر بطريقة POST فقط. يجب أن تكون الترويسة Authorization: Bearer <رمز بوابة البيانات>، وأن يحتوي جسم JSON على requested_fields و parameters. لا يمكن استخدام رمز تسجيل الدخول العادي مباشرة مع بوابة البيانات.',
   'pages.dataAccess.messages.connectionSucceeded':
     'نجح اختبار الاتصال لـ {{name}}',
   'pages.dataAccess.messages.connectionSucceededWithLatency':
@@ -98,23 +102,27 @@ export default {
   'pages.dataAccess.messages.endpointCreated': 'تم إنشاء مسودة نقطة الوصول',
   'pages.dataAccess.messages.endpointPublished':
     'تم نشر {{name}} بالإصدار v{{version}}',
-  'pages.dataAccess.messages.endpointDeleted': 'تم حذف مسودة نقطة الوصول',
+  'pages.dataAccess.messages.endpointDeleted': 'تم حذف نقطة الوصول',
   'pages.dataAccess.messages.endpointDeprecated': 'تم إهمال {{name}}',
   'pages.dataAccess.messages.policyUpdated': 'تم تحديث سياسة الحقول',
   'pages.dataAccess.messages.policyCreated': 'تم إنشاء مسودة سياسة الحقول',
   'pages.dataAccess.messages.policyPublished': 'تم نشر {{name}}',
+  'pages.dataAccess.messages.policyDeleted': 'تم حذف سياسة الحقول',
   'pages.dataAccess.messages.listRefreshed': 'تم تحديث القائمة',
   'pages.dataAccess.confirm.deleteSource.title': 'حذف مصدر البيانات',
   'pages.dataAccess.confirm.deleteSource.content':
-    'هل تريد حذف «{{name}}»؟ لا يمكن حذف مصدر بيانات مرتبط بنقطة وصول.',
+    'هل تريد حذف «{{name}}»؟ سيؤدي هذا أيضًا إلى حذف نقاط الوصول وسياسات الحقول ولقطات السياسات المرتبطة به، ولا يمكن التراجع عن الإجراء.',
   'pages.dataAccess.confirm.publishEndpoint.title': 'نشر نقطة الوصول',
   'pages.dataAccess.confirm.publishEndpoint.newVersionTitle':
     'نشر الإصدار v{{version}} من نقطة الوصول',
   'pages.dataAccess.confirm.publishEndpoint.content':
     'سينشئ النشر لقطة ثابتة بالإصدار v{{version}}. هل تريد المتابعة؟',
-  'pages.dataAccess.confirm.deleteEndpoint.title': 'حذف مسودة نقطة الوصول',
+  'pages.dataAccess.confirm.deleteEndpoint.title': 'حذف نقطة الوصول',
   'pages.dataAccess.confirm.deleteEndpoint.content':
-    'هل تريد حذف «{{name}}»؟ لا يمكن التراجع عن هذا الإجراء.',
+    'هل تريد حذف «{{name}}»؟ سيؤدي هذا أيضًا إلى حذف سياسات الحقول ولقطات السياسات المرتبطة بهذه النقطة، ولا يمكن التراجع عن الإجراء.',
+  'pages.dataAccess.confirm.deletePolicy.title': 'حذف سياسة الحقول',
+  'pages.dataAccess.confirm.deletePolicy.content':
+    'هل تريد حذف «{{name}}»؟ سيحذف هذا سياسة الحقول ولقطاتها المنشورة فقط، ولن يحذف نقطة الوصول.',
   'pages.dataAccess.confirm.deprecateEndpoint.title':
     'إهمال نقطة الوصول المنشورة',
   'pages.dataAccess.confirm.deprecateEndpoint.content':
@@ -217,6 +225,13 @@ export default {
     'الصق رمزًا أو مفتاح API أو كلمة مرور قاعدة البيانات',
   'pages.dataAccess.metadata.title': '{{name}} · البيانات الوصفية',
   'pages.dataAccess.metadata.error': 'فشل اكتشاف البيانات الوصفية',
+  'pages.dataAccess.metadata.connection': 'الاتصال',
+  'pages.dataAccess.metadata.summary': 'نتيجة الاكتشاف',
+  'pages.dataAccess.metadata.resourceCount': '{{count}} مورد',
+  'pages.dataAccess.metadata.fieldCount': '{{count}} حقل',
+  'pages.dataAccess.metadata.searchPlaceholder':
+    'ابحث بالجدول أو نوع المورد أو الحقل أو نوع البيانات',
+  'pages.dataAccess.metadata.filteredCount': 'يعرض {{count}} / {{total}} صفًا',
   'pages.dataAccess.endpointForm.editTitle': 'تعديل نقطة الوصول',
   'pages.dataAccess.endpointForm.createTitle': 'نقطة وصول جديدة',
   'pages.dataAccess.endpointForm.name': 'اسم نقطة الوصول',
@@ -265,7 +280,8 @@ export default {
   'pages.dataAccess.policyForm.namePlaceholder': 'مثال: حقول دعم للقراءة فقط',
   'pages.dataAccess.policyForm.endpoint': 'نقطة الوصول',
   'pages.dataAccess.policyForm.subject': 'الجهة المرتبطة',
-  'pages.dataAccess.policyForm.subjectPlaceholder': 'الدور: customer_service',
+  'pages.dataAccess.policyForm.subjectPlaceholder':
+    'ابحث بالاسم أو البريد أو UUID المستخدم',
   'pages.dataAccess.policyForm.allowedFields': 'حقول الاستجابة المسموحة',
   'pages.dataAccess.policyForm.fieldsPlaceholder':
     'أدخل اسم الحقل ثم اضغط Enter',
@@ -984,6 +1000,7 @@ export default {
   'pages.rbac.actions.assignUsers': 'تفويض المستخدمين',
   'pages.rbac.actions.assignRoles': 'تفويض الأدوار',
   'pages.rbac.actions.newUser': 'مستخدم جديد',
+  'pages.rbac.actions.gatewayToken': 'رمز البوابة',
   'pages.rbac.actions.remove': 'إزالة',
   'pages.rbac.actions.deleteConfirmTitle': 'حذف الدور؟',
   'pages.rbac.actions.deleteConfirmDescription':
@@ -1157,6 +1174,14 @@ export default {
   'pages.rbac.messages.userCreated': 'تم إنشاء المستخدم',
   'pages.rbac.messages.userUpdated': 'تم تحديث المستخدم',
   'pages.rbac.messages.userDeleted': 'تم حذف المستخدم',
+  'pages.rbac.messages.gatewayTokenIssued': 'تم إنشاء رمز بوابة البيانات',
+  'pages.rbac.gatewayToken.title': 'رمز بوابة البيانات',
+  'pages.rbac.gatewayToken.description':
+    'تم إنشاء رمز قصير الأجل لبوابة البيانات لـ {{name}}. هذا الرمز مخصص لاستدعاءات بوابة البيانات فقط وليس رمز تسجيل دخول للمنصة.',
+  'pages.rbac.gatewayToken.subject': 'معرّف الجهة: {{value}}',
+  'pages.rbac.gatewayToken.expiresAt': 'ينتهي في: {{value}}',
+  'pages.rbac.gatewayToken.usageHint':
+    'عند استدعاء نقطة منشورة، ضعه في ترويسة الطلب: Authorization: Bearer <رمز بوابة البيانات>.',
   'routes.rbac.organizations.title': 'إدارة المنظمات',
   'pages.rbac.orgs.title': 'المنظمات',
   'pages.rbac.orgs.subtitle': 'إدارة هيكل المنظمات والأقسام والفرق.',

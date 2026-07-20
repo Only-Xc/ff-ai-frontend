@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   adminFieldPolicies_create,
+  adminFieldPolicies_delete,
   adminFieldPolicies_publish,
   adminFieldPolicies_simulate,
   adminFieldPolicies_update,
@@ -58,6 +59,10 @@ export function useFieldPolicies() {
       adminFieldPolicies_publish(policyId, data),
     onSuccess: invalidateLists,
   })
+  const deleteMutation = useMutation({
+    mutationFn: adminFieldPolicies_delete,
+    onSuccess: invalidateLists,
+  })
   const simulateMutation = useMutation({
     mutationFn: (data: FieldPolicySimulateBody) =>
       adminFieldPolicies_simulate(data),
@@ -84,6 +89,10 @@ export function useFieldPolicies() {
       ? publishMutation.variables?.policyId
       : undefined,
     publishPolicyAsync: publishMutation.mutateAsync,
+    deletePolicy: deleteMutation.mutateAsync,
+    deletingPolicyId: deleteMutation.isPending
+      ? deleteMutation.variables
+      : undefined,
     simulatePolicy: simulateMutation.mutateAsync,
     simulating: simulateMutation.isPending,
   }
