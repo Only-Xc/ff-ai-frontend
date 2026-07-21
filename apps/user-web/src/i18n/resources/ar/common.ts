@@ -18,4 +18,11 @@ export default {
   'common.empty.chartData': 'لا توجد بيانات للمخطط',
   'common.dateTime.longFormat': 'D MMM YYYY HH:mm',
   'common.user.logout': 'تسجيل الخروج',
+  // Workflow 通用操作
+  'common.save': 'حفظ',
+  'common.confirm': 'تأكيد',
+  'common.cancel': 'إلغاء',
+  'common.edit': 'تعديل',
+  'common.duplicate': 'نسخ',
+  'common.delete': 'حذف',
 }

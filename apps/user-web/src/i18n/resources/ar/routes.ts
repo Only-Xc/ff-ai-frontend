@@ -29,4 +29,7 @@ export default {
   'routes.workspaceOverview.title': 'مساحة العمل',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+  'routes.workflow.title': 'تطبيقات سير العمل',
+  'routes.workflow.canvas': 'محرر اللوحة',
+  'routes.workflow.chat': 'محادثة سير العمل',
 }

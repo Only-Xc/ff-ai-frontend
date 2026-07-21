@@ -29,4 +29,7 @@ export default {
   'routes.workspaceOverview.title': 'Workspace',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+  'routes.workflow.title': 'Workflow Apps',
+  'routes.workflow.canvas': 'Canvas Editor',
+  'routes.workflow.chat': 'Workflow Chat',
 }

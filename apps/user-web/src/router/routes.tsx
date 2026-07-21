@@ -1,4 +1,5 @@
 import {
+  ApartmentOutlined,
   DatabaseOutlined,
   DesktopOutlined,
   FileTextOutlined,
@@ -274,6 +275,55 @@ export const appRoutes: AppRouteObject[] = [
           navKey: 'knowledge',
           navOrder: 1,
           hideInBreadcrumb: true,
+        },
+      },
+    ],
+  },
+  {
+    handle: {
+      title: 'Workflow',
+      titleKey: 'pages.menu.workflow',
+      menuType: 'catalog',
+      menuMode: 'group',
+      navKey: 'workflow',
+      navOrder: 4,
+      hideInBreadcrumb: true,
+    },
+    children: [
+      {
+        path: '/workflow',
+        element: lazyLoad(() => import('@/pages/workflow/WorkflowList')),
+        handle: {
+          title: 'Workflow Apps',
+          titleKey: 'routes.workflow.title',
+          icon: <ApartmentOutlined />,
+          menuType: 'menu',
+          navKey: 'workflow-list',
+          navOrder: 1,
+          hideInBreadcrumb: true,
+          permission: 'admin.workflow_apps.read',
+        },
+      },
+      {
+        path: '/workflow/:appId',
+        element: lazyLoad(() => import('@/pages/workflow/CanvasEditor')),
+        handle: {
+          title: 'Canvas Editor',
+          titleKey: 'routes.workflow.canvas',
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+          permission: 'admin.workflow_apps.update',
+        },
+      },
+      {
+        path: '/platform-apps/workflows/:appId/chat',
+        element: lazyLoad(() => import('@/pages/workflow/WorkflowChat')),
+        handle: {
+          title: 'Workflow Chat',
+          titleKey: 'routes.workflow.chat',
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+          permission: 'user.workflow_apps.use',
         },
       },
     ],

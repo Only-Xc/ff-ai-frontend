@@ -17,4 +17,11 @@ export default {
   'common.empty.chartData': 'No chart data',
   'common.dateTime.longFormat': 'MMM D, YYYY HH:mm',
   'common.user.logout': 'Sign out',
+  // Workflow common actions
+  'common.save': 'Save',
+  'common.confirm': 'Confirm',
+  'common.cancel': 'Cancel',
+  'common.edit': 'Edit',
+  'common.duplicate': 'Duplicate',
+  'common.delete': 'Delete',
 }

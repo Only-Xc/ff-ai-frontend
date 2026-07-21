@@ -17,4 +17,11 @@ export default {
   'common.empty.chartData': '暂无图表数据',
   'common.dateTime.longFormat': 'YYYY年M月D日 HH:mm',
   'common.user.logout': '退出登录',
+  // Workflow 通用操作
+  'common.save': '保存',
+  'common.confirm': '确定',
+  'common.cancel': '取消',
+  'common.edit': '编辑',
+  'common.duplicate': '复制',
+  'common.delete': '删除',
 }

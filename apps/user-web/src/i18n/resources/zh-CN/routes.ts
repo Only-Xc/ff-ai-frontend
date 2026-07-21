@@ -29,4 +29,7 @@ export default {
   'routes.workspaceOverview.title': '工作空间',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+  'routes.workflow.title': '工作流应用',
+  'routes.workflow.canvas': '画布编辑器',
+  'routes.workflow.chat': '工作流对话',
 }
