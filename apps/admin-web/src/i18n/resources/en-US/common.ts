@@ -11,6 +11,7 @@ export default {
   'common.actions.delete': 'Delete',
   'common.actions.edit': 'Edit',
   'common.actions.detail': 'Details',
+  'common.actions.back': 'Back',
   'common.labels.totalCount': 'Total {{total}}',
   'common.user.logout': 'Sign out',
   'common.errors.noPermission': 'Access denied',

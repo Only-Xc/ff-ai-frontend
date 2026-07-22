@@ -9,6 +9,9 @@ export default {
   'routes.tickets.title': 'التذاكر العامة',
   'routes.opsMetrics.title': 'مقاييس التشغيل',
   'routes.lifecycleOps.title': 'تشغيل دورة الحياة',
+  'routes.workflowPublications.title': 'نشر مكونات Workflow',
+  'routes.pluginCenter.title': 'مركز المكونات الإضافية',
+  'routes.pluginDetail.title': 'تفاصيل المكون الإضافي',
   'routes.dataAccess.title': 'الوصول إلى البيانات',
   'routes.examCenter.title': 'مركز الاختبارات',
   'routes.exams.title': 'إدارة الاختبارات',
@@ -26,7 +29,8 @@ export default {
   'routes.rbac.organizations.title': 'إدارة المنظمات',
   'routes.groups.governance': 'الحوكمة والامتثال',
   'routes.grc.dashboard.title': 'لوحة حوكمة GRC',
-  'routes.grc.dashboard.subtitle': 'نظرة عامة على المخاطر واتجاهات الامتثال ومراقبة الموافقات',
+  'routes.grc.dashboard.subtitle':
+    'نظرة عامة على المخاطر واتجاهات الامتثال ومراقبة الموافقات',
   'routes.grc.risks.title': 'ملفات المخاطر',
   'routes.grc.risks.subtitle': 'مستويات مخاطر الوكيل وحالة الامتثال',
   'routes.grc.rules.title': 'مكتبة القواعد',
@@ -40,7 +44,8 @@ export default {
   'routes.grc.exceptions.title': 'الاستثناءات',
   'routes.grc.exceptions.subtitle': 'طلب والموافقة ومراقبة استثناءات الامتثال',
   'routes.grc.reports.title': 'تقارير الحوكمة',
-  'routes.grc.reports.subtitle': 'توزيع المخاطر واتجاهات الامتثال ومؤشرات الموافقة',
+  'routes.grc.reports.subtitle':
+    'توزيع المخاطر واتجاهات الامتثال ومؤشرات الموافقة',
   'routes.stageSwitch.requests.title': 'تبديل المرحلة',
   'routes.stageSwitch.requests.subtitle':
     'سير الموافقة متعدد الأطراف وحالة التنفيذ للترقية والتخفيض',

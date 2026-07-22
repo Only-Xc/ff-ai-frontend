@@ -110,6 +110,53 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/plugins',
+    element: lazyLoad(() => import('@/pages/plugins/PluginCenter')),
+    handle: {
+      title: 'Plugin Center',
+      titleKey: 'routes.pluginCenter.title',
+      icon: <AppstoreOutlined />,
+      navKey: 'plugin-center',
+      navOrder: 5.4,
+      hideInBreadcrumb: true,
+      permission: 'admin.plugins.read',
+    },
+  },
+  {
+    path: '/plugins/operations',
+    element: lazyLoad(() => import('@/pages/plugins/PluginOperations')),
+    handle: {
+      title: 'Plugin Operations',
+      navKey: 'plugin-center',
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permission: 'admin.plugins.read',
+    },
+  },
+  {
+    path: '/plugins/:pluginId',
+    element: lazyLoad(() => import('@/pages/plugins/PluginDetail')),
+    handle: {
+      title: 'Plugin Detail',
+      titleKey: 'routes.pluginDetail.title',
+      navKey: 'plugin-center',
+      hideInMenu: true,
+      permission: 'admin.plugins.read',
+    },
+  },
+  {
+    path: '/plugins/workflow-publications',
+    element: lazyLoad(() => import('@/pages/plugins/WorkflowPublications')),
+    handle: {
+      title: 'Workflow Plugin Publications',
+      titleKey: 'routes.workflowPublications.title',
+      navKey: 'plugin-center',
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permission: 'admin.plugins.read',
+    },
+  },
+  {
     path: '/data-access',
     element: lazyLoad(() => import('@/pages/data-access/DataAccessConsole')),
     handle: {

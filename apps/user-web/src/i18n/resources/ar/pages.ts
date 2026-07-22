@@ -1,4 +1,31 @@
 export default {
+  'pages.pluginCarrier.sessionFailed': 'تعذر الاتصال بتطبيق المكون الإضافي',
+  'pages.pluginCarrier.sessionFailedHint': 'قد يكون التطبيق متوقفًا أو غير سليم أو غير متاح لصلاحياتك.',
+  'pages.pluginCarrier.back': 'العودة إلى تطبيقات المنصة',
+  'pages.pluginCarrier.connected': 'متصل عبر بوابة منصة المكونات الإضافية',
+  'pages.pluginCarrier.timeout': 'انتهت مهلة تحميل صفحة المكون الإضافي. تحقق من الخدمة ثم أعد المحاولة.',
+  'pages.pluginCarrier.frameTitle': 'تطبيق المكون الإضافي {{pluginId}}',
+  'pages.platformApps.title': 'تطبيقات المنصة',
+  'pages.platformApps.subtitle':
+    'تصفح تطبيقات المكونات وأضفها إلى الشريط الجانبي.',
+  'pages.platformApps.search': 'البحث باسم التطبيق أو معرف المكون',
+  'pages.platformApps.openCatalog': 'إضافة تطبيق',
+  'pages.platformApps.open': 'فتح',
+  'pages.platformApps.add': 'إضافة إلى الشريط',
+  'pages.platformApps.remove': 'إزالة من الشريط',
+  'pages.platformApps.added': 'تمت الإضافة',
+  'pages.platformApps.removed': 'تمت الإزالة',
+  'pages.platformApps.empty': 'لا توجد تطبيقات متاحة',
+  'pages.platformApps.noDescription': 'لا يوجد وصف',
+  'pages.platformApps.loadFailed': 'فشل تحميل التطبيقات',
+  'pages.workflowChat.subtitle': 'تطبيق محادثة Workflow',
+  'pages.workflowChat.simulation': 'محاكاة',
+  'pages.workflowChat.connected': 'متصل',
+  'pages.workflowChat.simulatedReply': 'تم إنشاؤه بواسطة محاكي Workflow',
+  'pages.workflowChat.placeholder': 'اكتب رسالة',
+  'pages.workflowChat.send': 'إرسال',
+  'pages.workflowChat.loadFailed': 'فشل تحميل Workflow',
+  'pages.workflowChat.sendFailed': 'فشل إرسال الرسالة',
   'pages.shell.usageSubtitle':
     'راجع استهلاك الموارد وحدود الخطة والفواتير والرصيد.',
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',
@@ -66,8 +93,7 @@ export default {
   'pages.chat.connectionFailed.title': 'فشل الاتصال بخدمة Agent',
   'pages.chat.connectionFailed.subtitle': 'تواصل مع المسؤول.',
   'pages.chat.welcome.title': 'مساحة عمل Agent',
-  'pages.chat.welcome.description':
-    'أدخل طلبا وسأرد بناء على السياق الحالي.',
+  'pages.chat.welcome.description': 'أدخل طلبا وسأرد بناء على السياق الحالي.',
   'pages.chat.taskConfirmation.title': 'تذكرة بانتظار التأكيد',
   'pages.chat.taskConfirmation.confirm': 'تأكيد الإنشاء',
   'pages.chat.sender.attachments': 'المرفقات',
@@ -83,10 +109,8 @@ export default {
   'pages.chat.sender.shortcut': '⌘/Ctrl + Enter للإرسال',
   'pages.chat.sender.placeholder': 'اسأل أو اكتب...',
   'pages.chat.sender.errors.invalidFile': 'اختر ملفا صالحا',
-  'pages.chat.sender.errors.allowedFiles':
-    'يمكن رفع ملفات {{extensions}} فقط',
-  'pages.chat.sender.errors.fileTooLarge':
-    'يجب ألا يتجاوز حجم كل مرفق {{size}}',
+  'pages.chat.sender.errors.allowedFiles': 'يمكن رفع ملفات {{extensions}} فقط',
+  'pages.chat.sender.errors.fileTooLarge': 'يجب ألا يتجاوز حجم كل مرفق {{size}}',
   'pages.chat.sender.errors.uploadFailed': 'فشل رفع المرفق',
   'pages.chat.sender.errors.uploading':
     'لا تزال المرفقات قيد الرفع. أرسل بعد اكتمالها.',
@@ -248,8 +272,7 @@ export default {
     'يمكن استخدام children فقط مع مكونات الحاوية',
   'pages.schema.errors.unsafeProp': 'لا يسمح باستخدام {{key}} داخل props',
   'pages.schema.errors.gridColumns': 'يجب أن تكون columns رقما من 1 إلى 24',
-  'pages.schema.errors.gutter':
-    'يجب أن يكون gutter رقما أو مصفوفة من رقمين',
+  'pages.schema.errors.gutter': 'يجب أن يكون gutter رقما أو مصفوفة من رقمين',
   'pages.schema.errors.span': 'يجب أن تكون span مصفوفة أرقام',
   'pages.schema.errors.string': 'يجب أن يكون {{field}} نصا',
   'pages.schema.errors.headingLevel': 'يجب أن يكون level رقما من 1 إلى 5',
@@ -264,11 +287,9 @@ export default {
   'pages.schema.errors.objectArray': 'يجب أن يكون {{field}} مصفوفة كائنات',
   'pages.schema.errors.pagination':
     'يجب أن تكون pagination قيمة منطقية أو إعدادات ترقيم',
-  'pages.schema.errors.lineSeries':
-    'يجب أن تكون series مصفوفة إعدادات خطوط',
+  'pages.schema.errors.lineSeries': 'يجب أن تكون series مصفوفة إعدادات خطوط',
   'pages.schema.errors.positiveNumber': 'يجب أن يكون {{field}} رقما موجبا',
-  'pages.schema.errors.pieData':
-    'يجب أن تكون data مصفوفة من { name, value }',
+  'pages.schema.errors.pieData': 'يجب أن تكون data مصفوفة من { name, value }',
   'pages.schema.demo.title': 'لوحة عرض SchemaRenderer',
   'pages.schema.demo.description':
     'عرض Static PageSchema يغطي سجل المكونات الأول.',
@@ -333,7 +354,8 @@ export default {
   'pages.exam.errors.listLoadFailed': 'فشل تحميل قائمة الاختبارات',
   'pages.exam.errors.missingAttemptId': 'معرف المحاولة مفقود',
   'pages.exam.errors.missingPaperId': 'معرف الاختبار مفقود',
-  'pages.exam.errors.pluginUnavailable': 'إضافة الاختبارات غير متاحة. تأكد من تفعيل examapi وأن الخدمة سليمة.',
+  'pages.exam.errors.pluginUnavailable':
+    'إضافة الاختبارات غير متاحة. تأكد من تفعيل examapi وأن الخدمة سليمة.',
   'pages.exam.errors.resultLoadFailed': 'فشل تحميل النتيجة',
   'pages.exam.errors.saveFailed': 'فشل الحفظ',
   'pages.exam.errors.startFailed': 'فشل بدء الاختبار',
@@ -341,7 +363,8 @@ export default {
   'pages.exam.filters.paper': 'اختر الاختبار',
   'pages.exam.filters.status': 'الحالة',
   'pages.exam.history.title': 'سجل الإجابات',
-  'pages.exam.history.subtitle': 'تابع الاختبارات الجارية وراجع نتائج الاختبارات المسلمة.',
+  'pages.exam.history.subtitle':
+    'تابع الاختبارات الجارية وراجع نتائج الاختبارات المسلمة.',
   'pages.exam.list.title': 'الاختبارات الإلكترونية',
   'pages.exam.list.subtitle': 'اختر اختبارا منشورا وابدأ الإجابة.',
   'pages.exam.mode.fixed': 'ترتيب ثابت',
@@ -358,21 +381,26 @@ export default {
   'pages.exam.result.correctAnswer': 'الإجابة الصحيحة',
   'pages.exam.result.correctHelper': '{{count}} صحيحة',
   'pages.exam.result.correctRate': 'الدقة',
-  'pages.exam.result.detailSubtitle': '{{count}} أسئلة تعرض الدرجات والإجابات والشرح بترتيب المحاولة.',
+  'pages.exam.result.detailSubtitle':
+    '{{count}} أسئلة تعرض الدرجات والإجابات والشرح بترتيب المحاولة.',
   'pages.exam.result.detailTitle': 'مراجعة الأسئلة',
   'pages.exam.result.duration': 'المدة',
   'pages.exam.result.explanation': 'الشرح',
   'pages.exam.result.finalScore': 'الدرجة النهائية',
-  'pages.exam.result.insightFailed': 'هذه الدرجة أقل من درجة النجاح بـ {{distance}} نقطة. راجع الأسئلة الخاطئة والمعلّمة أولا.',
-  'pages.exam.result.insightPassed': 'تجاوزت درجة النجاح بـ {{distance}} نقطة. راجع التفاصيل وركز على الأسئلة التي فقدت فيها نقاطا.',
-  'pages.exam.result.insightPending': 'تم تسجيل إجاباتك والنتيجة النهائية قيد التحديد.',
+  'pages.exam.result.insightFailed':
+    'هذه الدرجة أقل من درجة النجاح بـ {{distance}} نقطة. راجع الأسئلة الخاطئة والمعلّمة أولا.',
+  'pages.exam.result.insightPassed':
+    'تجاوزت درجة النجاح بـ {{distance}} نقطة. راجع التفاصيل وركز على الأسئلة التي فقدت فيها نقاطا.',
+  'pages.exam.result.insightPending':
+    'تم تسجيل إجاباتك والنتيجة النهائية قيد التحديد.',
   'pages.exam.result.judgement': 'الحكم',
   'pages.exam.result.legend.correctOption': 'الخيار الصحيح',
   'pages.exam.result.legend.userSelection': 'اختيارك',
   'pages.exam.result.legend.wrongSelection': 'اختيار خاطئ',
   'pages.exam.result.misselected': 'اختيار خاطئ',
   'pages.exam.result.noExplanation': 'لا يوجد شرح.',
-  'pages.exam.result.noWrongQuestions': 'لا توجد أسئلة خاطئة في هذه المحاولة. تابع مراجعة الشروحات لترسيخ المعرفة.',
+  'pages.exam.result.noWrongQuestions':
+    'لا توجد أسئلة خاطئة في هذه المحاولة. تابع مراجعة الشروحات لترسيخ المعرفة.',
   'pages.exam.result.passingLine': 'درجة النجاح {{score}} نقطة',
   'pages.exam.result.passingLineNeedsImprovement': 'أقل من درجة النجاح',
   'pages.exam.result.passingLineReached': 'وصل إلى درجة النجاح',
@@ -383,14 +411,16 @@ export default {
   'pages.exam.result.submittedAt': 'وقت التسليم',
   'pages.exam.result.timeUsed': 'الوقت المستخدم',
   'pages.exam.result.wrongNavigator': 'الأسئلة الخاطئة',
-  'pages.exam.result.wrongNavigatorSubtitle': '{{wrong}} / {{total}} تحتاج مراجعة',
+  'pages.exam.result.wrongNavigatorSubtitle':
+    '{{wrong}} / {{total}} تحتاج مراجعة',
   'pages.exam.result.wrongQuestions': 'خاطئة',
   'pages.exam.result.yourAnswer': 'إجابتك',
   'pages.exam.result.yourSelection': 'اختيارك',
   'pages.exam.room.answered': 'تمت الإجابة',
   'pages.exam.room.answeredCount': 'تمت الإجابة {{answered}} / {{total}}',
   'pages.exam.room.continueAnswering': 'متابعة الإجابة',
-  'pages.exam.room.exitContent': 'هذا الاختبار ما زال جاريا. سلّم قبل المغادرة. يتم حفظ التقدم تلقائيا ويمكنك المتابعة من سجل الإجابات.',
+  'pages.exam.room.exitContent':
+    'هذا الاختبار ما زال جاريا. سلّم قبل المغادرة. يتم حفظ التقدم تلقائيا ويمكنك المتابعة من سجل الإجابات.',
   'pages.exam.room.exitTitle': 'اختبار جار',
   'pages.exam.room.markReview': 'وضع علامة للمراجعة',
   'pages.exam.room.nextQuestion': 'التالي',
@@ -402,10 +432,12 @@ export default {
   'pages.exam.room.saved': 'تم الحفظ',
   'pages.exam.room.saving': 'جار الحفظ',
   'pages.exam.room.submit': 'تسليم',
-  'pages.exam.room.submitConfirmContent': 'ستنتقل إلى صفحة النتيجة بعد التسليم. هل تريد تسليم الإجابات الحالية؟',
+  'pages.exam.room.submitConfirmContent':
+    'ستنتقل إلى صفحة النتيجة بعد التسليم. هل تريد تسليم الإجابات الحالية؟',
   'pages.exam.room.submitConfirmTitle': 'تسليم الاختبار',
   'pages.exam.room.submitPaper': 'تسليم الاختبار',
-  'pages.exam.room.subtitle': 'يتم حفظ الإجابات تلقائيا. يتم التصحيح على الخادم بعد التسليم.',
+  'pages.exam.room.subtitle':
+    'يتم حفظ الإجابات تلقائيا. يتم التصحيح على الخادم بعد التسليم.',
   'pages.exam.room.titleFallback': 'جار الإجابة',
   'pages.exam.room.unanswered': 'لم تتم الإجابة',
   'pages.exam.room.unmarkReview': 'إلغاء العلامة',
@@ -438,8 +470,7 @@ export default {
   'pages.knowledge.confirm.deleteDocumentContent':
     'لن يشارك هذا المستند في الاسترجاع بعد الحذف. هل تريد الحذف؟',
   'pages.knowledge.confirm.deleteDocumentTitle': 'حذف المستند',
-  'pages.knowledge.confirm.deleteDocumentsContent':
-    'حذف {{count}} مستندات؟',
+  'pages.knowledge.confirm.deleteDocumentsContent': 'حذف {{count}} مستندات؟',
   'pages.knowledge.confirm.deleteDocumentsTitle': 'حذف المستندات',
   'pages.knowledge.documentFilters.all': 'الكل',
   'pages.knowledge.detail.basicInfo': 'المعلومات الأساسية',
@@ -462,12 +493,10 @@ export default {
   'pages.knowledge.empty.noValue': '-',
   'pages.knowledge.empty.selectDatasetDescription':
     'اختر مجموعة لإدارة المستندات وتشغيل الإدخال والتحقق من الاسترجاع.',
-  'pages.knowledge.errors.datasetDetailLoadFailed':
-    'فشل تحميل تفاصيل المجموعة',
+  'pages.knowledge.errors.datasetDetailLoadFailed': 'فشل تحميل تفاصيل المجموعة',
   'pages.knowledge.errors.datasetsLoadFailed': 'فشل تحميل مجموعات المعرفة',
   'pages.knowledge.errors.documentsLoadFailed': 'فشل تحميل المستندات',
-  'pages.knowledge.errors.searchFailed':
-    'فشل استرجاع المعرفة. حاول لاحقا.',
+  'pages.knowledge.errors.searchFailed': 'فشل استرجاع المعرفة. حاول لاحقا.',
   'pages.knowledge.feedback.copied': 'تم النسخ',
   'pages.knowledge.feedback.datasetCreated': 'تم إنشاء مجموعة المعرفة',
   'pages.knowledge.feedback.datasetUpdated': 'تم تحديث مجموعة المعرفة',
@@ -508,8 +537,7 @@ export default {
   'pages.knowledge.retrieval.bestScore': 'أعلى درجة',
   'pages.knowledge.retrieval.copyContent': 'نسخ النص المطابق',
   'pages.knowledge.retrieval.currentDataset': 'مجموعة المعرفة الحالية',
-  'pages.knowledge.retrieval.empty':
-    'أدخل استعلاما للتحقق من جودة الاسترجاع.',
+  'pages.knowledge.retrieval.empty': 'أدخل استعلاما للتحقق من جودة الاسترجاع.',
   'pages.knowledge.retrieval.hitCount': 'النتائج',
   'pages.knowledge.retrieval.query': 'الاستعلام',
   'pages.knowledge.retrieval.queryPlaceholder':
@@ -520,7 +548,8 @@ export default {
   'pages.knowledge.retrieval.scoreLow': 'منخفض',
   'pages.knowledge.retrieval.scoreMedium': 'متوسط',
   'pages.knowledge.retrieval.scoreUnknown': 'غير معروف',
-  'pages.knowledge.retrieval.searching': 'جار البحث في مجموعة المعرفة الحالية...',
+  'pages.knowledge.retrieval.searching':
+    'جار البحث في مجموعة المعرفة الحالية...',
   'pages.knowledge.retrieval.topK': 'Top K',
   'pages.knowledge.runtime.notConfiguredMessage':
     'RAGFlow غير مهيأ أو مفتاح API مفقود. قد لا تتوفر ميزات المعرفة.',
@@ -537,9 +566,7 @@ export default {
   'pages.knowledge.title': 'قاعدة المعرفة',
   'pages.knowledge.upload.dragHint':
     'يدعم رفع ملفات متعددة. شغّل التحليل بعد الرفع.',
-  'pages.knowledge.upload.dragTitle':
-    'انقر أو اسحب الملفات هنا للرفع',
+  'pages.knowledge.upload.dragTitle': 'انقر أو اسحب الملفات هنا للرفع',
   'pages.knowledge.validation.nameRequired': 'أدخل اسم مجموعة المعرفة',
   'pages.knowledge.validation.queryRequired': 'أدخل الاستعلام',
-
 }

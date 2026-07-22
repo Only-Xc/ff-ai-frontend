@@ -1,4 +1,133 @@
 export default {
+  'pages.pluginCenter.title': 'Plugin Center',
+  'pages.pluginCenter.subtitle': 'Manage plugin definitions, versions, tenant installations, runtime health, and scope grants.',
+  'pages.pluginCenter.search': 'Search by plugin name or ID',
+  'pages.pluginCenter.loadFailed': 'Failed to load plugins',
+  'pages.pluginCenter.detailLoadFailed': 'Failed to load plugin details',
+  'pages.pluginCenter.total': '{{total}} plugins',
+  'pages.pluginCenter.columns.plugin': 'Plugin',
+  'pages.pluginCenter.columns.source': 'Source',
+  'pages.pluginCenter.columns.status': 'Status',
+  'pages.pluginCenter.columns.versions': 'Versions',
+  'pages.pluginCenter.columns.installations': 'Installs',
+  'pages.pluginCenter.columns.health': 'Healthy / Risk',
+  'pages.pluginCenter.columns.updatedAt': 'Updated',
+  'pages.pluginCenter.columns.actions': 'Actions',
+  'pages.pluginCenter.actions.detail': 'View details',
+  'pages.pluginCenter.actions.install': 'Install plugin',
+  'pages.pluginCenter.actions.workflowPublications': 'Workflow publications',
+  'pages.pluginCenter.install.title': 'Install {{name}}',
+  'pages.pluginCenter.install.submit': 'Start installation',
+  'pages.pluginCenter.install.organization': 'Target organization',
+  'pages.pluginCenter.install.organizationRequired': 'Select an organization',
+  'pages.pluginCenter.install.version': 'Plugin version',
+  'pages.pluginCenter.install.runtimeName': 'Runtime app name (optional)',
+  'pages.pluginCenter.install.runtimeNameInvalid': 'Must start with plugin- and contain lowercase letters, digits, or hyphens',
+  'pages.pluginCenter.install.config': 'Configuration JSON',
+  'pages.pluginCenter.install.secrets': 'Secrets JSON',
+  'pages.pluginCenter.install.secretsHint': 'Secrets are write-only and are never returned by the API.',
+  'pages.pluginCenter.install.jsonInvalid': 'Enter a valid JSON object',
+  'pages.pluginCenter.install.organizationsFailed': 'Failed to load organizations',
+  'pages.pluginCenter.install.managedExternally': 'This plugin is managed by the platform and does not require a container install',
+  'pages.pluginCenter.messages.installQueued': 'Plugin installation queued',
+  'pages.pluginCenter.messages.operationQueued': 'Lifecycle operation queued',
+  'pages.pluginCenter.status.active': 'Active',
+  'pages.pluginCenter.status.enabled': 'Enabled',
+  'pages.pluginCenter.status.healthy': 'Healthy',
+  'pages.pluginCenter.status.installed': 'Installed',
+  'pages.pluginCenter.status.registered': 'Registered',
+  'pages.pluginCenter.status.pending': 'Pending',
+  'pages.pluginCenter.status.installing': 'Installing',
+  'pages.pluginCenter.status.starting': 'Starting',
+  'pages.pluginCenter.status.upgrading': 'Upgrading',
+  'pages.pluginCenter.status.disabled': 'Disabled',
+  'pages.pluginCenter.status.unhealthy': 'Unhealthy',
+  'pages.pluginCenter.status.failed': 'Failed',
+  'pages.pluginCenter.status.uninstalled': 'Uninstalled',
+  'pages.pluginCenter.tabs.overview': 'Overview',
+  'pages.pluginCenter.tabs.versions': 'Versions',
+  'pages.pluginCenter.tabs.installations': 'Installations',
+  'pages.pluginCenter.tabs.runtime': 'Runtime',
+  'pages.pluginCenter.tabs.permissions': 'Scope grants',
+  'pages.pluginCenter.overview.description': 'Description',
+  'pages.pluginCenter.overview.delivery': 'Delivery',
+  'pages.pluginCenter.overview.runtime': 'Runtime mode',
+  'pages.pluginCenter.overview.uninstallPolicy': 'Uninstall policy',
+  'pages.pluginCenter.overview.updatedAt': 'Updated',
+  'pages.pluginCenter.overview.manifest': 'Manifest',
+  'pages.pluginCenter.versions.image': 'Image / delivery reference',
+  'pages.pluginCenter.versions.verified': 'Verified',
+  'pages.pluginCenter.versions.createdAt': 'Created',
+  'pages.pluginCenter.installations.instance': 'Instance ID',
+  'pages.pluginCenter.installations.organization': 'Organization ID',
+  'pages.pluginCenter.installations.runtime': 'Runtime app',
+  'pages.pluginCenter.installations.updatedAt': 'Updated',
+  'pages.pluginCenter.runtime.loadFailed': 'Failed to load runtime resources',
+  'pages.pluginCenter.runtime.resources': 'Resources',
+  'pages.pluginCenter.runtime.services': 'Services',
+  'pages.pluginCenter.runtime.routes': 'Routes',
+  'pages.pluginCenter.runtime.empty': 'No installations',
+  'pages.pluginCenter.permissions.role': 'Role',
+  'pages.pluginCenter.permissions.organization': 'Grant scope',
+  'pages.pluginCenter.permissions.global': 'Global grant',
+  'pages.pluginCenter.permissions.save': 'Save grants',
+  'pages.pluginCenter.permissions.saved': 'Scope grants saved',
+  'pages.pluginCenter.permissions.selectRole': 'Select a role to configure plugin scopes',
+  'pages.pluginCenter.permissions.loadFailed': 'Failed to load permissions or roles',
+  'pages.pluginCenter.lifecycle.enable.action': 'Enable',
+  'pages.pluginCenter.lifecycle.enable.title': 'Enable plugin instance',
+  'pages.pluginCenter.lifecycle.enable.confirm': 'Enable {{instance}}?',
+  'pages.pluginCenter.lifecycle.disable.action': 'Disable',
+  'pages.pluginCenter.lifecycle.disable.title': 'Disable plugin instance',
+  'pages.pluginCenter.lifecycle.disable.confirm': 'Disable {{instance}}? Data will be retained.',
+  'pages.pluginCenter.lifecycle.restart.action': 'Restart',
+  'pages.pluginCenter.lifecycle.restart.title': 'Restart plugin instance',
+  'pages.pluginCenter.lifecycle.restart.confirm': 'Restart {{instance}}?',
+  'pages.pluginCenter.lifecycle.uninstall-soft.action': 'Soft uninstall',
+  'pages.pluginCenter.lifecycle.uninstall-soft.title': 'Soft uninstall plugin',
+  'pages.pluginCenter.lifecycle.uninstall-soft.confirm': 'Soft uninstall {{instance}}? Data and configuration will be retained.',
+  'pages.pluginCenter.lifecycle.upgrade.action': 'Upgrade',
+  'pages.pluginCenter.lifecycle.upgrade.title': 'Upgrade plugin instance',
+  'pages.pluginCenter.lifecycle.upgrade.select': 'Select target version',
+  'pages.pluginCenter.lifecycle.hard.action': 'Hard uninstall',
+  'pages.pluginCenter.lifecycle.hard.title': 'Permanently remove plugin instance',
+  'pages.pluginCenter.lifecycle.hard.warning': 'This permanently removes runtime resources and data and cannot be undone.',
+  'pages.pluginCenter.lifecycle.hard.inputHint': 'Enter instance ID {{instance}} to confirm.',
+  'pages.pluginCenter.lifecycle.hard.backup': 'I have completed and verified a data backup',
+  'pages.workflowPublications.title': 'Workflow Plugin Publications',
+  'pages.workflowPublications.subtitle':
+    'Manage Workflow-to-plugin mappings and publication lifecycle.',
+  'pages.workflowPublications.search': 'Search Workflow or version ID',
+  'pages.workflowPublications.allStatuses': 'All statuses',
+  'pages.workflowPublications.loadFailed': 'Failed to load publications',
+  'pages.workflowPublications.actionSucceeded': 'Action completed',
+  'pages.workflowPublications.rollbackSucceeded': 'Rollback completed',
+  'pages.workflowPublications.retry': 'Retry publication',
+  'pages.workflowPublications.enable': 'Enable',
+  'pages.workflowPublications.disable': 'Disable',
+  'pages.workflowPublications.archive': 'Archive',
+  'pages.workflowPublications.archiveConfirm':
+    'Archive and remove this app from the catalog?',
+  'pages.workflowPublications.rollback': 'Rollback',
+  'pages.workflowPublications.rollbackTitle': 'Rollback Workflow plugin',
+  'pages.workflowPublications.rollbackDescription':
+    'Select a previously published version of this Workflow.',
+  'pages.workflowPublications.rollbackTarget': 'Select target version',
+  'pages.workflowPublications.columns.workflow': 'Workflow',
+  'pages.workflowPublications.columns.version': 'Version',
+  'pages.workflowPublications.columns.status': 'Status',
+  'pages.workflowPublications.columns.step': 'Current step',
+  'pages.workflowPublications.columns.error': 'Last error',
+  'pages.workflowPublications.columns.publishedAt': 'Published at',
+  'pages.workflowPublications.columns.actions': 'Actions',
+  'pages.workflowPublications.status.pending': 'Pending',
+  'pages.workflowPublications.status.publishing': 'Publishing',
+  'pages.workflowPublications.status.published': 'Published',
+  'pages.workflowPublications.status.superseded': 'Superseded',
+  'pages.workflowPublications.status.failed': 'Failed',
+  'pages.workflowPublications.status.disabled': 'Disabled',
+  'pages.workflowPublications.status.rolled_back': 'Rolled back',
+  'pages.workflowPublications.status.archived': 'Archived',
   'pages.dataAccess.apisix.role':
     'Validates JWTs and routes approved requests into the field permission gateway.',
   'pages.dataAccess.status.connected': 'Connected',
@@ -235,7 +364,8 @@ export default {
   'pages.dataAccess.metadata.fieldCount': '{{count}} fields',
   'pages.dataAccess.metadata.searchPlaceholder':
     'Search table, resource type, field, or data type',
-  'pages.dataAccess.metadata.filteredCount': 'Showing {{count}} / {{total}} rows',
+  'pages.dataAccess.metadata.filteredCount':
+    'Showing {{count}} / {{total}} rows',
   'pages.dataAccess.endpointForm.editTitle': 'Edit access endpoint',
   'pages.dataAccess.endpointForm.createTitle': 'New access endpoint',
   'pages.dataAccess.endpointForm.name': 'Endpoint name',
@@ -612,7 +742,8 @@ export default {
     'Submit a demotion request. After approval, the resident container is destroyed and Pod resources are released; a sandbox is created on demand for the next call.',
   'pages.lifecycle.modals.demote.reason': 'Demotion reason',
   'pages.lifecycle.modals.demote.reasonRequired': 'Enter a demotion reason',
-  'pages.lifecycle.modals.promote.title': 'Request promotion to resident service',
+  'pages.lifecycle.modals.promote.title':
+    'Request promotion to resident service',
   'pages.lifecycle.modals.promote.ok': 'Submit for approval',
   'pages.lifecycle.modals.promote.metrics': 'Call profile',
   'pages.lifecycle.modals.promote.metricsValue':
@@ -741,41 +872,64 @@ export default {
   'pages.stageSwitch.templates.empty': 'No approval templates',
   'pages.stageSwitch.templates.validationPassed': 'Template validation passed',
   'pages.stageSwitch.templates.validationFailed': 'Template validation failed',
-  'pages.stageSwitch.templates.publishConfirm': 'Publish this template? It will become read-only after publishing.',
-  'pages.stageSwitch.templates.retireConfirm': 'Retire this template? It will no longer be used for new requests.',
+  'pages.stageSwitch.templates.publishConfirm':
+    'Publish this template? It will become read-only after publishing.',
+  'pages.stageSwitch.templates.retireConfirm':
+    'Retire this template? It will no longer be used for new requests.',
   'pages.stageSwitch.templates.publishSuccess': 'Template published',
   'pages.stageSwitch.templates.retireSuccess': 'Template retired',
   'pages.stageSwitch.templates.cloneSuccess': 'Cloned as a new draft version',
   'pages.stageSwitch.templateEditor.createTitle': 'Create approval template',
-  'pages.stageSwitch.templateEditor.createSubtitle': 'Configure approvers and reminder policies for the four fixed approval nodes',
-  'pages.stageSwitch.templateEditor.versionSubtitle': 'Template version v{{version}}',
+  'pages.stageSwitch.templateEditor.createSubtitle':
+    'Configure approvers and reminder policies for the four fixed approval nodes',
+  'pages.stageSwitch.templateEditor.versionSubtitle':
+    'Template version v{{version}}',
   'pages.stageSwitch.templateEditor.backToList': 'Back to templates',
-  'pages.stageSwitch.templateEditor.loadFailed': 'Failed to load template details',
+  'pages.stageSwitch.templateEditor.loadFailed':
+    'Failed to load template details',
   'pages.stageSwitch.templateEditor.notFound': 'Template not found',
-  'pages.stageSwitch.templateEditor.readOnlyPublished': 'Published and retired templates are read-only. Clone this template to create an editable draft.',
-  'pages.stageSwitch.templateEditor.readOnlyPermission': 'Your account has view-only access to this template.',
+  'pages.stageSwitch.templateEditor.readOnlyPublished':
+    'Published and retired templates are read-only. Clone this template to create an editable draft.',
+  'pages.stageSwitch.templateEditor.readOnlyPermission':
+    'Your account has view-only access to this template.',
   'pages.stageSwitch.templateEditor.templateKey': 'Template key',
-  'pages.stageSwitch.templateEditor.templateKeyHelp': 'Letters, numbers, underscores, and hyphens only. The key cannot be changed after creation.',
+  'pages.stageSwitch.templateEditor.templateKeyHelp':
+    'Letters, numbers, underscores, and hyphens only. The key cannot be changed after creation.',
   'pages.stageSwitch.templateEditor.name': 'Template name',
   'pages.stageSwitch.templateEditor.description': 'Description',
   'pages.stageSwitch.templateEditor.nodesTitle': 'Approval nodes',
-  'pages.stageSwitch.templateEditor.nodesHelp': 'The Ministry, Information Security, Governance, and Service Owner nodes are fixed in this order.',
+  'pages.stageSwitch.templateEditor.nodesHelp':
+    'The Ministry, Information Security, Governance, and Service Owner nodes are fixed in this order.',
   'pages.stageSwitch.templateEditor.noNodes': 'No node configuration',
   'pages.stageSwitch.templateEditor.saveSuccess': 'Template saved',
-  'pages.stageSwitch.templateEditor.saveBeforeAction': 'Save your changes before validating or publishing.',
-  'pages.stageSwitch.templateEditor.validation.templateKeyRequired': 'Enter a template key',
-  'pages.stageSwitch.templateEditor.validation.templateKeyFormat': 'The template key may contain only letters, numbers, underscores, and hyphens',
-  'pages.stageSwitch.templateEditor.validation.nameRequired': 'Enter a template name',
-  'pages.stageSwitch.templateEditor.validation.nodeNameRequired': 'Enter a node name',
-  'pages.stageSwitch.templateEditor.validation.slaPositive': 'SLA must be greater than 0 minutes',
-  'pages.stageSwitch.templateEditor.validation.beforeDueRange': 'The before-due reminder must be at least 0 and less than the SLA',
-  'pages.stageSwitch.templateEditor.validation.repeatMinimum': 'The repeat interval must be at least 30 minutes',
-  'pages.stageSwitch.templateEditor.validation.escalationNonNegative': 'The escalation threshold cannot be negative',
-  'pages.stageSwitch.templateEditor.validation.approverRequired': 'Enter at least one approver role or user UUID',
-  'pages.stageSwitch.templateEditor.validation.uuidFormat': 'Approver identifiers must be valid UUIDs',
-  'pages.stageSwitch.templateEditor.validation.profileFieldRequired': 'The Service Owner source is missing its profile field',
-  'pages.stageSwitch.templateEditor.validation.escalationUuidFormat': 'Escalation role identifiers must be valid UUIDs',
-  'pages.stageSwitch.templateEditor.validation.fixErrors': 'Fix the template validation errors before continuing',
+  'pages.stageSwitch.templateEditor.saveBeforeAction':
+    'Save your changes before validating or publishing.',
+  'pages.stageSwitch.templateEditor.validation.templateKeyRequired':
+    'Enter a template key',
+  'pages.stageSwitch.templateEditor.validation.templateKeyFormat':
+    'The template key may contain only letters, numbers, underscores, and hyphens',
+  'pages.stageSwitch.templateEditor.validation.nameRequired':
+    'Enter a template name',
+  'pages.stageSwitch.templateEditor.validation.nodeNameRequired':
+    'Enter a node name',
+  'pages.stageSwitch.templateEditor.validation.slaPositive':
+    'SLA must be greater than 0 minutes',
+  'pages.stageSwitch.templateEditor.validation.beforeDueRange':
+    'The before-due reminder must be at least 0 and less than the SLA',
+  'pages.stageSwitch.templateEditor.validation.repeatMinimum':
+    'The repeat interval must be at least 30 minutes',
+  'pages.stageSwitch.templateEditor.validation.escalationNonNegative':
+    'The escalation threshold cannot be negative',
+  'pages.stageSwitch.templateEditor.validation.approverRequired':
+    'Enter at least one approver role or user UUID',
+  'pages.stageSwitch.templateEditor.validation.uuidFormat':
+    'Approver identifiers must be valid UUIDs',
+  'pages.stageSwitch.templateEditor.validation.profileFieldRequired':
+    'The Service Owner source is missing its profile field',
+  'pages.stageSwitch.templateEditor.validation.escalationUuidFormat':
+    'Escalation role identifiers must be valid UUIDs',
+  'pages.stageSwitch.templateEditor.validation.fixErrors':
+    'Fix the template validation errors before continuing',
   'pages.stageSwitch.nodeEditor.nodes.MINISTRY': 'Ministry approval',
   'pages.stageSwitch.nodeEditor.nodes.INFOSEC': 'Information Security approval',
   'pages.stageSwitch.nodeEditor.nodes.GOVERNANCE': 'Governance approval',
@@ -791,29 +945,41 @@ export default {
   'pages.stageSwitch.nodeEditor.slaMinutes': 'SLA (minutes)',
   'pages.stageSwitch.nodeEditor.roleIds': 'Approver role UUIDs',
   'pages.stageSwitch.nodeEditor.userIds': 'Approver user UUIDs',
-  'pages.stageSwitch.nodeEditor.uuidTagsHelp': 'Required. Enter each full UUID and press Enter, Space, or comma.',
-  'pages.stageSwitch.nodeEditor.optionalUuidTagsHelp': 'Optional. Enter each full UUID and press Enter, Space, or comma.',
-  'pages.stageSwitch.nodeEditor.uuidTagsPlaceholder': 'Enter a UUID and press Enter',
-  'pages.stageSwitch.nodeEditor.serviceOwnerNotice': 'Approvers are resolved from the service_owner_id field of the service linked to the stage switch request.',
-  'pages.stageSwitch.nodeEditor.reminderPolicy': 'Reminder and escalation policy',
-  'pages.stageSwitch.nodeEditor.beforeDueMinutes': 'Before-due reminder (minutes)',
-  'pages.stageSwitch.nodeEditor.repeatIntervalMinutes': 'Repeat interval (minutes)',
-  'pages.stageSwitch.nodeEditor.escalationThresholdMinutes': 'Overdue escalation threshold (minutes)',
+  'pages.stageSwitch.nodeEditor.uuidTagsHelp':
+    'Required. Enter each full UUID and press Enter, Space, or comma.',
+  'pages.stageSwitch.nodeEditor.optionalUuidTagsHelp':
+    'Optional. Enter each full UUID and press Enter, Space, or comma.',
+  'pages.stageSwitch.nodeEditor.uuidTagsPlaceholder':
+    'Enter a UUID and press Enter',
+  'pages.stageSwitch.nodeEditor.serviceOwnerNotice':
+    'Approvers are resolved from the service_owner_id field of the service linked to the stage switch request.',
+  'pages.stageSwitch.nodeEditor.reminderPolicy':
+    'Reminder and escalation policy',
+  'pages.stageSwitch.nodeEditor.beforeDueMinutes':
+    'Before-due reminder (minutes)',
+  'pages.stageSwitch.nodeEditor.repeatIntervalMinutes':
+    'Repeat interval (minutes)',
+  'pages.stageSwitch.nodeEditor.escalationThresholdMinutes':
+    'Overdue escalation threshold (minutes)',
   'pages.stageSwitch.nodeEditor.escalationRoleIds': 'Escalation role UUIDs',
   'pages.stageSwitch.notifications.tabs.unread': 'Unread',
   'pages.stageSwitch.notifications.tabs.all': 'All',
   'pages.stageSwitch.notifications.markRead': 'Mark as read',
   'pages.stageSwitch.notifications.markAllRead': 'Mark all as read',
-  'pages.stageSwitch.notifications.readAllConfirm': 'Mark all unread notifications as read?',
-  'pages.stageSwitch.notifications.readAllSuccess': 'Marked {{count}} notifications as read',
+  'pages.stageSwitch.notifications.readAllConfirm':
+    'Mark all unread notifications as read?',
+  'pages.stageSwitch.notifications.readAllSuccess':
+    'Marked {{count}} notifications as read',
   'pages.stageSwitch.notifications.loadFailed': 'Failed to load notifications',
   'pages.stageSwitch.notifications.emptyUnread': 'No unread notifications',
   'pages.stageSwitch.notifications.emptyAll': 'No notifications',
   'pages.stageSwitch.notifications.unreadLabel': 'Unread',
   'notification.approval_reminder.title': 'Stage switch approval due soon',
-  'notification.approval_reminder.body': 'Approval node “{{node_name}}” is due soon. Due at: {{due_at}}.',
+  'notification.approval_reminder.body':
+    'Approval node “{{node_name}}” is due soon. Due at: {{due_at}}.',
   'notification.approval_escalated.title': 'Stage switch approval escalated',
-  'notification.approval_escalated.body': 'Approval node “{{node_name}}” is overdue and has been escalated. Original due time: {{due_at}}.',
+  'notification.approval_escalated.body':
+    'Approval node “{{node_name}}” is overdue and has been escalated. Original due time: {{due_at}}.',
   'pages.examManagement.actions.backToList': 'Back to list',
   'pages.examManagement.actions.createQuestion': 'Add question',
   'pages.examManagement.actions.editQuestion': 'Edit question',
@@ -824,9 +990,12 @@ export default {
   'pages.examManagement.actions.unpublish': 'Unpublish',
   'pages.examManagement.attemptLimit.unlimited': 'Unlimited',
   'pages.examManagement.attemptOverview.title': 'Attempt Overview',
-  'pages.examManagement.attemptOverview.subtitle': 'View all user attempts by paper and status.',
-  'pages.examManagement.attemptResult.answerLine': 'User answer: {{userAnswer}}; correct answer: {{correctAnswer}}; score: {{score}}',
-  'pages.examManagement.attemptResult.explanation': 'Explanation: {{explanation}}',
+  'pages.examManagement.attemptOverview.subtitle':
+    'View all user attempts by paper and status.',
+  'pages.examManagement.attemptResult.answerLine':
+    'User answer: {{userAnswer}}; correct answer: {{correctAnswer}}; score: {{score}}',
+  'pages.examManagement.attemptResult.explanation':
+    'Explanation: {{explanation}}',
   'pages.examManagement.attemptResult.title': 'Attempt Details',
   'pages.examManagement.columns.action': 'Action',
   'pages.examManagement.columns.accuracyRate': 'Accuracy',
@@ -853,57 +1022,83 @@ export default {
   'pages.examManagement.columns.user': 'User',
   'pages.examManagement.detail.currentPaper': 'Current paper',
   'pages.examManagement.detail.ruleSettings': 'Rules',
-  'pages.examManagement.detail.subtitle': 'Manage this paper’s questions, import JSON question sets, and review attempts for this paper.',
+  'pages.examManagement.detail.subtitle':
+    'Manage this paper’s questions, import JSON question sets, and review attempts for this paper.',
   'pages.examManagement.detail.timeInfo': 'Time information',
   'pages.examManagement.detail.titleFallback': 'Paper Detail',
   'pages.examManagement.difficulty.easy': 'Easy',
   'pages.examManagement.difficulty.hard': 'Hard',
   'pages.examManagement.difficulty.medium': 'Medium',
   'pages.examManagement.empty.description': 'No description',
-  'pages.examManagement.errors.attemptOverviewLoadFailed': 'Attempt overview failed to load',
+  'pages.examManagement.errors.attemptOverviewLoadFailed':
+    'Attempt overview failed to load',
   'pages.examManagement.errors.detailLoadFailed': 'Paper detail failed to load',
   'pages.examManagement.errors.listLoadFailed': 'Paper list failed to load',
   'pages.examManagement.errors.missingPaperId': 'Missing paper ID',
-  'pages.examManagement.errors.statsFallback': 'Stats API is unavailable. Showing local stats from the opened attempt detail.',
+  'pages.examManagement.errors.statsFallback':
+    'Stats API is unavailable. Showing local stats from the opened attempt detail.',
   'pages.examManagement.filters.paper': 'Select paper',
   'pages.examManagement.filters.paperTitle': 'Search paper title',
   'pages.examManagement.filters.status': 'Status',
   'pages.examManagement.form.allowedUserIds': 'Allowed user IDs',
-  'pages.examManagement.form.allowedUserIdsTooltip': 'Enter one user ID per line or separate IDs with commas. Leave empty to use the backend default scope.',
-  'pages.examManagement.form.descriptionPlaceholder': 'Describe exam scope, instructions, or target users',
+  'pages.examManagement.form.allowedUserIdsTooltip':
+    'Enter one user ID per line or separate IDs with commas. Leave empty to use the backend default scope.',
+  'pages.examManagement.form.descriptionPlaceholder':
+    'Describe exam scope, instructions, or target users',
   'pages.examManagement.form.examTitle': 'Paper title',
-  'pages.examManagement.form.examTitlePlaceholder': 'Example: Platform security basics quiz',
+  'pages.examManagement.form.examTitlePlaceholder':
+    'Example: Platform security basics quiz',
   'pages.examManagement.form.examTitleRequired': 'Enter the paper title',
   'pages.examManagement.form.knowledgeDataset': 'Knowledge base',
-  'pages.examManagement.form.knowledgeDatasetPlaceholder': 'Do not use a knowledge base',
-  'pages.examManagement.form.knowledgeDatasetTooltip': 'After selecting a knowledge base, the paper enters generating status and submits an AI question generation job.',
+  'pages.examManagement.form.knowledgeDatasetPlaceholder':
+    'Do not use a knowledge base',
+  'pages.examManagement.form.knowledgeDatasetTooltip':
+    'After selecting a knowledge base, the paper enters generating status and submits an AI question generation job.',
   'pages.examManagement.form.modeRequired': 'Select a mode',
   'pages.examManagement.form.passingScoreRequired': 'Enter the passing score',
   'pages.examManagement.form.randomCount': 'Random question count',
-  'pages.examManagement.form.randomCountRequired': 'Enter the random question count',
+  'pages.examManagement.form.randomCountRequired':
+    'Enter the random question count',
   'pages.examManagement.form.timeLimitMinutes': 'Time limit (minutes)',
-  'pages.examManagement.import.description': 'Paste AI-generated question JSON. The client validates type, options, correct answers, and score before importing.',
-  'pages.examManagement.import.errors.emptyQuestions': 'Import at least one question',
+  'pages.examManagement.import.description':
+    'Paste AI-generated question JSON. The client validates type, options, correct answers, and score before importing.',
+  'pages.examManagement.import.errors.emptyQuestions':
+    'Import at least one question',
   'pages.examManagement.import.errors.invalidJson': 'Invalid JSON format',
-  'pages.examManagement.import.errors.invalidQuestionType': 'Question type must be single, multiple, or true_false',
-  'pages.examManagement.import.errors.missingQuestions': 'The root object must contain a questions array',
-  'pages.examManagement.import.errors.multipleCorrectRequired': 'Multiple-choice questions need at least two correct answers',
-  'pages.examManagement.import.errors.optionCorrectBoolean': 'Option is_correct must be a boolean',
-  'pages.examManagement.import.errors.optionKeyDuplicate': 'Option key cannot be duplicated',
-  'pages.examManagement.import.errors.optionKeyRequired': 'Option key is required',
-  'pages.examManagement.import.errors.optionMustBeObject': 'Option must be an object',
-  'pages.examManagement.import.errors.optionTextRequired': 'Option text is required',
-  'pages.examManagement.import.errors.optionsRequired': 'options must be a non-empty array',
-  'pages.examManagement.import.errors.questionError': 'Question {{index}}: {{reason}}',
-  'pages.examManagement.import.errors.questionMustBeObject': 'Question must be an object',
-  'pages.examManagement.import.errors.scorePositive': 'score must be greater than 0',
-  'pages.examManagement.import.errors.singleCorrectRequired': 'Single-choice and true/false questions need exactly one correct answer',
-  'pages.examManagement.import.errors.textRequired': 'Question text is required',
+  'pages.examManagement.import.errors.invalidQuestionType':
+    'Question type must be single, multiple, or true_false',
+  'pages.examManagement.import.errors.missingQuestions':
+    'The root object must contain a questions array',
+  'pages.examManagement.import.errors.multipleCorrectRequired':
+    'Multiple-choice questions need at least two correct answers',
+  'pages.examManagement.import.errors.optionCorrectBoolean':
+    'Option is_correct must be a boolean',
+  'pages.examManagement.import.errors.optionKeyDuplicate':
+    'Option key cannot be duplicated',
+  'pages.examManagement.import.errors.optionKeyRequired':
+    'Option key is required',
+  'pages.examManagement.import.errors.optionMustBeObject':
+    'Option must be an object',
+  'pages.examManagement.import.errors.optionTextRequired':
+    'Option text is required',
+  'pages.examManagement.import.errors.optionsRequired':
+    'options must be a non-empty array',
+  'pages.examManagement.import.errors.questionError':
+    'Question {{index}}: {{reason}}',
+  'pages.examManagement.import.errors.questionMustBeObject':
+    'Question must be an object',
+  'pages.examManagement.import.errors.scorePositive':
+    'score must be greater than 0',
+  'pages.examManagement.import.errors.singleCorrectRequired':
+    'Single-choice and true/false questions need exactly one correct answer',
+  'pages.examManagement.import.errors.textRequired':
+    'Question text is required',
   'pages.examManagement.import.parsedCount': 'Parsed {{count}} questions',
   'pages.examManagement.import.sample.explanation': 'B is correct.',
   'pages.examManagement.import.sample.optionA': 'Option A',
   'pages.examManagement.import.sample.optionB': 'Option B',
-  'pages.examManagement.import.sample.questionText': 'Which statement is correct?',
+  'pages.examManagement.import.sample.questionText':
+    'Which statement is correct?',
   'pages.examManagement.import.submit': 'Import questions',
   'pages.examManagement.import.title': 'Import Questions from JSON',
   'pages.examManagement.generationStatus.completed': 'Completed',
@@ -912,10 +1107,12 @@ export default {
   'pages.examManagement.labels.defaultScope': 'Default scope',
   'pages.examManagement.labels.questionCount': '{{total}} questions',
   'pages.examManagement.labels.userCount': '{{total}} users',
-  'pages.examManagement.list.subtitle': 'Manage papers, publication status, and question configuration.',
+  'pages.examManagement.list.subtitle':
+    'Manage papers, publication status, and question configuration.',
   'pages.examManagement.list.title': 'Exam Management',
   'pages.examManagement.messages.examCreated': 'Paper created',
-  'pages.examManagement.messages.examCreatedAndGenerating': 'Paper created. Question generation started.',
+  'pages.examManagement.messages.examCreatedAndGenerating':
+    'Paper created. Question generation started.',
   'pages.examManagement.messages.examDeleted': 'Paper deleted',
   'pages.examManagement.messages.examPublished': 'Paper published',
   'pages.examManagement.messages.examUnpublished': 'Paper unpublished',
@@ -938,43 +1135,58 @@ export default {
   'pages.examManagement.questionType.multiple': 'Multiple choice',
   'pages.examManagement.questionType.single': 'Single choice',
   'pages.examManagement.questionType.true_false': 'True/false',
-  'pages.examManagement.exam.deleteDescription': 'Delete this paper and its questions?',
+  'pages.examManagement.exam.deleteDescription':
+    'Delete this paper and its questions?',
   'pages.examManagement.exam.deleteTitle': 'Delete paper',
   'pages.examManagement.questionForm.addOption': 'Add option',
   'pages.examManagement.questionForm.correct': 'Correct',
   'pages.examManagement.questionForm.correctAnswer': 'Correct answer',
-  'pages.examManagement.questionForm.correctAnswerWithColon': 'Correct answer: ',
+  'pages.examManagement.questionForm.correctAnswerWithColon':
+    'Correct answer: ',
   'pages.examManagement.questionForm.deleteOption': 'Delete option',
   'pages.examManagement.questionForm.difficultyRequired': 'Select difficulty',
-  'pages.examManagement.questionForm.errors.multipleCorrectRequired': 'Multiple-choice questions need at least two correct answers',
-  'pages.examManagement.questionForm.errors.optionKeyDuplicate': 'Option key cannot be duplicated',
-  'pages.examManagement.questionForm.errors.optionKeyRequired': 'Option key is required',
-  'pages.examManagement.questionForm.errors.optionRequired': 'Add at least one option',
-  'pages.examManagement.questionForm.errors.singleCorrectRequired': 'Single-choice and true/false questions need exactly one correct answer',
-  'pages.examManagement.questionForm.explanationPlaceholder': 'Enter explanation, knowledge point notes, or references.',
+  'pages.examManagement.questionForm.errors.multipleCorrectRequired':
+    'Multiple-choice questions need at least two correct answers',
+  'pages.examManagement.questionForm.errors.optionKeyDuplicate':
+    'Option key cannot be duplicated',
+  'pages.examManagement.questionForm.errors.optionKeyRequired':
+    'Option key is required',
+  'pages.examManagement.questionForm.errors.optionRequired':
+    'Add at least one option',
+  'pages.examManagement.questionForm.errors.singleCorrectRequired':
+    'Single-choice and true/false questions need exactly one correct answer',
+  'pages.examManagement.questionForm.explanationPlaceholder':
+    'Enter explanation, knowledge point notes, or references.',
   'pages.examManagement.questionForm.falseOption': 'False',
   'pages.examManagement.questionForm.optionText': 'Option text',
-  'pages.examManagement.questionForm.optionTextPlaceholder': 'Enter option text',
+  'pages.examManagement.questionForm.optionTextPlaceholder':
+    'Enter option text',
   'pages.examManagement.questionForm.optionTextRequired': 'Enter option text',
   'pages.examManagement.questionForm.scoreRequired': 'Enter points',
   'pages.examManagement.questionForm.sections.basic': 'Basic Settings',
   'pages.examManagement.questionForm.sections.explanation': 'Explanation',
   'pages.examManagement.questionForm.sections.options': 'Options and Answer',
   'pages.examManagement.questionForm.sections.questionText': 'Question',
-  'pages.examManagement.questionForm.textLength': 'Question length: {{count}} chars',
-  'pages.examManagement.questionForm.textPlaceholder': 'Enter the question content with clear context and answer requirements.',
+  'pages.examManagement.questionForm.textLength':
+    'Question length: {{count}} chars',
+  'pages.examManagement.questionForm.textPlaceholder':
+    'Enter the question content with clear context and answer requirements.',
   'pages.examManagement.questionForm.textRequired': 'Enter question text',
   'pages.examManagement.questionForm.trueOption': 'True',
   'pages.examManagement.questionForm.typeRequired': 'Select question type',
   'pages.examManagement.questions.deleteDescription': 'Delete this question?',
   'pages.examManagement.questions.deleteTitle': 'Delete question',
-  'pages.examManagement.sections.attempts.description': 'User progress and submitted results',
+  'pages.examManagement.sections.attempts.description':
+    'User progress and submitted results',
   'pages.examManagement.sections.attempts.title': 'Attempts',
-  'pages.examManagement.sections.info.description': 'Status, rules, timing, and description',
+  'pages.examManagement.sections.info.description':
+    'Status, rules, timing, and description',
   'pages.examManagement.sections.info.title': 'Paper Info',
-  'pages.examManagement.sections.questions.description': 'Questions owned by this paper',
+  'pages.examManagement.sections.questions.description':
+    'Questions owned by this paper',
   'pages.examManagement.sections.questions.title': 'Questions',
-  'pages.examManagement.sections.stats.description': 'Attempt count and accuracy by question',
+  'pages.examManagement.sections.stats.description':
+    'Attempt count and accuracy by question',
   'pages.examManagement.sections.stats.title': 'Accuracy Stats',
   'pages.examManagement.status.inProgress': 'In progress',
   'pages.examManagement.status.submitted': 'Submitted',
@@ -990,9 +1202,11 @@ export default {
   'pages.forbidden.noAccessSubtitle':
     'This account cannot access any admin console page. Please sign out and use another account, or ask an administrator to grant permissions.',
   'pages.rbac.title': 'Role & Permissions',
-  'pages.rbac.subtitle': 'Manage system roles, permission assignments, and user authorization.',
+  'pages.rbac.subtitle':
+    'Manage system roles, permission assignments, and user authorization.',
   'pages.rbac.notice.title': 'RBAC foundation connected',
-  'pages.rbac.notice.description': 'This page displays backend role permission data. Role editing, permission tree, and user assignment drawers will be completed in follow-up iterations.',
+  'pages.rbac.notice.description':
+    'This page displays backend role permission data. Role editing, permission tree, and user assignment drawers will be completed in follow-up iterations.',
   'pages.rbac.filters.keyword': 'Search role name or code',
   'pages.rbac.filters.scope': 'Scope',
   'pages.rbac.filters.allScopes': 'All scopes',
@@ -1015,7 +1229,8 @@ export default {
   'pages.rbac.actions.remove': 'Remove',
   'pages.rbac.actions.deleteConfirmTitle': 'Delete role?',
   'pages.rbac.actions.deleteConfirmDescription': 'Delete role "{{name}}"?',
-  'pages.rbac.actions.deleteSystemRoleWarning': 'System roles cannot be deleted.',
+  'pages.rbac.actions.deleteSystemRoleWarning':
+    'System roles cannot be deleted.',
   'pages.rbac.columns.name': 'Role',
   'pages.rbac.columns.scope': 'Scope',
   'pages.rbac.columns.organization': 'Organization',
@@ -1029,6 +1244,17 @@ export default {
   'pages.rbac.status.active': 'Active',
   'pages.rbac.status.disabled': 'Disabled',
   'pages.rbac.status.system': 'Built-in',
+  'pages.rbac.roleNames.system_admin': 'System Admin',
+  'pages.rbac.roleNames.tenant_admin': 'Organization Admin',
+  'pages.rbac.roleNames.developer': 'Developer',
+  'pages.rbac.roleNames.operator': 'Operator',
+  'pages.rbac.roleNames.viewer': 'Viewer',
+  'pages.rbac.roleNames.exam_admin': 'Exam Admin',
+  'pages.rbac.roleNames.billing_admin': 'Billing Admin',
+  'pages.rbac.roleNames.grc_admin': 'GRC Admin',
+  'pages.rbac.roleNames.grc_reviewer': 'GRC Reviewer',
+  'pages.rbac.roleNames.grc_auditor': 'GRC Auditor',
+  'pages.rbac.roleNames.risk_owner': 'Risk Owner',
   'pages.rbac.drawers.createRole': 'Create Role',
   'pages.rbac.drawers.editRole': 'Edit Role',
   'pages.rbac.drawers.permissionConfig': 'Permission Configuration',
@@ -1046,7 +1272,8 @@ export default {
   'pages.rbac.form.namePlaceholder': 'e.g. Operations Admin',
   'pages.rbac.form.code': 'Role Code',
   'pages.rbac.form.codeRequired': 'Enter a role code',
-  'pages.rbac.form.codePattern': 'Lowercase letters, digits, underscore, dot, dash. Must start with a letter.',
+  'pages.rbac.form.codePattern':
+    'Lowercase letters, digits, underscore, dot, dash. Must start with a letter.',
   'pages.rbac.form.codeSystemNote': 'System role code cannot be modified',
   'pages.rbac.form.description': 'Description',
   'pages.rbac.form.descriptionPlaceholder': 'Briefly describe this role',
@@ -1091,7 +1318,8 @@ export default {
   'pages.rbac.permissions.admin.exams.manage': 'Manage exams',
   'pages.rbac.permissions.user.chat.use': 'Use chat',
   'pages.rbac.permissions.user.agent_tickets.read': 'View tickets and Agents',
-  'pages.rbac.permissions.user.agent_tickets.manage': 'Manage tickets and Agents',
+  'pages.rbac.permissions.user.agent_tickets.manage':
+    'Manage tickets and Agents',
   'pages.rbac.permissions.user.apps.read': 'View apps',
   'pages.rbac.permissions.user.apps.manage': 'Manage apps',
   'pages.rbac.permissions.user.billing.read': 'View billing',
@@ -1117,15 +1345,18 @@ export default {
   'pages.rbac.permissions.admin.grc.rules.create': 'Create compliance rule',
   'pages.rbac.permissions.admin.grc.rules.update': 'Update compliance rule',
   'pages.rbac.permissions.admin.grc.rules.publish': 'Publish compliance rule',
-  'pages.rbac.permissions.admin.grc.evaluations.read': 'View compliance evaluations',
-  'pages.rbac.permissions.admin.grc.evaluations.run': 'Run compliance evaluation',
+  'pages.rbac.permissions.admin.grc.evaluations.read':
+    'View compliance evaluations',
+  'pages.rbac.permissions.admin.grc.evaluations.run':
+    'Run compliance evaluation',
   'pages.rbac.permissions.admin.grc.reviews.read': 'View reviews',
   'pages.rbac.permissions.admin.grc.reviews.assign': 'Assign reviews',
   'pages.rbac.permissions.admin.grc.reviews.decide': 'Decide reviews',
   'pages.rbac.permissions.admin.grc.exceptions.read': 'View exceptions',
   'pages.rbac.permissions.admin.grc.exceptions.request': 'Request exception',
   'pages.rbac.permissions.admin.grc.exceptions.approve': 'Approve exception',
-  'pages.rbac.permissions.admin.grc.exceptions.approve_critical': 'Approve Critical exception',
+  'pages.rbac.permissions.admin.grc.exceptions.approve_critical':
+    'Approve Critical exception',
   'pages.rbac.permissions.admin.grc.exceptions.revoke': 'Revoke exception',
   'pages.rbac.permissions.admin.grc.treatments.read': 'View treatments',
   'pages.rbac.permissions.admin.grc.treatments.manage': 'Manage treatments',
@@ -1143,12 +1374,15 @@ export default {
   'pages.rbac.messages.orgUpdated': 'Organization updated',
   'pages.rbac.messages.orgDeleted': 'Organization deleted',
   'pages.rbac.errors.roleRequired': 'Please select a role for every row',
-  'pages.rbac.errors.roleDuplicate': 'Role "{{name}}" is assigned more than once',
+  'pages.rbac.errors.roleDuplicate':
+    'Role "{{name}}" is assigned more than once',
   'pages.rbac.errors.detailLoadFailed': 'Failed to load role details',
-  'pages.rbac.messages.permissionDrawerPending': 'Permission drawer for {{name}} is pending implementation',
+  'pages.rbac.messages.permissionDrawerPending':
+    'Permission drawer for {{name}} is pending implementation',
   'pages.rbac.pagination.total': '{{total}} total',
   'pages.rbac.userManagement.title': 'User Management',
-  'pages.rbac.userManagement.subtitle': 'Manage system users, create accounts, and assign roles.',
+  'pages.rbac.userManagement.subtitle':
+    'Manage system users, create accounts, and assign roles.',
   'pages.rbac.drawers.createUser': 'New User',
   'pages.rbac.drawers.editUser': 'Edit User',
   'pages.rbac.columns.userName': 'User',
@@ -1180,7 +1414,8 @@ export default {
     'When calling a published endpoint, place it in the request header: Authorization: Bearer <data gateway token>.',
   'routes.rbac.organizations.title': 'Organization Management',
   'pages.rbac.orgs.title': 'Organizations',
-  'pages.rbac.orgs.subtitle': 'Manage organization hierarchy, departments, and teams.',
+  'pages.rbac.orgs.subtitle':
+    'Manage organization hierarchy, departments, and teams.',
   'pages.rbac.orgs.columns.name': 'Name',
   'pages.rbac.orgs.columns.parent': 'Parent',
   'pages.rbac.orgs.columns.code': 'Code',
@@ -1195,8 +1430,10 @@ export default {
   'pages.rbac.orgs.form.nameRequired': 'Name is required',
   'pages.rbac.orgs.form.code': 'Code',
   'pages.rbac.orgs.form.codeRequired': 'Code is required',
-  'pages.rbac.orgs.form.nameDuplicate': 'Organization name "{{name}}" already exists',
-  'pages.rbac.orgs.form.codeDuplicate': 'Organization code "{{code}}" already exists',
+  'pages.rbac.orgs.form.nameDuplicate':
+    'Organization name "{{name}}" already exists',
+  'pages.rbac.orgs.form.codeDuplicate':
+    'Organization code "{{code}}" already exists',
   'pages.rbac.orgs.form.typeTenant': 'Tenant',
   'pages.rbac.orgs.form.typeDepartment': 'Department',
   'pages.rbac.orgs.form.typeTeam': 'Team',
@@ -1221,7 +1458,8 @@ export default {
   'pages.rbac.orgs.messages.createSuccess': 'Organization created',
   'pages.rbac.orgs.messages.updateSuccess': 'Organization updated',
   'pages.rbac.orgs.messages.deleteSuccess': 'Organization deleted',
-  'pages.rbac.orgs.messages.deleteConfirm': 'Delete this organization and all its children?',
+  'pages.rbac.orgs.messages.deleteConfirm':
+    'Delete this organization and all its children?',
   'pages.rbac.orgs.members.title': 'Members',
   'pages.rbac.orgs.members.user': 'User',
   'pages.rbac.orgs.members.email': 'Email',
@@ -1229,7 +1467,8 @@ export default {
   'pages.rbac.orgs.members.actions': 'Actions',
   'pages.rbac.orgs.members.setPrimary': 'Set as Primary',
   'pages.rbac.orgs.members.remove': 'Remove',
-  'pages.rbac.orgs.empty.noOrgs': 'No organizations yet. Create one to get started.',
+  'pages.rbac.orgs.empty.noOrgs':
+    'No organizations yet. Create one to get started.',
   'pages.grc.dashboard.totalAgents': 'Total Agents',
   'pages.grc.dashboard.passRate': 'Pass Rate',
   'pages.grc.dashboard.blockRate': 'Block Rate',
@@ -1266,14 +1505,17 @@ export default {
   'pages.grc.rules.retire': 'Retire',
   'pages.grc.rules.createVersion': 'Create Version',
   'pages.grc.rules.publishConfirm': 'Confirm publishing this rule version?',
-  'pages.grc.rules.retireConfirm': 'Confirm retiring this rule version? Retired versions are excluded from new evaluations.',
-  'pages.grc.rules.publishWarning': 'Published versions are immutable; create a new version to modify.',
+  'pages.grc.rules.retireConfirm':
+    'Confirm retiring this rule version? Retired versions are excluded from new evaluations.',
+  'pages.grc.rules.publishWarning':
+    'Published versions are immutable; create a new version to modify.',
   'pages.grc.rules.edit': 'Edit',
   'pages.grc.rules.enabled': 'Enabled',
   'pages.grc.rules.disabled': 'Disabled',
   'pages.grc.rules.createRule': 'Create Rule',
   'pages.grc.rules.ruleActive': 'Rule Enabled',
-  'pages.grc.rules.ruleActiveTip': 'Controls whether the whole rule participates in governance evaluation; independent from version status (draft/published/retired).',
+  'pages.grc.rules.ruleActiveTip':
+    'Controls whether the whole rule participates in governance evaluation; independent from version status (draft/published/retired).',
   'pages.grc.rules.firstVersionConfig': 'First Version Configuration',
   'pages.grc.rules.editRule': 'Edit Rule',
   'pages.grc.rules.ruleCode': 'Rule Code',
@@ -1305,67 +1547,98 @@ export default {
   'pages.grc.rules.evaluatorType_json_logic': 'JSON Logic',
   'pages.grc.rules.evaluatorType_manual': 'Manual Judgment',
   'pages.grc.rules.builtinEvaluator': 'Built-in Evaluator',
-  'pages.grc.rules.applicableScopeTip': 'JSON object passed as evaluator parameters, such as allowed_domains or approved_models.',
-  'pages.grc.rules.evidenceRequirementsTip': 'JSON object describing evidence to check or preserve during evaluation.',
-  'pages.grc.rules.invalidJson': 'Applicable scope or evidence requirements is not a valid JSON object',
+  'pages.grc.rules.applicableScopeTip':
+    'JSON object passed as evaluator parameters, such as allowed_domains or approved_models.',
+  'pages.grc.rules.evidenceRequirementsTip':
+    'JSON object describing evidence to check or preserve during evaluation.',
+  'pages.grc.rules.invalidJson':
+    'Applicable scope or evidence requirements is not a valid JSON object',
   'pages.grc.rules.versionCreateFailed': 'Failed to create version',
-  'pages.grc.rules.evaluator_plaintext_secrets_detected': 'Plaintext Secrets Detection',
-  'pages.grc.rules.evaluator_external_network_allowed': 'External Domain Allowlist',
-  'pages.grc.rules.evaluator_human_oversight_present': 'Human Oversight Controls',
-  'pages.grc.rules.evaluator_restricted_data_no_external_send': 'Restricted Data No External Send',
+  'pages.grc.rules.evaluator_plaintext_secrets_detected':
+    'Plaintext Secrets Detection',
+  'pages.grc.rules.evaluator_external_network_allowed':
+    'External Domain Allowlist',
+  'pages.grc.rules.evaluator_human_oversight_present':
+    'Human Oversight Controls',
+  'pages.grc.rules.evaluator_restricted_data_no_external_send':
+    'Restricted Data No External Send',
   'pages.grc.rules.evaluator_pii_has_mitigation': 'PII Mitigation',
   'pages.grc.rules.evaluator_model_in_approved_list': 'Approved Model List',
-  'pages.grc.rules.evaluator_deployment_artifact_complete': 'Deployment Artifact Completeness',
+  'pages.grc.rules.evaluator_deployment_artifact_complete':
+    'Deployment Artifact Completeness',
   'pages.grc.rules.evaluator_audit_logging_enabled': 'Audit Logging Enabled',
   'pages.grc.rules.evaluator_min_permissions': 'Minimum Permissions',
   'pages.grc.rules.evaluator_owner_sla_rollback': 'Owner / SLA / Rollback',
-  'pages.grc.rules.evaluatorGuideTitle': 'Built-in evaluator configuration guide',
+  'pages.grc.rules.evaluatorGuideTitle':
+    'Built-in evaluator configuration guide',
   'pages.grc.rules.evaluatorGuideRequiredFields': 'Required fields',
-  'pages.grc.rules.evaluatorGuideApplicableScopeExample': 'Applicable scope example',
-  'pages.grc.rules.evaluatorGuideEvidenceExample': 'Evidence requirements example',
+  'pages.grc.rules.evaluatorGuideApplicableScopeExample':
+    'Applicable scope example',
+  'pages.grc.rules.evaluatorGuideEvidenceExample':
+    'Evidence requirements example',
   'pages.grc.rules.applyEvaluatorExample': 'Apply example',
   'pages.grc.rules.validationPassed': 'Rule configuration validation passed',
   'pages.grc.rules.validationFailed': 'Rule configuration validation failed',
-  'pages.grc.rules.validationWarnings': 'Rule configuration validation warnings',
-  'pages.grc.rules.unsupportedEvaluatorType': 'This evaluator type is not supported for automatic evaluation yet. Use a built-in evaluator first.',
+  'pages.grc.rules.validationWarnings':
+    'Rule configuration validation warnings',
+  'pages.grc.rules.unsupportedEvaluatorType':
+    'This evaluator type is not supported for automatic evaluation yet. Use a built-in evaluator first.',
   'pages.grc.rules.noRequiredFields': 'None',
-  'pages.grc.rules.jsonLogicGuideTitle': 'Custom rule (JSON Logic) configuration guide',
-  'pages.grc.rules.jsonLogicGuideDescription': 'Describe the VIOLATION condition with a restricted JSON expression: a truthy result means the rule matched (fail); falsy means pass. Only whitelisted operators are allowed (and/or/!/==/in/if/var, etc.); arbitrary code cannot run.',
+  'pages.grc.rules.jsonLogicGuideTitle':
+    'Custom rule (JSON Logic) configuration guide',
+  'pages.grc.rules.jsonLogicGuideDescription':
+    'Describe the VIOLATION condition with a restricted JSON expression: a truthy result means the rule matched (fail); falsy means pass. Only whitelisted operators are allowed (and/or/!/==/in/if/var, etc.); arbitrary code cannot run.',
   'pages.grc.rules.jsonLogicExpressionExample': 'Expression example',
   'pages.grc.rules.applyJsonLogicExample': 'Apply example',
   'pages.grc.rules.jsonLogicExpression': 'Decision expression (JSON)',
-  'pages.grc.rules.jsonLogicExpressionTip': 'Declarative JSON Logic expression. Truthy = violation matched (fail).',
+  'pages.grc.rules.jsonLogicExpressionTip':
+    'Declarative JSON Logic expression. Truthy = violation matched (fail).',
   'pages.grc.rules.jsonLogicFailMessage': 'Message on match (fail_message)',
   'pages.grc.rules.jsonLogicPassMessage': 'Message on pass (pass_message)',
   'pages.grc.rules.testRule': 'Test rule',
   'pages.grc.rules.testInputSnapshot': 'Test input snapshot (JSON)',
-  'pages.grc.rules.testInputSnapshotTip': 'Simulated input_snapshot used to dry-run the current rule config instantly.',
+  'pages.grc.rules.testInputSnapshotTip':
+    'Simulated input_snapshot used to dry-run the current rule config instantly.',
   'pages.grc.rules.runTest': 'Run test',
   'pages.grc.rules.testResult': 'Test result',
   'pages.grc.rules.testMessage': 'Message',
   'pages.grc.rules.testEvidence': 'Evidence',
   'pages.grc.rules.testFailed': 'Test execution failed',
   'pages.grc.rules.manualGuideTitle': 'Manual review rule configuration guide',
-  'pages.grc.rules.manualGuideDescription': 'This rule does not decide pass/fail automatically. Every evaluation is marked as pending human review and creates a Review Case in the review queue.',
-  'pages.grc.rules.manualPendingDescription': 'Before a decision, the evaluation result is REVIEW_REQUIRED. Approval resolves it to pass; rejection resolves it to fail.',
+  'pages.grc.rules.manualGuideDescription':
+    'This rule does not decide pass/fail automatically. Every evaluation is marked as pending human review and creates a Review Case in the review queue.',
+  'pages.grc.rules.manualPendingDescription':
+    'Before a decision, the evaluation result is REVIEW_REQUIRED. Approval resolves it to pass; rejection resolves it to fail.',
   'pages.grc.rules.applyManualExample': 'Apply manual review example',
   'pages.grc.rules.manualReviewTemplate': 'Manual review template',
-  'pages.grc.rules.manualReviewTemplateTip': 'Checklist and instructions shown to the reviewer.',
+  'pages.grc.rules.manualReviewTemplateTip':
+    'Checklist and instructions shown to the reviewer.',
   'pages.grc.rules.templateSelector': 'Create Rule from Template',
-  'pages.grc.rules.selectTemplate': 'Pick a preset template to quickly create a compliance rule.',
+  'pages.grc.rules.selectTemplate':
+    'Pick a preset template to quickly create a compliance rule.',
   'pages.grc.rules.templateApplied': 'Use this template',
-    'pages.grc.rules.fromTemplate': 'Start from Template',
+  'pages.grc.rules.fromTemplate': 'Start from Template',
   'pages.grc.rules.resultReviewRequired': 'Human review required',
-  'pages.grc.rules.evaluatorDesc_plaintext_secrets_detected': 'Scans artifact contents for plaintext secret indicators such as api_key, token, password, secret, and private_key.',
-  'pages.grc.rules.evaluatorDesc_external_network_allowed': 'Checks whether all external network targets are in the allowed domain list.',
-  'pages.grc.rules.evaluatorDesc_human_oversight_present': 'Checks whether high-risk actions have human oversight controls such as stop control, approval step, or owner.',
-  'pages.grc.rules.evaluatorDesc_restricted_data_no_external_send': 'Checks whether restricted data is only sent to approved models.',
-  'pages.grc.rules.evaluatorDesc_pii_has_mitigation': 'Checks whether PII has a mitigation such as masking or redaction.',
-  'pages.grc.rules.evaluatorDesc_model_in_approved_list': 'Checks whether the model or provider/model is in the approved list.',
-  'pages.grc.rules.evaluatorDesc_deployment_artifact_complete': 'Checks whether deployment artifacts include image, health check, and resource limits.',
-  'pages.grc.rules.evaluatorDesc_audit_logging_enabled': 'Checks whether tool-call and decision audit logging are enabled.',
-  'pages.grc.rules.evaluatorDesc_min_permissions': 'Checks whether permissions include required permissions and exclude denied permissions.',
-  'pages.grc.rules.evaluatorDesc_owner_sla_rollback': 'Checks whether operations metadata includes owner, SLA, rollback, and alerting.',
+  'pages.grc.rules.evaluatorDesc_plaintext_secrets_detected':
+    'Scans artifact contents for plaintext secret indicators such as api_key, token, password, secret, and private_key.',
+  'pages.grc.rules.evaluatorDesc_external_network_allowed':
+    'Checks whether all external network targets are in the allowed domain list.',
+  'pages.grc.rules.evaluatorDesc_human_oversight_present':
+    'Checks whether high-risk actions have human oversight controls such as stop control, approval step, or owner.',
+  'pages.grc.rules.evaluatorDesc_restricted_data_no_external_send':
+    'Checks whether restricted data is only sent to approved models.',
+  'pages.grc.rules.evaluatorDesc_pii_has_mitigation':
+    'Checks whether PII has a mitigation such as masking or redaction.',
+  'pages.grc.rules.evaluatorDesc_model_in_approved_list':
+    'Checks whether the model or provider/model is in the approved list.',
+  'pages.grc.rules.evaluatorDesc_deployment_artifact_complete':
+    'Checks whether deployment artifacts include image, health check, and resource limits.',
+  'pages.grc.rules.evaluatorDesc_audit_logging_enabled':
+    'Checks whether tool-call and decision audit logging are enabled.',
+  'pages.grc.rules.evaluatorDesc_min_permissions':
+    'Checks whether permissions include required permissions and exclude denied permissions.',
+  'pages.grc.rules.evaluatorDesc_owner_sla_rollback':
+    'Checks whether operations metadata includes owner, SLA, rollback, and alerting.',
   'pages.grc.reviews.title': 'Review Name',
   'pages.grc.reviews.searchPlaceholder': 'Search case no. or name',
   'pages.grc.reviews.filterStatus': 'All statuses',
@@ -1410,24 +1683,41 @@ export default {
   // Decision Impact Preview
   'pages.grc.reviews.impactPreview': 'Decision Impact Preview',
   'pages.grc.reviews.impactPreview.approve': 'Approve Impact',
-  'pages.grc.reviews.impactPreview.agentWillDeploy': 'Agent will be deployed to the production environment',
-  'pages.grc.reviews.impactPreview.releaseAuthGenerated': 'System generates a release authorization token, allowing promote execution',
-  'pages.grc.reviews.impactPreview.taskWillComplete': 'Associated deployment task will be marked as completed',
-  'pages.grc.reviews.impactPreview.approveWithConditions': 'Approve with Conditions Impact',
-  'pages.grc.reviews.impactPreview.conditionsMustBeMet': 'All conditions must be met before the Agent can go live',
-  'pages.grc.reviews.impactPreview.agentBlockedUntilConditionsMet': 'Agent remains blocked until conditions are verified',
+  'pages.grc.reviews.impactPreview.agentWillDeploy':
+    'Agent will be deployed to the production environment',
+  'pages.grc.reviews.impactPreview.releaseAuthGenerated':
+    'System generates a release authorization token, allowing promote execution',
+  'pages.grc.reviews.impactPreview.taskWillComplete':
+    'Associated deployment task will be marked as completed',
+  'pages.grc.reviews.impactPreview.approveWithConditions':
+    'Approve with Conditions Impact',
+  'pages.grc.reviews.impactPreview.conditionsMustBeMet':
+    'All conditions must be met before the Agent can go live',
+  'pages.grc.reviews.impactPreview.agentBlockedUntilConditionsMet':
+    'Agent remains blocked until conditions are verified',
   'pages.grc.reviews.impactPreview.reject': 'Reject Impact',
-  'pages.grc.reviews.impactPreview.taskWillFail': 'Associated DevTask will be marked as FAILED',
-  'pages.grc.reviews.impactPreview.agentStaysInSandbox': 'Agent stays in sandbox environment, will not go live',
-  'pages.grc.reviews.impactPreview.cannotRedeployWithoutNewReview': 'A new compliance check and review case is required to re-deploy',
-  'pages.grc.reviews.impactPreview.requireRemediation': 'Require Remediation Impact',
-  'pages.grc.reviews.impactPreview.agentRemainsBlocked': 'Agent remains blocked from going live',
-  'pages.grc.reviews.impactPreview.taskRemainsPending': 'Associated task stays in PENDING_APPROVAL status',
-  'pages.grc.reviews.impactPreview.canRepromptAfterFix': 'Fix the issues and reprompt to re-run evaluation',
-  'pages.grc.reviews.impactPreview.requestException': 'Request Exception Impact',
-  'pages.grc.reviews.impactPreview.exceptionUnderReview': 'Exception request enters a separate approval workflow',
-  'pages.grc.reviews.impactPreview.blockedRulesStillActive': 'Blocking rules remain active, Agent cannot go live',
-  'pages.grc.reviews.impactPreview.separateApprovalRequired': 'Requires approval from a reviewer with exception approval permission',
+  'pages.grc.reviews.impactPreview.taskWillFail':
+    'Associated DevTask will be marked as FAILED',
+  'pages.grc.reviews.impactPreview.agentStaysInSandbox':
+    'Agent stays in sandbox environment, will not go live',
+  'pages.grc.reviews.impactPreview.cannotRedeployWithoutNewReview':
+    'A new compliance check and review case is required to re-deploy',
+  'pages.grc.reviews.impactPreview.requireRemediation':
+    'Require Remediation Impact',
+  'pages.grc.reviews.impactPreview.agentRemainsBlocked':
+    'Agent remains blocked from going live',
+  'pages.grc.reviews.impactPreview.taskRemainsPending':
+    'Associated task stays in PENDING_APPROVAL status',
+  'pages.grc.reviews.impactPreview.canRepromptAfterFix':
+    'Fix the issues and reprompt to re-run evaluation',
+  'pages.grc.reviews.impactPreview.requestException':
+    'Request Exception Impact',
+  'pages.grc.reviews.impactPreview.exceptionUnderReview':
+    'Exception request enters a separate approval workflow',
+  'pages.grc.reviews.impactPreview.blockedRulesStillActive':
+    'Blocking rules remain active, Agent cannot go live',
+  'pages.grc.reviews.impactPreview.separateApprovalRequired':
+    'Requires approval from a reviewer with exception approval permission',
   'pages.grc.evaluations.result': 'Result',
   'pages.grc.evaluations.severity': 'Severity',
   'pages.grc.evaluations.message': 'Message',
@@ -1458,19 +1748,27 @@ export default {
   'pages.grc.evaluations.filterResult': 'Filter by result',
   'pages.grc.evaluations.filterRiskLevel': 'Filter by risk level',
   'pages.grc.templates.secrets': 'Secrets Detection',
-  'pages.grc.templates.secretsDesc': 'Scan for plaintext secrets (api_key, token, password, etc.) in artifacts.',
+  'pages.grc.templates.secretsDesc':
+    'Scan for plaintext secrets (api_key, token, password, etc.) in artifacts.',
   'pages.grc.templates.externalAllowlist': 'External Domain Allowlist',
-  'pages.grc.templates.externalAllowlistDesc': 'Ensure all external network targets are in the approved domain list.',
+  'pages.grc.templates.externalAllowlistDesc':
+    'Ensure all external network targets are in the approved domain list.',
   'pages.grc.templates.restrictedData': 'Restricted Data / Approved Model',
-  'pages.grc.templates.restrictedDataDesc': 'Ensure restricted data is only sent to approved models.',
+  'pages.grc.templates.restrictedDataDesc':
+    'Ensure restricted data is only sent to approved models.',
   'pages.grc.templates.minPermissions': 'Minimum Permissions',
-  'pages.grc.templates.minPermissionsDesc': 'Verify permissions include required and exclude denied.',
+  'pages.grc.templates.minPermissionsDesc':
+    'Verify permissions include required and exclude denied.',
   'pages.grc.templates.auditLogging': 'Audit Logging',
-  'pages.grc.templates.auditLoggingDesc': 'Ensure tool-call and decision audit logging is enabled.',
+  'pages.grc.templates.auditLoggingDesc':
+    'Ensure tool-call and decision audit logging is enabled.',
   'pages.grc.templates.humanOversight': 'Human Oversight',
-  'pages.grc.templates.humanOversightDesc': 'Require human review before the agent can be deployed.',
-  'pages.grc.templates.dataClassificationRouting': 'Data Classification Routing',
-  'pages.grc.templates.dataClassificationRoutingDesc': 'Route data based on classification level and approved models.',
+  'pages.grc.templates.humanOversightDesc':
+    'Require human review before the agent can be deployed.',
+  'pages.grc.templates.dataClassificationRouting':
+    'Data Classification Routing',
+  'pages.grc.templates.dataClassificationRoutingDesc':
+    'Route data based on classification level and approved models.',
   'pages.grc.exceptions.title': 'Exceptions',
   'pages.grc.exceptions.request': 'Request Exception',
   'pages.grc.exceptions.approve': 'Approve',
@@ -1500,7 +1798,8 @@ export default {
   'pages.grc.exceptions.statRevoked': 'Revoked',
   'pages.grc.exceptions.statExpired': 'Expired',
   'pages.grc.exceptions.statRejected': 'Rejected',
-  'pages.grc.exceptions.searchPlaceholder': 'Search exception no. or justification',
+  'pages.grc.exceptions.searchPlaceholder':
+    'Search exception no. or justification',
   'pages.grc.exceptions.filterStatus': 'All statuses',
   'pages.grc.exceptions.rejectTitle': 'Reject Exception',
   'pages.grc.exceptions.revokeTitle': 'Revoke Exception',
@@ -1612,7 +1911,8 @@ export default {
   'pages.dataAccess.errors.policyList': 'Failed to load field policies',
   'pages.dataAccess.errors.usageList': 'Failed to load usage records',
   'pages.dataAccess.errors.policyNotFound': 'Original policy not found',
-  'pages.dataAccess.validation.selectValidEndpoint': 'Select a valid access endpoint',
+  'pages.dataAccess.validation.selectValidEndpoint':
+    'Select a valid access endpoint',
   'pages.dataAccess.empty.policies': 'No field policies yet',
   'pages.dataAccess.empty.usage': 'No usage records yet',
 }

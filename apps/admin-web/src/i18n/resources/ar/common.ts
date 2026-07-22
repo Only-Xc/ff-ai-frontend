@@ -11,6 +11,7 @@ export default {
   'common.actions.delete': 'حذف',
   'common.actions.edit': 'تعديل',
   'common.actions.detail': 'التفاصيل',
+  'common.actions.back': 'رجوع',
   'common.labels.totalCount': 'الإجمالي {{total}}',
   'common.user.logout': 'تسجيل الخروج',
   'common.errors.noPermission': 'الوصول مرفوض',

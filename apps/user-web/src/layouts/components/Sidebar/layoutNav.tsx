@@ -6,12 +6,16 @@ import { getRouteTitle } from '@/utils/routeMeta'
 
 export interface NavTreeItem {
   key: string
-  label: string
+  label: ReactNode
   kind: 'group' | 'submenu' | 'menu'
   path?: string
   icon?: ReactNode
   disabled?: boolean
   onClick?: () => void
+  groupAction?: {
+    label: string
+    onClick: () => void
+  }
   children?: NavTreeItem[]
 }
 
@@ -57,6 +61,7 @@ function stripOrder(item: NavTreeItemWithOrder): NavTreeItem {
     icon: item.icon,
     disabled: item.disabled,
     onClick: item.onClick,
+    groupAction: item.groupAction,
     children: item.children?.map(stripOrder),
   }
 }

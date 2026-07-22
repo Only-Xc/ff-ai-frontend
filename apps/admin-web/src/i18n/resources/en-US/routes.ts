@@ -9,6 +9,9 @@ export default {
   'routes.tickets.title': 'Global Tickets',
   'routes.opsMetrics.title': 'Ops Metrics',
   'routes.lifecycleOps.title': 'Lifecycle Ops',
+  'routes.workflowPublications.title': 'Workflow Plugin Publications',
+  'routes.pluginCenter.title': 'Plugin Center',
+  'routes.pluginDetail.title': 'Plugin Details',
   'routes.dataAccess.title': 'Data Access',
   'routes.examCenter.title': 'Exam Center',
   'routes.exams.title': 'Exam Management',
@@ -26,21 +29,26 @@ export default {
   'routes.rbac.organizations.title': 'Organization Management',
   'routes.groups.governance': 'Governance & Compliance',
   'routes.grc.dashboard.title': 'GRC Dashboard',
-  'routes.grc.dashboard.subtitle': 'Risk overview, compliance trends and approval monitoring',
+  'routes.grc.dashboard.subtitle':
+    'Risk overview, compliance trends and approval monitoring',
   'routes.grc.risks.title': 'Risk Profiles',
   'routes.grc.risks.subtitle': 'Agent risk levels and compliance status',
   'routes.grc.rules.title': 'Compliance Rules',
   'routes.grc.rules.subtitle': 'Manage compliance rule versions and publishing',
   'routes.grc.rules.detail.title': 'Rule Detail',
   'routes.grc.evaluations.title': 'Evaluations',
-  'routes.grc.evaluations.subtitle': 'View evaluation results and rule hit details',
+  'routes.grc.evaluations.subtitle':
+    'View evaluation results and rule hit details',
   'routes.grc.evaluations.detail.title': 'Evaluation Detail',
   'routes.grc.reviews.title': 'Review Queue',
-  'routes.grc.reviews.subtitle': 'Manage compliance review cases across all statuses',
+  'routes.grc.reviews.subtitle':
+    'Manage compliance review cases across all statuses',
   'routes.grc.exceptions.title': 'Exceptions',
-  'routes.grc.exceptions.subtitle': 'Request, approve and monitor compliance exceptions',
+  'routes.grc.exceptions.subtitle':
+    'Request, approve and monitor compliance exceptions',
   'routes.grc.reports.title': 'Governance Reports',
-  'routes.grc.reports.subtitle': 'Risk distribution, compliance trends and review SLA',
+  'routes.grc.reports.subtitle':
+    'Risk distribution, compliance trends and review SLA',
   'routes.stageSwitch.requests.title': 'Stage Switch',
   'routes.stageSwitch.requests.subtitle':
     'Multi-party approval flow and execution status for promote and demote',

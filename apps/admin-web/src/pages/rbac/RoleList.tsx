@@ -39,16 +39,19 @@ import {
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useLocale } from '@/i18n/useLocale'
 import { useAuthStore } from '@/store/useAuth'
 import { RoleFormDrawer } from './RoleFormDrawer'
 import { RolePermissionDrawer } from './RolePermissionDrawer'
 import { OrganizationTreePanel } from './OrganizationTreePanel'
+import { getRoleDisplayName } from './roleDisplay'
 import type { RoleFormValues } from './types'
 
 const { Search } = Input
 
 export default function RoleList() {
   const { t } = useTranslation()
+  const { locale } = useLocale()
   const queryClient = useQueryClient()
   const { hasPermission } = usePermission()
   const pagination = usePaginationParams({ defaultPageSize: 20 })
@@ -158,9 +161,9 @@ export default function RoleList() {
       title: t('pages.rbac.columns.name'),
       dataIndex: 'name',
       key: 'name',
-      render: (value: string, record) => (
+      render: (_value: string, record) => (
         <Space direction="vertical" size={0}>
-          <Typography.Text strong>{value}</Typography.Text>
+          <Typography.Text strong>{getRoleDisplayName(record, locale, t)}</Typography.Text>
           <Typography.Text className="text-xs" type="secondary">
             {record.code}
           </Typography.Text>
@@ -244,7 +247,9 @@ export default function RoleList() {
             <Button
               size="small"
               type="link"
-              onClick={() => openEditDrawer(record)}
+              onClick={() => {
+                void openEditDrawer(record)
+              }}
               disabled={record.is_system}
             >
               {t('common.actions.edit')}
@@ -266,7 +271,9 @@ export default function RoleList() {
               description={
                 record.is_system
                   ? t('pages.rbac.actions.deleteSystemRoleWarning')
-                  : t('pages.rbac.actions.deleteConfirmDescription', { name: record.name })
+                  : t('pages.rbac.actions.deleteConfirmDescription', {
+                      name: getRoleDisplayName(record, locale, t),
+                    })
               }
               onConfirm={() => deleteMutation.mutate(record.id)}
               okText={t('common.actions.delete')}
@@ -317,8 +324,8 @@ export default function RoleList() {
           <Button
             icon={<ReloadOutlined />}
             onClick={() => {
-              rolesQuery.refetch()
-              orgsQuery.refetch()
+              void rolesQuery.refetch()
+              void orgsQuery.refetch()
             }}
             loading={rolesQuery.isFetching}
           >

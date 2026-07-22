@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { tenantApps_menu, type TenantAppMenuNode } from '@/api/tenant-apps'
+import { plugins_catalog, type PluginCatalogItem } from '@/api/plugins'
 import { i18n } from '@/i18n'
 import type { NavTreeItem } from '@/layouts/components/Sidebar/layoutNav'
 
@@ -8,12 +9,14 @@ export type MenuLoadStatus = 'idle' | 'loading' | 'success' | 'error'
 
 interface MenuState {
   appMenuNodes: TenantAppMenuNode[]
+  pluginCatalogItems: PluginCatalogItem[]
   error: unknown
   lastUpdatedAt: number | null
   status: MenuLoadStatus
   getAppByTaskId: (taskId: string) => TenantAppMenuNode | undefined
   loadMenu: () => Promise<void>
   retryMenu: () => Promise<void>
+  refreshPluginCatalog: () => Promise<void>
 }
 
 const WORKSPACE_NAV_KEY = 'workspace'
@@ -84,6 +87,7 @@ function buildWorkspaceNavChildren(
   appMenuNavItems: NavTreeItem[],
   platformAppNavItems: NavTreeItem[],
   knowledgeBaseNavItem?: NavTreeItem,
+  onOpenPlatformApps?: () => void,
 ) {
   const knowledgeBaseChildren = knowledgeBaseNavItem?.children?.length
     ? knowledgeBaseNavItem.children
@@ -95,6 +99,12 @@ function buildWorkspaceNavChildren(
       key: PLATFORM_APPS_KEY,
       label: i18n.t('pages.menu.platformApps'),
       kind: 'group',
+      groupAction: onOpenPlatformApps
+        ? {
+            label: i18n.t('pages.platformApps.openCatalog'),
+            onClick: onOpenPlatformApps,
+          }
+        : undefined,
       children: platformAppNavItems.length
         ? platformAppNavItems
         : [getEmptyMenuItem(`${PLATFORM_APPS_KEY}-empty`)],
@@ -190,11 +200,19 @@ export function buildSidebarNavItemsWithAppMenu(
   staticNavItems: NavTreeItem[],
   options: {
     appMenuNodes: TenantAppMenuNode[]
+    pluginCatalogItems: PluginCatalogItem[]
+    onOpenPlatformApps: () => void
     onRetry: () => void
     status: MenuLoadStatus
   },
 ) {
-  const { appMenuNodes, onRetry, status } = options
+  const {
+    appMenuNodes,
+    onOpenPlatformApps,
+    onRetry,
+    pluginCatalogItems,
+    status,
+  } = options
   const { knowledgeBaseNavItem, platformAppNavItems, restNavItems } =
     extractWorkspaceChildNavItems(staticNavItems)
   let appMenuNavItems: NavTreeItem[]
@@ -232,12 +250,20 @@ export function buildSidebarNavItemsWithAppMenu(
     ]
   }
 
+  const favoritePluginNavItems = pluginCatalogItems.map((item) => ({
+    key: `plugin-${item.installation_id}`,
+    label: item.name,
+    kind: 'menu' as const,
+    path: item.entry_path,
+  }))
+
   return withWorkspaceNavChildren(
     restNavItems,
     buildWorkspaceNavChildren(
       appMenuNavItems,
-      platformAppNavItems,
+      [...platformAppNavItems, ...favoritePluginNavItems],
       knowledgeBaseNavItem,
+      onOpenPlatformApps,
     ),
   )
 }
@@ -251,10 +277,17 @@ export const useMenuStore = create<MenuState>((set, get) => {
     set({ error: null, status: 'loading' })
 
     try {
-      const response = await tenantApps_menu()
+      const [response, pluginCatalog] = await Promise.all([
+        tenantApps_menu(),
+        plugins_catalog({ favorites_only: true }).catch(() => ({
+          data: [],
+          count: 0,
+        })),
+      ])
 
       set({
         appMenuNodes: response.data,
+        pluginCatalogItems: pluginCatalog.data,
         error: null,
         lastUpdatedAt: Date.now(),
         status: 'success',
@@ -269,6 +302,7 @@ export const useMenuStore = create<MenuState>((set, get) => {
 
   return {
     appMenuNodes: [],
+    pluginCatalogItems: [],
     error: null,
     lastUpdatedAt: null,
     status: 'idle',
@@ -284,5 +318,9 @@ export const useMenuStore = create<MenuState>((set, get) => {
       await fetchMenu()
     },
     retryMenu: () => fetchMenu(),
+    refreshPluginCatalog: async () => {
+      const pluginCatalog = await plugins_catalog({ favorites_only: true })
+      set({ pluginCatalogItems: pluginCatalog.data })
+    },
   }
 })

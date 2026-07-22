@@ -12,6 +12,7 @@ import {
 import { usePermission } from '@/hooks/usePermission'
 import { globalMessage } from '@/utils/message'
 import { PermissionTree } from './components/PermissionTree'
+import { PluginScopeTree } from './components/PluginScopeTree'
 
 export interface RolePermissionDrawerProps {
   roleId: string | null
@@ -43,7 +44,10 @@ export function RolePermissionDrawer({
     enabled: open,
   })
 
-  const allPermissions = permissionsQuery.data?.data ?? []
+  const allPermissions = useMemo(
+    () => permissionsQuery.data?.data ?? [],
+    [permissionsQuery.data?.data],
+  )
 
   // Split permissions into menu and api groups
   const menuPerms = useMemo(
@@ -105,13 +109,17 @@ export function RolePermissionDrawer({
       title={t('pages.rbac.drawers.permissionConfig')}
       open={open && Boolean(roleId)}
       onClose={onClose}
-      width={560}
+      size={560}
       destroyOnClose
       extra={
         canUpdate ? (
           <Space>
             <Button onClick={onClose}>{t('common.actions.cancel')}</Button>
-            <Button type="primary" onClick={handleSave} loading={saving}>
+            <Button
+              type="primary"
+              onClick={() => void handleSave()}
+              loading={saving}
+            >
               {t('pages.rbac.actions.save')}
             </Button>
           </Space>
@@ -132,7 +140,7 @@ export function RolePermissionDrawer({
                 <PermissionTree
                   permissions={menuPerms}
                   checkedIds={menuCheckedIds}
-                  onChange={canUpdate ? setMenuCheckedIds : () => {}}
+                  onChange={canUpdate ? setMenuCheckedIds : () => undefined}
                 />
               ),
             },
@@ -143,9 +151,16 @@ export function RolePermissionDrawer({
                 <PermissionTree
                   permissions={apiPerms}
                   checkedIds={apiCheckedIds}
-                  onChange={canUpdate ? setApiCheckedIds : () => {}}
+                  onChange={canUpdate ? setApiCheckedIds : () => undefined}
                 />
               ),
+            },
+            {
+              key: 'plugin-scopes',
+              label: '插件 Scope',
+              children: roleId ? (
+                <PluginScopeTree editable={canUpdate} roleId={roleId} />
+              ) : null,
             },
           ]}
         />

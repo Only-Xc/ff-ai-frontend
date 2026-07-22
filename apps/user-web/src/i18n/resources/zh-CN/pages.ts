@@ -1,4 +1,31 @@
 export default {
+  'pages.pluginCarrier.sessionFailed': '插件应用连接失败',
+  'pages.pluginCarrier.sessionFailedHint': '应用可能未启用、服务不健康或当前角色缺少插件 Scope。',
+  'pages.pluginCarrier.back': '返回平台应用',
+  'pages.pluginCarrier.connected': '已通过插件平台安全网关连接',
+  'pages.pluginCarrier.timeout': '插件页面加载超时，请检查插件服务状态后重试。',
+  'pages.pluginCarrier.frameTitle': '{{pluginId}} 插件应用',
+  'pages.platformApps.title': '平台应用',
+  'pages.platformApps.subtitle':
+    '查看已发布的插件应用，添加后可从侧边栏直接打开。',
+  'pages.platformApps.search': '搜索应用名称或插件 ID',
+  'pages.platformApps.openCatalog': '添加平台应用',
+  'pages.platformApps.open': '打开',
+  'pages.platformApps.add': '添加到侧边栏',
+  'pages.platformApps.remove': '从侧边栏移除',
+  'pages.platformApps.added': '已添加到侧边栏',
+  'pages.platformApps.removed': '已从侧边栏移除',
+  'pages.platformApps.empty': '暂无可用的平台应用',
+  'pages.platformApps.noDescription': '暂无描述',
+  'pages.platformApps.loadFailed': '平台应用加载失败',
+  'pages.workflowChat.subtitle': 'Workflow 对话应用',
+  'pages.workflowChat.simulation': '模拟运行',
+  'pages.workflowChat.connected': '已连接',
+  'pages.workflowChat.simulatedReply': '此回复由 Workflow 模拟适配器生成',
+  'pages.workflowChat.placeholder': '输入消息',
+  'pages.workflowChat.send': '发送',
+  'pages.workflowChat.loadFailed': 'Workflow 应用加载失败',
+  'pages.workflowChat.sendFailed': '消息发送失败',
   'pages.shell.usageSubtitle': '查看资源消耗、套餐额度、账单与余额',
   'pages.shell.defaultSubtitle': '查看平台任务、应用和资源状态',
   'pages.forbidden.subtitle': '你没有访问当前页面的权限。',
@@ -61,13 +88,11 @@ export default {
   'pages.chat.connectionFailed.title': 'Agent 服务连接失败',
   'pages.chat.connectionFailed.subtitle': '请联系管理员。',
   'pages.chat.welcome.title': 'Agent 工作台',
-  'pages.chat.welcome.description':
-    '输入需求后，我会基于当前上下文给出回复。',
+  'pages.chat.welcome.description': '输入需求后，我会基于当前上下文给出回复。',
   'pages.chat.taskConfirmation.title': '待确认工单',
   'pages.chat.taskConfirmation.confirm': '确认创建',
   'pages.chat.sender.attachments': '附件',
-  'pages.chat.sender.attachmentsAdded':
-    '{{action}}附件，已添加 {{count}} 个',
+  'pages.chat.sender.attachmentsAdded': '{{action}}附件，已添加 {{count}} 个',
   'pages.chat.sender.attachmentsToggle': '{{action}}附件',
   'pages.chat.sender.actions.collapse': '收起',
   'pages.chat.sender.actions.expand': '展开',
@@ -80,8 +105,7 @@ export default {
   'pages.chat.sender.errors.invalidFile': '请选择有效文件',
   'pages.chat.sender.errors.allowedFiles':
     '仅支持上传 {{extensions}} 格式的文件',
-  'pages.chat.sender.errors.fileTooLarge':
-    '单个附件大小不能超过 {{size}}',
+  'pages.chat.sender.errors.fileTooLarge': '单个附件大小不能超过 {{size}}',
   'pages.chat.sender.errors.uploadFailed': '附件上传失败',
   'pages.chat.sender.errors.uploading': '附件上传中，请稍后再发送',
   'pages.chat.sender.errors.removeFailedBeforeSend':
@@ -178,12 +202,10 @@ export default {
   'pages.agentTicket.detail.budgetDescription':
     '配置智能体运行时每月 Token 费用上限。',
   'pages.agentTicket.detail.monthlyBudgetLimit': '每月预算上限',
-  'pages.agentTicket.detail.monthlyBudgetPlaceholder':
-    '不设置则表示无上限',
+  'pages.agentTicket.detail.monthlyBudgetPlaceholder': '不设置则表示无上限',
   'pages.billing.tenantLevelCost': '租户级消费',
   'pages.billing.title': '账单中心',
-  'pages.billing.subtitle':
-    '查看资源余额、分项额度、消费总额和消费明细。',
+  'pages.billing.subtitle': '查看资源余额、分项额度、消费总额和消费明细。',
   'pages.billing.balanceUpdatedAt': '余额更新时间：{{time}}',
   'pages.billing.metrics.availableBalance': '可用额度',
   'pages.billing.metrics.tenantBalance': '租户总余额',
@@ -238,11 +260,9 @@ export default {
   'pages.schema.errors.nodeInvalid': '节点必须是对象',
   'pages.schema.errors.nodeId': '节点 id 必须是非空字符串',
   'pages.schema.errors.nodeChildren': 'children 必须是数组',
-  'pages.schema.errors.nodeChildrenContainer':
-    'children 只允许用于容器组件',
+  'pages.schema.errors.nodeChildrenContainer': 'children 只允许用于容器组件',
   'pages.schema.errors.unsafeProp': 'props 中不允许使用 {{key}}',
-  'pages.schema.errors.gridColumns':
-    'columns 必须是 1 到 24 之间的数字',
+  'pages.schema.errors.gridColumns': 'columns 必须是 1 到 24 之间的数字',
   'pages.schema.errors.gutter': 'gutter 必须是数字或两个数字组成的数组',
   'pages.schema.errors.span': 'span 必须是数字数组',
   'pages.schema.errors.string': '{{field}} 必须是字符串',
@@ -322,7 +342,8 @@ export default {
   'pages.exam.errors.listLoadFailed': '试卷列表加载失败',
   'pages.exam.errors.missingAttemptId': '缺少答题记录 ID',
   'pages.exam.errors.missingPaperId': '缺少试卷 ID',
-  'pages.exam.errors.pluginUnavailable': '考试插件不可用，请确认 examapi 插件已启用且服务健康',
+  'pages.exam.errors.pluginUnavailable':
+    '考试插件不可用，请确认 examapi 插件已启用且服务健康',
   'pages.exam.errors.resultLoadFailed': '结果加载失败',
   'pages.exam.errors.saveFailed': '保存失败',
   'pages.exam.errors.startFailed': '开始考试失败',
@@ -330,7 +351,8 @@ export default {
   'pages.exam.filters.paper': '选择试卷',
   'pages.exam.filters.status': '状态',
   'pages.exam.history.title': '答题历史',
-  'pages.exam.history.subtitle': '进行中的试卷可继续作答，已提交试卷可查看结果。',
+  'pages.exam.history.subtitle':
+    '进行中的试卷可继续作答，已提交试卷可查看结果。',
   'pages.exam.list.title': '在线考试',
   'pages.exam.list.subtitle': '选择已发布试卷并开始答题。',
   'pages.exam.mode.fixed': '固定题序',
@@ -347,21 +369,26 @@ export default {
   'pages.exam.result.correctAnswer': '正确答案',
   'pages.exam.result.correctHelper': '{{count}} 题正确',
   'pages.exam.result.correctRate': '正确率',
-  'pages.exam.result.detailSubtitle': '共 {{count}} 题，按作答顺序展示得分、答案和解析。',
+  'pages.exam.result.detailSubtitle':
+    '共 {{count}} 题，按作答顺序展示得分、答案和解析。',
   'pages.exam.result.detailTitle': '逐题解析',
   'pages.exam.result.duration': '用时',
   'pages.exam.result.explanation': '解析思路',
   'pages.exam.result.finalScore': '最终得分',
-  'pages.exam.result.insightFailed': '本次成绩距离及格线还差 {{distance}} 分。建议优先复盘错题和复查标记题目。',
-  'pages.exam.result.insightPassed': '本次成绩已达到及格线，高出及格线 {{distance}} 分。继续查看逐题解析，优先复盘扣分题目。',
-  'pages.exam.result.insightPending': '系统已记录本次作答，等待最终判定结果生成。',
+  'pages.exam.result.insightFailed':
+    '本次成绩距离及格线还差 {{distance}} 分。建议优先复盘错题和复查标记题目。',
+  'pages.exam.result.insightPassed':
+    '本次成绩已达到及格线，高出及格线 {{distance}} 分。继续查看逐题解析，优先复盘扣分题目。',
+  'pages.exam.result.insightPending':
+    '系统已记录本次作答，等待最终判定结果生成。',
   'pages.exam.result.judgement': '判定',
   'pages.exam.result.legend.correctOption': '正确选项',
   'pages.exam.result.legend.userSelection': '用户选择',
   'pages.exam.result.legend.wrongSelection': '错误选择',
   'pages.exam.result.misselected': '误选',
   'pages.exam.result.noExplanation': '暂无解析。',
-  'pages.exam.result.noWrongQuestions': '本次没有错题，可以继续查看逐题解析巩固知识点。',
+  'pages.exam.result.noWrongQuestions':
+    '本次没有错题，可以继续查看逐题解析巩固知识点。',
   'pages.exam.result.passingLine': '及格线 {{score}} 分',
   'pages.exam.result.passingLineNeedsImprovement': '待提升及格线',
   'pages.exam.result.passingLineReached': '已达到及格线',
@@ -372,14 +399,16 @@ export default {
   'pages.exam.result.submittedAt': '提交时间',
   'pages.exam.result.timeUsed': '考试用时',
   'pages.exam.result.wrongNavigator': '错题定位',
-  'pages.exam.result.wrongNavigatorSubtitle': '{{wrong}} / {{total}} 题需要复盘',
+  'pages.exam.result.wrongNavigatorSubtitle':
+    '{{wrong}} / {{total}} 题需要复盘',
   'pages.exam.result.wrongQuestions': '错题',
   'pages.exam.result.yourAnswer': '你的答案',
   'pages.exam.result.yourSelection': '你的选择',
   'pages.exam.room.answered': '已答',
   'pages.exam.room.answeredCount': '已答 {{answered}} / {{total}}',
   'pages.exam.room.continueAnswering': '继续作答',
-  'pages.exam.room.exitContent': '当前试卷仍是进行中状态，请提交后离开。系统会自动保存当前进度，重新进入后可在答题历史中继续作答。',
+  'pages.exam.room.exitContent':
+    '当前试卷仍是进行中状态，请提交后离开。系统会自动保存当前进度，重新进入后可在答题历史中继续作答。',
   'pages.exam.room.exitTitle': '考试正在进行中',
   'pages.exam.room.markReview': '标记复查',
   'pages.exam.room.nextQuestion': '下一题',
@@ -391,7 +420,8 @@ export default {
   'pages.exam.room.saved': '已保存',
   'pages.exam.room.saving': '保存中',
   'pages.exam.room.submit': '提交',
-  'pages.exam.room.submitConfirmContent': '提交后将进入结果页，确认提交当前答案？',
+  'pages.exam.room.submitConfirmContent':
+    '提交后将进入结果页，确认提交当前答案？',
   'pages.exam.room.submitConfirmTitle': '提交试卷',
   'pages.exam.room.submitPaper': '提交试卷',
   'pages.exam.room.subtitle': '答题过程中将自动保存，提交后由服务端判分。',
@@ -457,8 +487,7 @@ export default {
   'pages.knowledge.feedback.copied': '已复制',
   'pages.knowledge.feedback.datasetCreated': '知识库已创建',
   'pages.knowledge.feedback.datasetUpdated': '知识库已更新',
-  'pages.knowledge.feedback.documentsUploaded':
-    '文档已上传，请触发解析后入库',
+  'pages.knowledge.feedback.documentsUploaded': '文档已上传，请触发解析后入库',
   'pages.knowledge.feedback.parseSubmitted': '解析任务已提交',
   'pages.knowledge.fields.chunkMethod': '切片方式',
   'pages.knowledge.fields.chunkId': 'Chunk ID',
@@ -514,7 +543,8 @@ export default {
   'pages.knowledge.selection.selectCurrentPage': '选择当前页',
   'pages.knowledge.selection.selectedCount': '已选择 {{count}} 项',
   'pages.knowledge.spaces.title': 'Knowledge Spaces',
-  'pages.knowledge.subtitle': '管理 RAGFlow 知识库、文档入库、解析索引与检索验证。',
+  'pages.knowledge.subtitle':
+    '管理 RAGFlow 知识库、文档入库、解析索引与检索验证。',
   'pages.knowledge.tabs.details': '知识库详情',
   'pages.knowledge.tabs.documents': '文档',
   'pages.knowledge.tabs.retrieval': '检索实验室',
@@ -523,5 +553,4 @@ export default {
   'pages.knowledge.upload.dragTitle': '点击或拖拽文件到此区域上传',
   'pages.knowledge.validation.nameRequired': '请输入知识库名称',
   'pages.knowledge.validation.queryRequired': '请输入检索问题',
-
 }

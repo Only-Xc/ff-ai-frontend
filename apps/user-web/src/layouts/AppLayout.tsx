@@ -3,16 +3,13 @@ import { Button, Drawer, Layout, Tooltip } from 'antd'
 import { createStyles } from 'antd-style'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Outlet, useLocation } from 'react-router'
+import { Outlet, useLocation, useNavigate } from 'react-router'
 
 import { usePermission } from '@/hooks/usePermission'
 import { useLocale } from '@/i18n/useLocale'
 import { appRoutes } from '@/router/routes'
 import { useAppStore } from '@/store/useApp'
-import {
-  buildSidebarNavItemsWithAppMenu,
-  useMenuStore,
-} from '@/store/useMenu'
+import { buildSidebarNavItemsWithAppMenu, useMenuStore } from '@/store/useMenu'
 import { getCurrentRouteMeta, getRouteTitle } from '@/utils/routeMeta'
 import { Header } from './components/Header'
 import { buildNavItems, getActiveNavKey } from './components/Sidebar/layoutNav'
@@ -73,6 +70,7 @@ const useStyles = createStyles(() => ({
 export function AppLayout() {
   const { styles } = useStyles()
   const location = useLocation()
+  const navigate = useNavigate()
   const { direction } = useLocale()
   const { t } = useTranslation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -84,6 +82,7 @@ export function AppLayout() {
   )
   const menuStatus = useMenuStore((state) => state.status)
   const appMenuNodes = useMenuStore((state) => state.appMenuNodes)
+  const pluginCatalogItems = useMenuStore((state) => state.pluginCatalogItems)
   const retryMenu = useMenuStore((state) => state.retryMenu)
   const staticNavItems = useMemo(
     () =>
@@ -104,12 +103,23 @@ export function AppLayout() {
     () =>
       buildSidebarNavItemsWithAppMenu(staticNavItems, {
         appMenuNodes,
+        pluginCatalogItems,
+        onOpenPlatformApps: () => {
+          void navigate('/platform-apps')
+        },
         onRetry: () => {
           void retryMenu()
         },
         status: menuStatus,
       }),
-    [appMenuNodes, menuStatus, retryMenu, staticNavItems],
+    [
+      appMenuNodes,
+      menuStatus,
+      navigate,
+      pluginCatalogItems,
+      retryMenu,
+      staticNavItems,
+    ],
   )
   const activeKey = useMemo(
     () => getActiveNavKey(location.pathname, navItems),
