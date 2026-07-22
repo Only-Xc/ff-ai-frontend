@@ -1,16 +1,6 @@
 import { ReloadOutlined } from '@ant-design/icons'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import {
-  Alert,
-  Button,
-  Empty,
-  Input,
-  Segmented,
-  Select,
-  Space,
-  Table,
-  Tag,
-} from 'antd'
+import { Alert, Button, Empty, Input, Select, Space, Table, Tag } from 'antd'
 import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
@@ -30,13 +20,19 @@ import { usePaginationParams } from '@/hooks/usePaginationParams'
 
 import { approvalStatusColor, approvalStatusLabel } from './status'
 
-const STATUS_OPTIONS: { labelKey: string; value: ProductionApprovalStatus | '' }[] = [
+const STATUS_OPTIONS: {
+  labelKey: string
+  value: ProductionApprovalStatus | ''
+}[] = [
   { labelKey: 'common.filters.all', value: '' },
   { labelKey: 'pages.production.status.PENDING', value: 'PENDING' },
   { labelKey: 'pages.production.status.IN_REVIEW', value: 'IN_REVIEW' },
   { labelKey: 'pages.production.status.APPROVED', value: 'APPROVED' },
   { labelKey: 'pages.production.status.REJECTED', value: 'REJECTED' },
-  { labelKey: 'pages.production.status.PRECHECK_BLOCKED', value: 'PRECHECK_BLOCKED' },
+  {
+    labelKey: 'pages.production.status.PRECHECK_BLOCKED',
+    value: 'PRECHECK_BLOCKED',
+  },
 ]
 
 export function ProductionQueue() {
@@ -44,13 +40,17 @@ export function ProductionQueue() {
   const navigate = useNavigate()
   const { current, pageSize, setCurrent, skip, limit } = usePaginationParams()
   const [keyword, setKeyword] = useState('')
-  const [statusFilter, setStatusFilter] = useState<ProductionApprovalStatus | ''>('')
+  const [statusFilter, setStatusFilter] = useState<
+    ProductionApprovalStatus | ''
+  >('')
 
   const queryParams: ProductionApprovalQuery = useMemo(
     () => ({
       skip,
       limit,
-      ...(statusFilter ? { status: statusFilter as ProductionApprovalStatus } : {}),
+      ...(statusFilter
+        ? { status: statusFilter as ProductionApprovalStatus }
+        : {}),
       ...(keyword.trim() ? { keyword: keyword.trim() } : {}),
     }),
     [skip, limit, statusFilter, keyword],
@@ -117,7 +117,9 @@ export function ProductionQueue() {
       key: 'qa_passed',
       width: 100,
       render: (v: boolean) =>
-        v ? <Tag color="green">{t('pages.production.queue.qaPassed')}</Tag> : (
+        v ? (
+          <Tag color="green">{t('pages.production.queue.qaPassed')}</Tag>
+        ) : (
           <Tag color="red">{t('pages.production.queue.qaFailed')}</Tag>
         ),
     },
@@ -149,7 +151,8 @@ export function ProductionQueue() {
             onChange={setStatusFilter}
             options={STATUS_OPTIONS.map((item) => ({
               value: item.value,
-              label: item.value === '' ? t('common.filters.all') : t(item.labelKey),
+              label:
+                item.value === '' ? t('common.filters.all') : t(item.labelKey),
             }))}
             style={{ width: 180 }}
             placeholder={t('pages.production.queue.status')}

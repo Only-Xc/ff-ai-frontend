@@ -29,11 +29,9 @@ import {
   productionApprovals_submitDecision,
   productionKeys,
   type ProductionApprovalDecisionPayload,
-  type ProductionApprovalDetail,
 } from '@/api/production'
 
 import { ApprovalDecisionDrawer } from './components/ApprovalDecisionDrawer'
-import { ProductionStatusBadge } from './components/ProductionStatusBadge'
 import { approvalStatusColor, approvalStatusLabel } from './status'
 
 interface DecisionRecord {
@@ -64,7 +62,9 @@ export function ProductionDetail() {
       productionApprovals_submitDecision(approvalId, values),
     onSuccess: () => {
       message.success(t('pages.production.detail.decisionSuccess'))
-      void queryClient.invalidateQueries({ queryKey: productionKeys.detail(approvalId) })
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
       setDecisionDrawerOpen(false)
     },
     onError: (err: Error) => {
@@ -79,7 +79,9 @@ export function ProductionDetail() {
       message.success(t('pages.production.detail.cancelSuccess'))
       setCancelModalOpen(false)
       setCancelReason('')
-      void queryClient.invalidateQueries({ queryKey: productionKeys.detail(approvalId) })
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -90,7 +92,9 @@ export function ProductionDetail() {
     mutationFn: () => productionApprovals_apply(approvalId),
     onSuccess: () => {
       message.success(t('pages.production.detail.reapplySuccess'))
-      void queryClient.invalidateQueries({ queryKey: productionKeys.detail(approvalId) })
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -113,7 +117,15 @@ export function ProductionDetail() {
   }
 
   const approval = data.request
-  const decisions = (data.decisions ?? []) as DecisionRecord[]
+  const decisions: DecisionRecord[] = (data.decisions ?? []).map(
+    (decision) => ({
+      decision: String(decision.decision ?? ''),
+      rationale: String(decision.rationale ?? ''),
+      decided_by: String(decision.decided_by ?? ''),
+      decided_at: String(decision.decided_at ?? ''),
+      request_version: Number(decision.request_version ?? 0),
+    }),
+  )
   const qaChecks = (data.qa_result_snapshot?.checks ?? []) as Array<{
     check?: string
     status?: string
@@ -122,7 +134,11 @@ export function ProductionDetail() {
   }>
 
   const decisionColumns: TableProps<DecisionRecord>['columns'] = [
-    { title: t('pages.production.detail.decisionDecision'), dataIndex: 'decision', width: 110 },
+    {
+      title: t('pages.production.detail.decisionDecision'),
+      dataIndex: 'decision',
+      width: 110,
+    },
     {
       title: t('pages.production.detail.decisionDecidedBy'),
       dataIndex: 'decided_by',
@@ -135,7 +151,10 @@ export function ProductionDetail() {
       width: 170,
       render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
     },
-    { title: t('pages.production.detail.decisionRationale'), dataIndex: 'rationale' },
+    {
+      title: t('pages.production.detail.decisionRationale'),
+      dataIndex: 'rationale',
+    },
   ]
 
   const handleCancelOpen = () => {
@@ -162,10 +181,7 @@ export function ProductionDetail() {
             </Button>
           )}
           {approval.can_cancel && (
-            <Button
-              danger
-              onClick={handleCancelOpen}
-            >
+            <Button danger onClick={handleCancelOpen}>
               {t('pages.production.detail.cancel')}
             </Button>
           )}
@@ -190,36 +206,58 @@ export function ProductionDetail() {
               <Space direction="vertical" size="large" className="w-full">
                 <Card title={t('pages.production.detail.basicInfo')}>
                   <Descriptions column={2} bordered size="small">
-                    <Descriptions.Item label={t('pages.production.queue.status')}>
+                    <Descriptions.Item
+                      label={t('pages.production.queue.status')}
+                    >
                       <Tag color={approvalStatusColor(approval.status)}>
                         {approvalStatusLabel(t, approval.status)}
                       </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.version')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.version')}
+                    >
                       v{approval.version}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.queue.agent')}>
+                    <Descriptions.Item
+                      label={t('pages.production.queue.agent')}
+                    >
                       {approval.agent_id}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.queue.taskId')}>
+                    <Descriptions.Item
+                      label={t('pages.production.queue.taskId')}
+                    >
                       {approval.task_id}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.riskLevel')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.riskLevel')}
+                    >
                       {approval.risk_level || '—'} ({approval.risk_score})
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.qaResult')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.qaResult')}
+                    >
                       {approval.qa_passed ? (
-                        <Tag color="green">{t('pages.production.queue.qaPassed')}</Tag>
+                        <Tag color="green">
+                          {t('pages.production.queue.qaPassed')}
+                        </Tag>
                       ) : (
-                        <Tag color="red">{t('pages.production.queue.qaFailed')}</Tag>
+                        <Tag color="red">
+                          {t('pages.production.queue.qaFailed')}
+                        </Tag>
                       )}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.createdAt')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.createdAt')}
+                    >
                       {dayjs(approval.created_at).format('YYYY-MM-DD HH:mm:ss')}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.decidedAt')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.decidedAt')}
+                    >
                       {approval.decided_at
-                        ? dayjs(approval.decided_at).format('YYYY-MM-DD HH:mm:ss')
+                        ? dayjs(approval.decided_at).format(
+                            'YYYY-MM-DD HH:mm:ss',
+                          )
                         : '—'}
                     </Descriptions.Item>
                   </Descriptions>
@@ -227,7 +265,9 @@ export function ProductionDetail() {
 
                 <Card title={t('pages.production.detail.qaChecks')}>
                   {qaChecks.length === 0 ? (
-                    <Empty description={t('pages.production.detail.qaChecksEmpty')} />
+                    <Empty
+                      description={t('pages.production.detail.qaChecksEmpty')}
+                    />
                   ) : (
                     <Table
                       size="small"
@@ -245,7 +285,9 @@ export function ProductionDetail() {
                           dataIndex: 'status',
                           width: 100,
                           render: (v: string) => (
-                            <Tag color={v === 'passed' ? 'green' : 'red'}>{v ?? '—'}</Tag>
+                            <Tag color={v === 'passed' ? 'green' : 'red'}>
+                              {v ?? '—'}
+                            </Tag>
                           ),
                         },
                         {
@@ -283,11 +325,15 @@ export function ProductionDetail() {
             children: (
               <Card>
                 <Table<DecisionRecord>
-                  rowKey={(row, idx) => `${row.decided_by}-${row.decided_at}-${idx}`}
+                  rowKey={(row, idx) =>
+                    `${row.decided_by}-${row.decided_at}-${idx}`
+                  }
                   dataSource={decisions}
                   columns={decisionColumns}
                   pagination={false}
-                  locale={{ emptyText: t('pages.production.detail.decisionsEmpty') }}
+                  locale={{
+                    emptyText: t('pages.production.detail.decisionsEmpty'),
+                  }}
                 />
               </Card>
             ),
@@ -310,12 +356,16 @@ export function ProductionDetail() {
         cancelText={t('common.actions.cancel')}
         okButtonProps={{ danger: true, loading: cancelMutation.isPending }}
         confirmLoading={cancelMutation.isPending}
-        onOk={() => cancelMutation.mutate(cancelReason.trim() || 'cancelled by requester')}
+        onOk={() =>
+          cancelMutation.mutate(cancelReason.trim() || 'cancelled by requester')
+        }
         onCancel={() => setCancelModalOpen(false)}
         destroyOnHidden
       >
         <div className="py-2">
-          <div className="mb-2">{t('pages.production.detail.cancelReasonLabel')}</div>
+          <div className="mb-2">
+            {t('pages.production.detail.cancelReasonLabel')}
+          </div>
           <Input.TextArea
             rows={4}
             maxLength={2000}
