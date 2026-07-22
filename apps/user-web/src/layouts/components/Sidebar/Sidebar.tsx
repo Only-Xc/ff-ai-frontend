@@ -1,4 +1,5 @@
-import { Menu, type MenuProps } from 'antd'
+import { PlusOutlined } from '@ant-design/icons'
+import { Button, Menu, Tooltip, type MenuProps } from 'antd'
 import { createStyles } from 'antd-style'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -19,6 +20,13 @@ const useStyles = createStyles(({ iconPrefixCls, prefixCls }) => {
     root: {
       paddingBlock: '0 14px',
       paddingInline: '20px 8px',
+    },
+    groupAction: {
+      '&.ant-btn.ant-btn-icon-only': {
+        width: 22,
+        minWidth: 22,
+        height: 22,
+      },
     },
     menu: {
       width: '100%',
@@ -242,16 +250,36 @@ type MenuItem = Required<MenuProps>['items'][number]
 function toMenuItems(
   navItems: NavTreeItem[],
   submenuPopupClassName: string,
+  groupActionClassName: string,
 ): MenuItem[] {
   return navItems.map((item) => {
     const children = item.children
-      ? toMenuItems(item.children, submenuPopupClassName)
+      ? toMenuItems(item.children, submenuPopupClassName, groupActionClassName)
       : undefined
 
     if (item.kind === 'group') {
       return {
         key: item.key,
-        label: item.label,
+        label: item.groupAction ? (
+          <span className="flex w-full items-center justify-between gap-2">
+            <span className="min-w-0 truncate">{item.label}</span>
+            <Tooltip title={item.groupAction.label}>
+              <Button
+                aria-label={item.groupAction.label}
+                className={groupActionClassName}
+                icon={<PlusOutlined />}
+                size="small"
+                type="text"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  item.groupAction?.onClick()
+                }}
+              />
+            </Tooltip>
+          </span>
+        ) : (
+          item.label
+        ),
         type: 'group',
         children,
       }
@@ -287,8 +315,8 @@ export function Sidebar({
   )
 
   const items = useMemo<MenuItem[]>(
-    () => toMenuItems(navItems, styles.submenuPopup),
-    [navItems, styles.submenuPopup],
+    () => toMenuItems(navItems, styles.submenuPopup, styles.groupAction),
+    [navItems, styles.groupAction, styles.submenuPopup],
   )
 
   const pathByKey = useMemo(() => {

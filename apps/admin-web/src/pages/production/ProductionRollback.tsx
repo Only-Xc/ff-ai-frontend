@@ -1,12 +1,21 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
-import { Alert, Button, Card, Form, Input, Popconfirm, Space, message } from 'antd'
+import {
+  Alert,
+  Button,
+  Card,
+  Form,
+  Input,
+  Popconfirm,
+  Space,
+  message,
+} from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 
-import { productionAgents_rollback, type ProductionRollbackCreatePayload } from '@/api/production'
+import { productionAgents_rollback } from '@/api/production'
 
 interface RollbackFormValues {
   agent_id: string
@@ -21,10 +30,12 @@ export function ProductionRollback() {
   const [form] = Form.useForm<RollbackFormValues>()
 
   const mutation = useMutation({
-    mutationFn: (data: ProductionRollbackCreatePayload) =>
+    mutationFn: (data: RollbackFormValues) =>
       productionAgents_rollback(data.agent_id, { reason: data.reason }),
     onSuccess: (data) => {
-      message.success(t('pages.production.rollback.success', { agent: data.agent_id }))
+      message.success(
+        t('pages.production.rollback.success', { agent: data.agent_id }),
+      )
       form.resetFields()
     },
     onError: (err: Error) => {

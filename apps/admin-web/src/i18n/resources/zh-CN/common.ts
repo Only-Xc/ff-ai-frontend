@@ -11,6 +11,7 @@ export default {
   'common.actions.delete': '删除',
   'common.actions.edit': '编辑',
   'common.actions.detail': '详情',
+  'common.actions.back': '返回',
   'common.labels.totalCount': '共 {{total}} 条',
   'common.user.logout': '退出登录',
   'common.errors.noPermission': '无权限访问',

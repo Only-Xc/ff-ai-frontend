@@ -1,5 +1,6 @@
 import {
   ApartmentOutlined,
+  AppstoreOutlined,
   DatabaseOutlined,
   DesktopOutlined,
   FileTextOutlined,
@@ -51,6 +52,41 @@ export const appRoutes: AppRouteObject[] = [
   },
   {
     children: [
+      {
+        path: '/platform-apps',
+        element: lazyLoad(() => import('@/pages/plugins/PlatformApps')),
+        handle: {
+          title: 'Platform Apps',
+          titleKey: 'routes.platformApps.title',
+          icon: <AppstoreOutlined />,
+          navKey: 'platform-apps-catalog',
+          hideInMenu: true,
+          permission: 'user.plugins.read',
+        },
+      },
+      {
+        path: '/platform-apps/plugins/:pluginId',
+        element: lazyLoad(() => import('@/pages/plugins/PluginCarrier')),
+        handle: {
+          title: 'Plugin App',
+          titleKey: 'routes.pluginCarrier.title',
+          navKey: 'platform-plugin-carrier',
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+          permission: 'user.plugins.access',
+        },
+      },
+      {
+        path: '/platform-apps/workflows/:workflowAppId/chat',
+        element: lazyLoad(() => import('@/pages/plugins/WorkflowChat')),
+        handle: {
+          title: 'Workflow',
+          titleKey: 'routes.workflowChat.title',
+          navKey: 'workflow-plugin-chat',
+          hideInMenu: true,
+          permission: 'user.plugins.access',
+        },
+      },
       {
         path: '/chat',
         element: lazyLoad(() => import('@/pages/chat/Chat')),
@@ -171,6 +207,7 @@ export const appRoutes: AppRouteObject[] = [
           menuType: 'menu',
           navKey: 'exams',
           navOrder: 5,
+          hideInMenu: true,
           hideInBreadcrumb: true,
           permission: 'user.exams.read',
           menuCode: 'menu.user.exams',

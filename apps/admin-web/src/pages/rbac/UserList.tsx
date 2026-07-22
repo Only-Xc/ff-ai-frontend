@@ -31,14 +31,18 @@ import {
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { usePermission } from '@/hooks/usePermission'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
+import { useLocale } from '@/i18n/useLocale'
 import { useAuthStore } from '@/store/useAuth'
 import { UserFormDrawer } from './UserFormDrawer'
 import { UserRoleDrawer } from './UserRoleDrawer'
+import { getRoleDisplayName } from './roleDisplay'
 
 const { Search } = Input
 
 // Resolve role IDs to short display names
 function useRoleNameMap() {
+  const { t } = useTranslation()
+  const { locale } = useLocale()
   const { data } = useQuery({
     queryKey: rbacKeys.roles({ keyword: '', skip: 0, limit: 200 }),
     queryFn: () => adminRoles_list({ keyword: '', skip: 0, limit: 200 }),
@@ -46,10 +50,10 @@ function useRoleNameMap() {
   return useMemo(() => {
     const map = new Map<string, string>()
     for (const r of data?.data ?? []) {
-      map.set(r.id, r.name)
+      map.set(r.id, getRoleDisplayName(r, locale, t))
     }
     return map
-  }, [data])
+  }, [data, locale, t])
 }
 
 // Component that renders a user's roles as tags

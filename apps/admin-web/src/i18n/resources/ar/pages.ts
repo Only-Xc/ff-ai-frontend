@@ -1,4 +1,132 @@
 export default {
+  'pages.pluginCenter.title': 'Plugin Center',
+  'pages.pluginCenter.subtitle': 'Manage plugin definitions, versions, tenant installations, runtime health, and scope grants.',
+  'pages.pluginCenter.search': 'Search by plugin name or ID',
+  'pages.pluginCenter.loadFailed': 'Failed to load plugins',
+  'pages.pluginCenter.detailLoadFailed': 'Failed to load plugin details',
+  'pages.pluginCenter.total': '{{total}} plugins',
+  'pages.pluginCenter.columns.plugin': 'Plugin',
+  'pages.pluginCenter.columns.source': 'Source',
+  'pages.pluginCenter.columns.status': 'Status',
+  'pages.pluginCenter.columns.versions': 'Versions',
+  'pages.pluginCenter.columns.installations': 'Installs',
+  'pages.pluginCenter.columns.health': 'Healthy / Risk',
+  'pages.pluginCenter.columns.updatedAt': 'Updated',
+  'pages.pluginCenter.columns.actions': 'Actions',
+  'pages.pluginCenter.actions.detail': 'View details',
+  'pages.pluginCenter.actions.install': 'Install plugin',
+  'pages.pluginCenter.actions.workflowPublications': 'Workflow publications',
+  'pages.pluginCenter.install.title': 'Install {{name}}',
+  'pages.pluginCenter.install.submit': 'Start installation',
+  'pages.pluginCenter.install.organization': 'Target organization',
+  'pages.pluginCenter.install.organizationRequired': 'Select an organization',
+  'pages.pluginCenter.install.version': 'Plugin version',
+  'pages.pluginCenter.install.runtimeName': 'Runtime app name (optional)',
+  'pages.pluginCenter.install.runtimeNameInvalid': 'Must start with plugin- and contain lowercase letters, digits, or hyphens',
+  'pages.pluginCenter.install.config': 'Configuration JSON',
+  'pages.pluginCenter.install.secrets': 'Secrets JSON',
+  'pages.pluginCenter.install.secretsHint': 'Secrets are write-only and are never returned by the API.',
+  'pages.pluginCenter.install.jsonInvalid': 'Enter a valid JSON object',
+  'pages.pluginCenter.install.organizationsFailed': 'Failed to load organizations',
+  'pages.pluginCenter.install.managedExternally': 'This plugin is managed by the platform and does not require a container install',
+  'pages.pluginCenter.messages.installQueued': 'Plugin installation queued',
+  'pages.pluginCenter.messages.operationQueued': 'Lifecycle operation queued',
+  'pages.pluginCenter.status.active': 'Active',
+  'pages.pluginCenter.status.enabled': 'Enabled',
+  'pages.pluginCenter.status.healthy': 'Healthy',
+  'pages.pluginCenter.status.installed': 'Installed',
+  'pages.pluginCenter.status.registered': 'Registered',
+  'pages.pluginCenter.status.pending': 'Pending',
+  'pages.pluginCenter.status.installing': 'Installing',
+  'pages.pluginCenter.status.starting': 'Starting',
+  'pages.pluginCenter.status.upgrading': 'Upgrading',
+  'pages.pluginCenter.status.disabled': 'Disabled',
+  'pages.pluginCenter.status.unhealthy': 'Unhealthy',
+  'pages.pluginCenter.status.failed': 'Failed',
+  'pages.pluginCenter.status.uninstalled': 'Uninstalled',
+  'pages.pluginCenter.tabs.overview': 'Overview',
+  'pages.pluginCenter.tabs.versions': 'Versions',
+  'pages.pluginCenter.tabs.installations': 'Installations',
+  'pages.pluginCenter.tabs.runtime': 'Runtime',
+  'pages.pluginCenter.tabs.permissions': 'Scope grants',
+  'pages.pluginCenter.overview.description': 'Description',
+  'pages.pluginCenter.overview.delivery': 'Delivery',
+  'pages.pluginCenter.overview.runtime': 'Runtime mode',
+  'pages.pluginCenter.overview.uninstallPolicy': 'Uninstall policy',
+  'pages.pluginCenter.overview.updatedAt': 'Updated',
+  'pages.pluginCenter.overview.manifest': 'Manifest',
+  'pages.pluginCenter.versions.image': 'Image / delivery reference',
+  'pages.pluginCenter.versions.verified': 'Verified',
+  'pages.pluginCenter.versions.createdAt': 'Created',
+  'pages.pluginCenter.installations.instance': 'Instance ID',
+  'pages.pluginCenter.installations.organization': 'Organization ID',
+  'pages.pluginCenter.installations.runtime': 'Runtime app',
+  'pages.pluginCenter.installations.updatedAt': 'Updated',
+  'pages.pluginCenter.runtime.loadFailed': 'Failed to load runtime resources',
+  'pages.pluginCenter.runtime.resources': 'Resources',
+  'pages.pluginCenter.runtime.services': 'Services',
+  'pages.pluginCenter.runtime.routes': 'Routes',
+  'pages.pluginCenter.runtime.empty': 'No installations',
+  'pages.pluginCenter.permissions.role': 'Role',
+  'pages.pluginCenter.permissions.organization': 'Grant scope',
+  'pages.pluginCenter.permissions.global': 'Global grant',
+  'pages.pluginCenter.permissions.save': 'Save grants',
+  'pages.pluginCenter.permissions.saved': 'Scope grants saved',
+  'pages.pluginCenter.permissions.selectRole': 'Select a role to configure plugin scopes',
+  'pages.pluginCenter.permissions.loadFailed': 'Failed to load permissions or roles',
+  'pages.pluginCenter.lifecycle.enable.action': 'Enable',
+  'pages.pluginCenter.lifecycle.enable.title': 'Enable plugin instance',
+  'pages.pluginCenter.lifecycle.enable.confirm': 'Enable {{instance}}?',
+  'pages.pluginCenter.lifecycle.disable.action': 'Disable',
+  'pages.pluginCenter.lifecycle.disable.title': 'Disable plugin instance',
+  'pages.pluginCenter.lifecycle.disable.confirm': 'Disable {{instance}}? Data will be retained.',
+  'pages.pluginCenter.lifecycle.restart.action': 'Restart',
+  'pages.pluginCenter.lifecycle.restart.title': 'Restart plugin instance',
+  'pages.pluginCenter.lifecycle.restart.confirm': 'Restart {{instance}}?',
+  'pages.pluginCenter.lifecycle.uninstall-soft.action': 'Soft uninstall',
+  'pages.pluginCenter.lifecycle.uninstall-soft.title': 'Soft uninstall plugin',
+  'pages.pluginCenter.lifecycle.uninstall-soft.confirm': 'Soft uninstall {{instance}}? Data and configuration will be retained.',
+  'pages.pluginCenter.lifecycle.upgrade.action': 'Upgrade',
+  'pages.pluginCenter.lifecycle.upgrade.title': 'Upgrade plugin instance',
+  'pages.pluginCenter.lifecycle.upgrade.select': 'Select target version',
+  'pages.pluginCenter.lifecycle.hard.action': 'Hard uninstall',
+  'pages.pluginCenter.lifecycle.hard.title': 'Permanently remove plugin instance',
+  'pages.pluginCenter.lifecycle.hard.warning': 'This permanently removes runtime resources and data and cannot be undone.',
+  'pages.pluginCenter.lifecycle.hard.inputHint': 'Enter instance ID {{instance}} to confirm.',
+  'pages.pluginCenter.lifecycle.hard.backup': 'I have completed and verified a data backup',
+  'pages.workflowPublications.title': 'نشر مكونات Workflow',
+  'pages.workflowPublications.subtitle':
+    'إدارة ربط Workflow بالمكونات ودورة حياة النشر.',
+  'pages.workflowPublications.search': 'البحث عن Workflow أو الإصدار',
+  'pages.workflowPublications.allStatuses': 'كل الحالات',
+  'pages.workflowPublications.loadFailed': 'فشل تحميل سجلات النشر',
+  'pages.workflowPublications.actionSucceeded': 'اكتمل الإجراء',
+  'pages.workflowPublications.rollbackSucceeded': 'اكتمل التراجع',
+  'pages.workflowPublications.retry': 'إعادة النشر',
+  'pages.workflowPublications.enable': 'تفعيل',
+  'pages.workflowPublications.disable': 'تعطيل',
+  'pages.workflowPublications.archive': 'أرشفة',
+  'pages.workflowPublications.archiveConfirm':
+    'أرشفة التطبيق وإزالته من الفهرس؟',
+  'pages.workflowPublications.rollback': 'تراجع',
+  'pages.workflowPublications.rollbackTitle': 'التراجع عن Workflow',
+  'pages.workflowPublications.rollbackDescription': 'اختر إصدارا سابقا.',
+  'pages.workflowPublications.rollbackTarget': 'اختر الإصدار',
+  'pages.workflowPublications.columns.workflow': 'Workflow',
+  'pages.workflowPublications.columns.version': 'الإصدار',
+  'pages.workflowPublications.columns.status': 'الحالة',
+  'pages.workflowPublications.columns.step': 'الخطوة',
+  'pages.workflowPublications.columns.error': 'آخر خطأ',
+  'pages.workflowPublications.columns.publishedAt': 'وقت النشر',
+  'pages.workflowPublications.columns.actions': 'الإجراءات',
+  'pages.workflowPublications.status.pending': 'قيد الانتظار',
+  'pages.workflowPublications.status.publishing': 'قيد النشر',
+  'pages.workflowPublications.status.published': 'منشور',
+  'pages.workflowPublications.status.superseded': 'مستبدل',
+  'pages.workflowPublications.status.failed': 'فشل',
+  'pages.workflowPublications.status.disabled': 'معطل',
+  'pages.workflowPublications.status.rolled_back': 'تم التراجع',
+  'pages.workflowPublications.status.archived': 'مؤرشف',
   'pages.dataAccess.apisix.role':
     'يتحقق من رموز JWT ويوجه الطلبات المقبولة إلى بوابة صلاحيات الحقول.',
   'pages.dataAccess.status.connected': 'متصل',
@@ -733,41 +861,62 @@ export default {
   'pages.stageSwitch.templates.empty': 'لا توجد قوالب موافقة',
   'pages.stageSwitch.templates.validationPassed': 'اجتاز القالب التحقق',
   'pages.stageSwitch.templates.validationFailed': 'فشل التحقق من القالب',
-  'pages.stageSwitch.templates.publishConfirm': 'نشر هذا القالب؟ سيصبح للقراءة فقط بعد النشر.',
-  'pages.stageSwitch.templates.retireConfirm': 'تقاعد هذا القالب؟ لن يُستخدم للطلبات الجديدة.',
+  'pages.stageSwitch.templates.publishConfirm':
+    'نشر هذا القالب؟ سيصبح للقراءة فقط بعد النشر.',
+  'pages.stageSwitch.templates.retireConfirm':
+    'تقاعد هذا القالب؟ لن يُستخدم للطلبات الجديدة.',
   'pages.stageSwitch.templates.publishSuccess': 'تم نشر القالب',
   'pages.stageSwitch.templates.retireSuccess': 'تم تقاعد القالب',
   'pages.stageSwitch.templates.cloneSuccess': 'تم النسخ كإصدار مسودة جديد',
   'pages.stageSwitch.templateEditor.createTitle': 'إنشاء قالب موافقة',
-  'pages.stageSwitch.templateEditor.createSubtitle': 'تهيئة المعتمدين وسياسات التذكير لعقد الموافقة الأربع الثابتة',
-  'pages.stageSwitch.templateEditor.versionSubtitle': 'إصدار القالب v{{version}}',
+  'pages.stageSwitch.templateEditor.createSubtitle':
+    'تهيئة المعتمدين وسياسات التذكير لعقد الموافقة الأربع الثابتة',
+  'pages.stageSwitch.templateEditor.versionSubtitle':
+    'إصدار القالب v{{version}}',
   'pages.stageSwitch.templateEditor.backToList': 'العودة إلى القوالب',
   'pages.stageSwitch.templateEditor.loadFailed': 'فشل تحميل تفاصيل القالب',
   'pages.stageSwitch.templateEditor.notFound': 'القالب غير موجود',
-  'pages.stageSwitch.templateEditor.readOnlyPublished': 'القوالب المنشورة والمتقاعدة للقراءة فقط. انسخ هذا القالب لإنشاء مسودة قابلة للتعديل.',
-  'pages.stageSwitch.templateEditor.readOnlyPermission': 'يملك حسابك صلاحية عرض هذا القالب فقط.',
+  'pages.stageSwitch.templateEditor.readOnlyPublished':
+    'القوالب المنشورة والمتقاعدة للقراءة فقط. انسخ هذا القالب لإنشاء مسودة قابلة للتعديل.',
+  'pages.stageSwitch.templateEditor.readOnlyPermission':
+    'يملك حسابك صلاحية عرض هذا القالب فقط.',
   'pages.stageSwitch.templateEditor.templateKey': 'مفتاح القالب',
-  'pages.stageSwitch.templateEditor.templateKeyHelp': 'يسمح بالحروف والأرقام والشرطة السفلية والواصلة فقط، ولا يمكن تغيير المفتاح بعد الإنشاء.',
+  'pages.stageSwitch.templateEditor.templateKeyHelp':
+    'يسمح بالحروف والأرقام والشرطة السفلية والواصلة فقط، ولا يمكن تغيير المفتاح بعد الإنشاء.',
   'pages.stageSwitch.templateEditor.name': 'اسم القالب',
   'pages.stageSwitch.templateEditor.description': 'الوصف',
   'pages.stageSwitch.templateEditor.nodesTitle': 'عقد الموافقة',
-  'pages.stageSwitch.templateEditor.nodesHelp': 'عقد الوزارة وأمن المعلومات والحوكمة ومالك الخدمة ثابتة بهذا الترتيب.',
+  'pages.stageSwitch.templateEditor.nodesHelp':
+    'عقد الوزارة وأمن المعلومات والحوكمة ومالك الخدمة ثابتة بهذا الترتيب.',
   'pages.stageSwitch.templateEditor.noNodes': 'لا يوجد إعداد للعقد',
   'pages.stageSwitch.templateEditor.saveSuccess': 'تم حفظ القالب',
-  'pages.stageSwitch.templateEditor.saveBeforeAction': 'احفظ التغييرات قبل التحقق أو النشر.',
-  'pages.stageSwitch.templateEditor.validation.templateKeyRequired': 'أدخل مفتاح القالب',
-  'pages.stageSwitch.templateEditor.validation.templateKeyFormat': 'يجب أن يحتوي مفتاح القالب على حروف وأرقام وشرطة سفلية وواصلة فقط',
+  'pages.stageSwitch.templateEditor.saveBeforeAction':
+    'احفظ التغييرات قبل التحقق أو النشر.',
+  'pages.stageSwitch.templateEditor.validation.templateKeyRequired':
+    'أدخل مفتاح القالب',
+  'pages.stageSwitch.templateEditor.validation.templateKeyFormat':
+    'يجب أن يحتوي مفتاح القالب على حروف وأرقام وشرطة سفلية وواصلة فقط',
   'pages.stageSwitch.templateEditor.validation.nameRequired': 'أدخل اسم القالب',
-  'pages.stageSwitch.templateEditor.validation.nodeNameRequired': 'أدخل اسم العقدة',
-  'pages.stageSwitch.templateEditor.validation.slaPositive': 'يجب أن تكون مدة SLA أكبر من صفر دقيقة',
-  'pages.stageSwitch.templateEditor.validation.beforeDueRange': 'يجب أن يكون تذكير ما قبل الاستحقاق صفرا أو أكثر وأقل من SLA',
-  'pages.stageSwitch.templateEditor.validation.repeatMinimum': 'يجب ألا يقل فاصل التذكير عن 30 دقيقة',
-  'pages.stageSwitch.templateEditor.validation.escalationNonNegative': 'لا يمكن أن تكون عتبة التصعيد سالبة',
-  'pages.stageSwitch.templateEditor.validation.approverRequired': 'أدخل UUID واحدا على الأقل لدور أو مستخدم معتمد',
-  'pages.stageSwitch.templateEditor.validation.uuidFormat': 'يجب أن تكون معرفات المعتمدين UUID صالحة',
-  'pages.stageSwitch.templateEditor.validation.profileFieldRequired': 'حقل ملف مالك الخدمة غير مهيأ',
-  'pages.stageSwitch.templateEditor.validation.escalationUuidFormat': 'يجب أن تكون معرفات أدوار التصعيد UUID صالحة',
-  'pages.stageSwitch.templateEditor.validation.fixErrors': 'صحح أخطاء التحقق في القالب قبل المتابعة',
+  'pages.stageSwitch.templateEditor.validation.nodeNameRequired':
+    'أدخل اسم العقدة',
+  'pages.stageSwitch.templateEditor.validation.slaPositive':
+    'يجب أن تكون مدة SLA أكبر من صفر دقيقة',
+  'pages.stageSwitch.templateEditor.validation.beforeDueRange':
+    'يجب أن يكون تذكير ما قبل الاستحقاق صفرا أو أكثر وأقل من SLA',
+  'pages.stageSwitch.templateEditor.validation.repeatMinimum':
+    'يجب ألا يقل فاصل التذكير عن 30 دقيقة',
+  'pages.stageSwitch.templateEditor.validation.escalationNonNegative':
+    'لا يمكن أن تكون عتبة التصعيد سالبة',
+  'pages.stageSwitch.templateEditor.validation.approverRequired':
+    'أدخل UUID واحدا على الأقل لدور أو مستخدم معتمد',
+  'pages.stageSwitch.templateEditor.validation.uuidFormat':
+    'يجب أن تكون معرفات المعتمدين UUID صالحة',
+  'pages.stageSwitch.templateEditor.validation.profileFieldRequired':
+    'حقل ملف مالك الخدمة غير مهيأ',
+  'pages.stageSwitch.templateEditor.validation.escalationUuidFormat':
+    'يجب أن تكون معرفات أدوار التصعيد UUID صالحة',
+  'pages.stageSwitch.templateEditor.validation.fixErrors':
+    'صحح أخطاء التحقق في القالب قبل المتابعة',
   'pages.stageSwitch.nodeEditor.nodes.MINISTRY': 'موافقة الوزارة',
   'pages.stageSwitch.nodeEditor.nodes.INFOSEC': 'موافقة أمن المعلومات',
   'pages.stageSwitch.nodeEditor.nodes.GOVERNANCE': 'موافقة الحوكمة',
@@ -783,29 +932,39 @@ export default {
   'pages.stageSwitch.nodeEditor.slaMinutes': 'SLA (بالدقائق)',
   'pages.stageSwitch.nodeEditor.roleIds': 'معرفات UUID لأدوار الموافقة',
   'pages.stageSwitch.nodeEditor.userIds': 'معرفات UUID لمستخدمي الموافقة',
-  'pages.stageSwitch.nodeEditor.uuidTagsHelp': 'مطلوب. أدخل كل UUID كاملا ثم اضغط Enter أو المسافة أو الفاصلة.',
-  'pages.stageSwitch.nodeEditor.optionalUuidTagsHelp': 'اختياري. أدخل كل UUID كاملا ثم اضغط Enter أو المسافة أو الفاصلة.',
+  'pages.stageSwitch.nodeEditor.uuidTagsHelp':
+    'مطلوب. أدخل كل UUID كاملا ثم اضغط Enter أو المسافة أو الفاصلة.',
+  'pages.stageSwitch.nodeEditor.optionalUuidTagsHelp':
+    'اختياري. أدخل كل UUID كاملا ثم اضغط Enter أو المسافة أو الفاصلة.',
   'pages.stageSwitch.nodeEditor.uuidTagsPlaceholder': 'أدخل UUID ثم اضغط Enter',
-  'pages.stageSwitch.nodeEditor.serviceOwnerNotice': 'يتم تحديد المعتمدين من حقل service_owner_id للخدمة المرتبطة بطلب تبديل المرحلة.',
+  'pages.stageSwitch.nodeEditor.serviceOwnerNotice':
+    'يتم تحديد المعتمدين من حقل service_owner_id للخدمة المرتبطة بطلب تبديل المرحلة.',
   'pages.stageSwitch.nodeEditor.reminderPolicy': 'سياسة التذكير والتصعيد',
-  'pages.stageSwitch.nodeEditor.beforeDueMinutes': 'التذكير قبل الاستحقاق (بالدقائق)',
-  'pages.stageSwitch.nodeEditor.repeatIntervalMinutes': 'فاصل التكرار (بالدقائق)',
-  'pages.stageSwitch.nodeEditor.escalationThresholdMinutes': 'عتبة تصعيد التأخير (بالدقائق)',
+  'pages.stageSwitch.nodeEditor.beforeDueMinutes':
+    'التذكير قبل الاستحقاق (بالدقائق)',
+  'pages.stageSwitch.nodeEditor.repeatIntervalMinutes':
+    'فاصل التكرار (بالدقائق)',
+  'pages.stageSwitch.nodeEditor.escalationThresholdMinutes':
+    'عتبة تصعيد التأخير (بالدقائق)',
   'pages.stageSwitch.nodeEditor.escalationRoleIds': 'معرفات UUID لأدوار التصعيد',
   'pages.stageSwitch.notifications.tabs.unread': 'غير مقروء',
   'pages.stageSwitch.notifications.tabs.all': 'الكل',
   'pages.stageSwitch.notifications.markRead': 'تحديد كمقروء',
   'pages.stageSwitch.notifications.markAllRead': 'تحديد الكل كمقروء',
-  'pages.stageSwitch.notifications.readAllConfirm': 'تحديد كل الإشعارات غير المقروءة كمقروءة؟',
-  'pages.stageSwitch.notifications.readAllSuccess': 'تم تحديد {{count}} إشعار كمقروء',
+  'pages.stageSwitch.notifications.readAllConfirm':
+    'تحديد كل الإشعارات غير المقروءة كمقروءة؟',
+  'pages.stageSwitch.notifications.readAllSuccess':
+    'تم تحديد {{count}} إشعار كمقروء',
   'pages.stageSwitch.notifications.loadFailed': 'فشل تحميل الإشعارات',
   'pages.stageSwitch.notifications.emptyUnread': 'لا توجد إشعارات غير مقروءة',
   'pages.stageSwitch.notifications.emptyAll': 'لا توجد إشعارات',
   'pages.stageSwitch.notifications.unreadLabel': 'غير مقروء',
   'notification.approval_reminder.title': 'موعد موافقة تبديل المرحلة يقترب',
-  'notification.approval_reminder.body': 'يقترب موعد عقدة الموافقة «{{node_name}}». الموعد النهائي: {{due_at}}.',
+  'notification.approval_reminder.body':
+    'يقترب موعد عقدة الموافقة «{{node_name}}». الموعد النهائي: {{due_at}}.',
   'notification.approval_escalated.title': 'تم تصعيد موافقة تبديل المرحلة',
-  'notification.approval_escalated.body': 'تأخرت عقدة الموافقة «{{node_name}}» وتم تصعيدها. الموعد الأصلي: {{due_at}}.',
+  'notification.approval_escalated.body':
+    'تأخرت عقدة الموافقة «{{node_name}}» وتم تصعيدها. الموعد الأصلي: {{due_at}}.',
   'pages.examManagement.actions.backToList': 'العودة إلى القائمة',
   'pages.examManagement.actions.createQuestion': 'إضافة سؤال',
   'pages.examManagement.actions.editQuestion': 'تعديل السؤال',
@@ -816,8 +975,10 @@ export default {
   'pages.examManagement.actions.unpublish': 'إلغاء النشر',
   'pages.examManagement.attemptLimit.unlimited': 'بلا حد',
   'pages.examManagement.attemptOverview.title': 'ملخص الإجابات',
-  'pages.examManagement.attemptOverview.subtitle': 'عرض محاولات كل المستخدمين حسب الاختبار والحالة.',
-  'pages.examManagement.attemptResult.answerLine': 'إجابة المستخدم: {{userAnswer}}؛ الإجابة الصحيحة: {{correctAnswer}}؛ الدرجة: {{score}}',
+  'pages.examManagement.attemptOverview.subtitle':
+    'عرض محاولات كل المستخدمين حسب الاختبار والحالة.',
+  'pages.examManagement.attemptResult.answerLine':
+    'إجابة المستخدم: {{userAnswer}}؛ الإجابة الصحيحة: {{correctAnswer}}؛ الدرجة: {{score}}',
   'pages.examManagement.attemptResult.explanation': 'الشرح: {{explanation}}',
   'pages.examManagement.attemptResult.title': 'تفاصيل محاولة الإجابة',
   'pages.examManagement.columns.action': 'الإجراء',
@@ -845,51 +1006,71 @@ export default {
   'pages.examManagement.columns.user': 'المستخدم',
   'pages.examManagement.detail.currentPaper': 'الاختبار الحالي',
   'pages.examManagement.detail.ruleSettings': 'القواعد',
-  'pages.examManagement.detail.subtitle': 'إدارة أسئلة هذا الاختبار واستيراد مجموعات JSON ومراجعة محاولات هذا الاختبار.',
+  'pages.examManagement.detail.subtitle':
+    'إدارة أسئلة هذا الاختبار واستيراد مجموعات JSON ومراجعة محاولات هذا الاختبار.',
   'pages.examManagement.detail.timeInfo': 'معلومات الوقت',
   'pages.examManagement.detail.titleFallback': 'تفاصيل الاختبار',
   'pages.examManagement.difficulty.easy': 'سهل',
   'pages.examManagement.difficulty.hard': 'صعب',
   'pages.examManagement.difficulty.medium': 'متوسط',
   'pages.examManagement.empty.description': 'لا يوجد وصف',
-  'pages.examManagement.errors.attemptOverviewLoadFailed': 'فشل تحميل ملخص الإجابات',
+  'pages.examManagement.errors.attemptOverviewLoadFailed':
+    'فشل تحميل ملخص الإجابات',
   'pages.examManagement.errors.detailLoadFailed': 'فشل تحميل تفاصيل الاختبار',
   'pages.examManagement.errors.listLoadFailed': 'فشل تحميل قائمة الاختبارات',
   'pages.examManagement.errors.missingPaperId': 'معرف الاختبار مفقود',
-  'pages.examManagement.errors.statsFallback': 'واجهة الإحصاءات غير متاحة. يتم عرض إحصاءات محلية من تفاصيل المحاولة المفتوحة.',
+  'pages.examManagement.errors.statsFallback':
+    'واجهة الإحصاءات غير متاحة. يتم عرض إحصاءات محلية من تفاصيل المحاولة المفتوحة.',
   'pages.examManagement.filters.paper': 'اختر الاختبار',
   'pages.examManagement.filters.paperTitle': 'ابحث بعنوان الاختبار',
   'pages.examManagement.filters.status': 'الحالة',
   'pages.examManagement.form.allowedUserIds': 'معرفات المستخدمين المسموحين',
-  'pages.examManagement.form.allowedUserIdsTooltip': 'أدخل معرف مستخدم في كل سطر أو افصل المعرفات بفواصل. اتركه فارغا لاستخدام النطاق الافتراضي من الخادم.',
-  'pages.examManagement.form.descriptionPlaceholder': 'اكتب نطاق الاختبار أو التعليمات أو المستخدمين المستهدفين',
+  'pages.examManagement.form.allowedUserIdsTooltip':
+    'أدخل معرف مستخدم في كل سطر أو افصل المعرفات بفواصل. اتركه فارغا لاستخدام النطاق الافتراضي من الخادم.',
+  'pages.examManagement.form.descriptionPlaceholder':
+    'اكتب نطاق الاختبار أو التعليمات أو المستخدمين المستهدفين',
   'pages.examManagement.form.examTitle': 'عنوان الاختبار',
-  'pages.examManagement.form.examTitlePlaceholder': 'مثال: اختبار أساسيات أمان المنصة',
+  'pages.examManagement.form.examTitlePlaceholder':
+    'مثال: اختبار أساسيات أمان المنصة',
   'pages.examManagement.form.examTitleRequired': 'أدخل عنوان الاختبار',
   'pages.examManagement.form.knowledgeDataset': 'قاعدة المعرفة',
   'pages.examManagement.form.knowledgeDatasetPlaceholder': 'بدون قاعدة معرفة',
-  'pages.examManagement.form.knowledgeDatasetTooltip': 'عند اختيار قاعدة معرفة، يدخل الاختبار حالة التوليد ويتم إرسال مهمة توليد أسئلة بالذكاء الاصطناعي.',
+  'pages.examManagement.form.knowledgeDatasetTooltip':
+    'عند اختيار قاعدة معرفة، يدخل الاختبار حالة التوليد ويتم إرسال مهمة توليد أسئلة بالذكاء الاصطناعي.',
   'pages.examManagement.form.modeRequired': 'اختر النمط',
   'pages.examManagement.form.passingScoreRequired': 'أدخل درجة النجاح',
   'pages.examManagement.form.randomCount': 'عدد الأسئلة العشوائية',
   'pages.examManagement.form.randomCountRequired': 'أدخل عدد الأسئلة العشوائية',
   'pages.examManagement.form.timeLimitMinutes': 'الحد الزمني (دقائق)',
-  'pages.examManagement.import.description': 'الصق JSON للأسئلة المولدة بالذكاء الاصطناعي. يتحقق العميل من النوع والخيارات والإجابات الصحيحة والدرجة قبل الاستيراد.',
-  'pages.examManagement.import.errors.emptyQuestions': 'استورد سؤالا واحدا على الأقل',
+  'pages.examManagement.import.description':
+    'الصق JSON للأسئلة المولدة بالذكاء الاصطناعي. يتحقق العميل من النوع والخيارات والإجابات الصحيحة والدرجة قبل الاستيراد.',
+  'pages.examManagement.import.errors.emptyQuestions':
+    'استورد سؤالا واحدا على الأقل',
   'pages.examManagement.import.errors.invalidJson': 'تنسيق JSON غير صالح',
-  'pages.examManagement.import.errors.invalidQuestionType': 'يجب أن يكون نوع السؤال single أو multiple أو true_false',
-  'pages.examManagement.import.errors.missingQuestions': 'يجب أن يحتوي الكائن الجذر على مصفوفة questions',
-  'pages.examManagement.import.errors.multipleCorrectRequired': 'أسئلة الاختيار المتعدد تحتاج إلى إجابتين صحيحتين على الأقل',
-  'pages.examManagement.import.errors.optionCorrectBoolean': 'يجب أن تكون is_correct في الخيار قيمة منطقية',
-  'pages.examManagement.import.errors.optionKeyDuplicate': 'لا يمكن تكرار مفتاح الخيار',
+  'pages.examManagement.import.errors.invalidQuestionType':
+    'يجب أن يكون نوع السؤال single أو multiple أو true_false',
+  'pages.examManagement.import.errors.missingQuestions':
+    'يجب أن يحتوي الكائن الجذر على مصفوفة questions',
+  'pages.examManagement.import.errors.multipleCorrectRequired':
+    'أسئلة الاختيار المتعدد تحتاج إلى إجابتين صحيحتين على الأقل',
+  'pages.examManagement.import.errors.optionCorrectBoolean':
+    'يجب أن تكون is_correct في الخيار قيمة منطقية',
+  'pages.examManagement.import.errors.optionKeyDuplicate':
+    'لا يمكن تكرار مفتاح الخيار',
   'pages.examManagement.import.errors.optionKeyRequired': 'مفتاح الخيار مطلوب',
-  'pages.examManagement.import.errors.optionMustBeObject': 'يجب أن يكون الخيار كائنا',
+  'pages.examManagement.import.errors.optionMustBeObject':
+    'يجب أن يكون الخيار كائنا',
   'pages.examManagement.import.errors.optionTextRequired': 'نص الخيار مطلوب',
-  'pages.examManagement.import.errors.optionsRequired': 'يجب أن تكون options مصفوفة غير فارغة',
-  'pages.examManagement.import.errors.questionError': 'السؤال {{index}}: {{reason}}',
-  'pages.examManagement.import.errors.questionMustBeObject': 'يجب أن يكون السؤال كائنا',
-  'pages.examManagement.import.errors.scorePositive': 'يجب أن تكون score أكبر من 0',
-  'pages.examManagement.import.errors.singleCorrectRequired': 'أسئلة الاختيار الواحد والصح أو الخطأ تحتاج إلى إجابة صحيحة واحدة فقط',
+  'pages.examManagement.import.errors.optionsRequired':
+    'يجب أن تكون options مصفوفة غير فارغة',
+  'pages.examManagement.import.errors.questionError':
+    'السؤال {{index}}: {{reason}}',
+  'pages.examManagement.import.errors.questionMustBeObject':
+    'يجب أن يكون السؤال كائنا',
+  'pages.examManagement.import.errors.scorePositive':
+    'يجب أن تكون score أكبر من 0',
+  'pages.examManagement.import.errors.singleCorrectRequired':
+    'أسئلة الاختيار الواحد والصح أو الخطأ تحتاج إلى إجابة صحيحة واحدة فقط',
   'pages.examManagement.import.errors.textRequired': 'نص السؤال مطلوب',
   'pages.examManagement.import.parsedCount': 'تم تحليل {{count}} أسئلة',
   'pages.examManagement.import.sample.explanation': 'B صحيحة.',
@@ -904,10 +1085,12 @@ export default {
   'pages.examManagement.labels.defaultScope': 'النطاق الافتراضي',
   'pages.examManagement.labels.questionCount': '{{total}} أسئلة',
   'pages.examManagement.labels.userCount': '{{total}} مستخدمين',
-  'pages.examManagement.list.subtitle': 'إدارة الاختبارات وحالة النشر وإعدادات الأسئلة.',
+  'pages.examManagement.list.subtitle':
+    'إدارة الاختبارات وحالة النشر وإعدادات الأسئلة.',
   'pages.examManagement.list.title': 'إدارة الاختبارات',
   'pages.examManagement.messages.examCreated': 'تم إنشاء الاختبار',
-  'pages.examManagement.messages.examCreatedAndGenerating': 'تم إنشاء الاختبار وبدأ توليد الأسئلة',
+  'pages.examManagement.messages.examCreatedAndGenerating':
+    'تم إنشاء الاختبار وبدأ توليد الأسئلة',
   'pages.examManagement.messages.examDeleted': 'تم حذف الاختبار',
   'pages.examManagement.messages.examPublished': 'تم نشر الاختبار',
   'pages.examManagement.messages.examUnpublished': 'تم إلغاء نشر الاختبار',
@@ -930,20 +1113,28 @@ export default {
   'pages.examManagement.questionType.multiple': 'اختيار متعدد',
   'pages.examManagement.questionType.single': 'اختيار واحد',
   'pages.examManagement.questionType.true_false': 'صح أو خطأ',
-  'pages.examManagement.exam.deleteDescription': 'هل تريد حذف هذا الاختبار وأسئلته؟',
+  'pages.examManagement.exam.deleteDescription':
+    'هل تريد حذف هذا الاختبار وأسئلته؟',
   'pages.examManagement.exam.deleteTitle': 'حذف الاختبار',
   'pages.examManagement.questionForm.addOption': 'إضافة خيار',
   'pages.examManagement.questionForm.correct': 'صحيح',
   'pages.examManagement.questionForm.correctAnswer': 'الإجابة الصحيحة',
-  'pages.examManagement.questionForm.correctAnswerWithColon': 'الإجابة الصحيحة: ',
+  'pages.examManagement.questionForm.correctAnswerWithColon':
+    'الإجابة الصحيحة: ',
   'pages.examManagement.questionForm.deleteOption': 'حذف الخيار',
   'pages.examManagement.questionForm.difficultyRequired': 'اختر الصعوبة',
-  'pages.examManagement.questionForm.errors.multipleCorrectRequired': 'أسئلة الاختيار المتعدد تحتاج إلى إجابتين صحيحتين على الأقل',
-  'pages.examManagement.questionForm.errors.optionKeyDuplicate': 'لا يمكن تكرار مفتاح الخيار',
-  'pages.examManagement.questionForm.errors.optionKeyRequired': 'مفتاح الخيار مطلوب',
-  'pages.examManagement.questionForm.errors.optionRequired': 'أضف خيارا واحدا على الأقل',
-  'pages.examManagement.questionForm.errors.singleCorrectRequired': 'أسئلة الاختيار الواحد والصح أو الخطأ تحتاج إلى إجابة صحيحة واحدة فقط',
-  'pages.examManagement.questionForm.explanationPlaceholder': 'أدخل شرح الإجابة أو ملاحظات نقطة المعرفة أو المراجع.',
+  'pages.examManagement.questionForm.errors.multipleCorrectRequired':
+    'أسئلة الاختيار المتعدد تحتاج إلى إجابتين صحيحتين على الأقل',
+  'pages.examManagement.questionForm.errors.optionKeyDuplicate':
+    'لا يمكن تكرار مفتاح الخيار',
+  'pages.examManagement.questionForm.errors.optionKeyRequired':
+    'مفتاح الخيار مطلوب',
+  'pages.examManagement.questionForm.errors.optionRequired':
+    'أضف خيارا واحدا على الأقل',
+  'pages.examManagement.questionForm.errors.singleCorrectRequired':
+    'أسئلة الاختيار الواحد والصح أو الخطأ تحتاج إلى إجابة صحيحة واحدة فقط',
+  'pages.examManagement.questionForm.explanationPlaceholder':
+    'أدخل شرح الإجابة أو ملاحظات نقطة المعرفة أو المراجع.',
   'pages.examManagement.questionForm.falseOption': 'خطأ',
   'pages.examManagement.questionForm.optionText': 'نص الخيار',
   'pages.examManagement.questionForm.optionTextPlaceholder': 'أدخل نص الخيار',
@@ -954,19 +1145,24 @@ export default {
   'pages.examManagement.questionForm.sections.options': 'الخيارات والإجابة',
   'pages.examManagement.questionForm.sections.questionText': 'السؤال',
   'pages.examManagement.questionForm.textLength': 'طول السؤال: {{count}} حرف',
-  'pages.examManagement.questionForm.textPlaceholder': 'أدخل نص السؤال مع سياق واضح ومتطلبات إجابة محددة.',
+  'pages.examManagement.questionForm.textPlaceholder':
+    'أدخل نص السؤال مع سياق واضح ومتطلبات إجابة محددة.',
   'pages.examManagement.questionForm.textRequired': 'أدخل نص السؤال',
   'pages.examManagement.questionForm.trueOption': 'صحيح',
   'pages.examManagement.questionForm.typeRequired': 'اختر نوع السؤال',
   'pages.examManagement.questions.deleteDescription': 'هل تريد حذف هذا السؤال؟',
   'pages.examManagement.questions.deleteTitle': 'حذف السؤال',
-  'pages.examManagement.sections.attempts.description': 'تقدم المستخدمين ونتائج التسليم',
+  'pages.examManagement.sections.attempts.description':
+    'تقدم المستخدمين ونتائج التسليم',
   'pages.examManagement.sections.attempts.title': 'محاولات الإجابة',
-  'pages.examManagement.sections.info.description': 'الحالة والقواعد والتوقيت والوصف',
+  'pages.examManagement.sections.info.description':
+    'الحالة والقواعد والتوقيت والوصف',
   'pages.examManagement.sections.info.title': 'معلومات الاختبار',
-  'pages.examManagement.sections.questions.description': 'الأسئلة التابعة لهذا الاختبار',
+  'pages.examManagement.sections.questions.description':
+    'الأسئلة التابعة لهذا الاختبار',
   'pages.examManagement.sections.questions.title': 'الأسئلة',
-  'pages.examManagement.sections.stats.description': 'عدد المحاولات والدقة حسب السؤال',
+  'pages.examManagement.sections.stats.description':
+    'عدد المحاولات والدقة حسب السؤال',
   'pages.examManagement.sections.stats.title': 'إحصاءات الدقة',
   'pages.examManagement.status.inProgress': 'قيد التنفيذ',
   'pages.examManagement.status.submitted': 'تم التسليم',
@@ -1117,7 +1313,8 @@ export default {
   'pages.rbac.permissions.admin.grc.exceptions.read': 'عرض الاستثناءات',
   'pages.rbac.permissions.admin.grc.exceptions.request': 'طلب استثناء',
   'pages.rbac.permissions.admin.grc.exceptions.approve': 'الموافقة على استثناء',
-  'pages.rbac.permissions.admin.grc.exceptions.approve_critical': 'الموافقة على استثناء حرج',
+  'pages.rbac.permissions.admin.grc.exceptions.approve_critical':
+    'الموافقة على استثناء حرج',
   'pages.rbac.permissions.admin.grc.exceptions.revoke': 'إلغاء استثناء',
   'pages.rbac.permissions.admin.grc.treatments.read': 'عرض المعالجات',
   'pages.rbac.permissions.admin.grc.treatments.manage': 'إدارة المعالجات',
@@ -1225,7 +1422,8 @@ export default {
   'pages.rbac.orgs.messages.createSuccess': 'تم إنشاء المنظمة',
   'pages.rbac.orgs.messages.updateSuccess': 'تم تحديث المنظمة',
   'pages.rbac.orgs.messages.deleteSuccess': 'تم حذف المنظمة',
-  'pages.rbac.orgs.messages.deleteConfirm': 'حذف هذه المنظمة وجميع الفروع التابعة لها؟',
+  'pages.rbac.orgs.messages.deleteConfirm':
+    'حذف هذه المنظمة وجميع الفروع التابعة لها؟',
   'pages.rbac.orgs.members.title': 'الأعضاء',
   'pages.rbac.orgs.members.user': 'المستخدم',
   'pages.rbac.orgs.members.email': 'البريد',
@@ -1270,14 +1468,17 @@ export default {
   'pages.grc.rules.retire': 'تقاعد',
   'pages.grc.rules.createVersion': 'إنشاء إصدار',
   'pages.grc.rules.publishConfirm': 'تأكيد نشر هذا الإصدار من القاعدة؟',
-  'pages.grc.rules.retireConfirm': 'تأكيد تقاعد إصدار القاعدة هذا؟ الإصدارات المتقاعدة لا تشارك في التقييمات الجديدة.',
-  'pages.grc.rules.publishWarning': 'الإصدارات المنشورة غير قابلة للتعديل؛ أنشئ إصدارا جديدا للتعديل.',
+  'pages.grc.rules.retireConfirm':
+    'تأكيد تقاعد إصدار القاعدة هذا؟ الإصدارات المتقاعدة لا تشارك في التقييمات الجديدة.',
+  'pages.grc.rules.publishWarning':
+    'الإصدارات المنشورة غير قابلة للتعديل؛ أنشئ إصدارا جديدا للتعديل.',
   'pages.grc.rules.edit': 'تعديل',
   'pages.grc.rules.enabled': 'مُفعّل',
   'pages.grc.rules.disabled': 'مُعطّل',
   'pages.grc.rules.createRule': 'إنشاء قاعدة',
   'pages.grc.rules.ruleActive': 'تفعيل القاعدة',
-  'pages.grc.rules.ruleActiveTip': 'يتحكم في مشاركة القاعدة بالكامل في تقييم الحوكمة؛ مستقل عن حالة الإصدار (مسودة/منشور/متقاعد).',
+  'pages.grc.rules.ruleActiveTip':
+    'يتحكم في مشاركة القاعدة بالكامل في تقييم الحوكمة؛ مستقل عن حالة الإصدار (مسودة/منشور/متقاعد).',
   'pages.grc.rules.firstVersionConfig': 'إعداد الإصدار الأول',
   'pages.grc.rules.editRule': 'تعديل القاعدة',
   'pages.grc.rules.ruleCode': 'رمز القاعدة',
@@ -1309,17 +1510,25 @@ export default {
   'pages.grc.rules.evaluatorType_json_logic': 'JSON Logic',
   'pages.grc.rules.evaluatorType_manual': 'حكم يدوي',
   'pages.grc.rules.builtinEvaluator': 'المقيم المدمج',
-  'pages.grc.rules.applicableScopeTip': 'كائن JSON يُمرر كمعاملات للمقيم، مثل allowed_domains أو approved_models.',
-  'pages.grc.rules.evidenceRequirementsTip': 'كائن JSON يصف الأدلة المطلوب فحصها أو حفظها أثناء التقييم.',
-  'pages.grc.rules.invalidJson': 'نطاق التطبيق أو متطلبات الأدلة ليس كائن JSON صالحا',
+  'pages.grc.rules.applicableScopeTip':
+    'كائن JSON يُمرر كمعاملات للمقيم، مثل allowed_domains أو approved_models.',
+  'pages.grc.rules.evidenceRequirementsTip':
+    'كائن JSON يصف الأدلة المطلوب فحصها أو حفظها أثناء التقييم.',
+  'pages.grc.rules.invalidJson':
+    'نطاق التطبيق أو متطلبات الأدلة ليس كائن JSON صالحا',
   'pages.grc.rules.versionCreateFailed': 'فشل إنشاء الإصدار',
-  'pages.grc.rules.evaluator_plaintext_secrets_detected': 'كشف الأسرار بالنص الصريح',
-  'pages.grc.rules.evaluator_external_network_allowed': 'قائمة السماح للنطاقات الخارجية',
+  'pages.grc.rules.evaluator_plaintext_secrets_detected':
+    'كشف الأسرار بالنص الصريح',
+  'pages.grc.rules.evaluator_external_network_allowed':
+    'قائمة السماح للنطاقات الخارجية',
   'pages.grc.rules.evaluator_human_oversight_present': 'ضوابط الإشراف البشري',
-  'pages.grc.rules.evaluator_restricted_data_no_external_send': 'منع إرسال البيانات المقيدة خارجيا',
-  'pages.grc.rules.evaluator_pii_has_mitigation': 'تخفيف بيانات التعريف الشخصية',
+  'pages.grc.rules.evaluator_restricted_data_no_external_send':
+    'منع إرسال البيانات المقيدة خارجيا',
+  'pages.grc.rules.evaluator_pii_has_mitigation':
+    'تخفيف بيانات التعريف الشخصية',
   'pages.grc.rules.evaluator_model_in_approved_list': 'قائمة النماذج المعتمدة',
-  'pages.grc.rules.evaluator_deployment_artifact_complete': 'اكتمال عناصر النشر',
+  'pages.grc.rules.evaluator_deployment_artifact_complete':
+    'اكتمال عناصر النشر',
   'pages.grc.rules.evaluator_audit_logging_enabled': 'تمكين سجلات التدقيق',
   'pages.grc.rules.evaluator_min_permissions': 'الحد الأدنى من الصلاحيات',
   'pages.grc.rules.evaluator_owner_sla_rollback': 'المالك / SLA / التراجع',
@@ -1331,45 +1540,64 @@ export default {
   'pages.grc.rules.validationPassed': 'نجح التحقق من إعداد القاعدة',
   'pages.grc.rules.validationFailed': 'فشل التحقق من إعداد القاعدة',
   'pages.grc.rules.validationWarnings': 'تحذيرات التحقق من إعداد القاعدة',
-  'pages.grc.rules.unsupportedEvaluatorType': 'نوع المقيم هذا غير مدعوم للتقييم التلقائي حاليا. استخدم مقيما مدمجا أولا.',
+  'pages.grc.rules.unsupportedEvaluatorType':
+    'نوع المقيم هذا غير مدعوم للتقييم التلقائي حاليا. استخدم مقيما مدمجا أولا.',
   'pages.grc.rules.noRequiredFields': 'لا يوجد',
-  'pages.grc.rules.jsonLogicGuideTitle': 'دليل إعداد القاعدة المخصصة (JSON Logic)',
-  'pages.grc.rules.jsonLogicGuideDescription': 'صِف شرط المخالفة بتعبير JSON مقيّد: النتيجة الصحيحة تعني تطابق القاعدة (فشل)، والخاطئة تعني النجاح. يُسمح فقط بالعوامل المدرجة في القائمة البيضاء (and/or/!/==/in/if/var وغيرها)؛ لا يمكن تنفيذ أي كود عشوائي.',
+  'pages.grc.rules.jsonLogicGuideTitle':
+    'دليل إعداد القاعدة المخصصة (JSON Logic)',
+  'pages.grc.rules.jsonLogicGuideDescription':
+    'صِف شرط المخالفة بتعبير JSON مقيّد: النتيجة الصحيحة تعني تطابق القاعدة (فشل)، والخاطئة تعني النجاح. يُسمح فقط بالعوامل المدرجة في القائمة البيضاء (and/or/!/==/in/if/var وغيرها)؛ لا يمكن تنفيذ أي كود عشوائي.',
   'pages.grc.rules.jsonLogicExpressionExample': 'مثال على التعبير',
   'pages.grc.rules.applyJsonLogicExample': 'تعبئة المثال',
   'pages.grc.rules.jsonLogicExpression': 'تعبير القرار (JSON)',
-  'pages.grc.rules.jsonLogicExpressionTip': 'تعبير JSON Logic تصريحي. القيمة الصحيحة = تطابق مخالفة (فشل).',
+  'pages.grc.rules.jsonLogicExpressionTip':
+    'تعبير JSON Logic تصريحي. القيمة الصحيحة = تطابق مخالفة (فشل).',
   'pages.grc.rules.jsonLogicFailMessage': 'رسالة عند التطابق (fail_message)',
   'pages.grc.rules.jsonLogicPassMessage': 'رسالة عند النجاح (pass_message)',
   'pages.grc.rules.testRule': 'اختبار القاعدة',
   'pages.grc.rules.testInputSnapshot': 'لقطة إدخال الاختبار (JSON)',
-  'pages.grc.rules.testInputSnapshotTip': 'لقطة input_snapshot محاكاة تُستخدم لتشغيل إعداد القاعدة الحالي فورا.',
+  'pages.grc.rules.testInputSnapshotTip':
+    'لقطة input_snapshot محاكاة تُستخدم لتشغيل إعداد القاعدة الحالي فورا.',
   'pages.grc.rules.runTest': 'تشغيل الاختبار',
   'pages.grc.rules.testResult': 'نتيجة الاختبار',
   'pages.grc.rules.testMessage': 'الرسالة',
   'pages.grc.rules.testEvidence': 'الأدلة',
   'pages.grc.rules.testFailed': 'فشل تنفيذ الاختبار',
   'pages.grc.rules.manualGuideTitle': 'دليل إعداد قاعدة المراجعة اليدوية',
-  'pages.grc.rules.manualGuideDescription': 'لا تحدد هذه القاعدة النجاح أو الفشل تلقائيا. يتم وضع علامة انتظار المراجعة البشرية على كل تقييم وإنشاء حالة مراجعة في قائمة المراجعة.',
-  'pages.grc.rules.manualPendingDescription': 'قبل اتخاذ القرار تكون نتيجة التقييم REVIEW_REQUIRED. الموافقة تحولها إلى نجاح، والرفض يحولها إلى فشل.',
+  'pages.grc.rules.manualGuideDescription':
+    'لا تحدد هذه القاعدة النجاح أو الفشل تلقائيا. يتم وضع علامة انتظار المراجعة البشرية على كل تقييم وإنشاء حالة مراجعة في قائمة المراجعة.',
+  'pages.grc.rules.manualPendingDescription':
+    'قبل اتخاذ القرار تكون نتيجة التقييم REVIEW_REQUIRED. الموافقة تحولها إلى نجاح، والرفض يحولها إلى فشل.',
   'pages.grc.rules.applyManualExample': 'تعبئة مثال المراجعة اليدوية',
   'pages.grc.rules.manualReviewTemplate': 'قالب المراجعة اليدوية',
-  'pages.grc.rules.manualReviewTemplateTip': 'قائمة التحقق والتعليمات المعروضة للمراجع.',
+  'pages.grc.rules.manualReviewTemplateTip':
+    'قائمة التحقق والتعليمات المعروضة للمراجع.',
   'pages.grc.rules.templateSelector': 'إنشاء قاعدة من قالب',
-  'pages.grc.rules.selectTemplate': 'اختر قالبًا مُعدًّا مسبقًا لإنشاء قاعدة امتثال بسرعة.',
+  'pages.grc.rules.selectTemplate':
+    'اختر قالبًا مُعدًّا مسبقًا لإنشاء قاعدة امتثال بسرعة.',
   'pages.grc.rules.templateApplied': 'استخدام هذا القالب',
-    'pages.grc.rules.fromTemplate': 'Start from Template',
+  'pages.grc.rules.fromTemplate': 'Start from Template',
   'pages.grc.rules.resultReviewRequired': 'مطلوب مراجعة بشرية',
-  'pages.grc.rules.evaluatorDesc_plaintext_secrets_detected': 'يفحص محتوى العناصر بحثا عن مؤشرات أسرار بالنص الصريح مثل api_key و token و password و secret و private_key.',
-  'pages.grc.rules.evaluatorDesc_external_network_allowed': 'يتحقق مما إذا كانت كل أهداف الشبكة الخارجية ضمن قائمة النطاقات المسموح بها.',
-  'pages.grc.rules.evaluatorDesc_human_oversight_present': 'يتحقق من وجود ضوابط إشراف بشري للإجراءات عالية المخاطر مثل التحكم بالإيقاف أو خطوة الموافقة أو المالك.',
-  'pages.grc.rules.evaluatorDesc_restricted_data_no_external_send': 'يتحقق من أن البيانات المقيدة لا تُرسل إلا إلى نماذج معتمدة.',
-  'pages.grc.rules.evaluatorDesc_pii_has_mitigation': 'يتحقق من وجود إجراء تخفيف عند وجود بيانات تعريف شخصية، مثل الإخفاء أو التنقيح.',
-  'pages.grc.rules.evaluatorDesc_model_in_approved_list': 'يتحقق مما إذا كان النموذج أو provider/model ضمن القائمة المعتمدة.',
-  'pages.grc.rules.evaluatorDesc_deployment_artifact_complete': 'يتحقق من أن عناصر النشر تتضمن الصورة وفحص الصحة وحدود الموارد.',
-  'pages.grc.rules.evaluatorDesc_audit_logging_enabled': 'يتحقق من تمكين سجلات تدقيق استدعاءات الأدوات والقرارات.',
-  'pages.grc.rules.evaluatorDesc_min_permissions': 'يتحقق من أن الصلاحيات تتضمن الصلاحيات المطلوبة ولا تتضمن الصلاحيات المحظورة.',
-  'pages.grc.rules.evaluatorDesc_owner_sla_rollback': 'يتحقق من أن بيانات التشغيل تتضمن المالك و SLA والتراجع والتنبيهات.',
+  'pages.grc.rules.evaluatorDesc_plaintext_secrets_detected':
+    'يفحص محتوى العناصر بحثا عن مؤشرات أسرار بالنص الصريح مثل api_key و token و password و secret و private_key.',
+  'pages.grc.rules.evaluatorDesc_external_network_allowed':
+    'يتحقق مما إذا كانت كل أهداف الشبكة الخارجية ضمن قائمة النطاقات المسموح بها.',
+  'pages.grc.rules.evaluatorDesc_human_oversight_present':
+    'يتحقق من وجود ضوابط إشراف بشري للإجراءات عالية المخاطر مثل التحكم بالإيقاف أو خطوة الموافقة أو المالك.',
+  'pages.grc.rules.evaluatorDesc_restricted_data_no_external_send':
+    'يتحقق من أن البيانات المقيدة لا تُرسل إلا إلى نماذج معتمدة.',
+  'pages.grc.rules.evaluatorDesc_pii_has_mitigation':
+    'يتحقق من وجود إجراء تخفيف عند وجود بيانات تعريف شخصية، مثل الإخفاء أو التنقيح.',
+  'pages.grc.rules.evaluatorDesc_model_in_approved_list':
+    'يتحقق مما إذا كان النموذج أو provider/model ضمن القائمة المعتمدة.',
+  'pages.grc.rules.evaluatorDesc_deployment_artifact_complete':
+    'يتحقق من أن عناصر النشر تتضمن الصورة وفحص الصحة وحدود الموارد.',
+  'pages.grc.rules.evaluatorDesc_audit_logging_enabled':
+    'يتحقق من تمكين سجلات تدقيق استدعاءات الأدوات والقرارات.',
+  'pages.grc.rules.evaluatorDesc_min_permissions':
+    'يتحقق من أن الصلاحيات تتضمن الصلاحيات المطلوبة ولا تتضمن الصلاحيات المحظورة.',
+  'pages.grc.rules.evaluatorDesc_owner_sla_rollback':
+    'يتحقق من أن بيانات التشغيل تتضمن المالك و SLA والتراجع والتنبيهات.',
   'pages.grc.reviews.title': 'اسم المراجعة',
   'pages.grc.reviews.searchPlaceholder': 'ابحث برقم الحالة أو الاسم',
   'pages.grc.reviews.filterStatus': 'كل الحالات',
@@ -1414,24 +1642,39 @@ export default {
   // Decision Impact Preview
   'pages.grc.reviews.impactPreview': 'معاينة تأثير القرار',
   'pages.grc.reviews.impactPreview.approve': 'تأثير الموافقة',
-  'pages.grc.reviews.impactPreview.agentWillDeploy': 'سيتم نشر الوكيل في بيئة الإنتاج',
-  'pages.grc.reviews.impactPreview.releaseAuthGenerated': 'سيقوم النظام بإنشاء رمز تفويض الإصدار، مما يسمح بتنفيذ الترقية',
-  'pages.grc.reviews.impactPreview.taskWillComplete': 'سيتم تحديد مهمة النشر المرتبطة على أنها مكتملة',
-  'pages.grc.reviews.impactPreview.approveWithConditions': 'تأثير الموافقة المشروطة',
-  'pages.grc.reviews.impactPreview.conditionsMustBeMet': 'يجب استيفاء جميع الشروط قبل أن يتمكن الوكيل من النشر',
-  'pages.grc.reviews.impactPreview.agentBlockedUntilConditionsMet': 'يبقى الوكيل محجوبًا حتى التحقق من الشروط',
+  'pages.grc.reviews.impactPreview.agentWillDeploy':
+    'سيتم نشر الوكيل في بيئة الإنتاج',
+  'pages.grc.reviews.impactPreview.releaseAuthGenerated':
+    'سيقوم النظام بإنشاء رمز تفويض الإصدار، مما يسمح بتنفيذ الترقية',
+  'pages.grc.reviews.impactPreview.taskWillComplete':
+    'سيتم تحديد مهمة النشر المرتبطة على أنها مكتملة',
+  'pages.grc.reviews.impactPreview.approveWithConditions':
+    'تأثير الموافقة المشروطة',
+  'pages.grc.reviews.impactPreview.conditionsMustBeMet':
+    'يجب استيفاء جميع الشروط قبل أن يتمكن الوكيل من النشر',
+  'pages.grc.reviews.impactPreview.agentBlockedUntilConditionsMet':
+    'يبقى الوكيل محجوبًا حتى التحقق من الشروط',
   'pages.grc.reviews.impactPreview.reject': 'تأثير الرفض',
-  'pages.grc.reviews.impactPreview.taskWillFail': 'سيتم تحديد مهمة DevTask المرتبطة على أنها فاشلة',
-  'pages.grc.reviews.impactPreview.agentStaysInSandbox': 'يبقى الوكيل في بيئة sandbox ولن يتم نشره',
-  'pages.grc.reviews.impactPreview.cannotRedeployWithoutNewReview': 'يتطلب فحص امتثال جديد وقضية مراجعة جديدة لإعادة النشر',
+  'pages.grc.reviews.impactPreview.taskWillFail':
+    'سيتم تحديد مهمة DevTask المرتبطة على أنها فاشلة',
+  'pages.grc.reviews.impactPreview.agentStaysInSandbox':
+    'يبقى الوكيل في بيئة sandbox ولن يتم نشره',
+  'pages.grc.reviews.impactPreview.cannotRedeployWithoutNewReview':
+    'يتطلب فحص امتثال جديد وقضية مراجعة جديدة لإعادة النشر',
   'pages.grc.reviews.impactPreview.requireRemediation': 'تأثير طلب المعالجة',
-  'pages.grc.reviews.impactPreview.agentRemainsBlocked': 'يبقى الوكيل محجوبًا عن النشر',
-  'pages.grc.reviews.impactPreview.taskRemainsPending': 'تبقى المهمة المرتبطة في حالة PENDING_APPROVAL',
-  'pages.grc.reviews.impactPreview.canRepromptAfterFix': 'إصلاح المشاكل ثم إعادة التشغيل بإعادة كتابة الأمر',
+  'pages.grc.reviews.impactPreview.agentRemainsBlocked':
+    'يبقى الوكيل محجوبًا عن النشر',
+  'pages.grc.reviews.impactPreview.taskRemainsPending':
+    'تبقى المهمة المرتبطة في حالة PENDING_APPROVAL',
+  'pages.grc.reviews.impactPreview.canRepromptAfterFix':
+    'إصلاح المشاكل ثم إعادة التشغيل بإعادة كتابة الأمر',
   'pages.grc.reviews.impactPreview.requestException': 'تأثير طلب الاستثناء',
-  'pages.grc.reviews.impactPreview.exceptionUnderReview': 'يدخل طلب الاستثناء في سير عمل موافقة منفصل',
-  'pages.grc.reviews.impactPreview.blockedRulesStillActive': 'تبقى القواعد المحجوبة نشطة، الوكيل لا يمكن نشره',
-  'pages.grc.reviews.impactPreview.separateApprovalRequired': 'يتطلب موافقة من مراجع لديه صلاحية موافقة الاستثناءات',
+  'pages.grc.reviews.impactPreview.exceptionUnderReview':
+    'يدخل طلب الاستثناء في سير عمل موافقة منفصل',
+  'pages.grc.reviews.impactPreview.blockedRulesStillActive':
+    'تبقى القواعد المحجوبة نشطة، الوكيل لا يمكن نشره',
+  'pages.grc.reviews.impactPreview.separateApprovalRequired':
+    'يتطلب موافقة من مراجع لديه صلاحية موافقة الاستثناءات',
   'pages.grc.evaluations.result': 'النتيجة',
   'pages.grc.evaluations.severity': 'الخطورة',
   'pages.grc.evaluations.message': 'الرسالة',
@@ -1462,19 +1705,27 @@ export default {
   'pages.grc.evaluations.filterResult': 'Filter by result',
   'pages.grc.evaluations.filterRiskLevel': 'Filter by risk level',
   'pages.grc.templates.secrets': 'Secrets Detection',
-  'pages.grc.templates.secretsDesc': 'Scan for plaintext secrets (api_key, token, password, etc.) in artifacts.',
+  'pages.grc.templates.secretsDesc':
+    'Scan for plaintext secrets (api_key, token, password, etc.) in artifacts.',
   'pages.grc.templates.externalAllowlist': 'External Domain Allowlist',
-  'pages.grc.templates.externalAllowlistDesc': 'Ensure all external network targets are in the approved domain list.',
+  'pages.grc.templates.externalAllowlistDesc':
+    'Ensure all external network targets are in the approved domain list.',
   'pages.grc.templates.restrictedData': 'Restricted Data / Approved Model',
-  'pages.grc.templates.restrictedDataDesc': 'Ensure restricted data is only sent to approved models.',
+  'pages.grc.templates.restrictedDataDesc':
+    'Ensure restricted data is only sent to approved models.',
   'pages.grc.templates.minPermissions': 'Minimum Permissions',
-  'pages.grc.templates.minPermissionsDesc': 'Verify permissions include required and exclude denied.',
+  'pages.grc.templates.minPermissionsDesc':
+    'Verify permissions include required and exclude denied.',
   'pages.grc.templates.auditLogging': 'Audit Logging',
-  'pages.grc.templates.auditLoggingDesc': 'Ensure tool-call and decision audit logging is enabled.',
+  'pages.grc.templates.auditLoggingDesc':
+    'Ensure tool-call and decision audit logging is enabled.',
   'pages.grc.templates.humanOversight': 'Human Oversight',
-  'pages.grc.templates.humanOversightDesc': 'Require human review before the agent can be deployed.',
-  'pages.grc.templates.dataClassificationRouting': 'Data Classification Routing',
-  'pages.grc.templates.dataClassificationRoutingDesc': 'Route data based on classification level and approved models.',
+  'pages.grc.templates.humanOversightDesc':
+    'Require human review before the agent can be deployed.',
+  'pages.grc.templates.dataClassificationRouting':
+    'Data Classification Routing',
+  'pages.grc.templates.dataClassificationRoutingDesc':
+    'Route data based on classification level and approved models.',
   'pages.grc.exceptions.title': 'الاستثناءات',
   'pages.grc.exceptions.request': 'طلب استثناء',
   'pages.grc.exceptions.approve': 'موافقة',
