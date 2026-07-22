@@ -2011,4 +2011,9 @@ export default {
   'pages.workflowAdmin.detail.loadError': '加载应用详情失败',
   'pages.workflowAdmin.detail.loadErrorHint': '请检查后端服务是否正常运行。',
   'pages.workflowAdmin.apps.actions': '操作',
+    'pages.workflowAdmin.apps.goApproval': '审批',
+    'pages.workflowAdmin.catalogStatus.active': '已上线',
+    'pages.workflowAdmin.catalogStatus.pending_approval': '待审批',
+    'pages.workflowAdmin.catalogStatus.rejected': '已拒绝',
+    'pages.workflowAdmin.catalogStatus.disabled': '已下架',
 }

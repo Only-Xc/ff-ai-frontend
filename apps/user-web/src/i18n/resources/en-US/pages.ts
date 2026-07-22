@@ -678,18 +678,4 @@ export default {
   'pages.workflow.rollbackWarning': 'Rollback will switch the active version. Existing runs are not affected.',
   'pages.workflow.rollbackTo': 'Rollback to',
   'pages.workflow.active': 'Active',
-
-  // ── Platform Apps Catalog ────────────────────────────────────────────────
-  'pages.platformApps.title': 'Platform Apps Catalog',
-  'pages.platformApps.subtitle': 'Approved workflow apps available in the catalog.',
-  'pages.platformApps.searchPlaceholder': 'Search app by name',
-  'pages.platformApps.empty': 'No published platform apps',
-  'pages.platformApps.emptyHint':
-    'The catalog only lists apps that have passed approval (active). Other states (draft / pending / disabled) require approval or can be viewed under My Workflows.',
-  'pages.platformApps.noDescription': 'No description',
-  'pages.platformApps.types.workflow': 'Workflow',
-  'pages.platformApps.types.unknown': 'Unknown',
-  'pages.platformApps.scope.self': 'Self only',
-  'pages.platformApps.scope.tenant': 'Current tenant',
-  'pages.platformApps.scope.global': 'Cross-tenant',
 }

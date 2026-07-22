@@ -649,18 +649,4 @@ export default {
   'pages.workflow.rollbackWarning': '回滚将切换当前活跃版本，已运行的会话不受影响。',
   'pages.workflow.rollbackTo': '回滚到',
   'pages.workflow.active': '当前',
-
-  // ── Platform Apps Catalog ────────────────────────────────────────────────
-  'pages.platformApps.title': '平台应用目录',
-  'pages.platformApps.subtitle': '已审批通过的工作流类应用。',
-  'pages.platformApps.searchPlaceholder': '搜索应用名称',
-  'pages.platformApps.empty': '暂无已发布的平台应用',
-  'pages.platformApps.emptyHint':
-    '目录中只展示已通过审批（active）的应用；其他状态（草稿/待审批/已下架）需要等待审批通过或前往「我的工作流」查看。',
-  'pages.platformApps.noDescription': '暂无说明',
-  'pages.platformApps.types.workflow': '工作流',
-  'pages.platformApps.types.unknown': '未知类型',
-  'pages.platformApps.scope.self': '仅自己',
-  'pages.platformApps.scope.tenant': '本租户',
-  'pages.platformApps.scope.global': '跨租户',
 }

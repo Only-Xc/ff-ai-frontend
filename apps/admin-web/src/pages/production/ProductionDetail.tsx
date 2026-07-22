@@ -143,7 +143,8 @@ export function ProductionDetail() {
       title: t('pages.production.detail.decisionDecidedBy'),
       dataIndex: 'decided_by',
       width: 220,
-      render: (v: string) => v.slice(0, 8) + '…',
+      render: (v: string, record: DecisionRecord) =>
+        (record as any).decided_by_display || v,
     },
     {
       title: t('pages.production.detail.decisionDecidedAt'),

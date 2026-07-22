@@ -352,32 +352,6 @@ export const appRoutes: AppRouteObject[] = [
           permission: 'admin.workflow_apps.update',
         },
       },
-      {
-        path: '/platform-apps/workflows/:appId/chat',
-        element: lazyLoad(() => import('@/pages/workflow/WorkflowChat')),
-        handle: {
-          title: 'Workflow Chat',
-          titleKey: 'routes.workflow.chat',
-          hideInMenu: true,
-          hideInBreadcrumb: true,
-          permission: 'user.workflow_apps.use',
-        },
-      },
-      {
-        path: '/platform-apps',
-        element: lazyLoad(
-          () => import('@/pages/platform-apps/PlatformAppsCatalog'),
-        ),
-        handle: {
-          title: 'Platform Apps Catalog',
-          titleKey: 'pages.platformApps.title',
-          navKey: 'platform-apps-catalog',
-          navOrder: 0,
-          hideInMenu: false,
-          hideInBreadcrumb: true,
-          permission: 'user.workflow_apps.use',
-        },
-      },
     ],
   },
   {

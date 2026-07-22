@@ -1,4 +1,4 @@
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { AuditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   Button,
@@ -14,6 +14,7 @@ import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { useAuthStore } from '@/store/useAuth'
@@ -56,6 +57,7 @@ const CATALOG_STATUS_COLOR: Record<string, string> = {
 
 export function WorkflowAdminApps() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const isSuperuser = useAuthStore((state) => state.user?.is_superuser) === true
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<WorkflowAppStatus | ''>('')
@@ -110,23 +112,37 @@ export function WorkflowAdminApps() {
         width: 120,
         render: (v: string | null) => {
           if (!v) return <Tag color="default">—</Tag>
-          return <Tag color={CATALOG_STATUS_COLOR[v] ?? 'default'}>{v}</Tag>
+          return (
+            <Tag color={CATALOG_STATUS_COLOR[v] ?? 'default'}>
+              {t(`pages.workflowAdmin.catalogStatus.${v}`, v)}
+            </Tag>
+          )
         },
       },
       {
         title: t('pages.workflowAdmin.apps.actions', '操作'),
         key: 'actions',
-        width: 100,
+        width: 150,
         fixed: 'right' as const,
         render: (_: unknown, record: AdminWorkflowApp) => (
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => setDetailAppId(record.id)}
-          >
-            {t('pages.workflowAdmin.apps.viewDetail', '查看')}
-          </Button>
+          <Space size={0}>
+            <Button
+              type="link"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => setDetailAppId(record.id)}
+            >
+              {t('pages.workflowAdmin.apps.viewDetail', '查看')}
+            </Button>
+            <Button
+              type="link"
+              size="small"
+              icon={<AuditOutlined />}
+              onClick={() => navigate('/production/approvals')}
+            >
+              {t('pages.workflowAdmin.apps.goApproval', '审批')}
+            </Button>
+          </Space>
         ),
       },
     ]

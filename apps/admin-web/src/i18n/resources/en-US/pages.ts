@@ -2157,4 +2157,9 @@ export default {
   'pages.workflowAdmin.detail.loadError': 'Failed to load app detail',
   'pages.workflowAdmin.detail.loadErrorHint': 'Please check if the backend service is running properly.',
   'pages.workflowAdmin.apps.actions': 'Actions',
+    'pages.workflowAdmin.apps.goApproval': 'Approval',
+    'pages.workflowAdmin.catalogStatus.active': 'Active',
+    'pages.workflowAdmin.catalogStatus.pending_approval': 'Pending Approval',
+    'pages.workflowAdmin.catalogStatus.rejected': 'Rejected',
+    'pages.workflowAdmin.catalogStatus.disabled': 'Disabled',
 }

@@ -2074,4 +2074,9 @@ export default {
   'pages.workflowAdmin.detail.loadError': 'فشل في تحميل تفاصيل التطبيق',
   'pages.workflowAdmin.detail.loadErrorHint': 'يرجى التحقق من أن الخدمة الخلفية تعمل بشكل صحيح.',
   'pages.workflowAdmin.apps.actions': 'الإجراءات',
+    'pages.workflowAdmin.apps.goApproval': 'الموافقة',
+    'pages.workflowAdmin.catalogStatus.active': 'نشط',
+    'pages.workflowAdmin.catalogStatus.pending_approval': 'بانتظار الموافقة',
+    'pages.workflowAdmin.catalogStatus.rejected': 'مرفوض',
+    'pages.workflowAdmin.catalogStatus.disabled': 'معطل',
 }
