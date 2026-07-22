@@ -357,6 +357,7 @@ function CanvasEditorInner() {
       >
         {selectedNodeData && (
           <NodeConfigPanel
+            appId={appId}
             nodeId={selectedNodeData.id}
             nodeType={selectedNodeData.nodeType}
             config={selectedNodeData.config}
