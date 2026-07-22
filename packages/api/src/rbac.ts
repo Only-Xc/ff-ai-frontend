@@ -147,6 +147,12 @@ export interface UserRoleAssignment {
   expires_at?: string | null
 }
 
+export interface PrimaryOrganization {
+  id: string
+  name: string
+  code: string
+}
+
 export interface User {
   id: string
   email: string
@@ -154,6 +160,7 @@ export interface User {
   is_active: boolean
   is_superuser: boolean
   created_at: string | null
+  primary_organization: PrimaryOrganization | null
 }
 
 export interface UserCreateBody {
@@ -162,6 +169,7 @@ export interface UserCreateBody {
   password: string
   is_active?: boolean
   role_ids?: string[]
+  organization_id: string
 }
 
 export type UserUpdateBody = Partial<{
@@ -169,6 +177,7 @@ export type UserUpdateBody = Partial<{
   full_name: string
   password: string
   is_active: boolean
+  organization_id: string | null
 }>
 
 export type UserList = ListResult<User>
@@ -236,6 +245,20 @@ export const deleteOrganizationRequest = (organizationId: string) =>
   createRequest<{ deleted: boolean }>(
     'DELETE',
     path`/api/v1/admin/organizations/${organizationId}`,
+  )
+
+export interface AssignableTenant {
+  id: string
+  name: string
+  code: string
+  type: string
+}
+
+export const listAssignableTenantsRequest = () =>
+  createRequest<AssignableTenant[]>(
+    'GET',
+    '/api/v1/admin/users/assignable-tenants',
+    { skipDedupe: true },
   )
 
 export const getUserRolesRequest = (userId: string) =>

@@ -59,4 +59,18 @@ export default {
     'مراجعة إشعارات الموافقة والتنفيذ لتبديل المرحلة',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': 'موافقة النشر للإنتاج',
+  'routes.production.approvals.subtitle': 'اعتمد إصدارات الوكلاء للإنتاج',
+  'routes.production.approvalDetail.title': 'تفاصيل الموافقة',
+  'routes.production.rollback.title': 'سحب الإنتاج',
+  'routes.production.rollback.subtitle': 'سحب وكيل من الإنتاج',
+  'routes.serviceCatalog.categories.title': 'إدارة الفئات',
+  'routes.serviceCatalog.categories.subtitle': 'إدارة الفئات الهرمية',
+  'routes.serviceCatalog.services.title': 'دليل الخدمة',
+  'routes.serviceCatalog.services.subtitle': 'قائمة الخدمات والبحث',
+  'routes.serviceCatalog.serviceDetail.title': 'تفاصيل الخدمة',
+  'routes.serviceCatalog.serviceEdit.title': 'تحرير الخدمة',
+  'routes.serviceCatalog.import.title': 'استيراد',
+  'routes.serviceCatalog.import.subtitle': 'Excel 批量استيراد与错误报告',
 }

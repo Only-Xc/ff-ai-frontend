@@ -21,5 +21,6 @@ export default {
   'common.errors.metadataJsonObject': 'metadata 必须是合法 JSON 对象',
   'common.errors.authMissingToken': '登录响应缺少 access_token',
   'common.actions.search': '查询',
+  'common.filters.all': '全部',
   'common.dateTime.longFormat': 'YYYY年M月D日 HH:mm',
 }

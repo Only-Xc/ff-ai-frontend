@@ -3,6 +3,8 @@ export * from './exam.js'
 export * from './grc.js'
 export * from './lifecycle-ops.js'
 export * from './ops-metrics.js'
+export * from './production.js'
 export * from './skill-hub.js'
 export * from './stage-switch.js'
 export * from './ticket-kanban.js'
+export * from "./service-catalog.js"

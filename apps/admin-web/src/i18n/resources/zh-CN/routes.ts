@@ -55,4 +55,18 @@ export default {
   'routes.stageSwitch.notifications.subtitle': '查看阶段切换审批与执行通知',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': '生产发布审批',
+  'routes.production.approvals.subtitle': '审批智能体上线发布',
+  'routes.production.approvalDetail.title': '审批详情',
+  'routes.production.rollback.title': '生产撤回',
+  'routes.production.rollback.subtitle': '撤回已上线智能体',
+  'routes.serviceCatalog.categories.title': '分类管理',
+  'routes.serviceCatalog.categories.subtitle': '多级分类管理',
+  'routes.serviceCatalog.services.title': '服务流程',
+  'routes.serviceCatalog.services.subtitle': '服务列表与搜索',
+  'routes.serviceCatalog.serviceDetail.title': '服务详情',
+  'routes.serviceCatalog.serviceEdit.title': '编辑服务',
+  'routes.serviceCatalog.import.title': '导入',
+  'routes.serviceCatalog.import.subtitle': 'Excel 批量导入与错误报告',
 }

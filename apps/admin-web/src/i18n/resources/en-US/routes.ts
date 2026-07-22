@@ -62,4 +62,18 @@ export default {
     'Review stage switch approval and execution notifications',
   'routes.forbidden.title': '403',
   'routes.notFound.title': '404',
+
+  'routes.production.approvals.title': 'Production Approval',
+  'routes.production.approvals.subtitle': 'Approve agent releases for production',
+  'routes.production.approvalDetail.title': 'Approval Detail',
+  'routes.production.rollback.title': 'Production Rollback',
+  'routes.production.rollback.subtitle': 'Decommission a production agent',
+  'routes.serviceCatalog.categories.title': 'Category Management',
+  'routes.serviceCatalog.categories.subtitle': 'Hierarchical category management',
+  'routes.serviceCatalog.services.title': 'Service Catalog',
+  'routes.serviceCatalog.services.subtitle': 'Service list & search',
+  'routes.serviceCatalog.serviceDetail.title': 'Service Detail',
+  'routes.serviceCatalog.serviceEdit.title': 'Edit Service',
+  'routes.serviceCatalog.import.title': 'Import',
+  'routes.serviceCatalog.import.subtitle': 'Excel 批量Import与错误报告',
 }
