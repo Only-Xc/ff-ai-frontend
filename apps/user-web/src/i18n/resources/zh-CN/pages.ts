@@ -546,6 +546,8 @@ export default {
   'pages.workflow.status.published': '已发布',
   'pages.workflow.status.disabled': '已停用',
   'pages.workflow.status.archived': '已归档',
+'pages.workflow.catalogStatus.pendingApproval': '待审批',
+'pages.workflow.catalogStatus.rejected': '已拒绝',
   'pages.workflow.canvas': '画布编辑器',
   'pages.workflow.save': '保存',
   'pages.workflow.saveSuccess': '保存成功',
@@ -611,4 +613,13 @@ export default {
   'pages.workflow.rollbackWarning': '回滚将切换当前活跃版本，已运行的会话不受影响。',
   'pages.workflow.rollbackTo': '回滚到',
   'pages.workflow.active': '当前',
+
+  // ── Platform Apps Catalog ────────────────────────────────────────────────
+  'pages.platformApps.title': '平台应用目录',
+  'pages.platformApps.subtitle': '已审批通过的工作流类应用。',
+  'pages.platformApps.searchPlaceholder': '搜索应用名称',
+  'pages.platformApps.empty': '暂无平台应用',
+  'pages.platformApps.noDescription': '暂无说明',
+  'pages.platformApps.types.workflow': '工作流',
+  'pages.platformApps.types.unknown': '未知类型',
 }

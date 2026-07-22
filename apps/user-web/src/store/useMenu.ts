@@ -19,7 +19,11 @@ interface MenuState {
 const WORKSPACE_NAV_KEY = 'workspace'
 const PLATFORM_APPS_KEY = 'workspace-platform-apps'
 const KNOWLEDGE_BASE_KEY = 'knowledge-base'
-const PLATFORM_APP_NAV_KEYS = new Set(['exams', 'attempts'])
+const PLATFORM_APP_NAV_KEYS = new Set([
+  'exams',
+  'attempts',
+  'platform-apps-catalog',
+])
 const APP_MENU_LOADING_KEY = 'workspace-apps-loading'
 const APP_MENU_EMPTY_KEY = 'workspace-apps-empty'
 const APP_MENU_RETRY_KEY = 'workspace-apps-retry'

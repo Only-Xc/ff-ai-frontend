@@ -76,6 +76,17 @@ export function ProductionQueue() {
       ),
     },
     {
+      title: t('pages.production.queue.targetType'),
+      dataIndex: 'target_type',
+      key: 'target_type',
+      width: 100,
+      render: (v: string) => (
+        <Tag color={v === 'workflow' ? 'purple' : 'blue'}>
+          {v === 'workflow' ? 'Workflow' : 'Agent'}
+        </Tag>
+      ),
+    },
+    {
       title: t('pages.production.queue.agent'),
       dataIndex: 'agent_id',
       key: 'agent_id',

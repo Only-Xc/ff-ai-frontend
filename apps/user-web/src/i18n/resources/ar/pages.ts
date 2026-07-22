@@ -564,6 +564,8 @@ export default {
   'pages.workflow.status.published': 'منشور',
   'pages.workflow.status.disabled': 'معطل',
   'pages.workflow.status.archived': 'مؤرشف',
+'pages.workflow.catalogStatus.pendingApproval': 'في انتظار الموافقة',
+'pages.workflow.catalogStatus.rejected': 'مرفوض',
   'pages.workflow.canvas': 'محرر اللوحة',
   'pages.workflow.save': 'حفظ',
   'pages.workflow.saveSuccess': 'تم الحفظ بنجاح',
@@ -629,4 +631,13 @@ export default {
   'pages.workflow.rollbackWarning': 'سيؤدي الاسترجاع إلى تبديل الإصدار النشط. لن تتأثر العمليات السابقة.',
   'pages.workflow.rollbackTo': 'استرجاع إلى',
   'pages.workflow.active': 'نشط',
+
+  // ── Platform Apps Catalog ────────────────────────────────────────────────
+  'pages.platformApps.title': 'كتالوج تطبيقات المنصة',
+  'pages.platformApps.subtitle': 'تطبيقات سير العمل المعتمدة والمتاحة في الكتالوج.',
+  'pages.platformApps.searchPlaceholder': 'ابحث عن تطبيق بالاسم',
+  'pages.platformApps.empty': 'لا توجد تطبيقات منصة متاحة',
+  'pages.platformApps.noDescription': 'لا يوجد وصف',
+  'pages.platformApps.types.workflow': 'سير العمل',
+  'pages.platformApps.types.unknown': 'غير معروف',
 }

@@ -37,6 +37,13 @@ const STATUS_COLORS: Record<string, string> = {
   archived: 'default',
 }
 
+const CATALOG_STATUS_COLORS: Record<string, string> = {
+  active: 'success',
+  pending_approval: 'processing',
+  rejected: 'error',
+  disabled: 'warning',
+}
+
 export default function WorkflowList() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -107,10 +114,22 @@ export default function WorkflowList() {
       title: t('pages.workflow.columns.status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={STATUS_COLORS[status] ?? 'default'}>
-          {t(`pages.workflow.status.${status}`, status)}
-        </Tag>
+      render: (status: string, record: WorkflowApp) => (
+        <Space size={4}>
+          <Tag color={STATUS_COLORS[status] ?? 'default'}>
+            {t(`pages.workflow.status.${status}`, status)}
+          </Tag>
+          {record.catalog_status === 'pending_approval' && (
+            <Tag color={CATALOG_STATUS_COLORS.pending_approval}>
+              {t('pages.workflow.catalogStatus.pendingApproval')}
+            </Tag>
+          )}
+          {record.catalog_status === 'rejected' && (
+            <Tag color={CATALOG_STATUS_COLORS.rejected}>
+              {t('pages.workflow.catalogStatus.rejected')}
+            </Tag>
+          )}
+        </Space>
       ),
     },
     {

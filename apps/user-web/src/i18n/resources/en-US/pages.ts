@@ -569,6 +569,8 @@ export default {
   'pages.workflow.status.published': 'Published',
   'pages.workflow.status.disabled': 'Disabled',
   'pages.workflow.status.archived': 'Archived',
+'pages.workflow.catalogStatus.pendingApproval': 'Pending Approval',
+'pages.workflow.catalogStatus.rejected': 'Rejected',
   'pages.workflow.canvas': 'Canvas Editor',
   'pages.workflow.save': 'Save',
   'pages.workflow.saveSuccess': 'Saved successfully',
@@ -634,4 +636,13 @@ export default {
   'pages.workflow.rollbackWarning': 'Rollback will switch the active version. Existing runs are not affected.',
   'pages.workflow.rollbackTo': 'Rollback to',
   'pages.workflow.active': 'Active',
+
+  // ── Platform Apps Catalog ────────────────────────────────────────────────
+  'pages.platformApps.title': 'Platform Apps Catalog',
+  'pages.platformApps.subtitle': 'Approved workflow apps available in the catalog.',
+  'pages.platformApps.searchPlaceholder': 'Search app by name',
+  'pages.platformApps.empty': 'No platform apps available',
+  'pages.platformApps.noDescription': 'No description',
+  'pages.platformApps.types.workflow': 'Workflow',
+  'pages.platformApps.types.unknown': 'Unknown',
 }

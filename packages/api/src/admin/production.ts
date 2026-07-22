@@ -18,12 +18,16 @@ export type ProductionStatus =
   | 'production'
   | 'decommissioned'
 
+export type ProductionTargetType = 'agent' | 'workflow'
+
 export interface ProductionApproval {
   id: string
   approval_no: string
   organization_id: string | null
+  target_type: ProductionTargetType
   agent_id: string
-  task_id: string
+  task_id: string | null
+  workflow_app_id: string | null
   deployment_version: number
   deployment_sha256: string
   qa_passed: boolean
@@ -99,6 +103,7 @@ export interface ProductionRollbackCreatePayload {
 export interface ProductionApprovalQuery {
   status?: ProductionApprovalStatus
   agent_id?: string
+  target_type?: ProductionTargetType
   keyword?: string
   organization_id?: string
   skip?: number

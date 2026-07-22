@@ -326,6 +326,21 @@ export const appRoutes: AppRouteObject[] = [
           permission: 'user.workflow_apps.use',
         },
       },
+      {
+        path: '/platform-apps',
+        element: lazyLoad(
+          () => import('@/pages/platform-apps/PlatformAppsCatalog'),
+        ),
+        handle: {
+          title: 'Platform Apps Catalog',
+          titleKey: 'pages.platformApps.title',
+          navKey: 'platform-apps-catalog',
+          navOrder: 0,
+          hideInMenu: false,
+          hideInBreadcrumb: true,
+          permission: 'user.workflow_apps.use',
+        },
+      },
     ],
   },
   {

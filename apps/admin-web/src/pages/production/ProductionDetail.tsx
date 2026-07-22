@@ -195,15 +195,27 @@ export function ProductionDetail() {
                         {approvalStatusLabel(t, approval.status)}
                       </Tag>
                     </Descriptions.Item>
+                    <Descriptions.Item label={t('pages.production.queue.targetType')}>
+                      <Tag color={approval.target_type === 'workflow' ? 'purple' : 'blue'}>
+                        {approval.target_type === 'workflow' ? 'Workflow' : 'Agent'}
+                      </Tag>
+                    </Descriptions.Item>
                     <Descriptions.Item label={t('pages.production.detail.version')}>
                       v{approval.version}
                     </Descriptions.Item>
                     <Descriptions.Item label={t('pages.production.queue.agent')}>
                       {approval.agent_id}
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.queue.taskId')}>
-                      {approval.task_id}
-                    </Descriptions.Item>
+                    {approval.target_type !== 'workflow' && (
+                      <Descriptions.Item label={t('pages.production.queue.taskId')}>
+                        {approval.task_id ?? '—'}
+                      </Descriptions.Item>
+                    )}
+                    {approval.target_type === 'workflow' && (
+                      <Descriptions.Item label={t('pages.production.detail.workflowAppId')}>
+                        {approval.workflow_app_id ?? '—'}
+                      </Descriptions.Item>
+                    )}
                     <Descriptions.Item label={t('pages.production.detail.riskLevel')}>
                       {approval.risk_level || '—'} ({approval.risk_score})
                     </Descriptions.Item>

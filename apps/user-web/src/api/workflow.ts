@@ -12,6 +12,7 @@ export interface WorkflowApp {
   owner_id: string
   status: string
   active_version_id: string | null
+  catalog_status: string | null
   created_at: string
   updated_at: string
 }
