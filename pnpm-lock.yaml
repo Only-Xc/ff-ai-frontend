@@ -143,6 +143,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.100.6
         version: 5.100.14(react@19.2.6)
+      '@xyflow/react':
+        specifier: ^12.11.2
+        version: 12.11.2(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       antd:
         specifier: ^6.3.7
         version: 6.4.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

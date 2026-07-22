@@ -7,6 +7,7 @@ import {
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  Alert,
   Button,
   Card,
   Input,
@@ -61,6 +62,16 @@ export default function WorkflowList() {
     queryFn: () =>
       listWorkflowApps({ page, page_size: 20, search, status: statusFilter }),
   })
+
+  const scope = data?.scope ?? null
+  const scopeColor =
+    scope === 'global'
+      ? 'geekblue'
+      : scope === 'tenant'
+        ? 'cyan'
+        : scope === 'self'
+          ? 'default'
+          : 'default'
 
   const createMutation = useMutation({
     mutationFn: createWorkflowApp,
@@ -181,7 +192,37 @@ export default function WorkflowList() {
 
   return (
     <div style={{ padding: 24 }}>
-      <Card>
+      <Card
+        title={
+          <Space>
+            <span>{t('pages.menu.workflow')}</span>
+            {scope && (
+              <Tag color={scopeColor}>
+                {t(`pages.workflow.scope.${scope}`, scope)}
+              </Tag>
+            )}
+          </Space>
+        }
+      >
+        {scope === 'self' && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={t('pages.workflow.roleFilteredHint')}
+          />
+        )}
+        {scope && scope !== 'self' && (
+          <div
+            style={{
+              marginBottom: 16,
+              color: 'var(--ant-color-text-secondary)',
+              fontSize: 13,
+            }}
+          >
+            {t('pages.workflow.scopeHint')}
+          </div>
+        )}
         <div
           style={{
             display: 'flex',

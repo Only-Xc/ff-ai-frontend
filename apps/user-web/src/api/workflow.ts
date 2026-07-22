@@ -22,6 +22,17 @@ export interface WorkflowAppListResponse {
   total: number
   page: number
   page_size: number
+  /**
+   * Role-based visibility scope returned by the backend:
+   *  - "self"   : 普通用户，仅返回自己创建的 app
+   *  - "tenant" : 租户管理员，返回本租户内全部 app
+   *  - "global" : 平台管理员，返回全平台 app
+   */
+  scope: 'self' | 'tenant' | 'global' | null
+  /**
+   * system_admin 可选租户列表（仅 global scope 时返回）
+   */
+  visible_tenants: string[] | null
 }
 
 export interface WorkflowDraft {

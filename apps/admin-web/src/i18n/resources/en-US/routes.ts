@@ -68,4 +68,13 @@ export default {
   'routes.serviceCatalog.serviceEdit.title': 'Edit Service',
   'routes.serviceCatalog.import.title': 'Import',
   'routes.serviceCatalog.import.subtitle': 'Excel 批量Import与错误报告',
+
+  // Workflow Console (spec: Workflow platform apps & admin patch)
+  'routes.workflowAdmin.title': 'Workflow Console',
+  'routes.workflowAdmin.subtitle': 'Cross-tenant Workflow operations and visible tenant view',
+  'routes.workflowAdmin.dashboard.title': 'Overview',
+  'routes.workflowAdmin.apps.title': 'Apps',
+  'routes.workflowAdmin.apps.subtitle': 'Cross-tenant Workflow app search',
+  'routes.workflowAdmin.tenants.title': 'Tenants',
+  'routes.workflowAdmin.tenants.subtitle': 'Tenant-aggregated Workflow metrics',
 }

@@ -65,4 +65,13 @@ export default {
   'routes.serviceCatalog.serviceEdit.title': '编辑服务',
   'routes.serviceCatalog.import.title': '导入',
   'routes.serviceCatalog.import.subtitle': 'Excel 批量导入与错误报告',
+
+  // Workflow 管理台（spec: Workflow 平台应用与管理台补丁）
+  'routes.workflowAdmin.title': 'Workflow 管理台',
+  'routes.workflowAdmin.subtitle': '跨租户 Workflow 运维与可见租户视图',
+  'routes.workflowAdmin.dashboard.title': '总览',
+  'routes.workflowAdmin.apps.title': '应用列表',
+  'routes.workflowAdmin.apps.subtitle': '跨租户 Workflow 应用检索',
+  'routes.workflowAdmin.tenants.title': '租户汇总',
+  'routes.workflowAdmin.tenants.subtitle': '按租户维度聚合 Workflow 指标',
 }

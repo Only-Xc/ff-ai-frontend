@@ -571,6 +571,13 @@ export default {
   'pages.workflow.status.archived': 'Archived',
 'pages.workflow.catalogStatus.pendingApproval': 'Pending Approval',
 'pages.workflow.catalogStatus.rejected': 'Rejected',
+  'pages.workflow.scope.self': 'Self only',
+  'pages.workflow.scope.tenant': 'Current tenant',
+  'pages.workflow.scope.global': 'Cross-tenant',
+  'pages.workflow.scopeHint':
+    'Current view: only shows Workflows you created. To view all Workflows in your tenant or cross-tenant, contact an admin.',
+  'pages.workflow.roleFilteredHint':
+    'Role-filtered view is active. Workflows created by other users are hidden.',
   'pages.workflow.canvas': 'Canvas Editor',
   'pages.workflow.save': 'Save',
   'pages.workflow.saveSuccess': 'Saved successfully',
@@ -641,8 +648,13 @@ export default {
   'pages.platformApps.title': 'Platform Apps Catalog',
   'pages.platformApps.subtitle': 'Approved workflow apps available in the catalog.',
   'pages.platformApps.searchPlaceholder': 'Search app by name',
-  'pages.platformApps.empty': 'No platform apps available',
+  'pages.platformApps.empty': 'No published platform apps',
+  'pages.platformApps.emptyHint':
+    'The catalog only lists apps that have passed approval (active). Other states (draft / pending / disabled) require approval or can be viewed under My Workflows.',
   'pages.platformApps.noDescription': 'No description',
   'pages.platformApps.types.workflow': 'Workflow',
   'pages.platformApps.types.unknown': 'Unknown',
+  'pages.platformApps.scope.self': 'Self only',
+  'pages.platformApps.scope.tenant': 'Current tenant',
+  'pages.platformApps.scope.global': 'Cross-tenant',
 }

@@ -2,7 +2,7 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import type { ProxyOptions } from 'vite'
-import type { ClientRequest } from 'http'
+import type { ClientRequest } from 'node:http'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 

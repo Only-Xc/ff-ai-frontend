@@ -22,6 +22,7 @@
     "@ff-ai-frontend/utils": "workspace:*",
     "@formatjs/intl-localematcher": "^0.8.6",
     "@tanstack/react-query": "^5.100.6",
+    "@xyflow/react": "^12.11.2",
     "antd": "^6.3.7",
     "antd-style": "^4.1.0",
     "axios": "^1.15.2",
@@ -43,6 +44,7 @@
   "devDependencies": {
     "@babel/core": "catalog:",
     "@ff-ai-frontend/tooling": "workspace:*",
+    "@playwright/test": "^1.49.1",
     "@rolldown/plugin-babel": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@tanstack/react-query-devtools": "^5.100.10",
@@ -56,7 +58,6 @@
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "tailwindcss": "catalog:",
-    "vite": "catalog:",
-    "@playwright/test": "^1.49.1"
+    "vite": "catalog:"
   }
 }

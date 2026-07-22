@@ -1,5 +1,6 @@
 import {
   AppstoreOutlined,
+  DashboardOutlined,
   DatabaseOutlined,
   DeploymentUnitOutlined,
   FileDoneOutlined,
@@ -11,6 +12,7 @@ import {
   SwapOutlined,
   TeamOutlined,
   EditOutlined,
+  NodeIndexOutlined,
   UploadOutlined,
 } from '@ant-design/icons'
 import type { ReactNode } from 'react'
@@ -407,6 +409,58 @@ export const appRoutes: AppRouteObject[] = [
       permission: 'admin.stage_switch.notifications.read',
       menuCode: 'menu.admin.stage_switch',
     },
+  },
+  {
+    path: '/workflow-admin',
+    element: lazyLoad(
+      () => import('@/pages/workflow-admin/WorkflowAdminLayout'),
+    ),
+    handle: {
+      title: 'Workflow 管理台',
+      titleKey: 'routes.workflowAdmin.title',
+      subtitleKey: 'routes.workflowAdmin.subtitle',
+      icon: <NodeIndexOutlined />,
+      menuType: 'catalog',
+      menuMode: 'submenu',
+      navKey: 'workflow-admin',
+      navOrder: 12.95,
+      hideInBreadcrumb: true,
+      permission: 'admin.workflow_admin.read',
+      menuCode: 'menu.admin.workflow_admin',
+    },
+    children: [
+      {
+        path: '',
+        element: lazyLoad(
+          () => import('@/pages/workflow-admin/WorkflowAdminDashboard'),
+        ),
+        handle: {
+          title: 'Dashboard',
+          titleKey: 'routes.workflowAdmin.dashboard.title',
+          icon: <DashboardOutlined />,
+          navKey: 'workflow-admin-dashboard',
+          navOrder: 0,
+          hideInBreadcrumb: true,
+          permission: 'admin.workflow_admin.read',
+        },
+      },
+      {
+        path: 'apps',
+        element: lazyLoad(
+          () => import('@/pages/workflow-admin/WorkflowAdminApps'),
+        ),
+        handle: {
+          title: 'Apps',
+          titleKey: 'routes.workflowAdmin.apps.title',
+          subtitleKey: 'routes.workflowAdmin.apps.subtitle',
+          icon: <NodeIndexOutlined />,
+          navKey: 'workflow-admin-apps',
+          navOrder: 1,
+          hideInBreadcrumb: true,
+          permission: 'admin.workflow_admin.read',
+        },
+      },
+    ],
   },
   {
     path: '/production/approvals',

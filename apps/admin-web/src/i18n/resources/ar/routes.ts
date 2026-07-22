@@ -68,4 +68,13 @@ export default {
   'routes.serviceCatalog.serviceEdit.title': 'تحرير الخدمة',
   'routes.serviceCatalog.import.title': 'استيراد',
   'routes.serviceCatalog.import.subtitle': 'Excel 批量استيراد与错误报告',
+
+  // Workflow 管理台（spec: Workflow 平台应用与管理台补丁）
+  'routes.workflowAdmin.title': 'لوحة تحكم Workflow',
+  'routes.workflowAdmin.subtitle': 'عرض عمليات Workflow عبر المستأجرين والمستأجرين المرئيين',
+  'routes.workflowAdmin.dashboard.title': 'نظرة عامة',
+  'routes.workflowAdmin.apps.title': 'قائمة التطبيقات',
+  'routes.workflowAdmin.apps.subtitle': 'بحث التطبيقات عبر المستأجرين',
+  'routes.workflowAdmin.tenants.title': 'ملخص المستأجرين',
+  'routes.workflowAdmin.tenants.subtitle': 'مقاييس Workflow مجمّعة حسب المستأجر',
 }

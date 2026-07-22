@@ -566,6 +566,12 @@ export default {
   'pages.workflow.status.archived': 'مؤرشف',
 'pages.workflow.catalogStatus.pendingApproval': 'في انتظار الموافقة',
 'pages.workflow.catalogStatus.rejected': 'مرفوض',
+  'pages.workflow.scope.self': 'الخاص فقط',
+  'pages.workflow.scope.tenant': 'المستأجر الحالي',
+  'pages.workflow.scope.global': 'عبر المستأجرين',
+  'pages.workflow.scopeHint':
+    'العرض الحالي: يعرض فقط سير العمل الذي أنشأته. لعرض كل سير العمل في المستأجر أو عبر المستأجرين، اتصل بالمسؤول.',
+  'pages.workflow.roleFilteredHint': 'العرض مفلتر حسب الدور. سير العمل المنشأ بواسطة مستخدمين آخرين مخفي.',
   'pages.workflow.canvas': 'محرر اللوحة',
   'pages.workflow.save': 'حفظ',
   'pages.workflow.saveSuccess': 'تم الحفظ بنجاح',
@@ -636,8 +642,13 @@ export default {
   'pages.platformApps.title': 'كتالوج تطبيقات المنصة',
   'pages.platformApps.subtitle': 'تطبيقات سير العمل المعتمدة والمتاحة في الكتالوج.',
   'pages.platformApps.searchPlaceholder': 'ابحث عن تطبيق بالاسم',
-  'pages.platformApps.empty': 'لا توجد تطبيقات منصة متاحة',
+  'pages.platformApps.empty': 'لا توجد تطبيقات منصة منشورة',
+  'pages.platformApps.emptyHint':
+    'يعرض الكتالوج التطبيقات المعتمدة فقط (active). الحالات الأخرى (مسودة/بانتظار/معطلة) تتطلب موافقة أو يمكن عرضها في "سير العمل الخاص بي".',
   'pages.platformApps.noDescription': 'لا يوجد وصف',
   'pages.platformApps.types.workflow': 'سير العمل',
   'pages.platformApps.types.unknown': 'غير معروف',
+  'pages.platformApps.scope.self': 'الخاص فقط',
+  'pages.platformApps.scope.tenant': 'المستأجر الحالي',
+  'pages.platformApps.scope.global': 'عبر المستأجرين',
 }

@@ -8,3 +8,4 @@ export * from './skill-hub.js'
 export * from './stage-switch.js'
 export * from './ticket-kanban.js'
 export * from "./service-catalog.js"
+export * from "./workflow-admin.js"

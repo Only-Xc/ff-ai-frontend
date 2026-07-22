@@ -548,6 +548,12 @@ export default {
   'pages.workflow.status.archived': '已归档',
 'pages.workflow.catalogStatus.pendingApproval': '待审批',
 'pages.workflow.catalogStatus.rejected': '已拒绝',
+  'pages.workflow.scope.self': '仅自己',
+  'pages.workflow.scope.tenant': '本租户',
+  'pages.workflow.scope.global': '跨租户',
+  'pages.workflow.scopeHint':
+    '当前视图：仅看到自己创建的 Workflow；如需看本租户或跨租户全部 Workflow，请联系管理员。',
+  'pages.workflow.roleFilteredHint': '当前为按角色过滤视图，未列出其他用户的 Workflow。',
   'pages.workflow.canvas': '画布编辑器',
   'pages.workflow.save': '保存',
   'pages.workflow.saveSuccess': '保存成功',
@@ -618,8 +624,13 @@ export default {
   'pages.platformApps.title': '平台应用目录',
   'pages.platformApps.subtitle': '已审批通过的工作流类应用。',
   'pages.platformApps.searchPlaceholder': '搜索应用名称',
-  'pages.platformApps.empty': '暂无平台应用',
+  'pages.platformApps.empty': '暂无已发布的平台应用',
+  'pages.platformApps.emptyHint':
+    '目录中只展示已通过审批（active）的应用；其他状态（草稿/待审批/已下架）需要等待审批通过或前往「我的工作流」查看。',
   'pages.platformApps.noDescription': '暂无说明',
   'pages.platformApps.types.workflow': '工作流',
   'pages.platformApps.types.unknown': '未知类型',
+  'pages.platformApps.scope.self': '仅自己',
+  'pages.platformApps.scope.tenant': '本租户',
+  'pages.platformApps.scope.global': '跨租户',
 }

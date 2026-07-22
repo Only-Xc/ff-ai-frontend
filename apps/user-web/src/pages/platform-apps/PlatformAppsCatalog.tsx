@@ -50,7 +50,27 @@ export default function PlatformAppsCatalog() {
         }
       >
         {filteredItems.length === 0 && !isLoading ? (
-          <Empty description={t('pages.platformApps.empty')} />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '24px 0',
+            }}
+          >
+            <Empty description={t('pages.platformApps.empty')} />
+            <div
+              style={{
+                marginTop: 12,
+                color: 'var(--ant-color-text-tertiary)',
+                fontSize: 13,
+                textAlign: 'center',
+                maxWidth: 480,
+              }}
+            >
+              {t('pages.platformApps.emptyHint')}
+            </div>
+          </div>
         ) : (
           <div
             style={{
