@@ -154,38 +154,38 @@ export interface AdminQuestionAccuracyStatsResponse {
 }
 
 export const listAdminExamsRequest = (params: AdminExamListQuery) =>
-  createRequest<AdminExamList>('GET', '/api/exam/admin/exams', { params })
+  createRequest<AdminExamList>('GET', '/api/v1/exam/admin/exams', { params })
 
 export const createAdminExamRequest = (data: AdminExamCreateBody) =>
-  createRequest<AdminExamPaper>('POST', '/api/exam/admin/exams', { data })
+  createRequest<AdminExamPaper>('POST', '/api/v1/exam/admin/exams', { data })
 
 export const getAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaperDetail>(
     'GET',
-    path`/api/exam/admin/exams/${paperId}`,
+    path`/api/v1/exam/admin/exams/${paperId}`,
   )
 
 export const updateAdminExamRequest = (
   paperId: string,
   data: AdminExamUpdateBody,
 ) =>
-  createRequest<AdminExamPaper>('PATCH', path`/api/exam/admin/exams/${paperId}`, {
+  createRequest<AdminExamPaper>('PATCH', path`/api/v1/exam/admin/exams/${paperId}`, {
     data,
   })
 
 export const deleteAdminExamRequest = (paperId: string) =>
-  createRequest<void>('DELETE', path`/api/exam/admin/exams/${paperId}`)
+  createRequest<void>('DELETE', path`/api/v1/exam/admin/exams/${paperId}`)
 
 export const publishAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaper>(
     'POST',
-    path`/api/exam/admin/exams/${paperId}/publish`,
+    path`/api/v1/exam/admin/exams/${paperId}/publish`,
   )
 
 export const unpublishAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaper>(
     'POST',
-    path`/api/exam/admin/exams/${paperId}/unpublish`,
+    path`/api/v1/exam/admin/exams/${paperId}/unpublish`,
   )
 
 export const importAdminExamQuestionsRequest = (
@@ -194,14 +194,14 @@ export const importAdminExamQuestionsRequest = (
 ) =>
   createRequest<AdminExamQuestion[]>(
     'POST',
-    path`/api/exam/admin/exams/${paperId}/questions/import`,
+    path`/api/v1/exam/admin/exams/${paperId}/questions/import`,
     { data },
   )
 
 export const listAdminExamQuestionsRequest = (paperId: string) =>
   createRequest<AdminExamQuestion[]>(
     'GET',
-    path`/api/exam/admin/exams/${paperId}/questions`,
+    path`/api/v1/exam/admin/exams/${paperId}/questions`,
   )
 
 export const createAdminExamQuestionRequest = (
@@ -210,7 +210,7 @@ export const createAdminExamQuestionRequest = (
 ) =>
   createRequest<AdminExamQuestion>(
     'POST',
-    path`/api/exam/admin/exams/${paperId}/questions`,
+    path`/api/v1/exam/admin/exams/${paperId}/questions`,
     { data },
   )
 
@@ -220,7 +220,7 @@ export const deleteAdminExamQuestionRequest = (
 ) =>
   createRequest<void>(
     'DELETE',
-    path`/api/exam/admin/exams/${paperId}/questions/${questionId}`,
+    path`/api/v1/exam/admin/exams/${paperId}/questions/${questionId}`,
 )
 
 export const updateAdminExamQuestionRequest = (
@@ -230,7 +230,7 @@ export const updateAdminExamQuestionRequest = (
 ) =>
   createRequest<AdminExamQuestion>(
     'PATCH',
-    path`/api/exam/admin/exams/${paperId}/questions/${questionId}`,
+    path`/api/v1/exam/admin/exams/${paperId}/questions/${questionId}`,
     { data },
   )
 
@@ -240,25 +240,25 @@ export const listAdminExamAttemptsRequest = (
 ) =>
   createRequest<AdminExamAttemptList>(
     'GET',
-    path`/api/exam/admin/exams/${paperId}/attempts`,
+    path`/api/v1/exam/admin/exams/${paperId}/attempts`,
     { params },
   )
 
 export const listAdminAllExamAttemptsRequest = (
   params: AdminGlobalAttemptListQuery,
 ) =>
-  createRequest<AdminExamAttemptList>('GET', '/api/exam/admin/attempts', {
+  createRequest<AdminExamAttemptList>('GET', '/api/v1/exam/admin/attempts', {
     params,
   })
 
 export const getAdminAttemptRequest = (attemptId: string) =>
   createRequest<AdminExamAttemptDetail>(
     'GET',
-    path`/api/exam/admin/attempts/${attemptId}`,
+    path`/api/v1/exam/admin/attempts/${attemptId}`,
   )
 
 export const listAdminExamQuestionStatsRequest = (paperId: string) =>
   createRequest<AdminQuestionAccuracyStatsResponse>(
     'GET',
-    path`/api/exam/admin/exams/${paperId}/question-accuracy`,
+    path`/api/v1/exam/admin/exams/${paperId}/question-accuracy`,
   )

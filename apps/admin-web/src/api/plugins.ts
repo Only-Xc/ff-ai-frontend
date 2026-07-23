@@ -111,7 +111,7 @@ export interface PluginManifest {
     port?: number
     resources?: PluginRuntimeResourceManifest[]
   }
-  services: Record<string, unknown>
+  services: PluginServicesManifest
   menus: Array<{
     code: string
     title: string
@@ -123,6 +123,10 @@ export interface PluginManifest {
     code: string
     name: string
     type: string
+    description?: string | null
+    service?: string | null
+    path_pattern?: string | null
+    methods?: string[]
   }>
   tenant_config_schema: Record<string, unknown>
   secrets: Array<{
@@ -132,6 +136,26 @@ export interface PluginManifest {
   }>
   uninstall_policy: string
   compatibility: Record<string, unknown>
+}
+
+export interface PluginServiceRegistrationManifest {
+  name: string
+  type: 'api' | 'ui' | 'openapi' | 'health' | 'metrics' | 'webhook'
+  resource: string
+  path: string
+  public_path?: string | null
+  health_path?: string | null
+  openapi_path?: string | null
+  required_scope?: string | null
+  auth_required?: boolean
+}
+
+export interface PluginServicesManifest {
+  ui: string
+  api: string
+  health: string
+  openapi: string
+  registrations?: PluginServiceRegistrationManifest[]
 }
 
 export interface PluginRuntimeResourceManifest {
@@ -336,6 +360,57 @@ export interface PluginRegistrationBody {
   description?: string | null
 }
 
+export interface ComposeManifestDraftBody {
+  compose_yaml: string
+  plugin_id: string
+  name: string
+  version: string
+}
+
+export interface ComposeManifestWarning {
+  code: string
+  message: string
+  service: string | null
+}
+
+export interface ComposeManifestDraftResult {
+  manifest: PluginManifest
+  warnings: ComposeManifestWarning[]
+}
+
+export interface ComposePluginRegistrationResult {
+  plugin: PluginDefinitionDetail
+  warnings: ComposeManifestWarning[]
+}
+
+export interface ComposeRuntimeIssue {
+  code: string
+  message: string
+  service: string | null
+  container: string | null
+  state: string | null
+  health: string | null
+  resolution: string
+}
+
+export interface ComposeImportErrorDetail {
+  code: string
+  message: string
+  reasons: ComposeRuntimeIssue[]
+}
+
+export interface PluginManifestValidationIssue {
+  location: string[]
+  message: string
+  type: string
+}
+
+export interface PluginManifestValidationResult {
+  valid: boolean
+  manifest: PluginManifest | null
+  errors: PluginManifestValidationIssue[]
+}
+
 interface ListResult<T> {
   data: T[]
   count: number
@@ -374,6 +449,34 @@ export const pluginKeys = {
 
 export const plugins_register = request((data: PluginRegistrationBody) =>
   createRequest<PluginDefinitionDetail>('POST', '/api/v1/plugins', { data }),
+)
+
+export const plugins_createManifestDraftFromCompose = request(
+  (data: ComposeManifestDraftBody) =>
+    createRequest<ComposeManifestDraftResult>(
+      'POST',
+      '/api/v1/plugins/manifest-drafts/from-compose',
+      { data },
+    ),
+)
+
+export const plugins_importCompose = request((file: File) => {
+  const data = new FormData()
+  data.append('file', file)
+  return createRequest<ComposePluginRegistrationResult, FormData>(
+    'POST',
+    '/api/v1/plugins/import-compose',
+    { data, timeout: 30_000 },
+  )
+})
+
+export const plugins_validateManifestDraft = request(
+  (manifest: PluginManifest) =>
+    createRequest<PluginManifestValidationResult>(
+      'POST',
+      '/api/v1/plugins/manifest-drafts/validate',
+      { data: { manifest } },
+    ),
 )
 
 export const plugins_createVersion = request(

@@ -1,7 +1,7 @@
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
 
-const EXAM_PLUGIN_ACCESS_BASE = '/api/v1/plugins/examapi'
+const EXAM_PLUGIN_ACCESS_BASE = '/api/v1/plugins/exam'
 const EXAM_PLUGIN_API_BASE = `${EXAM_PLUGIN_ACCESS_BASE}/proxy`
 
 function examPluginApiPath(apiPath: string) {

@@ -37,11 +37,13 @@ import {
   pluginKeys,
   plugins_delete,
   plugins_get,
+  plugins_importCompose,
   plugins_install,
   plugins_list,
   plugins_register,
   plugins_update,
   type PluginDefinition,
+  type ComposeImportErrorDetail,
   type PluginDefinitionUpdateBody,
   type PluginInstallBody,
   type PluginRegistrationBody,
@@ -64,6 +66,8 @@ export default function PluginCenter() {
   const [installPluginId, setInstallPluginId] = useState<string>()
   const [editingPlugin, setEditingPlugin] = useState<PluginDefinition>()
   const [registrationOpen, setRegistrationOpen] = useState(false)
+  const [composeImportError, setComposeImportError] =
+    useState<ComposeImportErrorDetail>()
   const [editForm] = Form.useForm<PluginDefinitionUpdateBody>()
   const params = useMemo(
     () => ({ keyword: keyword || undefined, ...pagination.query }),
@@ -100,6 +104,17 @@ export default function PluginCenter() {
       await queryClient.invalidateQueries({ queryKey: pluginKeys.all })
       void navigate(`/plugins/${plugin.plugin_id}`)
     },
+  })
+  const composeImportMutation = useMutation({
+    mutationFn: (file: File) => plugins_importCompose(file),
+    onMutate: () => setComposeImportError(undefined),
+    onSuccess: async ({ plugin }) => {
+      message.success('插件已从 Docker Compose 自动注册')
+      setRegistrationOpen(false)
+      await queryClient.invalidateQueries({ queryKey: pluginKeys.all })
+      void navigate(`/plugins/${plugin.plugin_id}`)
+    },
+    onError: (error) => setComposeImportError(readComposeImportError(error)),
   })
   const updateMutation = useMutation({
     mutationFn: (body: PluginDefinitionUpdateBody) =>
@@ -302,7 +317,10 @@ export default function PluginCenter() {
           <Button
             icon={<PlusOutlined />}
             type="primary"
-            onClick={() => setRegistrationOpen(true)}
+            onClick={() => {
+              setComposeImportError(undefined)
+              setRegistrationOpen(true)
+            }}
           >
             添加插件
           </Button>
@@ -362,8 +380,17 @@ export default function PluginCenter() {
       />
       <PluginRegistrationModal
         open={registrationOpen}
-        submitting={registrationMutation.isPending}
-        onCancel={() => setRegistrationOpen(false)}
+        composeError={composeImportError}
+        submitting={
+          registrationMutation.isPending || composeImportMutation.isPending
+        }
+        onCancel={() => {
+          setComposeImportError(undefined)
+          setRegistrationOpen(false)
+        }}
+        onComposeImport={(file) =>
+          composeImportMutation.mutateAsync(file).then(() => undefined)
+        }
         onSubmit={(body) => registrationMutation.mutate(body)}
       />
       <Modal
@@ -412,5 +439,37 @@ export default function PluginCenter() {
         </Form>
       </Modal>
     </PageContainer>
+  )
+}
+
+function readComposeImportError(error: unknown): ComposeImportErrorDetail {
+  const data =
+    typeof error === 'object' && error !== null && 'data' in error
+      ? (error as { data?: unknown }).data
+      : undefined
+  const detail =
+    typeof data === 'object' && data !== null && 'detail' in data
+      ? (data as { detail?: unknown }).detail
+      : undefined
+  if (isComposeImportErrorDetail(detail)) return detail
+  return {
+    code: 'COMPOSE_IMPORT_FAILED',
+    message: error instanceof Error ? error.message : '检测 Docker 实际运行状态失败。',
+    reasons: [],
+  }
+}
+
+function isComposeImportErrorDetail(
+  value: unknown,
+): value is ComposeImportErrorDetail {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'code' in value &&
+    typeof value.code === 'string' &&
+    'message' in value &&
+    typeof value.message === 'string' &&
+    'reasons' in value &&
+    Array.isArray(value.reasons)
   )
 }
