@@ -166,13 +166,13 @@ export function NodeConfigPanel({
             </Form.Item>
 
             {/* 元数据过滤 */}
-            <Divider orientation="left" plain style={{ margin: '12px 0 8px' }}>
+            <Divider titlePlacement="start" plain style={{ margin: '12px 0 8px' }}>
               {t('pages.workflow.nodeFields.metadataFilter')}
             </Divider>
             <MetadataFilterConfig config={config} onChange={onChange} />
 
             {/* 单节点测试 */}
-            <Divider orientation="left" plain style={{ margin: '12px 0 8px' }}>
+            <Divider titlePlacement="start" plain style={{ margin: '12px 0 8px' }}>
               {t('pages.workflow.nodeFields.testNode')}
             </Divider>
             <Space direction="vertical" style={{ width: '100%' }} size="small">
@@ -398,6 +398,8 @@ function MetadataFilterConfig({
         </Form.Item>
       )}
       {conditions.map((cond, idx) => (
+        // Conditions are an ordered value list with no persisted identifier.
+        // eslint-disable-next-line react-x/no-array-index-key
         <Space key={idx} style={{ display: 'flex', marginBottom: 6 }} align="start">
           <Input
             size="small"
@@ -466,7 +468,7 @@ function NodeTestResult({
       <Alert
         type="error"
         showIcon
-        message={result.error || 'Test failed'}
+        message={result.error ?? 'Test failed'}
         style={{ marginTop: 8 }}
       />
     )
@@ -505,7 +507,7 @@ function NodeTestResult({
       </div>
       {chunks.slice(0, 3).map((chunk, i) => (
         <div
-          key={i}
+          key={`${chunk.document_name ?? 'document'}:${chunk.score ?? 'score'}:${chunk.content ?? ''}`}
           style={{
             marginTop: 6,
             padding: '4px 8px',

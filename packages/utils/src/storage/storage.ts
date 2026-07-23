@@ -33,7 +33,7 @@ function createStorageApi(storage: Storage): StorageApi {
       // existed) are stored as bare strings and fail JSON.parse. Fall back to
       // returning the raw value so they keep flowing through typed callers
       // (e.g. local.get<string>(...)) without crashing the store initializer.
-      let data: { value?: T; expiresAt?: number } | unknown
+      let data: unknown
       try {
         data = JSON.parse(item)
       } catch {
