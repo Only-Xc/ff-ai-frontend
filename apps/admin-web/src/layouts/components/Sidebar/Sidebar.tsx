@@ -1,13 +1,9 @@
 import { Menu, type MenuProps } from 'antd'
 import { createStyles } from 'antd-style'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import {
-  getOpenNavKeys,
-  getPathByNavKey,
-  type NavTreeItem,
-} from './layoutNav'
+import { getOpenNavKeys, getPathByNavKey, type NavTreeItem } from './layoutNav'
 
 const useStyles = createStyles(({ iconPrefixCls, prefixCls }) => {
   const antCls = `.${prefixCls}`
@@ -274,14 +270,18 @@ export function Sidebar({
 }: SidebarProps) {
   const { styles } = useStyles()
   const navigate = useNavigate()
-  const defaultOpenKeys = useMemo(
+  const routeOpenKeys = useMemo(
     () => getOpenNavKeys(activeKey, navItems),
     [activeKey, navItems],
   )
-  const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([])
-  const openKeys = useMemo(
-    () => Array.from(new Set([...defaultOpenKeys, ...manualOpenKeys])),
-    [defaultOpenKeys, manualOpenKeys],
+  const [openKeys, setOpenKeys] = useState<string[]>(routeOpenKeys)
+
+  useEffect(
+    () =>
+      setOpenKeys((currentOpenKeys) =>
+        Array.from(new Set([...currentOpenKeys, ...routeOpenKeys])),
+      ),
+    [routeOpenKeys],
   )
 
   const items = useMemo<MenuItem[]>(
@@ -325,7 +325,7 @@ export function Sidebar({
           },
         }}
         theme="light"
-        onOpenChange={setManualOpenKeys}
+        onOpenChange={setOpenKeys}
         onClick={({ key }) => {
           const path = pathByKey.get(key)
 

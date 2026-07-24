@@ -1,7 +1,6 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, Button, Space, Spin, Typography } from 'antd'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
@@ -10,6 +9,7 @@ import {
   createFlowiseBrowserSession,
   flowiseKeys,
 } from '@/api/flowise'
+import { useFlowiseIframeSessionRefresh } from '@/hooks/useFlowiseIframeSessionRefresh'
 
 const { Title } = Typography
 
@@ -18,12 +18,15 @@ export default function WorkflowCanvasPage() {
   const navigate = useNavigate()
   const { workflowAppId = '' } = useParams()
   const appId = decodeURIComponent(workflowAppId)
-  const [iframeKey, setIframeKey] = useState(0)
   const sessionQuery = useQuery({
     queryKey: flowiseKeys.browserSession(appId),
     queryFn: () => createFlowiseBrowserSession(appId),
     enabled: Boolean(appId),
     retry: false,
+  })
+  const { iframeKey, refreshIframeSession } = useFlowiseIframeSessionRefresh({
+    appId,
+    refetchSession: sessionQuery.refetch,
   })
   const iframeSrc = sessionQuery.data
     ? buildFlowiseEditorUrl(sessionQuery.data.ticket)
@@ -46,11 +49,7 @@ export default function WorkflowCanvasPage() {
           aria-label={t('pages.flowise.reload', 'Reload canvas')}
           disabled={!sessionQuery.data}
           icon={<ReloadOutlined />}
-          onClick={() => {
-            void sessionQuery.refetch().then(({ data }) => {
-              if (data) setIframeKey((current) => current + 1)
-            })
-          }}
+          onClick={() => void refreshIframeSession()}
         />
       </header>
 

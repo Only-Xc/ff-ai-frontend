@@ -102,7 +102,11 @@ function submenu(page: Page, label: string) {
 async function openSubmenu(page: Page, label: string) {
   const group = submenu(page, label)
 
-  await group.title.click()
+  if (
+    !(await group.item.getAttribute('class'))?.includes('ant-menu-submenu-open')
+  ) {
+    await group.title.click()
+  }
   await expect(group.item).toHaveClass(/ant-menu-submenu-open/)
 
   return group.item
@@ -115,6 +119,22 @@ async function visibleChildLabels(group: ReturnType<Page['locator']>) {
 }
 
 test.describe('admin sidebar module grouping', () => {
+  test('allows the active module group to be collapsed manually', async ({
+    page,
+  }) => {
+    await setupAuthenticatedPage(page)
+    await page.goto('/rbac/roles')
+
+    const accessControl = submenu(page, '权限管理')
+    await expect(accessControl.item).toHaveClass(/ant-menu-submenu-open/)
+    await expect(accessControl.title).toHaveAttribute('aria-expanded', 'true')
+
+    await accessControl.title.click()
+
+    await expect(accessControl.item).not.toHaveClass(/ant-menu-submenu-open/)
+    await expect(accessControl.title).toHaveAttribute('aria-expanded', 'false')
+  })
+
   test('groups multi-entry modules and preserves child order', async ({
     page,
   }) => {
