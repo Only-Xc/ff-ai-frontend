@@ -11,7 +11,6 @@ import {
   workflowAdminVersionGraph_get,
 } from '@/api/workflow-admin'
 
-import { FlowiseEmbedCanvas } from './FlowiseEmbedCanvas'
 import { FlowiseReadonlyCanvas } from './FlowiseReadonlyCanvas'
 import './FlowiseReadonlyCanvas.css'
 
@@ -35,10 +34,6 @@ export default function FlowiseReviewPage() {
     retry: false,
   })
 
-  // Draft view: embed design chatflow; Version view: embed runtime chatflow
-  const useFlowiseEmbed = Boolean(appId)
-  const versionChatflowId = data?.flowise_runtime_chatflow_id ?? null
-
   return (
     <PageContainer className="p-5">
       <PageHeader title={t('pages.flowise.viewTitle')}>
@@ -61,12 +56,7 @@ export default function FlowiseReviewPage() {
         </Space>
       </PageHeader>
 
-      {useFlowiseEmbed ? (
-        <FlowiseEmbedCanvas
-          appId={appId!}
-          chatflowId={versionId ? versionChatflowId : undefined}
-        />
-      ) : isLoading ? (
+      {isLoading ? (
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : isError ? (
         <Alert

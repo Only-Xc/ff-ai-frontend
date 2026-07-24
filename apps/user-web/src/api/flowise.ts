@@ -1,9 +1,11 @@
 import { requestClient } from '@/utils/request'
 
 export interface FlowiseBrowserSession {
+  ticket: string
   chatflow_id: string
   workspace_id: string
-  user: Record<string, unknown>
+  mode: 'edit' | 'readonly'
+  expires_in: number
 }
 
 export interface FlowiseDraftSyncResult {
@@ -43,14 +45,8 @@ export function getFlowiseBaseUrl(): string {
     : 'http://localhost:3000'
 }
 
-export function buildFlowiseEditorUrl(
-  chatflowId: string,
-  user: Record<string, unknown>,
-): string {
+export function buildFlowiseEditorUrl(ticket: string): string {
   const base = getFlowiseBaseUrl().replace(/\/$/, '')
-  const fragment = new URLSearchParams({
-    target: `/canvas/${chatflowId}`,
-    user: JSON.stringify(user),
-  })
+  const fragment = new URLSearchParams({ ticket })
   return `${base}/ffai-bootstrap.html#${fragment.toString()}`
 }

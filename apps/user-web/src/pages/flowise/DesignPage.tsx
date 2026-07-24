@@ -40,7 +40,11 @@ export default function FlowiseDesignPage() {
   const [iframeKey, setIframeKey] = useState(0)
 
   // Establish the Flowise technical session only after ff-ai authorization.
-  const { data: browserSession, isLoading: sessionLoading } = useQuery({
+  const {
+    data: browserSession,
+    isLoading: sessionLoading,
+    refetch: refetchSession,
+  } = useQuery({
     queryKey: flowiseKeys.browserSession(appId!),
     queryFn: () => createFlowiseBrowserSession(appId!),
     enabled: !!appId,
@@ -70,11 +74,12 @@ export default function FlowiseDesignPage() {
 
   // Build iframe URL
   const iframeSrc = browserSession
-    ? buildFlowiseEditorUrl(browserSession.chatflow_id, browserSession.user)
+    ? buildFlowiseEditorUrl(browserSession.ticket)
     : ''
 
-  const handleReload = () => {
-    setIframeKey((k) => k + 1)
+  const handleReload = async () => {
+    const { data } = await refetchSession()
+    if (data) setIframeKey((k) => k + 1)
   }
 
   return (
@@ -103,7 +108,7 @@ export default function FlowiseDesignPage() {
         <Space>
           <Button
             icon={<ReloadOutlined />}
-            onClick={handleReload}
+            onClick={() => void handleReload()}
             title={t('pages.flowise.reload', 'Reload canvas')}
           >
             {t('common.reload', 'Reload')}

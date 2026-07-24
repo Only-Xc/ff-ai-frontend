@@ -26,10 +26,7 @@ export default function WorkflowCanvasPage() {
     retry: false,
   })
   const iframeSrc = sessionQuery.data
-    ? buildFlowiseEditorUrl(
-        sessionQuery.data.chatflow_id,
-        sessionQuery.data.user,
-      )
+    ? buildFlowiseEditorUrl(sessionQuery.data.ticket)
     : ''
 
   return (
@@ -49,7 +46,11 @@ export default function WorkflowCanvasPage() {
           aria-label={t('pages.flowise.reload', 'Reload canvas')}
           disabled={!sessionQuery.data}
           icon={<ReloadOutlined />}
-          onClick={() => setIframeKey((current) => current + 1)}
+          onClick={() => {
+            void sessionQuery.refetch().then(({ data }) => {
+              if (data) setIframeKey((current) => current + 1)
+            })
+          }}
         />
       </header>
 
