@@ -76,10 +76,15 @@ export default {
 
   // Workflow 管理台（spec: Workflow 平台应用与管理台补丁）
   'routes.workflowAdmin.title': 'لوحة تحكم Workflow',
-  'routes.workflowAdmin.subtitle': 'عرض عمليات Workflow عبر المستأجرين والمستأجرين المرئيين',
+  'routes.workflowAdmin.subtitle':
+    'عرض عمليات Workflow عبر المستأجرين والمستأجرين المرئيين',
   'routes.workflowAdmin.dashboard.title': 'نظرة عامة',
   'routes.workflowAdmin.apps.title': 'قائمة التطبيقات',
   'routes.workflowAdmin.apps.subtitle': 'بحث التطبيقات عبر المستأجرين',
   'routes.workflowAdmin.tenants.title': 'ملخص المستأجرين',
   'routes.workflowAdmin.tenants.subtitle': 'مقاييس Workflow مجمّعة حسب المستأجر',
+
+  // Flowise Workflow Apps
+  'routes.workflowApps.title': 'تطبيقات سير العمل',
+  'routes.workflowReview.title': 'عرض سير العمل',
 }

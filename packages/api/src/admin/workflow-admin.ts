@@ -108,17 +108,42 @@ export interface WorkflowDraftResponse {
 /** 画布节点 */
 export interface WorkflowGraphNode {
   id: string
-  type: string
+  type?: string
   position?: { x: number; y: number }
+  width?: number
+  height?: number
+  data?: Record<string, unknown>
+  label?: string
   config?: Record<string, unknown>
 }
 
 /** 画布边 */
 export interface WorkflowGraphEdge {
-  id: string
+  id?: string
   source: string
   target: string
+  sourceHandle?: string | null
+  targetHandle?: string | null
+  label?: string
   branch?: string
+}
+
+export interface WorkflowReadonlyGraph {
+  nodes: WorkflowGraphNode[]
+  edges: WorkflowGraphEdge[]
+  viewport?: { x: number; y: number; zoom: number }
+}
+
+/** ff-ai 导出的 Flowise 只读图；不包含 Flowise 标识或凭据。 */
+export interface WorkflowReadonlyGraphResponse {
+  app_id: string
+  source: 'draft' | 'version'
+  graph_json: WorkflowReadonlyGraph
+  version_id?: string | null
+  version?: number | null
+  checksum?: string | null
+  revision?: number | null
+  flowise_runtime_chatflow_id?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -126,9 +151,7 @@ export interface WorkflowGraphEdge {
 // ---------------------------------------------------------------------------
 
 /** 跨租户 Workflow 应用列表（system_admin 可省略 org_id 查全部） */
-export const listWorkflowAdminAppsRequest = (
-  params?: AdminWorkflowAppQuery,
-) =>
+export const listWorkflowAdminAppsRequest = (params?: AdminWorkflowAppQuery) =>
   createRequest<AdminWorkflowAppListResponse>(
     'GET',
     `${WORKFLOW_ADMIN_PREFIX}/apps`,
@@ -166,6 +189,20 @@ export const getWorkflowAppDraftRequest = (appId: string) =>
     `${WORKFLOW_ADMIN_PREFIX}/apps/${appId}/draft`,
   )
 
+/** 获取最新保存的 Flowise 设计稿，只返回 ff-ai 持久化图。 */
+export const getWorkflowAppGraphRequest = (appId: string) =>
+  createRequest<WorkflowReadonlyGraphResponse>(
+    'GET',
+    `${WORKFLOW_ADMIN_PREFIX}/apps/${encodeURIComponent(appId)}/graph`,
+  )
+
+/** 获取发布时冻结的 Flowise 版本快照。 */
+export const getWorkflowVersionGraphRequest = (versionId: string) =>
+  createRequest<WorkflowReadonlyGraphResponse>(
+    'GET',
+    `${WORKFLOW_ADMIN_PREFIX}/versions/${encodeURIComponent(versionId)}/graph`,
+  )
+
 // ---------------------------------------------------------------------------
 // React Query keys
 // ---------------------------------------------------------------------------
@@ -177,6 +214,12 @@ export const workflowAdminKeys = {
   dashboard: (params?: AdminDashboardQuery) =>
     [...workflowAdminKeys.all, 'dashboard', params ?? {}] as const,
   tenants: () => [...workflowAdminKeys.all, 'tenants'] as const,
-  appDetail: (appId: string) => [...workflowAdminKeys.all, 'app', appId] as const,
-  appDraft: (appId: string) => [...workflowAdminKeys.all, 'draft', appId] as const,
+  appDetail: (appId: string) =>
+    [...workflowAdminKeys.all, 'app', appId] as const,
+  appDraft: (appId: string) =>
+    [...workflowAdminKeys.all, 'draft', appId] as const,
+  appGraph: (appId: string) =>
+    [...workflowAdminKeys.all, 'graph', 'app', appId] as const,
+  versionGraph: (versionId: string) =>
+    [...workflowAdminKeys.all, 'graph', 'version', versionId] as const,
 }

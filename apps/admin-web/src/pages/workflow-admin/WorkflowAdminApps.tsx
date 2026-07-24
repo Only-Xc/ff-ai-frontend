@@ -1,4 +1,4 @@
-import { AuditOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import {
   Button,
@@ -24,7 +24,6 @@ import {
   type AdminWorkflowApp,
   type WorkflowAppStatus,
 } from '@/api/workflow-admin'
-import { WorkflowAdminAppDetail } from './WorkflowAdminAppDetail'
 import { WorkflowAdminTenantPicker } from './WorkflowAdminTenantPicker'
 
 const STATUS_OPTIONS: { labelKey: string; value: WorkflowAppStatus | '' }[] = [
@@ -34,7 +33,7 @@ const STATUS_OPTIONS: { labelKey: string; value: WorkflowAppStatus | '' }[] = [
     labelKey: 'pages.workflowAdmin.status.pending_approval',
     value: 'pending_approval',
   },
-  { labelKey: 'pages.workflowAdmin.status.published', value: 'published' as WorkflowAppStatus },
+  { labelKey: 'pages.workflowAdmin.status.published', value: 'published' },
   { labelKey: 'pages.workflowAdmin.status.active', value: 'active' },
   { labelKey: 'pages.workflowAdmin.status.disabled', value: 'disabled' },
 ]
@@ -61,9 +60,10 @@ export function WorkflowAdminApps() {
   const isSuperuser = useAuthStore((state) => state.user?.is_superuser) === true
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<WorkflowAppStatus | ''>('')
-  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined)
+  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(
+    undefined,
+  )
   const [page, setPage] = useState(1)
-  const [detailAppId, setDetailAppId] = useState<string | null>(null)
   const pageSize = 20
 
   const queryParams = useMemo(
@@ -122,27 +122,19 @@ export function WorkflowAdminApps() {
       {
         title: t('pages.workflowAdmin.apps.actions', '操作'),
         key: 'actions',
-        width: 150,
-        fixed: 'right' as const,
+        width: 100,
+        fixed: 'right',
         render: (_: unknown, record: AdminWorkflowApp) => (
-          <Space size={0}>
-            <Button
-              type="link"
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => setDetailAppId(record.id)}
-            >
-              {t('pages.workflowAdmin.apps.viewDetail', '查看')}
-            </Button>
-            <Button
-              type="link"
-              size="small"
-              icon={<AuditOutlined />}
-              onClick={() => navigate('/production/approvals')}
-            >
-              {t('pages.workflowAdmin.apps.goApproval', '审批')}
-            </Button>
-          </Space>
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              void navigate(`/workflow-apps/${record.id}/review`)
+            }}
+          >
+            {t('pages.workflowAdmin.apps.viewDetail', '查看')}
+          </Button>
         ),
       },
     ]
@@ -177,7 +169,7 @@ export function WorkflowAdminApps() {
     )
 
     return cols
-  }, [t, isSuperuser])
+  }, [t, isSuperuser, navigate])
 
   return (
     <PageContainer>
@@ -199,7 +191,12 @@ export function WorkflowAdminApps() {
               }}
             />
           )}
-          <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              void refetch()
+            }}
+          >
             {t('pages.workflowAdmin.common.refresh', '刷新')}
           </Button>
         </Space>
@@ -209,7 +206,10 @@ export function WorkflowAdminApps() {
         <Input
           prefix={<SearchOutlined />}
           allowClear
-          placeholder={t('pages.workflowAdmin.apps.searchPlaceholder', '搜索应用名')}
+          placeholder={t(
+            'pages.workflowAdmin.apps.searchPlaceholder',
+            '搜索应用名',
+          )}
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value)
@@ -224,7 +224,7 @@ export function WorkflowAdminApps() {
           }))}
           value={statusFilter}
           onChange={(v) => {
-            setStatusFilter(v as WorkflowAppStatus | '')
+            setStatusFilter(v)
             setPage(1)
           }}
         />
@@ -233,7 +233,12 @@ export function WorkflowAdminApps() {
       {isFetching && items.length === 0 ? (
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : items.length === 0 ? (
-        <Empty description={t('pages.workflowAdmin.apps.empty', '暂无 Workflow 应用')} />
+        <Empty
+          description={t(
+            'pages.workflowAdmin.apps.empty',
+            '暂无 Workflow 应用',
+          )}
+        />
       ) : (
         <Table<AdminWorkflowApp>
           rowKey="id"
@@ -250,12 +255,6 @@ export function WorkflowAdminApps() {
           }}
         />
       )}
-
-      <WorkflowAdminAppDetail
-        appId={detailAppId}
-        open={detailAppId !== null}
-        onClose={() => setDetailAppId(null)}
-      />
     </PageContainer>
   )
 }

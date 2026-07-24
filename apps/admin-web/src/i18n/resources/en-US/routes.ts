@@ -64,12 +64,14 @@ export default {
   'routes.notFound.title': '404',
 
   'routes.production.approvals.title': 'Production Approval',
-  'routes.production.approvals.subtitle': 'Approve agent releases for production',
+  'routes.production.approvals.subtitle':
+    'Approve agent releases for production',
   'routes.production.approvalDetail.title': 'Approval Detail',
   'routes.production.rollback.title': 'Production Rollback',
   'routes.production.rollback.subtitle': 'Decommission a production agent',
   'routes.serviceCatalog.categories.title': 'Category Management',
-  'routes.serviceCatalog.categories.subtitle': 'Hierarchical category management',
+  'routes.serviceCatalog.categories.subtitle':
+    'Hierarchical category management',
   'routes.serviceCatalog.services.title': 'Service Catalog',
   'routes.serviceCatalog.services.subtitle': 'Service list & search',
   'routes.serviceCatalog.serviceDetail.title': 'Service Detail',
@@ -79,10 +81,15 @@ export default {
 
   // Workflow Console (spec: Workflow platform apps & admin patch)
   'routes.workflowAdmin.title': 'Workflow Console',
-  'routes.workflowAdmin.subtitle': 'Cross-tenant Workflow operations and visible tenant view',
+  'routes.workflowAdmin.subtitle':
+    'Cross-tenant Workflow operations and visible tenant view',
   'routes.workflowAdmin.dashboard.title': 'Overview',
   'routes.workflowAdmin.apps.title': 'Apps',
   'routes.workflowAdmin.apps.subtitle': 'Cross-tenant Workflow app search',
   'routes.workflowAdmin.tenants.title': 'Tenants',
   'routes.workflowAdmin.tenants.subtitle': 'Tenant-aggregated Workflow metrics',
+
+  // Flowise Workflow Apps
+  'routes.workflowApps.title': 'Workflow Apps',
+  'routes.workflowReview.title': 'View Workflow',
 }

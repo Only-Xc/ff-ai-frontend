@@ -35,4 +35,6 @@ export default {
   'routes.workflow.title': 'Workflow Apps',
   'routes.workflow.canvas': 'Canvas Editor',
   'routes.workflow.chat': 'Workflow Chat',
+  'routes.workflow.flowiseDesign': 'Workflow Design',
+  'routes.workflow.flowiseChat': 'Workflow Chat',
 }

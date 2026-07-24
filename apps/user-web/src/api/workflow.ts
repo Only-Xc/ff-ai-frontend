@@ -77,19 +77,6 @@ export interface WorkflowVersion {
   published_at: string
 }
 
-export interface ValidationResult {
-  valid: boolean
-  blocking: ValidationIssue[]
-  warnings: ValidationIssue[]
-}
-
-export interface ValidationIssue {
-  level: string
-  code: string
-  message: string
-  node_id?: string
-}
-
 export interface CatalogApp {
   id: string
   app_type: string
@@ -103,21 +90,6 @@ export interface CatalogApp {
 export interface CatalogListResponse {
   items: CatalogApp[]
   total: number
-}
-
-export interface WorkflowRun {
-  id: string
-  request_id: string
-  app_id: string
-  version_id: string | null
-  conversation_id: string | null
-  user_id: string
-  org_id: string
-  status: string
-  is_debug: boolean
-  started_at: string | null
-  finished_at: string | null
-  error_json: Record<string, unknown> | null
 }
 
 export interface WorkflowConversation {
@@ -151,7 +123,6 @@ export const workflowKeys = {
   draft: (appId: string) => [...workflowKeys.all, 'draft', appId] as const,
   versions: (appId: string) =>
     [...workflowKeys.all, 'versions', appId] as const,
-  runs: (appId: string) => [...workflowKeys.all, 'runs', appId] as const,
   catalog: () => [...workflowKeys.all, 'catalog'] as const,
   conversations: (appId: string) =>
     [...workflowKeys.all, 'conversations', appId] as const,
@@ -221,36 +192,6 @@ export function updateWorkflowDraft(
   })
 }
 
-export function validateWorkflow(appId: string): Promise<ValidationResult> {
-  return requestClient.post<ValidationResult>(`/api/v1/workflow-apps/${appId}/validate`) as unknown as Promise<ValidationResult>
-}
-
-export function createDebugRun(
-  appId: string,
-  payload: { input_payload: Record<string, unknown> },
-): Promise<{ run_id: string; status: string }> {
-  return requestClient.request<{ run_id: string; status: string }>({
-    method: 'POST',
-    url: `/api/v1/workflow-apps/${appId}/debug-runs`,
-    data: payload,
-    meta: { skipGlobalErrorToast: true },
-  })
-}
-
-export function testWorkflowNode(
-  appId: string,
-  nodeId: string,
-  payload: { test_input: Record<string, unknown> },
-) {
-  return requestClient.post<{
-    node_id: string
-    status: string
-    output?: Record<string, unknown>
-    latency_ms?: number
-    error?: string
-  }>(`/api/v1/workflow-apps/${appId}/nodes/${nodeId}/test`, payload)
-}
-
 export function listWorkflowVersions(appId: string): Promise<WorkflowVersion[]> {
   return requestClient.get<WorkflowVersion[]>(
     `/api/v1/workflow-apps/${appId}/versions`,
@@ -276,24 +217,6 @@ export function disableWorkflow(appId: string) {
 
 export function enableWorkflow(appId: string) {
   return requestClient.post(`/api/v1/workflow-apps/${appId}/enable`)
-}
-
-export function listWorkflowRuns(appId: string, params?: {
-  version_id?: string
-  status?: string
-  user_id?: string
-}): Promise<WorkflowRun[]> {
-  return requestClient.get<WorkflowRun[]>(`/api/v1/workflow-apps/${appId}/runs`, {
-    params,
-  }) as unknown as Promise<WorkflowRun[]>
-}
-
-export function getWorkflowRun(runId: string): Promise<WorkflowRun> {
-  return requestClient.get<WorkflowRun>(`/api/v1/workflow-runs/${runId}`) as unknown as Promise<WorkflowRun>
-}
-
-export function stopWorkflowRun(runId: string) {
-  return requestClient.post(`/api/v1/workflow-runs/${runId}/stop`)
 }
 
 // ─── User API (Runtime) ─────────────────────────────────────────────────────

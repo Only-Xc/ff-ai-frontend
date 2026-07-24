@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
@@ -38,8 +38,21 @@ interface DecisionRecord {
   decision: string
   rationale: string
   decided_by: string
+  decided_by_display?: string
   decided_at: string
   request_version: number
+}
+
+function readString(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+function readOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value ? value : undefined
+}
+
+function readNumber(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0
 }
 
 export function ProductionDetail() {
@@ -119,11 +132,12 @@ export function ProductionDetail() {
   const approval = data.request
   const decisions: DecisionRecord[] = (data.decisions ?? []).map(
     (decision) => ({
-      decision: String(decision.decision ?? ''),
-      rationale: String(decision.rationale ?? ''),
-      decided_by: String(decision.decided_by ?? ''),
-      decided_at: String(decision.decided_at ?? ''),
-      request_version: Number(decision.request_version ?? 0),
+      decision: readString(decision.decision),
+      rationale: readString(decision.rationale),
+      decided_by: readString(decision.decided_by),
+      decided_by_display: readOptionalString(decision.decided_by_display),
+      decided_at: readString(decision.decided_at),
+      request_version: readNumber(decision.request_version),
     }),
   )
   const qaChecks = (data.qa_result_snapshot?.checks ?? []) as Array<{
@@ -144,7 +158,7 @@ export function ProductionDetail() {
       dataIndex: 'decided_by',
       width: 220,
       render: (v: string, record: DecisionRecord) =>
-        (record as any).decided_by_display || v,
+        record.decided_by_display ?? v,
     },
     {
       title: t('pages.production.detail.decisionDecidedAt'),
@@ -176,17 +190,31 @@ export function ProductionDetail() {
           >
             {t('pages.production.detail.backToList')}
           </Button>
-          {approval.can_current_user_decide && (
+          {approval.target_type === 'workflow' &&
+            approval.workflow_app_id &&
+            approval.workflow_version_id && (
+              <Button
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  void navigate(
+                    `/workflow-apps/${encodeURIComponent(approval.workflow_app_id!)}/review?versionId=${encodeURIComponent(approval.workflow_version_id!)}`,
+                  )
+                }}
+              >
+                {t('pages.production.detail.viewWorkflowSnapshot')}
+              </Button>
+            )}
+          {(approval.available_actions ?? []).includes('APPROVE') && (
             <Button type="primary" onClick={() => setDecisionDrawerOpen(true)}>
               {t('pages.production.detail.makeDecision')}
             </Button>
           )}
-          {approval.can_cancel && (
+          {(approval.available_actions ?? []).includes('CANCEL') && (
             <Button danger onClick={handleCancelOpen}>
               {t('pages.production.detail.cancel')}
             </Button>
           )}
-          {approval.status === 'APPROVED' && (
+          {(approval.available_actions ?? []).includes('RETRY_ACTIVATION') && (
             <Button
               loading={applyMutation.isPending}
               onClick={() => applyMutation.mutate()}
@@ -214,12 +242,24 @@ export function ProductionDetail() {
                         {approvalStatusLabel(t, approval.status)}
                       </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.queue.targetType')}>
-                      <Tag color={approval.target_type === 'workflow' ? 'purple' : 'blue'}>
-                        {approval.target_type === 'workflow' ? 'Workflow' : 'Agent'}
+                    <Descriptions.Item
+                      label={t('pages.production.queue.targetType')}
+                    >
+                      <Tag
+                        color={
+                          approval.target_type === 'workflow'
+                            ? 'purple'
+                            : 'blue'
+                        }
+                      >
+                        {approval.target_type === 'workflow'
+                          ? 'Workflow'
+                          : 'Agent'}
                       </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label={t('pages.production.detail.version')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.version')}
+                    >
                       v{approval.version}
                     </Descriptions.Item>
                     <Descriptions.Item
@@ -228,16 +268,22 @@ export function ProductionDetail() {
                       {approval.agent_id}
                     </Descriptions.Item>
                     {approval.target_type !== 'workflow' && (
-                      <Descriptions.Item label={t('pages.production.queue.taskId')}>
+                      <Descriptions.Item
+                        label={t('pages.production.queue.taskId')}
+                      >
                         {approval.task_id ?? '—'}
                       </Descriptions.Item>
                     )}
                     {approval.target_type === 'workflow' && (
-                      <Descriptions.Item label={t('pages.production.detail.workflowAppId')}>
+                      <Descriptions.Item
+                        label={t('pages.production.detail.workflowAppId')}
+                      >
                         {approval.workflow_app_id ?? '—'}
                       </Descriptions.Item>
                     )}
-                    <Descriptions.Item label={t('pages.production.detail.riskLevel')}>
+                    <Descriptions.Item
+                      label={t('pages.production.detail.riskLevel')}
+                    >
                       {approval.risk_level || '—'} ({approval.risk_score})
                     </Descriptions.Item>
                     <Descriptions.Item
@@ -267,6 +313,26 @@ export function ProductionDetail() {
                           )
                         : '—'}
                     </Descriptions.Item>
+                    {approval.status === 'APPROVED' && (
+                      <Descriptions.Item
+                        label={t('pages.production.detail.activationStatus')}
+                      >
+                        <Tag
+                          color={
+                            approval.activation_status === 'ACTIVE'
+                              ? 'green'
+                              : approval.activation_status === 'FAILED'
+                                ? 'red'
+                                : 'gold'
+                          }
+                        >
+                          {t(
+                            `pages.production.detail.activation.${approval.activation_status}`,
+                            approval.activation_status,
+                          )}
+                        </Tag>
+                      </Descriptions.Item>
+                    )}
                   </Descriptions>
                 </Card>
 

@@ -12,7 +12,9 @@ import {
 import { request } from './_request'
 
 export type {
+  ProductionActivationStatus,
   ProductionApproval,
+  ProductionApprovalAction,
   ProductionApprovalCancelPayload,
   ProductionApprovalCreatePayload,
   ProductionApprovalDecisionPayload,

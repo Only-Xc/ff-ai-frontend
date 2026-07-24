@@ -1,6 +1,7 @@
 export default {
   'pages.pluginCenter.title': 'Plugin Center',
-  'pages.pluginCenter.subtitle': 'Manage plugin definitions, versions, tenant installations, runtime health, and scope grants.',
+  'pages.pluginCenter.subtitle':
+    'Manage plugin definitions, versions, tenant installations, runtime health, and scope grants.',
   'pages.pluginCenter.search': 'Search by plugin name or ID',
   'pages.pluginCenter.loadFailed': 'Failed to load plugins',
   'pages.pluginCenter.detailLoadFailed': 'Failed to load plugin details',
@@ -22,13 +23,17 @@ export default {
   'pages.pluginCenter.install.organizationRequired': 'Select an organization',
   'pages.pluginCenter.install.version': 'Plugin version',
   'pages.pluginCenter.install.runtimeName': 'Runtime app name (optional)',
-  'pages.pluginCenter.install.runtimeNameInvalid': 'Must start with plugin- and contain lowercase letters, digits, or hyphens',
+  'pages.pluginCenter.install.runtimeNameInvalid':
+    'Must start with plugin- and contain lowercase letters, digits, or hyphens',
   'pages.pluginCenter.install.config': 'Configuration JSON',
   'pages.pluginCenter.install.secrets': 'Secrets JSON',
-  'pages.pluginCenter.install.secretsHint': 'Secrets are write-only and are never returned by the API.',
+  'pages.pluginCenter.install.secretsHint':
+    'Secrets are write-only and are never returned by the API.',
   'pages.pluginCenter.install.jsonInvalid': 'Enter a valid JSON object',
-  'pages.pluginCenter.install.organizationsFailed': 'Failed to load organizations',
-  'pages.pluginCenter.install.managedExternally': 'This plugin is managed by the platform and does not require a container install',
+  'pages.pluginCenter.install.organizationsFailed':
+    'Failed to load organizations',
+  'pages.pluginCenter.install.managedExternally':
+    'This plugin is managed by the platform and does not require a container install',
   'pages.pluginCenter.messages.installQueued': 'Plugin installation queued',
   'pages.pluginCenter.messages.operationQueued': 'Lifecycle operation queued',
   'pages.pluginCenter.status.active': 'Active',
@@ -72,28 +77,36 @@ export default {
   'pages.pluginCenter.permissions.global': 'Global grant',
   'pages.pluginCenter.permissions.save': 'Save grants',
   'pages.pluginCenter.permissions.saved': 'Scope grants saved',
-  'pages.pluginCenter.permissions.selectRole': 'Select a role to configure plugin scopes',
-  'pages.pluginCenter.permissions.loadFailed': 'Failed to load permissions or roles',
+  'pages.pluginCenter.permissions.selectRole':
+    'Select a role to configure plugin scopes',
+  'pages.pluginCenter.permissions.loadFailed':
+    'Failed to load permissions or roles',
   'pages.pluginCenter.lifecycle.enable.action': 'Enable',
   'pages.pluginCenter.lifecycle.enable.title': 'Enable plugin instance',
   'pages.pluginCenter.lifecycle.enable.confirm': 'Enable {{instance}}?',
   'pages.pluginCenter.lifecycle.disable.action': 'Disable',
   'pages.pluginCenter.lifecycle.disable.title': 'Disable plugin instance',
-  'pages.pluginCenter.lifecycle.disable.confirm': 'Disable {{instance}}? Data will be retained.',
+  'pages.pluginCenter.lifecycle.disable.confirm':
+    'Disable {{instance}}? Data will be retained.',
   'pages.pluginCenter.lifecycle.restart.action': 'Restart',
   'pages.pluginCenter.lifecycle.restart.title': 'Restart plugin instance',
   'pages.pluginCenter.lifecycle.restart.confirm': 'Restart {{instance}}?',
   'pages.pluginCenter.lifecycle.uninstall-soft.action': 'Soft uninstall',
   'pages.pluginCenter.lifecycle.uninstall-soft.title': 'Soft uninstall plugin',
-  'pages.pluginCenter.lifecycle.uninstall-soft.confirm': 'Soft uninstall {{instance}}? Data and configuration will be retained.',
+  'pages.pluginCenter.lifecycle.uninstall-soft.confirm':
+    'Soft uninstall {{instance}}? Data and configuration will be retained.',
   'pages.pluginCenter.lifecycle.upgrade.action': 'Upgrade',
   'pages.pluginCenter.lifecycle.upgrade.title': 'Upgrade plugin instance',
   'pages.pluginCenter.lifecycle.upgrade.select': 'Select target version',
   'pages.pluginCenter.lifecycle.hard.action': 'Hard uninstall',
-  'pages.pluginCenter.lifecycle.hard.title': 'Permanently remove plugin instance',
-  'pages.pluginCenter.lifecycle.hard.warning': 'This permanently removes runtime resources and data and cannot be undone.',
-  'pages.pluginCenter.lifecycle.hard.inputHint': 'Enter instance ID {{instance}} to confirm.',
-  'pages.pluginCenter.lifecycle.hard.backup': 'I have completed and verified a data backup',
+  'pages.pluginCenter.lifecycle.hard.title':
+    'Permanently remove plugin instance',
+  'pages.pluginCenter.lifecycle.hard.warning':
+    'This permanently removes runtime resources and data and cannot be undone.',
+  'pages.pluginCenter.lifecycle.hard.inputHint':
+    'Enter instance ID {{instance}} to confirm.',
+  'pages.pluginCenter.lifecycle.hard.backup':
+    'I have completed and verified a data backup',
   'pages.workflowPublications.title': 'نشر مكونات Workflow',
   'pages.workflowPublications.subtitle':
     'إدارة ربط Workflow بالمكونات ودورة حياة النشر.',
@@ -1343,8 +1356,10 @@ export default {
   'pages.rbac.form.tenant': 'المستأجر',
   'pages.rbac.form.tenantRequired': 'يرجى اختيار مستأجر',
   'pages.rbac.form.tenantHint': 'سيتم ربط المستخدم الجديد بالمستأجر المحدد',
-  'pages.rbac.form.tenantLockedHint': 'يمكن لمسؤولي المستأجرين تعديل المستخدمين داخل مستأجرهم فقط',
-  'pages.rbac.form.tenantMigrateHint': 'سيؤدي تبديل المستأجر إلى نقل أدوار المؤسسة العامة وإزالة الأدوار الخاصة بالمستأجر القديم',
+  'pages.rbac.form.tenantLockedHint':
+    'يمكن لمسؤولي المستأجرين تعديل المستخدمين داخل مستأجرهم فقط',
+  'pages.rbac.form.tenantMigrateHint':
+    'سيؤدي تبديل المستأجر إلى نقل أدوار المؤسسة العامة وإزالة الأدوار الخاصة بالمستأجر القديم',
   'pages.rbac.form.tenantPlaceholder': 'اختر المستأجر',
   'pages.rbac.form.tenantEmpty': 'لا يوجد مستأجرون قابلون للتعيين',
   'pages.rbac.columns.tenant': 'المستأجر',
@@ -1880,6 +1895,7 @@ export default {
   'pages.production.status.APPROVED': 'موافق عليه',
   'pages.production.status.REJECTED': 'مرفوض',
   'pages.production.status.PRECHECK_BLOCKED': 'محظور مسبقاً',
+  'pages.production.status.CANCELLED': 'ملغى',
   'pages.production.queue.title': 'موافقة النشر للإنتاج',
   'pages.production.queue.approvalNo': 'رقم الموافقة',
   'pages.production.queue.agent': 'الوكيل',
@@ -1892,7 +1908,8 @@ export default {
   'pages.production.queue.createdAt': 'تاريخ الإنشاء',
   'pages.production.queue.targetType': 'النوع',
   'pages.production.queue.keywordPlaceholder': 'ابحث برقم الموافقة أو الوكيل',
-  'pages.production.queue.intro': 'الوكلاء الذين انتهى نشرهم وينتظرون الموافقة على الإنتاج. يتطلب الإصدار الأول للوكيل الجديد موافقة.',
+  'pages.production.queue.intro':
+    'الوكلاء الذين انتهى نشرهم وينتظرون الموافقة على الإنتاج. يتطلب الإصدار الأول للوكيل الجديد موافقة.',
   'pages.production.queue.empty': 'لا توجد سجلات موافقة',
   'pages.production.detail.title': 'تفاصيل الموافقة',
   'pages.production.detail.subtitle': 'راجع تقييم QA / GRC وقدم قرار الموافقة',
@@ -1920,6 +1937,10 @@ export default {
   'pages.production.detail.cancelSuccess': 'تم إلغاء الموافقة',
   'pages.production.detail.reapply': 'إعادة تطبيق الطرح',
   'pages.production.detail.reapplySuccess': 'تم تطبيق الطرح',
+  'pages.production.detail.activationStatus': 'حالة التفعيل',
+  'pages.production.detail.activation.PENDING': 'بانتظار التفعيل',
+  'pages.production.detail.activation.ACTIVE': 'نشط',
+  'pages.production.detail.activation.FAILED': 'فشل التفعيل',
   'pages.production.detail.decisionSuccess': 'تم تقديم القرار',
   'pages.production.detail.notFound': 'سجل الموافقة غير موجود',
   'pages.production.detail.decisionDecision': 'القرار',
@@ -1928,6 +1949,7 @@ export default {
   'pages.production.detail.decisionRationale': 'المبرر',
   'pages.production.detail.decisionsEmpty': 'لا توجد سجلات قرار',
   'pages.production.detail.workflowAppId': 'معرف تطبيق سير العمل',
+  'pages.production.detail.viewWorkflowSnapshot': 'عرض لقطة سير العمل',
   'pages.production.decisionDrawer.title': 'تقديم قرار الموافقة',
   'pages.production.decisionDrawer.submit': 'إرسال',
   'pages.production.decisionDrawer.decision': 'القرار',
@@ -1935,14 +1957,18 @@ export default {
   'pages.production.decisionDrawer.reject': 'رفض',
   'pages.production.decisionDrawer.rationale': 'المبرر (مطلوب، 1-2000 حرف)',
   'pages.production.decisionDrawer.rationaleRequired': 'الرجاء إدخال المبرر',
-  'pages.production.decisionDrawer.versionNotice': 'إصدار القفل المتفائل: {{version}}',
+  'pages.production.decisionDrawer.versionNotice':
+    'إصدار القفل المتفائل: {{version}}',
   'pages.production.rollback.title': 'سحب وكيل الإنتاج',
-  'pages.production.rollback.subtitle': 'إيقاف حركة الإنتاج مع الاحتفاظ بمنتجات النشر وسجل الموافقات',
-  'pages.production.rollback.warning': 'السحب ليس حذفاً فعلياً: يتم الاحتفاظ بمنتجات النشر وسجل الموافقات ونتائج QA.',
+  'pages.production.rollback.subtitle':
+    'إيقاف حركة الإنتاج مع الاحتفاظ بمنتجات النشر وسجل الموافقات',
+  'pages.production.rollback.warning':
+    'السحب ليس حذفاً فعلياً: يتم الاحتفاظ بمنتجات النشر وسجل الموافقات ونتائج QA.',
   'pages.production.rollback.agentIdLabel': 'معرف الوكيل',
   'pages.production.rollback.reasonLabel': 'سبب السحب',
   'pages.production.rollback.submit': 'تأكيد السحب',
-  'pages.production.rollback.confirmTitle': 'تأكيد سحب هذا الوكيل؟ ستتوقف حركة الإنتاج فوراً.',
+  'pages.production.rollback.confirmTitle':
+    'تأكيد سحب هذا الوكيل؟ ستتوقف حركة الإنتاج فوراً.',
   'pages.production.rollback.success': 'تم سحب الوكيل {{agent}}',
   'pages.serviceCatalog.actions.createCategory': 'فئة جديدة',
   'pages.serviceCatalog.actions.editCategory': 'تحرير الفئة',
@@ -1964,12 +1990,16 @@ export default {
   'pages.serviceCatalog.actions.dragHere': 'اسحب الملف إلى هنا',
   'pages.serviceCatalog.actions.supportXlsx': 'يدعم .xlsx فقط',
   'pages.serviceCatalog.actions.confirmDelete': 'تأكيد الحذف؟',
-  'pages.serviceCatalog.actions.confirmDeleteDesc': 'لا يمكن التراجع عن هذا. لا يمكن حذف فئة تحتوي على فئات فرعية أو خدمات.',
+  'pages.serviceCatalog.actions.confirmDeleteDesc':
+    'لا يمكن التراجع عن هذا. لا يمكن حذف فئة تحتوي على فئات فرعية أو خدمات.',
   'pages.serviceCatalog.actions.createRootCategory': 'فئة جذرية جديدة',
-  'pages.serviceCatalog.actions.emptyHint': 'لا توجد فئات بعد. أنشئ فئة جذرية للبدء.',
-  'pages.serviceCatalog.actions.codePattern': 'يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات',
+  'pages.serviceCatalog.actions.emptyHint':
+    'لا توجد فئات بعد. أنشئ فئة جذرية للبدء.',
+  'pages.serviceCatalog.actions.codePattern':
+    'يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات',
   'pages.serviceCatalog.actions.parentCategory': 'الفئة الأم',
-  'pages.serviceCatalog.actions.parentCategoryPlaceholder': 'اتركه فارغاً لفئة جذرية',
+  'pages.serviceCatalog.actions.parentCategoryPlaceholder':
+    'اتركه فارغاً لفئة جذرية',
   'pages.serviceCatalog.actions.addNode': 'إضافة عقدة',
   'pages.serviceCatalog.actions.editNode': 'تحرير العقدة',
   'pages.serviceCatalog.actions.addSystem': 'إضافة نظام',
@@ -1979,7 +2009,8 @@ export default {
   'pages.serviceCatalog.actions.addMaterial': 'إضافة مادة',
   'pages.serviceCatalog.actions.editMaterial': 'تحرير المادة',
   'pages.serviceCatalog.actions.optionalPlaceholder': 'اختياري',
-  'pages.serviceCatalog.actions.emptyAgentHint': 'لا توجد روابط وكلاء بعد. انقر الزر أعلاه للإضافة.',
+  'pages.serviceCatalog.actions.emptyAgentHint':
+    'لا توجد روابط وكلاء بعد. انقر الزر أعلاه للإضافة.',
   'pages.serviceCatalog.actions.active': 'نشط',
   'pages.serviceCatalog.actions.inactive': 'غير نشط',
   'pages.serviceCatalog.columns.name': 'الاسم',
@@ -2018,11 +2049,13 @@ export default {
   'pages.serviceCatalog.messages.deactivated': 'تم التعطيل',
   'pages.serviceCatalog.messages.createFailed': 'فشل الإنشاء',
   'pages.serviceCatalog.messages.updateFailed': 'فشل التحديث',
-  'pages.serviceCatalog.messages.deleteBlocked': 'فشل الحذف: الفئة تحتوي على فئات فرعية أو خدمات',
+  'pages.serviceCatalog.messages.deleteBlocked':
+    'فشل الحذف: الفئة تحتوي على فئات فرعية أو خدمات',
 
   // Workflow 管理台（spec: Workflow 平台应用与管理台补丁）
   'pages.workflowAdmin.layout.title': 'لوحة تحكم Workflow',
-  'pages.workflowAdmin.layout.subtitle': 'عرض عملياتي عبر المستأجرين / مستأجر واحد',
+  'pages.workflowAdmin.layout.subtitle':
+    'عرض عملياتي عبر المستأجرين / مستأجر واحد',
   'pages.workflowAdmin.menu.dashboard': 'لوحة المعلومات',
   'pages.workflowAdmin.menu.apps': 'تطبيقات Workflow',
   'pages.workflowAdmin.menu.tenants': 'المستأجرون المرئيون',
@@ -2035,7 +2068,8 @@ export default {
   'pages.workflowAdmin.metrics.failed_runs': 'مرات التشغيل الفاشلة',
   'pages.workflowAdmin.metrics.error_rate': 'معدل الخطأ',
   'pages.workflowAdmin.dashboard.title': 'لوحة تحكم Workflow',
-  'pages.workflowAdmin.dashboard.subtitle': 'مقاييس عمليات Workflow عبر المستأجرين / مستأجر واحد',
+  'pages.workflowAdmin.dashboard.subtitle':
+    'مقاييس عمليات Workflow عبر المستأجرين / مستأجر واحد',
   'pages.workflowAdmin.apps.title': 'قائمة تطبيقات Workflow',
   'pages.workflowAdmin.apps.subtitle':
     'إدارة تطبيقات Workflow عبر المستأجرين (system_admin فقط يمكنه العبور؛ tenant_admin يرى نفسه فقط)',
@@ -2068,15 +2102,19 @@ export default {
   'pages.workflowAdmin.status.rejected': 'مرفوض',
   'pages.workflowAdmin.apps.viewDetail': 'عرض',
   'pages.workflowAdmin.apps.tenantFilter': 'تصفية المستأجر',
-  'pages.workflowAdmin.detail.title': 'تفاصيل التطبيق',
-  'pages.workflowAdmin.detail.canvas': 'اللوحة (للقراءة فقط)',
-  'pages.workflowAdmin.detail.noCanvas': 'لا توجد بيانات لوحة',
-  'pages.workflowAdmin.detail.loadError': 'فشل في تحميل تفاصيل التطبيق',
-  'pages.workflowAdmin.detail.loadErrorHint': 'يرجى التحقق من أن الخدمة الخلفية تعمل بشكل صحيح.',
   'pages.workflowAdmin.apps.actions': 'الإجراءات',
-    'pages.workflowAdmin.apps.goApproval': 'الموافقة',
-    'pages.workflowAdmin.catalogStatus.active': 'نشط',
-    'pages.workflowAdmin.catalogStatus.pending_approval': 'بانتظار الموافقة',
-    'pages.workflowAdmin.catalogStatus.rejected': 'مرفوض',
-    'pages.workflowAdmin.catalogStatus.disabled': 'معطل',
+  'pages.workflowAdmin.catalogStatus.active': 'نشط',
+  'pages.workflowAdmin.catalogStatus.pending_approval': 'بانتظار الموافقة',
+  'pages.workflowAdmin.catalogStatus.rejected': 'مرفوض',
+  'pages.workflowAdmin.catalogStatus.disabled': 'معطل',
+
+  // Flowise Integration
+  'pages.flowise.viewTitle': 'عرض سير العمل',
+  'pages.flowise.savedDraft': 'المسودة المحفوظة',
+  'pages.flowise.frozenVersion': 'الإصدار المجمد v{{version}}',
+  'pages.flowise.graphLoadError': 'فشل تحميل مخطط سير العمل',
+  'pages.flowise.emptyGraph': 'لا يوجد مخطط لسير العمل',
+  'pages.flowise.canvasAriaLabel': 'لوحة سير عمل للقراءة فقط',
+  'pages.flowise.loadingSession': 'جارٍ تحميل جلسة المحرر...',
+  'pages.flowise.sessionError': 'فشل تحميل جلسة المحرر',
 }

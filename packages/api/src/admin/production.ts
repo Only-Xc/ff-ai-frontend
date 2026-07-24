@@ -6,11 +6,20 @@ export type ProductionApprovalStatus =
   | 'IN_REVIEW'
   | 'APPROVED'
   | 'REJECTED'
+  | 'CANCELLED'
   | 'PRECHECK_BLOCKED'
 
 export type ProductionApprovalMode = 'ANY' | 'ALL'
 
 export type ProductionDecision = 'APPROVED' | 'REJECTED'
+
+export type ProductionActivationStatus = 'PENDING' | 'ACTIVE' | 'FAILED'
+
+export type ProductionApprovalAction =
+  | 'APPROVE'
+  | 'REJECT'
+  | 'CANCEL'
+  | 'RETRY_ACTIVATION'
 
 export type ProductionStatus =
   | 'none'
@@ -28,6 +37,7 @@ export interface ProductionApproval {
   agent_id: string
   task_id: string | null
   workflow_app_id: string | null
+  workflow_version_id: string | null
   deployment_version: number
   deployment_sha256: string
   qa_passed: boolean
@@ -35,6 +45,7 @@ export interface ProductionApproval {
   risk_level: string
   risk_score: number
   status: ProductionApprovalStatus
+  activation_status: ProductionActivationStatus
   approval_mode: ProductionApprovalMode
   requester_id: string
   approved_by: string | null
@@ -44,8 +55,8 @@ export interface ProductionApproval {
   decided_at: string | null
   approved_at: string | null
   rejected_at: string | null
-  can_current_user_decide: boolean
-  can_cancel: boolean
+  cancelled_at: string | null
+  available_actions: ProductionApprovalAction[]
 }
 
 export interface ApproverRef {

@@ -12,6 +12,8 @@ export function approvalStatusColor(status: ProductionApprovalStatus): string {
       return 'green'
     case 'REJECTED':
       return 'red'
+    case 'CANCELLED':
+      return 'orange'
     case 'PRECHECK_BLOCKED':
       return 'volcano'
     default:

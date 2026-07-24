@@ -78,4 +78,8 @@ export default {
   'routes.workflowAdmin.apps.subtitle': '跨租户 Workflow 应用检索',
   'routes.workflowAdmin.tenants.title': '租户汇总',
   'routes.workflowAdmin.tenants.subtitle': '按租户维度聚合 Workflow 指标',
+
+  // Flowise Workflow Apps（spec: Flowise AI 全接入方案）
+  'routes.workflowApps.title': '工作流应用',
+  'routes.workflowReview.title': '查看工作流',
 }

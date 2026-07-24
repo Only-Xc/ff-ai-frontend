@@ -342,11 +342,11 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
       {
-        path: '/workflow/:appId',
-        element: lazyLoad(() => import('@/pages/workflow/CanvasEditor')),
+        path: '/workflow/flowise/:appId/design',
+        element: lazyLoad(() => import('@/pages/flowise/DesignPage')),
         handle: {
-          title: 'Canvas Editor',
-          titleKey: 'routes.workflow.canvas',
+          title: 'Flowise Design',
+          titleKey: 'routes.workflow.flowiseDesign',
           hideInMenu: true,
           hideInBreadcrumb: true,
           permission: 'admin.workflow_apps.update',

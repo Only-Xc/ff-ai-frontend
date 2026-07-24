@@ -1,9 +1,11 @@
 export default {
   'pages.pluginCarrier.sessionFailed': 'تعذر الاتصال بتطبيق المكون الإضافي',
-  'pages.pluginCarrier.sessionFailedHint': 'قد يكون التطبيق متوقفًا أو غير سليم أو غير متاح لصلاحياتك.',
+  'pages.pluginCarrier.sessionFailedHint':
+    'قد يكون التطبيق متوقفًا أو غير سليم أو غير متاح لصلاحياتك.',
   'pages.pluginCarrier.back': 'العودة إلى تطبيقات المنصة',
   'pages.pluginCarrier.connected': 'متصل عبر بوابة منصة المكونات الإضافية',
-  'pages.pluginCarrier.timeout': 'انتهت مهلة تحميل صفحة المكون الإضافي. تحقق من الخدمة ثم أعد المحاولة.',
+  'pages.pluginCarrier.timeout':
+    'انتهت مهلة تحميل صفحة المكون الإضافي. تحقق من الخدمة ثم أعد المحاولة.',
   'pages.pluginCarrier.frameTitle': 'تطبيق المكون الإضافي {{pluginId}}',
   'pages.platformApps.title': 'تطبيقات المنصة',
   'pages.platformApps.subtitle':
@@ -93,8 +95,7 @@ export default {
   'pages.chat.connectionFailed.title': 'فشل الاتصال بخدمة Agent',
   'pages.chat.connectionFailed.subtitle': 'تواصل مع المسؤول.',
   'pages.chat.welcome.title': 'مساحة عمل Agent',
-  'pages.chat.welcome.description':
-    'أدخل طلبا وسأرد بناء على السياق الحالي.',
+  'pages.chat.welcome.description': 'أدخل طلبا وسأرد بناء على السياق الحالي.',
   'pages.chat.taskConfirmation.title': 'تذكرة بانتظار التأكيد',
   'pages.chat.taskConfirmation.confirm': 'تأكيد الإنشاء',
   'pages.chat.sender.attachments': 'المرفقات',
@@ -110,10 +111,8 @@ export default {
   'pages.chat.sender.shortcut': '⌘/Ctrl + Enter للإرسال',
   'pages.chat.sender.placeholder': 'اسأل أو اكتب...',
   'pages.chat.sender.errors.invalidFile': 'اختر ملفا صالحا',
-  'pages.chat.sender.errors.allowedFiles':
-    'يمكن رفع ملفات {{extensions}} فقط',
-  'pages.chat.sender.errors.fileTooLarge':
-    'يجب ألا يتجاوز حجم كل مرفق {{size}}',
+  'pages.chat.sender.errors.allowedFiles': 'يمكن رفع ملفات {{extensions}} فقط',
+  'pages.chat.sender.errors.fileTooLarge': 'يجب ألا يتجاوز حجم كل مرفق {{size}}',
   'pages.chat.sender.errors.uploadFailed': 'فشل رفع المرفق',
   'pages.chat.sender.errors.uploading':
     'لا تزال المرفقات قيد الرفع. أرسل بعد اكتمالها.',
@@ -275,8 +274,7 @@ export default {
     'يمكن استخدام children فقط مع مكونات الحاوية',
   'pages.schema.errors.unsafeProp': 'لا يسمح باستخدام {{key}} داخل props',
   'pages.schema.errors.gridColumns': 'يجب أن تكون columns رقما من 1 إلى 24',
-  'pages.schema.errors.gutter':
-    'يجب أن يكون gutter رقما أو مصفوفة من رقمين',
+  'pages.schema.errors.gutter': 'يجب أن يكون gutter رقما أو مصفوفة من رقمين',
   'pages.schema.errors.span': 'يجب أن تكون span مصفوفة أرقام',
   'pages.schema.errors.string': 'يجب أن يكون {{field}} نصا',
   'pages.schema.errors.headingLevel': 'يجب أن يكون level رقما من 1 إلى 5',
@@ -291,8 +289,7 @@ export default {
   'pages.schema.errors.objectArray': 'يجب أن يكون {{field}} مصفوفة كائنات',
   'pages.schema.errors.pagination':
     'يجب أن تكون pagination قيمة منطقية أو إعدادات ترقيم',
-  'pages.schema.errors.lineSeries':
-    'يجب أن تكون series مصفوفة إعدادات خطوط',
+  'pages.schema.errors.lineSeries': 'يجب أن تكون series مصفوفة إعدادات خطوط',
   'pages.schema.errors.positiveNumber': 'يجب أن يكون {{field}} رقما موجبا',
   'pages.schema.errors.pieData': 'يجب أن تكون data مصفوفة من { name, value }',
   'pages.schema.demo.title': 'لوحة عرض SchemaRenderer',
@@ -583,7 +580,8 @@ export default {
   'pages.workflow.deleteSuccess': 'تم الحذف بنجاح',
   'pages.workflow.duplicateSuccess': 'تم النسخ بنجاح',
   'pages.workflow.deleteConfirmTitle': 'تأكيد الحذف',
-  'pages.workflow.deleteConfirmContent': 'هل أنت متأكد من حذف "{{name}}"؟ لا يمكن التراجع.',
+  'pages.workflow.deleteConfirmContent':
+    'هل أنت متأكد من حذف "{{name}}"؟ لا يمكن التراجع.',
   'pages.workflow.searchPlaceholder': 'البحث بالاسم',
   'pages.workflow.statusFilter': 'تصفية الحالة',
   'pages.workflow.namePlaceholder': 'اسم التطبيق',
@@ -597,22 +595,25 @@ export default {
   'pages.workflow.status.published': 'منشور',
   'pages.workflow.status.disabled': 'معطل',
   'pages.workflow.status.archived': 'مؤرشف',
-'pages.workflow.catalogStatus.pendingApproval': 'في انتظار الموافقة',
-'pages.workflow.catalogStatus.rejected': 'مرفوض',
+  'pages.workflow.catalogStatus.pendingApproval': 'في انتظار الموافقة',
+  'pages.workflow.catalogStatus.rejected': 'مرفوض',
   'pages.workflow.scope.self': 'الخاص فقط',
   'pages.workflow.scope.tenant': 'المستأجر الحالي',
   'pages.workflow.scope.global': 'عبر المستأجرين',
   'pages.workflow.scopeHint':
     'العرض الحالي: يعرض فقط سير العمل الذي أنشأته. لعرض كل سير العمل في المستأجر أو عبر المستأجرين، اتصل بالمسؤول.',
-  'pages.workflow.roleFilteredHint': 'العرض مفلتر حسب الدور. سير العمل المنشأ بواسطة مستخدمين آخرين مخفي.',
+  'pages.workflow.roleFilteredHint':
+    'العرض مفلتر حسب الدور. سير العمل المنشأ بواسطة مستخدمين آخرين مخفي.',
   'pages.workflow.canvas': 'محرر اللوحة',
   'pages.workflow.save': 'حفظ',
   'pages.workflow.saveSuccess': 'تم الحفظ بنجاح',
   'pages.workflow.saveFailed': 'فشل الحفظ',
-  'pages.workflow.revisionConflict': 'تعارض في الإصدار، يرجى التحديث والمحاولة مرة أخرى',
+  'pages.workflow.revisionConflict':
+    'تعارض في الإصدار، يرجى التحديث والمحاولة مرة أخرى',
   'pages.workflow.validate': 'تحقق',
   'pages.workflow.validatePass': 'اجتاز التحقق',
-  'pages.workflow.validateIssues': '{{blocking}} مشكلة حرجة، {{warnings}} تحذير',
+  'pages.workflow.validateIssues':
+    '{{blocking}} مشكلة حرجة، {{warnings}} تحذير',
   'pages.workflow.publish': 'نشر',
   'pages.workflow.publishSuccess': 'تم النشر بنجاح',
   'pages.workflow.publishFailed': 'فشل النشر',
@@ -681,7 +682,30 @@ export default {
   'pages.workflow.rollback': 'استرجاع',
   'pages.workflow.rollbackSuccess': 'تم الاسترجاع',
   'pages.workflow.rollbackConfirm': 'تأكيد الاسترجاع',
-  'pages.workflow.rollbackWarning': 'سيؤدي الاسترجاع إلى تبديل الإصدار النشط. لن تتأثر العمليات السابقة.',
+  'pages.workflow.rollbackWarning':
+    'سيؤدي الاسترجاع إلى تبديل الإصدار النشط. لن تتأثر العمليات السابقة.',
   'pages.workflow.rollbackTo': 'استرجاع إلى',
   'pages.workflow.active': 'نشط',
+
+  // Flowise Integration
+  'pages.flowise.designTitle': 'تصميم سير العمل',
+  'pages.flowise.chatTitle': 'محادثة سير العمل',
+  'pages.flowise.loadingSession': 'جارٍ إنشاء جلسة المحرر...',
+  'pages.flowise.loadingChat': 'جاري تحميل المحادثة...',
+  'pages.flowise.sessionError': 'فشل إنشاء جلسة المحرر',
+  'pages.flowise.chatConfigError': 'فشل تحميل تكوين المحادثة',
+  'pages.flowise.submitForApproval': 'إرسال للموافقة',
+  'pages.flowise.submitSuccess': 'تم الإرسال للموافقة',
+  'pages.flowise.submitError': 'فشل الإرسال',
+  'pages.flowise.save': 'حفظ',
+  'pages.flowise.saveSuccess': 'تم حفظ سير العمل',
+  'pages.flowise.saveError': 'فشل الحفظ',
+  'pages.flowise.publish': 'نشر',
+  'pages.flowise.publishSuccess': 'تم النشر والإرسال للموافقة على الإنتاج',
+  'pages.flowise.publishError': 'فشل النشر',
+  'pages.flowise.newChat': 'محادثة جديدة',
+  'pages.flowise.deleteHistory': 'حذف السجل',
+  'pages.flowise.historyDeleted': 'تم حذف سجل المحادثة',
+  'pages.flowise.deleteHistoryError': 'فشل حذف السجل',
+  'pages.flowise.reload': 'إعادة تحميل اللوحة',
 }

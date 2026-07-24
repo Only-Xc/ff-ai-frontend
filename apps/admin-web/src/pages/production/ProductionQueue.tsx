@@ -29,6 +29,7 @@ const STATUS_OPTIONS: {
   { labelKey: 'pages.production.status.IN_REVIEW', value: 'IN_REVIEW' },
   { labelKey: 'pages.production.status.APPROVED', value: 'APPROVED' },
   { labelKey: 'pages.production.status.REJECTED', value: 'REJECTED' },
+  { labelKey: 'pages.production.status.CANCELLED', value: 'CANCELLED' },
   {
     labelKey: 'pages.production.status.PRECHECK_BLOCKED',
     value: 'PRECHECK_BLOCKED',

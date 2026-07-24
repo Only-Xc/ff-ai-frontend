@@ -161,6 +161,19 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/workflow-apps/:appId/review',
+    element: lazyLoad(() => import('@/pages/flowise/ReviewPage')),
+    handle: {
+      title: 'View Workflow',
+      titleKey: 'routes.workflowReview.title',
+      navKey: 'workflow-apps',
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permissions: ['admin.workflow_admin.read', 'admin.production.read'],
+      permissionMode: 'any',
+    },
+  },
+  {
     path: '/data-access',
     element: lazyLoad(() => import('@/pages/data-access/DataAccessConsole')),
     handle: {

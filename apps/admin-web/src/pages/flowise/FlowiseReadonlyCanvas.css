@@ -1,0 +1,122 @@
+.flowise-readonly-canvas {
+  width: 100%;
+  height: clamp(480px, calc(100vh - 210px), 860px);
+  min-height: 480px;
+  overflow: hidden;
+  border: 1px solid #d9dee8;
+  border-radius: 6px;
+  background: #f7f9fc;
+}
+
+.flowise-readonly-canvas .flowise-readonly-node {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  color: #17212b;
+  background: #fff;
+  border: 1px solid #d9dee8;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgb(15 23 42 / 10%);
+}
+
+.flowise-readonly-node__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.flowise-readonly-node__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 7px 7px 0 0;
+}
+
+.flowise-readonly-node__name {
+  overflow: hidden;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowise-readonly-node__category {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  color: rgb(255 255 255 / 85%);
+  font-size: 10px;
+  line-height: 16px;
+  background: rgb(255 255 255 / 20%);
+  border-radius: 3px;
+}
+
+.flowise-readonly-node__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 12px;
+}
+
+.flowise-readonly-node__type {
+  overflow: hidden;
+  color: #3d5170;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.flowise-readonly-node__desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #8492a6;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+.flowise-readonly-canvas .react-flow__handle {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.flowise-readonly-canvas .react-flow__controls,
+.flowise-readonly-canvas .react-flow__minimap {
+  border: 1px solid #d9dee8;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgb(15 23 42 / 8%);
+}
+
+@media (max-width: 768px) {
+  .flowise-readonly-canvas {
+    height: calc(100vh - 180px);
+    min-height: 420px;
+  }
+}
+
+/* Flowise iframe embed */
+.flowise-embed-canvas {
+  width: 100%;
+  height: clamp(520px, calc(100vh - 180px), 900px);
+  min-height: 520px;
+  overflow: hidden;
+  border: 1px solid #d9dee8;
+  border-radius: 6px;
+}
+
+.flowise-embed-canvas__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}

@@ -1,9 +1,12 @@
 export default {
   'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
-  'pages.pluginCarrier.sessionFailedHint': 'The app may be disabled, unhealthy, or unavailable to your plugin scopes.',
+  'pages.pluginCarrier.sessionFailedHint':
+    'The app may be disabled, unhealthy, or unavailable to your plugin scopes.',
   'pages.pluginCarrier.back': 'Back to platform apps',
-  'pages.pluginCarrier.connected': 'Connected through the plugin platform gateway',
-  'pages.pluginCarrier.timeout': 'The plugin page timed out. Check the plugin service and retry.',
+  'pages.pluginCarrier.connected':
+    'Connected through the plugin platform gateway',
+  'pages.pluginCarrier.timeout':
+    'The plugin page timed out. Check the plugin service and retry.',
   'pages.pluginCarrier.frameTitle': '{{pluginId}} plugin app',
   'pages.platformApps.title': 'Platform Apps',
   'pages.platformApps.subtitle':
@@ -590,7 +593,8 @@ export default {
   'pages.workflow.deleteSuccess': 'Deleted successfully',
   'pages.workflow.duplicateSuccess': 'Duplicated successfully',
   'pages.workflow.deleteConfirmTitle': 'Confirm Delete',
-  'pages.workflow.deleteConfirmContent': 'Are you sure you want to delete "{{name}}"? This cannot be undone.',
+  'pages.workflow.deleteConfirmContent':
+    'Are you sure you want to delete "{{name}}"? This cannot be undone.',
   'pages.workflow.searchPlaceholder': 'Search by name',
   'pages.workflow.statusFilter': 'Status filter',
   'pages.workflow.namePlaceholder': 'App name',
@@ -604,8 +608,8 @@ export default {
   'pages.workflow.status.published': 'Published',
   'pages.workflow.status.disabled': 'Disabled',
   'pages.workflow.status.archived': 'Archived',
-'pages.workflow.catalogStatus.pendingApproval': 'Pending Approval',
-'pages.workflow.catalogStatus.rejected': 'Rejected',
+  'pages.workflow.catalogStatus.pendingApproval': 'Pending Approval',
+  'pages.workflow.catalogStatus.rejected': 'Rejected',
   'pages.workflow.scope.self': 'Self only',
   'pages.workflow.scope.tenant': 'Current tenant',
   'pages.workflow.scope.global': 'Cross-tenant',
@@ -617,10 +621,12 @@ export default {
   'pages.workflow.save': 'Save',
   'pages.workflow.saveSuccess': 'Saved successfully',
   'pages.workflow.saveFailed': 'Save failed',
-  'pages.workflow.revisionConflict': 'Revision conflict, please refresh and retry',
+  'pages.workflow.revisionConflict':
+    'Revision conflict, please refresh and retry',
   'pages.workflow.validate': 'Validate',
   'pages.workflow.validatePass': 'Validation passed',
-  'pages.workflow.validateIssues': '{{blocking}} blocking issues, {{warnings}} warnings',
+  'pages.workflow.validateIssues':
+    '{{blocking}} blocking issues, {{warnings}} warnings',
   'pages.workflow.publish': 'Publish',
   'pages.workflow.publishSuccess': 'Published successfully',
   'pages.workflow.publishFailed': 'Publish failed',
@@ -689,7 +695,31 @@ export default {
   'pages.workflow.rollback': 'Rollback',
   'pages.workflow.rollbackSuccess': 'Rolled back',
   'pages.workflow.rollbackConfirm': 'Confirm Rollback',
-  'pages.workflow.rollbackWarning': 'Rollback will switch the active version. Existing runs are not affected.',
+  'pages.workflow.rollbackWarning':
+    'Rollback will switch the active version. Existing runs are not affected.',
   'pages.workflow.rollbackTo': 'Rollback to',
   'pages.workflow.active': 'Active',
+
+  // Flowise Integration
+  'pages.flowise.designTitle': 'Workflow Design',
+  'pages.flowise.chatTitle': 'Workflow Chat',
+  'pages.flowise.loadingSession': 'Loading editor session...',
+  'pages.flowise.loadingChat': 'Loading chat...',
+  'pages.flowise.sessionError': 'Failed to load editor session',
+  'pages.flowise.chatConfigError': 'Failed to load chat configuration',
+  'pages.flowise.submitForApproval': 'Submit for Approval',
+  'pages.flowise.submitSuccess': 'Submitted for approval',
+  'pages.flowise.submitError': 'Submit failed',
+  'pages.flowise.save': 'Save',
+  'pages.flowise.saveSuccess': 'Workflow saved',
+  'pages.flowise.saveError': 'Save failed',
+  'pages.flowise.publish': 'Publish',
+  'pages.flowise.publishSuccess':
+    'Published and submitted for production approval',
+  'pages.flowise.publishError': 'Publish failed',
+  'pages.flowise.newChat': 'New Chat',
+  'pages.flowise.deleteHistory': 'Delete History',
+  'pages.flowise.historyDeleted': 'Chat history deleted',
+  'pages.flowise.deleteHistoryError': 'Failed to delete history',
+  'pages.flowise.reload': 'Reload canvas',
 }

@@ -35,4 +35,6 @@ export default {
   'routes.workflow.title': 'تطبيقات سير العمل',
   'routes.workflow.canvas': 'محرر اللوحة',
   'routes.workflow.chat': 'محادثة سير العمل',
+  'routes.workflow.flowiseDesign': 'تصميم سير العمل',
+  'routes.workflow.flowiseChat': 'محادثة سير العمل',
 }

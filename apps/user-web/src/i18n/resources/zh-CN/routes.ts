@@ -35,4 +35,6 @@ export default {
   'routes.workflow.title': '工作流应用',
   'routes.workflow.canvas': '画布编辑器',
   'routes.workflow.chat': '工作流对话',
+  'routes.workflow.flowiseDesign': '工作流设计',
+  'routes.workflow.flowiseChat': '工作流对话',
 }

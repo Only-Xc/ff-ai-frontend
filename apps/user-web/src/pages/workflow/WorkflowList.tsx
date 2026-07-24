@@ -81,7 +81,7 @@ export default function WorkflowList() {
       setNewName('')
       setNewDesc('')
       message.success(t('pages.workflow.createSuccess'))
-      void navigate(`/workflow/${res.id}`)
+      void navigate(`/workflow/flowise/${res.id}/design`)
     },
   })
 
@@ -118,7 +118,13 @@ export default function WorkflowList() {
       dataIndex: 'name',
       key: 'name',
       render: (name: string, record: WorkflowApp) => (
-        <a onClick={() => { void navigate(`/workflow/${record.id}`) }}>{name}</a>
+        <a
+          onClick={() => {
+            void navigate(`/workflow/flowise/${record.id}/design`)
+          }}
+        >
+          {name}
+        </a>
       ),
     },
     {
@@ -164,7 +170,9 @@ export default function WorkflowList() {
             type="link"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => { void navigate(`/workflow/${record.id}`) }}
+            onClick={() => {
+              void navigate(`/workflow/flowise/${record.id}/design`)
+            }}
           >
             {t('common.edit')}
           </Button>
@@ -290,7 +298,10 @@ export default function WorkflowList() {
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() =>
-          createMutation.mutate({ name: newName, description: newDesc || undefined })
+          createMutation.mutate({
+            name: newName,
+            description: newDesc || undefined,
+          })
         }
         confirmLoading={createMutation.isPending}
         okButtonProps={{ disabled: !newName.trim() }}
