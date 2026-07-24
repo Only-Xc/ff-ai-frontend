@@ -185,8 +185,13 @@ function readRestfulErrorMessage(data: unknown): string | undefined {
   return (
     readNonEmptyString(data.message) ??
     readNonEmptyString(data.detail) ??
+    readNestedDetailMessage(data.detail) ??
     readNonEmptyString(data.error)
   )
+}
+
+function readNestedDetailMessage(value: unknown): string | undefined {
+  return isRecord(value) ? readNonEmptyString(value.message) : undefined
 }
 
 function readNonEmptyString(value: unknown): string | undefined {

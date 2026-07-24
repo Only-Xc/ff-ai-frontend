@@ -1,8 +1,24 @@
 import { InboxOutlined } from '@ant-design/icons'
-import { Alert, Form, Input, Modal, Table, Tag, Typography, Upload } from 'antd'
+import {
+  Alert,
+  Form,
+  Input,
+  Modal,
+  Table,
+  Tabs,
+  Tag,
+  Typography,
+  Upload,
+} from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 
-import type { PluginManifest, PluginRegistrationBody } from '@/api/plugins'
+import type {
+  ComposeImportErrorDetail,
+  PluginManifest,
+  PluginRegistrationBody,
+} from '@/api/plugins'
+
+import { ComposeManifestWizard } from './ComposeManifestWizard'
 
 interface FormValues {
   manifest_json: string
@@ -47,7 +63,9 @@ export interface PluginRegistrationModalProps {
   submitting: boolean
   pluginId?: string
   initialManifest?: PluginManifest
+  composeError?: ComposeImportErrorDetail
   onCancel: () => void
+  onComposeImport?: (file: File) => Promise<void>
   onSubmit: (body: PluginRegistrationBody) => void
 }
 
@@ -56,11 +74,14 @@ export function PluginRegistrationModal({
   submitting,
   pluginId,
   initialManifest,
+  composeError,
   onCancel,
+  onComposeImport,
   onSubmit,
 }: PluginRegistrationModalProps) {
   const [form] = Form.useForm<FormValues>()
   const [parseError, setParseError] = useState<string>()
+  const [mode, setMode] = useState<'compose' | 'json'>('compose')
   const manifestJson = Form.useWatch('manifest_json', form)
   const resources = useMemo(() => {
     try {
@@ -74,6 +95,7 @@ export function PluginRegistrationModal({
     if (!open) return
     form.resetFields()
     setParseError(undefined)
+    setMode(initialManifest ? 'json' : 'compose')
     if (initialManifest) {
       form.setFieldValue(
         'manifest_json',
@@ -86,10 +108,11 @@ export function PluginRegistrationModal({
     <Modal
       destroyOnHidden
       confirmLoading={submitting}
+      footer={mode === 'compose' ? null : undefined}
       okText={pluginId ? '发布新版本' : '添加插件'}
       open={open}
       title={pluginId ? `发布 ${pluginId} 新版本` : '添加插件'}
-      width={760}
+      width={1100}
       onCancel={onCancel}
       onOk={() => {
         void form.validateFields().then((values) => {
@@ -110,103 +133,132 @@ export function PluginRegistrationModal({
         })
       }}
     >
-      {parseError ? (
-        <Alert className="mb-4" showIcon title={parseError} type="error" />
-      ) : null}
-      <Form form={form} layout="vertical" requiredMark="optional">
-        <Upload.Dragger
-          accept="application/json,.json"
-          beforeUpload={(file) => {
-            void file.text().then((content) => {
-              form.setFieldValue('manifest_json', content)
-              setParseError(undefined)
-            })
-            return Upload.LIST_IGNORE
+      <Tabs
+        activeKey={mode}
+        items={
+          pluginId
+            ? [{ key: 'json', label: '手工 JSON' }]
+            : [
+                { key: 'compose', label: 'Compose 导入' },
+                { key: 'json', label: '手工 JSON' },
+              ]
+        }
+        onChange={(key) => setMode(key as 'compose' | 'json')}
+      />
+      {mode === 'compose' ? (
+        <ComposeManifestWizard
+          error={composeError}
+          submitting={submitting}
+          onImport={async (file) => {
+            if (!onComposeImport) return
+            await onComposeImport(file)
           }}
-          maxCount={1}
-          showUploadList={false}
-        >
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
-          </p>
-          <p>点击或拖入 Manifest JSON</p>
-        </Upload.Dragger>
-        <Form.Item
-          className="mt-4"
-          label="Manifest JSON"
-          name="manifest_json"
-          rules={[{ required: true, message: '请输入或导入 Manifest' }]}
-        >
-          <Input.TextArea className="font-mono" rows={14} />
-        </Form.Item>
-        <Form.Item
-          extra="单镜像插件可在此填写；多镜像插件直接使用 Manifest 中每个资源的 image。"
-          label="顶层镜像或源码交付引用（可选）"
-          name="image"
-        >
-          <Input placeholder="registry.example.com/team/plugin:1.0.0" />
-        </Form.Item>
-        <Form.Item label="镜像 Digest（可选）" name="image_digest">
-          <Input placeholder="sha256:..." />
-        </Form.Item>
-        {!pluginId ? (
-          <Form.Item label="插件说明" name="description">
-            <Input.TextArea rows={3} />
-          </Form.Item>
-        ) : null}
-        {resources.length ? (
-          <div className="mt-4">
-            <Typography.Title level={5}>资源与镜像清单</Typography.Title>
-            <Table
-              columns={[
-                { dataIndex: 'name', title: '资源' },
-                {
-                  key: 'management',
-                  title: '管理方式',
-                  render: (_, row) => {
-                    const external =
-                      row.type === 'external' || row.management === 'external'
-                    return (
-                      <Tag color={external ? 'blue' : 'green'}>
-                        {external ? '外部托管' : '平台托管'}
-                      </Tag>
-                    )
-                  },
-                },
-                {
-                  dataIndex: 'image',
-                  ellipsis: true,
-                  title: '镜像',
-                  render: (value: string | null | undefined) => value ?? '-',
-                },
-                {
-                  dataIndex: 'upstream_url',
-                  ellipsis: true,
-                  title: '服务地址',
-                  render: (value: string | null | undefined) => value ?? '-',
-                },
-                {
-                  dataIndex: 'browser_url',
-                  ellipsis: true,
-                  title: '浏览器地址',
-                  render: (value: string | null | undefined) => value ?? '-',
-                },
-                {
-                  dataIndex: 'depends_on',
-                  title: '依赖',
-                  render: (value: string[] | undefined) =>
-                    value?.join(', ') ?? '-',
-                },
-              ]}
-              dataSource={resources}
-              pagination={false}
-              rowKey="name"
-              scroll={{ x: 760 }}
-              size="small"
-            />
-          </div>
-        ) : null}
-      </Form>
+        />
+      ) : (
+        <>
+          {parseError ? (
+            <Alert className="mb-4" showIcon title={parseError} type="error" />
+          ) : null}
+          <Form form={form} layout="vertical" requiredMark="optional">
+            <Upload.Dragger
+              accept="application/json,.json"
+              beforeUpload={(file) => {
+                void file.text().then((content) => {
+                  form.setFieldValue('manifest_json', content)
+                  setParseError(undefined)
+                })
+                return Upload.LIST_IGNORE
+              }}
+              maxCount={1}
+              showUploadList={false}
+            >
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p>点击或拖入 Manifest JSON</p>
+            </Upload.Dragger>
+            <Form.Item
+              className="mt-4"
+              label="Manifest JSON"
+              name="manifest_json"
+              rules={[{ required: true, message: '请输入或导入 Manifest' }]}
+            >
+              <Input.TextArea className="font-mono" rows={14} />
+            </Form.Item>
+            <Form.Item
+              extra="单镜像插件可在此填写；多镜像插件直接使用 Manifest 中每个资源的 image。"
+              label="顶层镜像或源码交付引用（可选）"
+              name="image"
+            >
+              <Input placeholder="registry.example.com/team/plugin:1.0.0" />
+            </Form.Item>
+            <Form.Item label="镜像 Digest（可选）" name="image_digest">
+              <Input placeholder="sha256:..." />
+            </Form.Item>
+            {!pluginId ? (
+              <Form.Item label="插件说明" name="description">
+                <Input.TextArea rows={3} />
+              </Form.Item>
+            ) : null}
+            {resources.length ? (
+              <div className="mt-4">
+                <Typography.Title level={5}>资源与镜像清单</Typography.Title>
+                <Table
+                  columns={[
+                    { dataIndex: 'name', title: '资源' },
+                    {
+                      key: 'management',
+                      title: '管理方式',
+                      render: (_, row) => {
+                        const external =
+                          row.type === 'external' ||
+                          row.management === 'external'
+                        return (
+                          <Tag color={external ? 'blue' : 'green'}>
+                            {external ? '外部托管' : '平台托管'}
+                          </Tag>
+                        )
+                      },
+                    },
+                    {
+                      dataIndex: 'image',
+                      ellipsis: true,
+                      title: '镜像',
+                      render: (value: string | null | undefined) =>
+                        value ?? '-',
+                    },
+                    {
+                      dataIndex: 'upstream_url',
+                      ellipsis: true,
+                      title: '服务地址',
+                      render: (value: string | null | undefined) =>
+                        value ?? '-',
+                    },
+                    {
+                      dataIndex: 'browser_url',
+                      ellipsis: true,
+                      title: '浏览器地址',
+                      render: (value: string | null | undefined) =>
+                        value ?? '-',
+                    },
+                    {
+                      dataIndex: 'depends_on',
+                      title: '依赖',
+                      render: (value: string[] | undefined) =>
+                        value?.join(', ') ?? '-',
+                    },
+                  ]}
+                  dataSource={resources}
+                  pagination={false}
+                  rowKey="name"
+                  scroll={{ x: 760 }}
+                  size="small"
+                />
+              </div>
+            ) : null}
+          </Form>
+        </>
+      )}
     </Modal>
   )
 }
