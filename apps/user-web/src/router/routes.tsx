@@ -78,13 +78,13 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/platform-apps/workflows/:workflowAppId/chat',
-        element: lazyLoad(() => import('@/pages/plugins/WorkflowChat')),
+        element: lazyLoad(() => import('@/pages/plugins/WorkflowCanvasPage')),
         handle: {
           title: 'Workflow',
           titleKey: 'routes.workflowChat.title',
           navKey: 'workflow-plugin-chat',
           hideInMenu: true,
-          permission: 'user.plugins.access',
+          permission: 'user.plugins.read',
         },
       },
       {

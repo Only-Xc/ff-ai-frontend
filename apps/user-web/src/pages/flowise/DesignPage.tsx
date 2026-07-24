@@ -2,7 +2,6 @@ import {
   ArrowLeftOutlined,
   ReloadOutlined,
   RocketOutlined,
-  SaveOutlined,
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, message, Space, Spin, Typography } from 'antd'
@@ -46,21 +45,6 @@ export default function FlowiseDesignPage() {
     queryFn: () => createFlowiseBrowserSession(appId!),
     enabled: !!appId,
     retry: false,
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: () => syncFlowiseDraft(appId!),
-    onSuccess: () => {
-      void message.success(t('pages.flowise.saveSuccess', 'Workflow saved'))
-      void queryClient.invalidateQueries({
-        queryKey: workflowKeys.draft(appId!),
-      })
-    },
-    onError: (error: Error) => {
-      void message.error(
-        error.message || t('pages.flowise.saveError', 'Save failed'),
-      )
-    },
   })
 
   const publishMutation = useMutation({
@@ -125,18 +109,9 @@ export default function FlowiseDesignPage() {
             {t('common.reload', 'Reload')}
           </Button>
           <Button
-            icon={<SaveOutlined />}
-            loading={saveMutation.isPending}
-            disabled={publishMutation.isPending}
-            onClick={() => saveMutation.mutate()}
-          >
-            {t('pages.flowise.save', 'Save')}
-          </Button>
-          <Button
             type="primary"
             icon={<RocketOutlined />}
             loading={publishMutation.isPending}
-            disabled={saveMutation.isPending}
             onClick={() => publishMutation.mutate()}
           >
             {t('pages.flowise.publish', 'Publish')}
