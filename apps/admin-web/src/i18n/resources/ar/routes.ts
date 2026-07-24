@@ -2,6 +2,9 @@ export default {
   'routes.groups.platform': 'إدارة المنصة',
   'routes.groups.workspace': 'مساحة العمل',
   'routes.groups.business': 'إدارة الأعمال',
+  'routes.groups.accessControl': 'إدارة الصلاحيات',
+  'routes.groups.governance': 'الحوكمة والامتثال',
+  'routes.groups.stageSwitch': 'إدارة تبديل المرحلة',
   'routes.login.title': 'تسجيل الدخول',
   'routes.chat.title': 'الاستخدام والرصيد',
   'routes.generate.title': 'إنشاء التطبيقات',
@@ -27,7 +30,6 @@ export default {
   'routes.rbac.roles.title': 'الأدوار والصلاحيات',
   'routes.rbac.users.title': 'إدارة المستخدمين',
   'routes.rbac.organizations.title': 'إدارة المنظمات',
-  'routes.groups.governance': 'الحوكمة والامتثال',
   'routes.grc.dashboard.title': 'لوحة حوكمة GRC',
   'routes.grc.dashboard.subtitle':
     'نظرة عامة على المخاطر واتجاهات الامتثال ومراقبة الموافقات',

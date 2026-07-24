@@ -2,6 +2,9 @@ export default {
   'routes.groups.platform': 'Platform',
   'routes.groups.workspace': 'Workspace',
   'routes.groups.business': 'Business',
+  'routes.groups.accessControl': 'Access Control',
+  'routes.groups.governance': 'Governance & Compliance',
+  'routes.groups.stageSwitch': 'Stage Switch Management',
   'routes.login.title': 'Login',
   'routes.chat.title': 'Usage & Balance',
   'routes.generate.title': 'App Generation',
@@ -27,7 +30,6 @@ export default {
   'routes.rbac.roles.title': 'Role & Permissions',
   'routes.rbac.users.title': 'User Management',
   'routes.rbac.organizations.title': 'Organization Management',
-  'routes.groups.governance': 'Governance & Compliance',
   'routes.grc.dashboard.title': 'GRC Dashboard',
   'routes.grc.dashboard.subtitle':
     'Risk overview, compliance trends and approval monitoring',
