@@ -32,17 +32,14 @@ import {
 } from '@/api/workflow'
 
 const STATUS_COLORS: Record<string, string> = {
+  approved: 'success',
   draft: 'default',
-  published: 'success',
-  disabled: 'warning',
-  archived: 'default',
-}
-
-const CATALOG_STATUS_COLORS: Record<string, string> = {
-  active: 'success',
   pending_approval: 'processing',
+  building: 'blue',
+  published: 'success',
   rejected: 'error',
   disabled: 'warning',
+  archived: 'default',
 }
 
 export default function WorkflowList() {
@@ -131,23 +128,35 @@ export default function WorkflowList() {
       title: t('pages.workflow.columns.status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status: string, record: WorkflowApp) => (
-        <Space size={4}>
-          <Tag color={STATUS_COLORS[status] ?? 'default'}>
-            {t(`pages.workflow.status.${status}`, status)}
-          </Tag>
-          {record.catalog_status === 'pending_approval' && (
-            <Tag color={CATALOG_STATUS_COLORS.pending_approval}>
-              {t('pages.workflow.catalogStatus.pendingApproval')}
-            </Tag>
-          )}
-          {record.catalog_status === 'rejected' && (
-            <Tag color={CATALOG_STATUS_COLORS.rejected}>
-              {t('pages.workflow.catalogStatus.rejected')}
-            </Tag>
-          )}
-        </Space>
-      ),
+      render: (status: string, record: WorkflowApp) => {
+        const releaseStatus = record.catalog_status
+        let displayStatuses: string[]
+        if (releaseStatus === 'active') {
+          displayStatuses = ['published']
+        } else if (releaseStatus === 'building') {
+          displayStatuses = ['approved', 'building']
+        } else if (
+          releaseStatus === 'pending_approval' ||
+          releaseStatus === 'rejected'
+        ) {
+          displayStatuses = [releaseStatus]
+        } else {
+          displayStatuses = [status]
+        }
+
+        return (
+          <Space size={4}>
+            {displayStatuses.map((displayStatus) => (
+              <Tag
+                key={displayStatus}
+                color={STATUS_COLORS[displayStatus] ?? 'default'}
+              >
+                {t(`pages.workflow.status.${displayStatus}`, displayStatus)}
+              </Tag>
+            ))}
+          </Space>
+        )
+      },
     },
     {
       title: t('pages.workflow.columns.description'),

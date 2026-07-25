@@ -57,7 +57,7 @@ const useStyles = createStyles(({ iconPrefixCls, prefixCls }) => {
         lineHeight: '40px !important',
         marginBlock: '2px !important',
         marginInline: '0 !important',
-        paddingInline: '12px 10px !important',
+        paddingInline: '12px 34px !important',
         borderRadius: '8px !important',
         color: 'var(--muted)',
         fontSize: 14,
@@ -130,8 +130,16 @@ const useStyles = createStyles(({ iconPrefixCls, prefixCls }) => {
       },
 
       [`${menuCls}-title-content`]: {
+        minWidth: 0,
         color: 'inherit',
         marginInlineStart: 10,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      },
+
+      [`${menuCls}-submenu-arrow`]: {
+        insetInlineEnd: '12px !important',
       },
 
       [`&${menuCls}-inline-collapsed`]: {

@@ -39,6 +39,7 @@ const STATUS_OPTIONS: { labelKey: string; value: WorkflowAppStatus | '' }[] = [
 ]
 
 const STATUS_COLOR: Record<string, string> = {
+  approved: 'success',
   draft: 'default',
   pending_approval: 'gold',
   published: 'success',
@@ -48,6 +49,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 const CATALOG_STATUS_COLOR: Record<string, string> = {
   active: 'blue',
+  building: 'blue',
   published: 'blue',
   pending_approval: 'warning',
   rejected: 'magenta',
@@ -101,12 +103,18 @@ export function WorkflowAdminApps() {
         dataIndex: 'status',
         key: 'status',
         width: 120,
-        render: (v: WorkflowAppStatus) => (
-          <Tag color={STATUS_COLOR[v] ?? 'default'}>{v}</Tag>
-        ),
+        render: (v: WorkflowAppStatus, record: AdminWorkflowApp) => {
+          const displayStatus =
+            record.catalog_status === 'building' ? 'approved' : v
+          return (
+            <Tag color={STATUS_COLOR[displayStatus] ?? 'default'}>
+              {t(`pages.workflowAdmin.status.${displayStatus}`, displayStatus)}
+            </Tag>
+          )
+        },
       },
       {
-        title: t('pages.workflowAdmin.apps.catalogStatus', '目录状态'),
+        title: t('pages.workflowAdmin.apps.catalogStatus', '发布状态'),
         dataIndex: 'catalog_status',
         key: 'catalog_status',
         width: 120,

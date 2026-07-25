@@ -190,12 +190,6 @@ export function ProductionDetail() {
       request_version: readNumber(decision.request_version),
     }),
   )
-  const qaChecks = (data.qa_result_snapshot?.checks ?? []) as Array<{
-    check?: string
-    status?: string
-    detail?: string
-    message?: string
-  }>
   const artifact = data.artifact_snapshot ?? {}
   const runtime = data.runtime_snapshot ?? {}
   const accessScope = readOptionalString(artifact.access_scope)
@@ -626,60 +620,6 @@ export function ProductionDetail() {
                     )}
                   </Card>
                 )}
-
-                <Card title={t('pages.production.detail.qaChecks')}>
-                  {qaChecks.length === 0 ? (
-                    <Empty
-                      description={t('pages.production.detail.qaChecksEmpty')}
-                    />
-                  ) : (
-                    <Table
-                      size="small"
-                      rowKey={(row, idx) => `${row.check ?? 'check'}-${idx}`}
-                      dataSource={qaChecks}
-                      pagination={false}
-                      columns={[
-                        {
-                          title: t('pages.production.detail.qaCheckType'),
-                          dataIndex: 'check',
-                          width: 160,
-                        },
-                        {
-                          title: t('pages.production.detail.qaCheckStatus'),
-                          dataIndex: 'status',
-                          width: 100,
-                          render: (v: string) => (
-                            <Tag color={v === 'passed' ? 'green' : 'red'}>
-                              {v ?? '—'}
-                            </Tag>
-                          ),
-                        },
-                        {
-                          title: t('pages.production.detail.qaCheckDetail'),
-                          dataIndex: 'detail',
-                        },
-                      ]}
-                    />
-                  )}
-                </Card>
-
-                <Card title={t('pages.production.detail.approvers')}>
-                  <Space wrap>
-                    {(data.approver_roles ?? []).map((r) => (
-                      <Tag key={`role-${r.id}`}>{r.name}</Tag>
-                    ))}
-                    {(data.approver_users ?? []).map((u) => (
-                      <Tag key={`user-${u.id}`} color="blue">
-                        {u.name}
-                        {u.email && u.email !== u.name ? `（${u.email}）` : ''}
-                      </Tag>
-                    ))}
-                    {(data.approver_roles ?? []).length === 0 &&
-                      (data.approver_users ?? []).length === 0 && (
-                        <span className="text-gray-400">—</span>
-                      )}
-                  </Space>
-                </Card>
               </Space>
             ),
           },

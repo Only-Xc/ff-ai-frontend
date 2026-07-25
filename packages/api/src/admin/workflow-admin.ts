@@ -21,7 +21,12 @@ export type WorkflowAppStatus =
   | 'disabled'
 
 /** 平台应用目录条目状态 */
-export type CatalogStatus = 'active' | 'pending_approval' | 'disabled'
+export type CatalogStatus =
+  | 'active'
+  | 'building'
+  | 'pending_approval'
+  | 'rejected'
+  | 'disabled'
 
 /** 单条 Workflow 应用（管理台视图） */
 export interface AdminWorkflowApp {
