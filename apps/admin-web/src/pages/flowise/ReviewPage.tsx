@@ -11,6 +11,7 @@ import {
   workflowAdminVersionGraph_get,
 } from '@/api/workflow-admin'
 
+import { FlowiseEmbedCanvas } from './FlowiseEmbedCanvas'
 import { FlowiseReadonlyCanvas } from './FlowiseReadonlyCanvas'
 import './FlowiseReadonlyCanvas.css'
 
@@ -33,18 +34,24 @@ export default function FlowiseReviewPage() {
     enabled: Boolean(versionId ?? appId),
     retry: false,
   })
+  const readonlyFallback = data ? (
+    data.graph_json.nodes.length === 0 ? (
+      <Empty description={t('pages.flowise.emptyGraph')} />
+    ) : (
+      <FlowiseReadonlyCanvas
+        graph={data.graph_json}
+        ariaLabel={t('pages.flowise.canvasAriaLabel')}
+      />
+    )
+  ) : null
+  const canEmbedFlowise =
+    data?.source === 'draft' || Boolean(data?.flowise_runtime_chatflow_id)
 
   return (
     <PageContainer className="p-5">
       <PageHeader title={t('pages.flowise.viewTitle')}>
         <Space wrap>
-          {data?.source === 'version' ? (
-            <Tag color="blue">
-              {t('pages.flowise.frozenVersion', {
-                version: data.version ?? '—',
-              })}
-            </Tag>
-          ) : data?.source === 'draft' ? (
+          {data?.source === 'draft' ? (
             <Tag>{t('pages.flowise.savedDraft')}</Tag>
           ) : null}
           <Button
@@ -64,13 +71,16 @@ export default function FlowiseReviewPage() {
           showIcon
           message={t('pages.flowise.graphLoadError')}
         />
-      ) : !data || data.graph_json.nodes.length === 0 ? (
+      ) : !data ? (
         <Empty description={t('pages.flowise.emptyGraph')} />
-      ) : (
-        <FlowiseReadonlyCanvas
-          graph={data.graph_json}
-          ariaLabel={t('pages.flowise.canvasAriaLabel')}
+      ) : canEmbedFlowise ? (
+        <FlowiseEmbedCanvas
+          appId={appId ?? data.app_id}
+          versionId={versionId}
+          fallback={readonlyFallback}
         />
+      ) : (
+        readonlyFallback
       )}
     </PageContainer>
   )

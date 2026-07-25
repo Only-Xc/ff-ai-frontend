@@ -17,6 +17,8 @@ interface IdentityInfo {
   subjectId: string
   subjectName: string
   subjectAccount: string
+  roles?: string[]
+  permissions?: string[]
 }
 
 const identityCache = new Map<string, IdentityInfo>()
@@ -26,6 +28,8 @@ const FALLBACK_IDENTITY: IdentityInfo = {
   subjectId: 'e4fe8044-78d3-49a5-baf2-92c35147ca51',
   subjectName: 'admin',
   subjectAccount: 'admin@example.com',
+  roles: ['system_admin'],
+  permissions: ['admin.workflow_admin.read', 'admin.production.read'],
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -49,6 +53,8 @@ async function resolveIdentity(token: string): Promise<IdentityInfo> {
       user_id?: string
       full_name?: string
       email?: string
+      role_codes?: string[]
+      permission_codes?: string[]
       organizations?: Array<{ id: string; is_primary?: boolean }>
     }
     const org =
@@ -59,6 +65,8 @@ async function resolveIdentity(token: string): Promise<IdentityInfo> {
       subjectId: data.user_id ?? FALLBACK_IDENTITY.subjectId,
       subjectName: data.full_name || data.email?.split('@')[0] || 'user',
       subjectAccount: data.email ?? FALLBACK_IDENTITY.subjectAccount,
+      roles: data.role_codes ?? FALLBACK_IDENTITY.roles,
+      permissions: data.permission_codes ?? FALLBACK_IDENTITY.permissions,
     }
     identityCache.set(token, info)
     return info
@@ -85,6 +93,16 @@ function injectIdentityHeaders(proxyReq: ClientRequest, req: IncomingMessage) {
         proxyReq.setHeader('X-FF-Subject-Name', cached.subjectName)
       if (!proxyReq.getHeader('X-FF-Subject-Account'))
         proxyReq.setHeader('X-FF-Subject-Account', cached.subjectAccount)
+      if (cached.roles?.length && !proxyReq.getHeader('X-FF-Subject-Roles'))
+        proxyReq.setHeader('X-FF-Subject-Roles', cached.roles.join(','))
+      if (
+        cached.permissions?.length &&
+        !proxyReq.getHeader('X-FF-Subject-Permissions')
+      )
+        proxyReq.setHeader(
+          'X-FF-Subject-Permissions',
+          cached.permissions.join(','),
+        )
       return
     }
     void resolveIdentity(token)
@@ -97,6 +115,13 @@ function injectIdentityHeaders(proxyReq: ClientRequest, req: IncomingMessage) {
     proxyReq.setHeader('X-FF-Subject-Name', FALLBACK_IDENTITY.subjectName)
   if (!proxyReq.getHeader('X-FF-Subject-Account'))
     proxyReq.setHeader('X-FF-Subject-Account', FALLBACK_IDENTITY.subjectAccount)
+  if (!proxyReq.getHeader('X-FF-Subject-Roles'))
+    proxyReq.setHeader('X-FF-Subject-Roles', FALLBACK_IDENTITY.roles!.join(','))
+  if (!proxyReq.getHeader('X-FF-Subject-Permissions'))
+    proxyReq.setHeader(
+      'X-FF-Subject-Permissions',
+      FALLBACK_IDENTITY.permissions!.join(','),
+    )
 }
 
 const identityProxyConfig: ProxyOptions = {
