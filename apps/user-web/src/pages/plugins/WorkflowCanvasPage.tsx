@@ -1,6 +1,7 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, Button, Space, Spin, Typography } from 'antd'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
@@ -18,11 +19,15 @@ export default function WorkflowCanvasPage() {
   const navigate = useNavigate()
   const { workflowAppId = '' } = useParams()
   const appId = decodeURIComponent(workflowAppId)
+  const [sessionNonce] = useState(() => crypto.randomUUID())
   const sessionQuery = useQuery({
-    queryKey: flowiseKeys.browserSession(appId),
+    queryKey: [...flowiseKeys.browserSession(appId), sessionNonce],
     queryFn: () => createFlowiseBrowserSession(appId),
     enabled: Boolean(appId),
+    gcTime: 0,
+    refetchOnMount: 'always',
     retry: false,
+    staleTime: 0,
   })
   const { iframeKey, refreshIframeSession } = useFlowiseIframeSessionRefresh({
     appId,
@@ -76,7 +81,7 @@ export default function WorkflowCanvasPage() {
         />
       ) : (
         <iframe
-          key={iframeKey}
+          key={`${iframeKey}-${sessionQuery.data.ticket}`}
           className="min-h-0 flex-1 border-0"
           src={iframeSrc}
           title={t('routes.workflowChat.title', 'Workflow App')}

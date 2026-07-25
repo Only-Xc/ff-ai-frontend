@@ -5,6 +5,7 @@ import {
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, message, Space, Spin, Typography } from 'antd'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
@@ -36,6 +37,7 @@ export default function FlowiseDesignPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { appId } = useParams<{ appId: string }>()
+  const [sessionNonce] = useState(() => crypto.randomUUID())
 
   // Establish the Flowise technical session only after ff-ai authorization.
   const {
@@ -43,10 +45,13 @@ export default function FlowiseDesignPage() {
     isLoading: sessionLoading,
     refetch: refetchSession,
   } = useQuery({
-    queryKey: flowiseKeys.browserSession(appId!),
+    queryKey: [...flowiseKeys.browserSession(appId!), sessionNonce],
     queryFn: () => createFlowiseBrowserSession(appId!),
     enabled: !!appId,
+    gcTime: 0,
+    refetchOnMount: 'always',
     retry: false,
+    staleTime: 0,
   })
   const { iframeKey, refreshIframeSession } = useFlowiseIframeSessionRefresh({
     appId: appId ?? '',
@@ -141,7 +146,7 @@ export default function FlowiseDesignPage() {
         </div>
       ) : browserSession ? (
         <iframe
-          key={iframeKey}
+          key={`${iframeKey}-${browserSession.ticket}`}
           src={iframeSrc}
           style={{
             width: '100%',

@@ -2,7 +2,7 @@ import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import type { ProxyOptions } from 'vite'
-import type { ClientRequest, IncomingMessage } from 'node:http'
+import { request as httpRequest, type ClientRequest, type IncomingMessage } from 'node:http'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 
@@ -38,32 +38,56 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.')
     if (parts.length < 2) return null
-    return JSON.parse(Buffer.from(parts[1], 'base64url').toString())
+    const payload: unknown = JSON.parse(
+      Buffer.from(parts[1], 'base64url').toString(),
+    )
+    return payload && typeof payload === 'object' && !Array.isArray(payload)
+      ? (payload as Record<string, unknown>)
+      : null
   } catch {
     return null
   }
 }
 
+function getJson<T>(url: string, headers: Record<string, string>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const req = httpRequest(url, { headers }, (res) => {
+      const chunks: Buffer[] = []
+      res.on('data', (chunk: Buffer) => chunks.push(chunk))
+      res.on('end', () => {
+        const statusCode = res.statusCode ?? 0
+        if (statusCode < 200 || statusCode >= 300) {
+          reject(new Error(`HTTP ${statusCode}`))
+          return
+        }
+        try {
+          resolve(JSON.parse(Buffer.concat(chunks).toString()) as T)
+        } catch (error) {
+          reject(error)
+        }
+      })
+    })
+    req.on('error', reject)
+    req.end()
+  })
+}
+
 async function resolveIdentity(token: string): Promise<IdentityInfo> {
   if (identityCache.has(token)) return identityCache.get(token)!
   try {
-    const resp = await fetch(`${target}/api/v1/rbac/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    const data = (await resp.json()) as {
+    const data = await getJson<{
       user_id?: string
       full_name?: string
       email?: string
       organizations?: Array<{ id: string; is_primary?: boolean }>
-    }
+    }>(`${target}/api/v1/rbac/me`, { Authorization: `Bearer ${token}` })
     const org =
       data.organizations?.find((o) => o.is_primary) ??
       data.organizations?.[0]
     const info: IdentityInfo = {
       tenantId: org?.id ?? FALLBACK_IDENTITY.tenantId,
       subjectId: data.user_id ?? FALLBACK_IDENTITY.subjectId,
-      subjectName: data.full_name || data.email?.split('@')[0] || 'user',
+      subjectName: data.full_name ?? data.email?.split('@')[0] ?? 'user',
       subjectAccount: data.email ?? FALLBACK_IDENTITY.subjectAccount,
     }
     identityCache.set(token, info)
