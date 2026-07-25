@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { useQuery } from '@tanstack/react-query'
-import { Alert, Button, Empty, Skeleton, Space, Tag } from 'antd'
+import { Alert, Button, Empty, Skeleton } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 
@@ -21,6 +21,9 @@ export default function FlowiseReviewPage() {
   const { appId } = useParams<{ appId: string }>()
   const [searchParams] = useSearchParams()
   const versionId = searchParams.get('versionId')?.trim() ?? undefined
+  const fallbackPath = versionId
+    ? '/production/approvals'
+    : '/workflow-admin/apps'
 
   // For version views, fetch the frozen graph JSON
   const { data, isLoading, isError } = useQuery({
@@ -35,34 +38,37 @@ export default function FlowiseReviewPage() {
     retry: false,
   })
   const readonlyFallback = data ? (
-    data.graph_json.nodes.length === 0 ? (
-      <Empty description={t('pages.flowise.emptyGraph')} />
-    ) : (
-      <FlowiseReadonlyCanvas
-        graph={data.graph_json}
-        ariaLabel={t('pages.flowise.canvasAriaLabel')}
-      />
-    )
+    <>
+      <PageHeader title={data.name} />
+      {data.graph_json.nodes.length === 0 ? (
+        <Empty description={t('pages.flowise.emptyGraph')} />
+      ) : (
+        <FlowiseReadonlyCanvas
+          graph={data.graph_json}
+          ariaLabel={t('pages.flowise.canvasAriaLabel')}
+        />
+      )}
+    </>
   ) : null
   const canEmbedFlowise =
     data?.source === 'draft' || Boolean(data?.flowise_runtime_chatflow_id)
 
   return (
     <PageContainer className="p-5">
-      <PageHeader title={t('pages.flowise.viewTitle')}>
-        <Space wrap>
-          {data?.source === 'draft' ? (
-            <Tag>{t('pages.flowise.savedDraft')}</Tag>
-          ) : null}
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => void navigate(-1)}
-          >
-            {t('common.actions.back')}
-          </Button>
-        </Space>
-      </PageHeader>
-
+      <div className="mb-4">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => {
+            if (window.history.length > 1) {
+              void navigate(-1)
+              return
+            }
+            void navigate(fallbackPath)
+          }}
+        >
+          {t('common.actions.back')}
+        </Button>
+      </div>
       {isLoading ? (
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : isError ? (

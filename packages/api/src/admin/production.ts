@@ -68,6 +68,8 @@ export interface ApproverRef {
 export interface ProductionApprovalDetail {
   request: ProductionApproval
   qa_result_snapshot: Record<string, unknown>
+  artifact_snapshot: Record<string, unknown>
+  runtime_snapshot: Record<string, unknown>
   approver_role_ids: string[]
   approver_user_ids: string[]
   approver_users: ApproverRef[]

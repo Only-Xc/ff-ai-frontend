@@ -13,16 +13,24 @@ export interface FlowiseBrowserSession {
 export const flowiseKeys = {
   all: ['flowise'] as const,
   readonlyBrowserSession: (appId: string, versionId?: string) =>
-    ['flowise', 'readonly-browser-session', appId, versionId ?? 'draft'] as const,
+    [
+      'flowise',
+      'readonly-browser-session',
+      appId,
+      versionId ?? 'draft',
+    ] as const,
 }
 
 export async function createReadonlyFlowiseBrowserSession(
   appId: string,
   versionId?: string,
 ): Promise<FlowiseBrowserSession> {
-  return requestClient.post(`/api/v1/flowise/browser-session/${appId}/readonly`, {
-    version_id: versionId,
-  })
+  return requestClient.post(
+    `/api/v1/flowise/browser-session/${appId}/readonly`,
+    {
+      version_id: versionId,
+    },
+  )
 }
 
 export function getFlowiseBaseUrl(): string {
@@ -32,7 +40,7 @@ export function getFlowiseBaseUrl(): string {
     : 'http://localhost:3000'
 }
 
-export function buildFlowiseEditorUrl(ticket: string): string {
+export function buildFlowiseReadonlyViewerUrl(ticket: string): string {
   const base = getFlowiseBaseUrl().replace(/\/$/, '')
   const fragment = new URLSearchParams({ ticket })
   return `${base}/ffai-bootstrap.html#${fragment.toString()}`

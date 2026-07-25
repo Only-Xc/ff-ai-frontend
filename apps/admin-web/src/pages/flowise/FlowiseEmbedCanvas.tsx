@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
-  buildFlowiseEditorUrl,
+  buildFlowiseReadonlyViewerUrl,
   createReadonlyFlowiseBrowserSession,
   FLOWISE_SESSION_EXPIRED_EVENT,
   flowiseKeys,
@@ -38,7 +38,15 @@ export function FlowiseEmbedCanvas({
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type !== FLOWISE_SESSION_EXPIRED_EVENT) return
+      const message: unknown = event.data
+      if (
+        !message ||
+        typeof message !== 'object' ||
+        !('type' in message) ||
+        message.type !== FLOWISE_SESSION_EXPIRED_EVENT
+      ) {
+        return
+      }
       setSessionNonce(crypto.randomUUID())
     }
 
@@ -53,7 +61,7 @@ export function FlowiseEmbedCanvas({
           size="large"
           description={t(
             'pages.flowise.loadingSession',
-            'Loading editor session...',
+            'Loading read-only canvas...',
           )}
         />
       </div>
@@ -67,7 +75,7 @@ export function FlowiseEmbedCanvas({
       <iframe
         key={data.ticket}
         className="flowise-embed-canvas__iframe"
-        src={buildFlowiseEditorUrl(data.ticket)}
+        src={buildFlowiseReadonlyViewerUrl(data.ticket)}
         title={t('pages.flowise.canvasAriaLabel')}
       />
     </div>

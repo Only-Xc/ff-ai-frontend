@@ -1,8 +1,6 @@
 import {
   Background,
-  Controls,
   MarkerType,
-  MiniMap,
   ReactFlow,
   ReactFlowProvider,
   type Edge,
@@ -75,9 +73,7 @@ function mapNode(node: WorkflowGraphNode, index: number): Node {
     readLabel(node.label) ??
     readLabel(node.type) ??
     node.id
-  const nodeType = readLabel(node.data?.name) ?? readLabel(node.type)
   const category = (node.data?.category as string | undefined) ?? ''
-  const description = (node.data?.description as string | undefined) ?? ''
   const position = node.position ?? {
     x: (index % 4) * 320,
     y: Math.floor(index / 4) * 180,
@@ -97,15 +93,9 @@ function mapNode(node: WorkflowGraphNode, index: number): Node {
           >
             <span className="flowise-readonly-node__name">{name}</span>
             {category ? (
-              <span className="flowise-readonly-node__category">{category}</span>
-            ) : null}
-          </div>
-          <div className="flowise-readonly-node__body">
-            {nodeType && nodeType !== name ? (
-              <span className="flowise-readonly-node__type">{nodeType}</span>
-            ) : null}
-            {description ? (
-              <span className="flowise-readonly-node__desc">{description}</span>
+              <span className="flowise-readonly-node__category">
+                {category}
+              </span>
             ) : null}
           </div>
         </div>
@@ -114,7 +104,7 @@ function mapNode(node: WorkflowGraphNode, index: number): Node {
     className: 'flowise-readonly-node',
     style: {
       width: readDimension(node.width, 280),
-      height: readDimension(node.height, 90),
+      height: 64,
     },
     draggable: false,
     selectable: false,
@@ -187,15 +177,6 @@ export function FlowiseReadonlyCanvas({
           proOptions={{ hideAttribution: true }}
         >
           <Background color="#d9dee8" gap={24} size={1} />
-          <Controls showInteractive={false} position="bottom-right" />
-          <MiniMap
-            pannable
-            zoomable
-            position="bottom-left"
-            nodeColor="#e9f2ff"
-            nodeStrokeColor="#5b7fa3"
-            maskColor="rgba(247, 249, 252, 0.78)"
-          />
         </ReactFlow>
       </ReactFlowProvider>
     </div>

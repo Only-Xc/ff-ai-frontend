@@ -77,6 +77,27 @@ export interface WorkflowVersion {
   published_at: string
 }
 
+export type WorkflowAccessScope = 'tenant' | 'roles'
+
+export interface WorkflowAccessRole {
+  id: string
+  code: string
+  name: string
+}
+
+export interface PublishWorkflowPayload {
+  change_summary?: string
+  access_scope: WorkflowAccessScope
+  role_ids: string[]
+}
+
+export interface PublishWorkflowResponse {
+  version_id: string
+  version: number
+  release_id: string | null
+  status: string
+}
+
 export interface CatalogApp {
   id: string
   app_type: string
@@ -148,18 +169,26 @@ export function createWorkflowApp(payload: {
   icon?: string
   description?: string
 }): Promise<WorkflowApp> {
-  return requestClient.post<WorkflowApp>('/api/v1/workflow-apps', payload) as unknown as Promise<WorkflowApp>
+  return requestClient.post<WorkflowApp>(
+    '/api/v1/workflow-apps',
+    payload,
+  ) as unknown as Promise<WorkflowApp>
 }
 
 export function getWorkflowApp(appId: string): Promise<WorkflowApp> {
-  return requestClient.get<WorkflowApp>(`/api/v1/workflow-apps/${appId}`) as unknown as Promise<WorkflowApp>
+  return requestClient.get<WorkflowApp>(
+    `/api/v1/workflow-apps/${appId}`,
+  ) as unknown as Promise<WorkflowApp>
 }
 
 export function updateWorkflowApp(
   appId: string,
   payload: { name?: string; icon?: string; description?: string },
 ): Promise<WorkflowApp> {
-  return requestClient.patch<WorkflowApp>(`/api/v1/workflow-apps/${appId}`, payload) as unknown as Promise<WorkflowApp>
+  return requestClient.patch<WorkflowApp>(
+    `/api/v1/workflow-apps/${appId}`,
+    payload,
+  ) as unknown as Promise<WorkflowApp>
 }
 
 export function deleteWorkflowApp(appId: string) {
@@ -167,11 +196,15 @@ export function deleteWorkflowApp(appId: string) {
 }
 
 export function duplicateWorkflowApp(appId: string): Promise<WorkflowApp> {
-  return requestClient.post<WorkflowApp>(`/api/v1/workflow-apps/${appId}/duplicate`) as unknown as Promise<WorkflowApp>
+  return requestClient.post<WorkflowApp>(
+    `/api/v1/workflow-apps/${appId}/duplicate`,
+  ) as unknown as Promise<WorkflowApp>
 }
 
 export function getWorkflowDraft(appId: string): Promise<WorkflowDraft> {
-  return requestClient.get<WorkflowDraft>(`/api/v1/workflow-apps/${appId}/draft`) as unknown as Promise<WorkflowDraft>
+  return requestClient.get<WorkflowDraft>(
+    `/api/v1/workflow-apps/${appId}/draft`,
+  ) as unknown as Promise<WorkflowDraft>
 }
 
 export function updateWorkflowDraft(
@@ -192,14 +225,25 @@ export function updateWorkflowDraft(
   })
 }
 
-export function listWorkflowVersions(appId: string): Promise<WorkflowVersion[]> {
+export function listWorkflowVersions(
+  appId: string,
+): Promise<WorkflowVersion[]> {
   return requestClient.get<WorkflowVersion[]>(
     `/api/v1/workflow-apps/${appId}/versions`,
   ) as unknown as Promise<WorkflowVersion[]>
 }
 
-export function publishWorkflow(appId: string, payload: { change_summary?: string } = {}): Promise<{ version_id: string; status: string }> {
-  return requestClient.request<{ version_id: string; status: string }>({
+export function listWorkflowAccessRoles(): Promise<WorkflowAccessRole[]> {
+  return requestClient.get<WorkflowAccessRole[]>(
+    '/api/v1/workflow-apps/access-roles',
+  ) as unknown as Promise<WorkflowAccessRole[]>
+}
+
+export function publishWorkflow(
+  appId: string,
+  payload: PublishWorkflowPayload,
+): Promise<PublishWorkflowResponse> {
+  return requestClient.request<PublishWorkflowResponse>({
     method: 'POST',
     url: `/api/v1/workflow-apps/${appId}/publish`,
     data: payload,
@@ -207,7 +251,10 @@ export function publishWorkflow(appId: string, payload: { change_summary?: strin
   })
 }
 
-export function rollbackWorkflow(appId: string, payload: { target_version_id: string }) {
+export function rollbackWorkflow(
+  appId: string,
+  payload: { target_version_id: string },
+) {
   return requestClient.post(`/api/v1/workflow-apps/${appId}/rollback`, payload)
 }
 
@@ -222,7 +269,9 @@ export function enableWorkflow(appId: string) {
 // ─── User API (Runtime) ─────────────────────────────────────────────────────
 
 export function listPlatformApps(): Promise<CatalogListResponse> {
-  return requestClient.get<CatalogListResponse>('/api/v1/platform-apps') as unknown as Promise<CatalogListResponse>
+  return requestClient.get<CatalogListResponse>(
+    '/api/v1/platform-apps',
+  ) as unknown as Promise<CatalogListResponse>
 }
 
 export function addFavorite(catalogId: string) {
@@ -255,13 +304,18 @@ export function getRuntimeConfig(appId: string): Promise<{
   }>
 }
 
-export function listConversations(appId: string): Promise<WorkflowConversation[]> {
+export function listConversations(
+  appId: string,
+): Promise<WorkflowConversation[]> {
   return requestClient.get<WorkflowConversation[]>(
     `/api/v1/workflow-apps/${appId}/conversations`,
   ) as unknown as Promise<WorkflowConversation[]>
 }
 
-export function listMessages(conversationId: string, params?: { page?: number; page_size?: number }): Promise<WorkflowMessage[]> {
+export function listMessages(
+  conversationId: string,
+  params?: { page?: number; page_size?: number },
+): Promise<WorkflowMessage[]> {
   return requestClient.get<WorkflowMessage[]>(
     `/api/v1/workflow-conversations/${conversationId}/messages`,
     { params },
@@ -269,7 +323,9 @@ export function listMessages(conversationId: string, params?: { page?: number; p
 }
 
 export function deleteConversation(conversationId: string) {
-  return requestClient.delete(`/api/v1/workflow-conversations/${conversationId}`)
+  return requestClient.delete(
+    `/api/v1/workflow-conversations/${conversationId}`,
+  )
 }
 
 // ─── SSE Chat (streaming) ───────────────────────────────────────────────────

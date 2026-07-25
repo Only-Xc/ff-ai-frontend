@@ -12,6 +12,7 @@ import {
   Table,
   Tabs,
   Tag,
+  Typography,
   message,
 } from 'antd'
 import type { TableProps } from 'antd'
@@ -53,6 +54,55 @@ function readOptionalString(value: unknown): string | undefined {
 
 function readNumber(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0
+}
+
+function readStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : []
+}
+
+interface AccessRoleSnapshot {
+  id: string
+  code?: string
+  name?: string
+}
+
+function readAccessRoles(value: unknown): AccessRoleSnapshot[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((item) => {
+    if (!item || typeof item !== 'object') return []
+    const role = item as Record<string, unknown>
+    const id = readOptionalString(role.id)
+    if (!id) return []
+    return [
+      {
+        id,
+        code: readOptionalString(role.code),
+        name: readOptionalString(role.name),
+      },
+    ]
+  })
+}
+
+function formatBytes(value: unknown): string {
+  const bytes = readNumber(value)
+  if (bytes <= 0) return '—'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KiB`
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MiB`
+  return `${(bytes / 1024 ** 3).toFixed(2)} GiB`
+}
+
+function MetadataText({ value }: { value: unknown }) {
+  const text = readOptionalString(value)
+  return text ? (
+    <Typography.Text copyable={{ text }} ellipsis={{ tooltip: text }}>
+      {text}
+    </Typography.Text>
+  ) : (
+    <>—</>
+  )
 }
 
 export function ProductionDetail() {
@@ -146,6 +196,14 @@ export function ProductionDetail() {
     detail?: string
     message?: string
   }>
+  const artifact = data.artifact_snapshot ?? {}
+  const runtime = data.runtime_snapshot ?? {}
+  const accessScope = readOptionalString(artifact.access_scope)
+  const accessRoles = readAccessRoles(artifact.roles)
+  const accessRoleIds = readStringArray(artifact.role_ids)
+  const hasArtifact = Object.keys(artifact).length > 0
+  const hasRuntime = Object.keys(runtime).length > 0
+  const hasAccessPolicy = accessScope === 'tenant' || accessScope === 'roles'
 
   const decisionColumns: TableProps<DecisionRecord>['columns'] = [
     {
@@ -335,6 +393,239 @@ export function ProductionDetail() {
                     )}
                   </Descriptions>
                 </Card>
+
+                {approval.target_type === 'workflow' && (
+                  <Card title={t('pages.production.detail.accessPolicy')}>
+                    {hasAccessPolicy ? (
+                      <Descriptions column={2} bordered size="small">
+                        <Descriptions.Item
+                          label={t('pages.production.detail.accessScope')}
+                        >
+                          <Tag
+                            color={accessScope === 'roles' ? 'blue' : 'green'}
+                          >
+                            {t(
+                              accessScope === 'roles'
+                                ? 'pages.production.detail.accessScopeRoles'
+                                : 'pages.production.detail.accessScopeTenant',
+                            )}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.allowedRoles')}
+                        >
+                          {accessScope === 'tenant' ? (
+                            '—'
+                          ) : accessRoles.length > 0 ? (
+                            <Space direction="vertical" size={2}>
+                              {accessRoles.map((role) => (
+                                <Typography.Text
+                                  key={role.id}
+                                  copyable={{ text: role.id }}
+                                >
+                                  {role.name ?? role.code ?? role.id}
+                                  {role.name && role.code
+                                    ? ` (${role.code})`
+                                    : ''}
+                                </Typography.Text>
+                              ))}
+                            </Space>
+                          ) : accessRoleIds.length > 0 ? (
+                            <Space direction="vertical" size={2}>
+                              {accessRoleIds.map((roleId) => (
+                                <Typography.Text
+                                  key={roleId}
+                                  copyable={{ text: roleId }}
+                                >
+                                  {roleId}
+                                </Typography.Text>
+                              ))}
+                            </Space>
+                          ) : (
+                            '—'
+                          )}
+                        </Descriptions.Item>
+                      </Descriptions>
+                    ) : (
+                      <Empty
+                        description={t(
+                          'pages.production.detail.accessPolicyLegacy',
+                        )}
+                      />
+                    )}
+                  </Card>
+                )}
+
+                {approval.target_type === 'workflow' && (
+                  <Card title={t('pages.production.detail.artifactMetadata')}>
+                    {hasArtifact ? (
+                      <Descriptions column={2} bordered size="small">
+                        <Descriptions.Item
+                          label={t('pages.production.detail.imageName')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.image_name} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.ociDigest')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.oci_digest} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.artifactLocation')}
+                          span={2}
+                        >
+                          <MetadataText
+                            value={
+                              readOptionalString(artifact.artifact_bucket) &&
+                              readOptionalString(artifact.artifact_prefix)
+                                ? `s3://${readOptionalString(artifact.artifact_bucket)}/${readOptionalString(artifact.artifact_prefix)}`
+                                : undefined
+                            }
+                          />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.imageObjectKey')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.image_object_key} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.artifactSha256')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.artifact_sha256} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.artifactSize')}
+                        >
+                          {formatBytes(artifact.artifact_size_bytes)}
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.buildFinishedAt')}
+                        >
+                          {readOptionalString(artifact.build_finished_at)
+                            ? dayjs(
+                                readOptionalString(artifact.build_finished_at),
+                              ).format('YYYY-MM-DD HH:mm:ss')
+                            : '—'}
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.runtimeBaseImage')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.runtime_base_image} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.runtimeBaseDigest')}
+                          span={2}
+                        >
+                          <MetadataText value={artifact.runtime_base_digest} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.releaseId')}
+                        >
+                          <MetadataText value={artifact.release_id} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.flowId')}
+                        >
+                          <MetadataText value={artifact.flow_id} />
+                        </Descriptions.Item>
+                      </Descriptions>
+                    ) : (
+                      <Empty
+                        description={t(
+                          'pages.production.detail.artifactMetadataEmpty',
+                        )}
+                      />
+                    )}
+                  </Card>
+                )}
+
+                {approval.target_type === 'workflow' && (
+                  <Card title={t('pages.production.detail.runtimeMetadata')}>
+                    {hasRuntime ? (
+                      <Descriptions column={2} bordered size="small">
+                        <Descriptions.Item
+                          label={t('pages.production.detail.runtimeStatus')}
+                        >
+                          <Tag
+                            color={
+                              runtime.healthy === true ? 'green' : 'orange'
+                            }
+                          >
+                            {readOptionalString(runtime.status) ?? '—'}
+                          </Tag>
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.containerPort')}
+                        >
+                          {readNumber(runtime.container_port) || '—'}
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.containerName')}
+                        >
+                          <MetadataText value={runtime.container_name} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.containerId')}
+                        >
+                          <MetadataText value={runtime.container_id} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.networkName')}
+                        >
+                          <MetadataText value={runtime.network_name} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.networkAlias')}
+                        >
+                          <MetadataText value={runtime.network_alias} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.runtimeImage')}
+                          span={2}
+                        >
+                          <MetadataText value={runtime.image} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t(
+                            'pages.production.detail.runtimeImageDigest',
+                          )}
+                          span={2}
+                        >
+                          <MetadataText value={runtime.image_digest} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.upstreamUrl')}
+                          span={2}
+                        >
+                          <MetadataText value={runtime.upstream_url} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.healthUrl')}
+                          span={2}
+                        >
+                          <MetadataText value={runtime.health_url} />
+                        </Descriptions.Item>
+                        <Descriptions.Item
+                          label={t('pages.production.detail.predictionPath')}
+                          span={2}
+                        >
+                          <MetadataText value={runtime.prediction_path} />
+                        </Descriptions.Item>
+                      </Descriptions>
+                    ) : (
+                      <Empty
+                        description={t(
+                          'pages.production.detail.runtimeMetadataEmpty',
+                        )}
+                      />
+                    )}
+                  </Card>
+                )}
 
                 <Card title={t('pages.production.detail.qaChecks')}>
                   {qaChecks.length === 0 ? (

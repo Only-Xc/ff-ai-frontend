@@ -4,7 +4,17 @@ import {
   RocketOutlined,
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, message, Space, Spin, Typography } from 'antd'
+import {
+  Button,
+  Form,
+  message,
+  Modal,
+  Radio,
+  Select,
+  Space,
+  Spin,
+  Typography,
+} from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
@@ -15,7 +25,12 @@ import {
   flowiseKeys,
   syncFlowiseDraft,
 } from '@/api/flowise'
-import { publishWorkflow, workflowKeys } from '@/api/workflow'
+import {
+  listWorkflowAccessRoles,
+  publishWorkflow,
+  type WorkflowAccessScope,
+  workflowKeys,
+} from '@/api/workflow'
 import { useFlowiseIframeSessionRefresh } from '@/hooks/useFlowiseIframeSessionRefresh'
 
 const { Title } = Typography
@@ -38,6 +53,9 @@ export default function FlowiseDesignPage() {
   const queryClient = useQueryClient()
   const { appId } = useParams<{ appId: string }>()
   const [sessionNonce] = useState(() => crypto.randomUUID())
+  const [publishModalOpen, setPublishModalOpen] = useState(false)
+  const [accessScope, setAccessScope] = useState<WorkflowAccessScope>('tenant')
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
 
   // Establish the Flowise technical session only after ff-ai authorization.
   const {
@@ -57,15 +75,29 @@ export default function FlowiseDesignPage() {
     appId: appId ?? '',
     refetchSession,
   })
+  const {
+    data: accessRoles = [],
+    isLoading: accessRolesLoading,
+    isError: accessRolesError,
+  } = useQuery({
+    queryKey: ['workflow', 'access-roles'],
+    queryFn: listWorkflowAccessRoles,
+    enabled: publishModalOpen && accessScope === 'roles',
+    staleTime: 60_000,
+    retry: false,
+  })
 
   const publishMutation = useMutation({
     mutationFn: async () => {
       await syncFlowiseDraft(appId!)
       return publishWorkflow(appId!, {
         change_summary: 'Published from Flowise designer',
+        access_scope: accessScope,
+        role_ids: accessScope === 'roles' ? selectedRoleIds : [],
       })
     },
     onSuccess: () => {
+      setPublishModalOpen(false)
       void message.success(
         t('pages.flowise.publishSuccess', 'Published for approval'),
       )
@@ -86,6 +118,14 @@ export default function FlowiseDesignPage() {
 
   const handleReload = async () => {
     await refreshIframeSession()
+  }
+
+  const handlePublish = () => {
+    if (accessScope === 'roles' && selectedRoleIds.length === 0) {
+      void message.warning(t('pages.flowise.rolesRequired'))
+      return
+    }
+    publishMutation.mutate()
   }
 
   return (
@@ -123,7 +163,7 @@ export default function FlowiseDesignPage() {
             type="primary"
             icon={<RocketOutlined />}
             loading={publishMutation.isPending}
-            onClick={() => publishMutation.mutate()}
+            onClick={() => setPublishModalOpen(true)}
           >
             {t('pages.flowise.publish', 'Publish')}
           </Button>
@@ -161,6 +201,59 @@ export default function FlowiseDesignPage() {
           {t('pages.flowise.sessionError', 'Failed to load editor session')}
         </div>
       )}
+
+      <Modal
+        open={publishModalOpen}
+        title={t('pages.flowise.publishDialogTitle')}
+        okText={t('pages.flowise.submitForApproval')}
+        cancelText={t('common.cancel')}
+        confirmLoading={publishMutation.isPending}
+        onCancel={() => setPublishModalOpen(false)}
+        onOk={handlePublish}
+        destroyOnHidden
+      >
+        <Form layout="vertical">
+          <Form.Item label={t('pages.flowise.accessScope')}>
+            <Radio.Group
+              value={accessScope}
+              onChange={(event) => {
+                const nextScope = event.target.value as WorkflowAccessScope
+                setAccessScope(nextScope)
+                if (nextScope === 'tenant') setSelectedRoleIds([])
+              }}
+            >
+              <Radio.Button value="tenant">
+                {t('pages.flowise.scopeTenant')}
+              </Radio.Button>
+              <Radio.Button value="roles">
+                {t('pages.flowise.scopeRoles')}
+              </Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+          {accessScope === 'roles' ? (
+            <Form.Item
+              label={t('pages.flowise.allowedRoles')}
+              required
+              validateStatus={accessRolesError ? 'error' : undefined}
+              help={
+                accessRolesError ? t('pages.flowise.rolesLoadError') : undefined
+              }
+            >
+              <Select
+                mode="multiple"
+                value={selectedRoleIds}
+                loading={accessRolesLoading}
+                placeholder={t('pages.flowise.rolesPlaceholder')}
+                options={accessRoles.map((role) => ({
+                  value: role.id,
+                  label: `${role.name} (${role.code})`,
+                }))}
+                onChange={setSelectedRoleIds}
+              />
+            </Form.Item>
+          ) : null}
+        </Form>
+      </Modal>
     </div>
   )
 }

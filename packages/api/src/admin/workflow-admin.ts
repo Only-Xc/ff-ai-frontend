@@ -137,6 +137,7 @@ export interface WorkflowReadonlyGraph {
 /** ff-ai 导出的 Flowise 只读图；不包含 Flowise 标识或凭据。 */
 export interface WorkflowReadonlyGraphResponse {
   app_id: string
+  name: string
   source: 'draft' | 'version'
   graph_json: WorkflowReadonlyGraph
   version_id?: string | null
