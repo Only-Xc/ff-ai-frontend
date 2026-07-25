@@ -1,4 +1,10 @@
 export default {
+  'pages.pluginCarrier.sessionFailed': '插件应用连接失败',
+  'pages.pluginCarrier.sessionFailedHint': '无法创建插件访问会话，请检查插件安装状态和当前账号权限。',
+  'pages.pluginCarrier.back': '返回插件中心',
+  'pages.pluginCarrier.connected': '已通过插件平台安全网关连接',
+  'pages.pluginCarrier.timeout': '插件页面加载超时，请检查插件服务状态后重试。',
+  'pages.pluginCarrier.frameTitle': '{{pluginId}} 插件应用',
   'pages.pluginCenter.title': '插件中心',
   'pages.pluginCenter.subtitle':
     '统一管理插件定义、版本、租户安装、运行状态与 Scope 授权。',
@@ -1850,7 +1856,7 @@ export default {
   'pages.production.detail.tabOverview': '概览',
   'pages.production.detail.tabDecisions': '审批记录',
   'pages.production.detail.basicInfo': '基本信息',
-  'pages.production.detail.version': '当前版本',
+  'pages.production.detail.version': '部署版本',
   'pages.production.detail.riskLevel': '风险等级',
   'pages.production.detail.qaResult': 'QA 结果',
   'pages.production.detail.createdAt': '创建时间',

@@ -1,0 +1,1 @@
+export { configureExamCenterPlugin } from './runtime'

@@ -169,11 +169,6 @@ export default defineConfig({
         bypass: (req) =>
           req.headers.upgrade === 'websocket' ? undefined : req.url,
       },
-      '/api/exam': {
-        target: 'http://127.0.0.1:8013',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/exam/, '/api/v1'),
-      },
       // Workflow apps + 平台应用目录 live in the Monorepo (FastAPI, port 8100), not the main backend.
       // Must come BEFORE the generic `/api` proxy so it wins.
       // `configure` 会在每次代理请求时补全 X-FF-* 身份头（前端 axios 拦截器不注入这些头）。

@@ -22,6 +22,9 @@ FROM base AS builder
 WORKDIR /app
 
 ARG APP_NAME
+ARG VITE_FLOWISE_BASE_URL=http://localhost:3000
+
+ENV VITE_FLOWISE_BASE_URL=${VITE_FLOWISE_BASE_URL}
 
 RUN pnpm config set store-dir /pnpm/store && \
     pnpm config set minimum-release-age 0
@@ -35,6 +38,10 @@ COPY --from=pruner /app/out/full/ .
 
 RUN --mount=type=cache,id=turbo-cache,target=/app/.turbo/cache \
   pnpm turbo run build --filter=@ff-ai-frontend/${APP_NAME}
+
+RUN if [ "${APP_NAME}" = "user-web" ]; then \
+      cp -R /app/apps/mailgraph-web/dist /app/apps/${APP_NAME}/dist/mailgraph; \
+    fi
 
 FROM nginx:1.27-alpine AS runtime
 

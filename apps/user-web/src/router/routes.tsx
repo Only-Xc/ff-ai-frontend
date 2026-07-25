@@ -1,9 +1,12 @@
 import {
   ApartmentOutlined,
   AppstoreOutlined,
+  DashboardOutlined,
   DatabaseOutlined,
   DesktopOutlined,
-  FileTextOutlined,
+  FolderOpenOutlined,
+  InboxOutlined,
+  MessageOutlined,
   ProjectOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -65,7 +68,7 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
       {
-        path: '/platform-apps/plugins/:pluginId',
+        path: '/platform-apps/plugins/:pluginId/*',
         element: lazyLoad(() => import('@/pages/plugins/PluginCarrier')),
         handle: {
           title: 'Plugin App',
@@ -78,7 +81,7 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/platform-apps/workflows/:workflowAppId/chat',
-        element: lazyLoad(() => import('@/pages/plugins/WorkflowCanvasPage')),
+        element: lazyLoad(() => import('@/pages/plugins/WorkflowChat')),
         handle: {
           title: 'Workflow',
           titleKey: 'routes.workflowChat.title',
@@ -199,14 +202,11 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/exams',
-        element: lazyLoad(() => import('@/pages/exam/ExamList')),
+        element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
         handle: {
           title: 'Exams',
           titleKey: 'routes.exams.title',
-          icon: <FileTextOutlined />,
-          menuType: 'menu',
           navKey: 'exams',
-          navOrder: 5,
           hideInMenu: true,
           hideInBreadcrumb: true,
           permission: 'user.exams.read',
@@ -215,7 +215,7 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/exams/:paperId/attempt',
-        element: lazyLoad(() => import('@/pages/exam/AttemptState')),
+        element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
         handle: {
           title: 'Start Exam',
           titleKey: 'routes.examAttempt.title',
@@ -226,7 +226,7 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/attempts',
-        element: <Navigate replace to="/exams?tab=attempts" />,
+        element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
         handle: {
           title: 'Attempt History',
           titleKey: 'routes.attempts.title',
@@ -238,7 +238,7 @@ export const appRoutes: AppRouteObject[] = [
       },
       {
         path: '/attempts/:attemptId/result',
-        element: lazyLoad(() => import('@/pages/exam/ExamResult')),
+        element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
         handle: {
           title: 'Exam Result',
           titleKey: 'routes.examResult.title',
@@ -251,7 +251,7 @@ export const appRoutes: AppRouteObject[] = [
   },
   {
     path: '/attempts/:attemptId',
-    element: lazyLoad(() => import('@/pages/exam/ExamRoom')),
+    element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
     handle: {
       title: 'Exam Room',
       titleKey: 'routes.examRoom.title',
@@ -295,22 +295,101 @@ export const appRoutes: AppRouteObject[] = [
       title: 'Knowledge Base',
       titleKey: 'pages.menu.knowledgeBase',
       menuType: 'catalog',
-      menuMode: 'group',
+      menuMode: 'submenu',
+      icon: <DatabaseOutlined />,
       navKey: 'knowledge-base',
       navOrder: 3,
+      permission: 'user.mailgraph.use',
       hideInBreadcrumb: true,
     },
     children: [
       {
         path: '/knowledge',
-        element: lazyLoad(() => import('@/pages/knowledge/KnowledgeBase')),
+        element: <Navigate to="/knowledge/mailgraph/knowledge" replace />,
         handle: {
           title: 'Knowledge Base',
           titleKey: 'routes.knowledge.title',
-          icon: <DatabaseOutlined />,
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/knowledge/mailgraph/chat',
+        element: lazyLoad(
+          () => import('@/pages/knowledge/MailGraphKnowledgeBase'),
+        ),
+        handle: {
+          title: 'Knowledge Chat',
+          titleKey: 'routes.mailgraph.chat',
+          icon: <MessageOutlined />,
           menuType: 'menu',
-          navKey: 'knowledge',
+          navKey: 'mailgraph-chat',
           navOrder: 1,
+          permission: 'user.mailgraph.use',
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/knowledge/mailgraph/knowledge',
+        element: lazyLoad(
+          () => import('@/pages/knowledge/MailGraphKnowledgeBase'),
+        ),
+        handle: {
+          title: 'Knowledge Files',
+          titleKey: 'routes.mailgraph.knowledge',
+          icon: <FolderOpenOutlined />,
+          menuType: 'menu',
+          navKey: 'mailgraph-files',
+          navOrder: 2,
+          permission: 'user.mailgraph.use',
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/knowledge/mailgraph/graph',
+        element: lazyLoad(
+          () => import('@/pages/knowledge/MailGraphKnowledgeBase'),
+        ),
+        handle: {
+          title: 'Knowledge Graph',
+          titleKey: 'routes.mailgraph.graph',
+          icon: <ApartmentOutlined />,
+          menuType: 'menu',
+          navKey: 'mailgraph-graph',
+          navOrder: 3,
+          permission: 'user.mailgraph.use',
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/knowledge/mailgraph/dashboard',
+        element: lazyLoad(
+          () => import('@/pages/knowledge/MailGraphKnowledgeBase'),
+        ),
+        handle: {
+          title: 'Analysis Overview',
+          titleKey: 'routes.mailgraph.dashboard',
+          icon: <DashboardOutlined />,
+          menuType: 'menu',
+          navKey: 'mailgraph-dashboard',
+          navOrder: 4,
+          permission: 'user.mailgraph.use',
+          hideInBreadcrumb: true,
+        },
+      },
+      {
+        path: '/knowledge/mailgraph/workbench',
+        element: lazyLoad(
+          () => import('@/pages/knowledge/MailGraphKnowledgeBase'),
+        ),
+        handle: {
+          title: 'Mail Workbench',
+          titleKey: 'routes.mailgraph.workbench',
+          icon: <InboxOutlined />,
+          menuType: 'menu',
+          navKey: 'mailgraph-workbench',
+          navOrder: 5,
+          permission: 'user.mailgraph.use',
           hideInBreadcrumb: true,
         },
       },

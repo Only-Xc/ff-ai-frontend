@@ -1,4 +1,10 @@
 export default {
+  'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
+  'pages.pluginCarrier.sessionFailedHint': 'The plugin session could not be created. Check the installation and your permissions.',
+  'pages.pluginCarrier.back': 'Back to Plugin Center',
+  'pages.pluginCarrier.connected': 'Connected through the plugin platform gateway',
+  'pages.pluginCarrier.timeout': 'The plugin page timed out. Check the plugin service and retry.',
+  'pages.pluginCarrier.frameTitle': '{{pluginId}} plugin app',
   'pages.pluginCenter.title': 'Plugin Center',
   'pages.pluginCenter.subtitle':
     'Manage plugin definitions, versions, tenant installations, runtime health, and scope grants.',
@@ -1975,7 +1981,7 @@ export default {
   'pages.production.detail.tabOverview': 'Overview',
   'pages.production.detail.tabDecisions': 'Decision History',
   'pages.production.detail.basicInfo': 'Basic Info',
-  'pages.production.detail.version': 'Version',
+  'pages.production.detail.version': 'Deployment version',
   'pages.production.detail.riskLevel': 'Risk Level',
   'pages.production.detail.qaResult': 'QA Result',
   'pages.production.detail.createdAt': 'Created At',

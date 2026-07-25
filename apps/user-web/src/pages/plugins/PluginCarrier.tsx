@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Alert, Button, Result, Skeleton, Space, Typography } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 
 import {
   pluginCatalogKeys,
@@ -15,7 +15,8 @@ const LOAD_TIMEOUT_MS = 15_000
 export default function PluginCarrier() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { pluginId = '' } = useParams()
+  const location = useLocation()
+  const { pluginId = '', '*': pluginPath = '' } = useParams()
   const [loaded, setLoaded] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
   const sessionQuery = useQuery({
@@ -58,6 +59,8 @@ export default function PluginCarrier() {
       />
     )
   }
+
+  const frameUrl = `${sessionQuery.data.url.replace(/\/$/, '')}/${pluginPath}${location.search}`
 
   return (
     <div className="flex h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 flex-col bg-(--panel)">
@@ -104,10 +107,8 @@ export default function PluginCarrier() {
         <iframe
           className="size-full border-0"
           referrerPolicy="no-referrer"
-          sandbox={`allow-downloads allow-forms allow-modals allow-popups allow-scripts${
-            sessionQuery.data.external ? ' allow-same-origin' : ''
-          }`}
-          src={sessionQuery.data.url}
+          sandbox="allow-downloads allow-forms allow-modals allow-popups allow-same-origin allow-scripts"
+          src={frameUrl}
           title={t('pages.pluginCarrier.frameTitle', { pluginId })}
           onLoad={() => {
             setLoaded(true)

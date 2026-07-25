@@ -1,4 +1,6 @@
 export default {
+  'pages.mailgraph.loadTimeout': 'انتهت مهلة تحميل قاعدة معرفة MailGraph',
+  'pages.mailgraph.backToKnowledge': 'الرجوع إلى قاعدة المعرفة',
   'pages.pluginCarrier.sessionFailed': 'تعذر الاتصال بتطبيق المكون الإضافي',
   'pages.pluginCarrier.sessionFailedHint':
     'قد يكون التطبيق متوقفًا أو غير سليم أو غير متاح لصلاحياتك.',
@@ -20,6 +22,13 @@ export default {
   'pages.platformApps.empty': 'لا توجد تطبيقات متاحة',
   'pages.platformApps.noDescription': 'لا يوجد وصف',
   'pages.platformApps.loadFailed': 'فشل تحميل التطبيقات',
+  'pages.platformApps.sidebar': 'في الشريط',
+  'pages.platformApps.filters.all': 'كل التطبيقات',
+  'pages.platformApps.filters.favorite': 'في الشريط',
+  'pages.platformApps.filters.available': 'متاحة',
+  'pages.platformApps.stats.total': 'إجمالي التطبيقات',
+  'pages.platformApps.stats.sidebar': 'اختصارات الشريط',
+  'pages.platformApps.stats.available': 'تطبيقات متاحة',
   'pages.workflowChat.subtitle': 'تطبيق محادثة Workflow',
   'pages.workflowChat.simulation': 'محاكاة',
   'pages.workflowChat.connected': 'متصل',

@@ -1,6 +1,12 @@
 import { createRequest, path } from '../client.js'
 import type { ListResult, PaginationQuery } from '../common.js'
 
+const EXAM_PLUGIN_API_BASE = '/api/v1/plugins/exam/proxy'
+
+function examPluginApiPath(apiPath: string) {
+  return `${EXAM_PLUGIN_API_BASE}${apiPath}`
+}
+
 export type QuestionType = 'single' | 'multiple' | 'true_false'
 export type ExamMode = 'fixed' | 'random'
 export type AttemptStatus = 'in_progress' | 'submitted'
@@ -154,38 +160,46 @@ export interface AdminQuestionAccuracyStatsResponse {
 }
 
 export const listAdminExamsRequest = (params: AdminExamListQuery) =>
-  createRequest<AdminExamList>('GET', '/api/v1/exam/admin/exams', { params })
+  createRequest<AdminExamList>('GET', examPluginApiPath('/admin/exams'), {
+    params,
+  })
 
 export const createAdminExamRequest = (data: AdminExamCreateBody) =>
-  createRequest<AdminExamPaper>('POST', '/api/v1/exam/admin/exams', { data })
+  createRequest<AdminExamPaper>('POST', examPluginApiPath('/admin/exams'), {
+    data,
+  })
 
 export const getAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaperDetail>(
     'GET',
-    path`/api/v1/exam/admin/exams/${paperId}`,
+    examPluginApiPath(path`/admin/exams/${paperId}`),
   )
 
 export const updateAdminExamRequest = (
   paperId: string,
   data: AdminExamUpdateBody,
 ) =>
-  createRequest<AdminExamPaper>('PATCH', path`/api/v1/exam/admin/exams/${paperId}`, {
-    data,
-  })
+  createRequest<AdminExamPaper>(
+    'PATCH',
+    examPluginApiPath(path`/admin/exams/${paperId}`),
+    {
+      data,
+    },
+  )
 
 export const deleteAdminExamRequest = (paperId: string) =>
-  createRequest<void>('DELETE', path`/api/v1/exam/admin/exams/${paperId}`)
+  createRequest<void>('DELETE', examPluginApiPath(path`/admin/exams/${paperId}`))
 
 export const publishAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaper>(
     'POST',
-    path`/api/v1/exam/admin/exams/${paperId}/publish`,
+    examPluginApiPath(path`/admin/exams/${paperId}/publish`),
   )
 
 export const unpublishAdminExamRequest = (paperId: string) =>
   createRequest<AdminExamPaper>(
     'POST',
-    path`/api/v1/exam/admin/exams/${paperId}/unpublish`,
+    examPluginApiPath(path`/admin/exams/${paperId}/unpublish`),
   )
 
 export const importAdminExamQuestionsRequest = (
@@ -194,14 +208,14 @@ export const importAdminExamQuestionsRequest = (
 ) =>
   createRequest<AdminExamQuestion[]>(
     'POST',
-    path`/api/v1/exam/admin/exams/${paperId}/questions/import`,
+    examPluginApiPath(path`/admin/exams/${paperId}/questions/import`),
     { data },
   )
 
 export const listAdminExamQuestionsRequest = (paperId: string) =>
   createRequest<AdminExamQuestion[]>(
     'GET',
-    path`/api/v1/exam/admin/exams/${paperId}/questions`,
+    examPluginApiPath(path`/admin/exams/${paperId}/questions`),
   )
 
 export const createAdminExamQuestionRequest = (
@@ -210,7 +224,7 @@ export const createAdminExamQuestionRequest = (
 ) =>
   createRequest<AdminExamQuestion>(
     'POST',
-    path`/api/v1/exam/admin/exams/${paperId}/questions`,
+    examPluginApiPath(path`/admin/exams/${paperId}/questions`),
     { data },
   )
 
@@ -220,7 +234,7 @@ export const deleteAdminExamQuestionRequest = (
 ) =>
   createRequest<void>(
     'DELETE',
-    path`/api/v1/exam/admin/exams/${paperId}/questions/${questionId}`,
+    examPluginApiPath(path`/admin/exams/${paperId}/questions/${questionId}`),
 )
 
 export const updateAdminExamQuestionRequest = (
@@ -230,7 +244,7 @@ export const updateAdminExamQuestionRequest = (
 ) =>
   createRequest<AdminExamQuestion>(
     'PATCH',
-    path`/api/v1/exam/admin/exams/${paperId}/questions/${questionId}`,
+    examPluginApiPath(path`/admin/exams/${paperId}/questions/${questionId}`),
     { data },
   )
 
@@ -240,25 +254,29 @@ export const listAdminExamAttemptsRequest = (
 ) =>
   createRequest<AdminExamAttemptList>(
     'GET',
-    path`/api/v1/exam/admin/exams/${paperId}/attempts`,
+    examPluginApiPath(path`/admin/exams/${paperId}/attempts`),
     { params },
   )
 
 export const listAdminAllExamAttemptsRequest = (
   params: AdminGlobalAttemptListQuery,
 ) =>
-  createRequest<AdminExamAttemptList>('GET', '/api/v1/exam/admin/attempts', {
-    params,
-  })
+  createRequest<AdminExamAttemptList>(
+    'GET',
+    examPluginApiPath('/admin/attempts'),
+    {
+      params,
+    },
+  )
 
 export const getAdminAttemptRequest = (attemptId: string) =>
   createRequest<AdminExamAttemptDetail>(
     'GET',
-    path`/api/v1/exam/admin/attempts/${attemptId}`,
+    examPluginApiPath(path`/admin/attempts/${attemptId}`),
   )
 
 export const listAdminExamQuestionStatsRequest = (paperId: string) =>
   createRequest<AdminQuestionAccuracyStatsResponse>(
     'GET',
-    path`/api/v1/exam/admin/exams/${paperId}/question-accuracy`,
+    examPluginApiPath(path`/admin/exams/${paperId}/question-accuracy`),
   )

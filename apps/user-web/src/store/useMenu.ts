@@ -1,7 +1,11 @@
 import { create } from 'zustand'
 
 import { tenantApps_menu, type TenantAppMenuNode } from '@/api/tenant-apps'
-import { plugins_catalog, type PluginCatalogItem } from '@/api/plugins'
+import {
+  isDirectlyIntegratedPlugin,
+  plugins_catalog,
+  type PluginCatalogItem,
+} from '@/api/plugins'
 import { i18n } from '@/i18n'
 import type { NavTreeItem } from '@/layouts/components/Sidebar/layoutNav'
 
@@ -23,8 +27,6 @@ const WORKSPACE_NAV_KEY = 'workspace'
 const PLATFORM_APPS_KEY = 'workspace-platform-apps'
 const KNOWLEDGE_BASE_KEY = 'knowledge-base'
 const PLATFORM_APP_NAV_KEYS = new Set([
-  'exams',
-  'attempts',
   'platform-apps-catalog',
 ])
 const APP_MENU_LOADING_KEY = 'workspace-apps-loading'
@@ -114,10 +116,20 @@ function buildWorkspaceNavChildren(
         : [getEmptyMenuItem(`${PLATFORM_APPS_KEY}-empty`)],
     },
     {
-      key: knowledgeBaseNavItem?.key ?? KNOWLEDGE_BASE_KEY,
-      label: knowledgeBaseNavItem?.label ?? i18n.t('pages.menu.knowledgeBase'),
+      key: KNOWLEDGE_BASE_KEY,
+      label: i18n.t('pages.menu.knowledgeBase'),
       kind: 'group',
-      children: knowledgeBaseChildren,
+      children: [
+        {
+          key: `${KNOWLEDGE_BASE_KEY}-menu`,
+          label:
+            knowledgeBaseNavItem?.label ??
+            i18n.t('pages.menu.knowledgeBase'),
+          kind: 'submenu',
+          icon: knowledgeBaseNavItem?.icon,
+          children: knowledgeBaseChildren,
+        },
+      ],
     },
   ] satisfies NavTreeItem[]
 }
@@ -254,12 +266,14 @@ export function buildSidebarNavItemsWithAppMenu(
     ]
   }
 
-  const favoritePluginNavItems = pluginCatalogItems.map((item) => ({
-    key: `plugin-${item.installation_id}`,
-    label: item.name,
-    kind: 'menu' as const,
-    path: item.entry_path,
-  }))
+  const favoritePluginNavItems = pluginCatalogItems
+    .filter((item) => !isDirectlyIntegratedPlugin(item))
+    .map((item) => ({
+      key: `plugin-${item.installation_id}`,
+      label: item.name,
+      kind: 'menu' as const,
+      path: item.entry_path,
+    }))
 
   return withWorkspaceNavChildren(
     restNavItems,

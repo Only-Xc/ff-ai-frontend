@@ -338,6 +338,12 @@ export interface PluginVerification {
   verified_at: string
 }
 
+export interface PluginUiSession {
+  url: string
+  expires_at: string
+  external: boolean
+}
+
 export interface PluginListQuery {
   keyword?: string
   skip?: number
@@ -445,7 +451,17 @@ export const pluginKeys = {
     [...pluginKeys.all, 'config', pluginId, installationId] as const,
   audits: (pluginId: string, installationId?: string) =>
     [...pluginKeys.all, 'audits', pluginId, installationId] as const,
+  uiSession: (pluginId: string) =>
+    [...pluginKeys.all, 'uiSession', pluginId] as const,
 }
+
+export const plugins_createUiSession = request((pluginId: string) =>
+  createRequest<PluginUiSession>(
+    'POST',
+    path`/api/v1/plugins/${pluginId}/ui-session`,
+    { data: {} },
+  ),
+)
 
 export const plugins_register = request((data: PluginRegistrationBody) =>
   createRequest<PluginDefinitionDetail>('POST', '/api/v1/plugins', { data }),

@@ -1,4 +1,6 @@
 export default {
+  'pages.mailgraph.loadTimeout': '邮件分析知识库加载超时',
+  'pages.mailgraph.backToKnowledge': '返回知识库',
   'pages.pluginCarrier.sessionFailed': '插件应用连接失败',
   'pages.pluginCarrier.sessionFailedHint':
     '应用可能未启用、服务不健康或当前角色缺少插件 Scope。',
@@ -19,6 +21,13 @@ export default {
   'pages.platformApps.empty': '暂无可用的平台应用',
   'pages.platformApps.noDescription': '暂无描述',
   'pages.platformApps.loadFailed': '平台应用加载失败',
+  'pages.platformApps.sidebar': '已在侧栏',
+  'pages.platformApps.filters.all': '全部应用',
+  'pages.platformApps.filters.favorite': '侧栏中',
+  'pages.platformApps.filters.available': '可添加',
+  'pages.platformApps.stats.total': '应用总数',
+  'pages.platformApps.stats.sidebar': '侧栏快捷入口',
+  'pages.platformApps.stats.available': '可添加应用',
   'pages.workflowChat.subtitle': 'Workflow 对话应用',
   'pages.workflowChat.simulation': '模拟运行',
   'pages.workflowChat.connected': '已连接',

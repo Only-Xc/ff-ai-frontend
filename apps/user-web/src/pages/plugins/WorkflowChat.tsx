@@ -4,6 +4,7 @@ import { Alert, Button, Input, Skeleton, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
+import { v4 as uuidV4 } from 'uuid'
 
 import {
   pluginCatalogKeys,
@@ -38,7 +39,7 @@ export default function WorkflowChat() {
       plugins_sendWorkflowMessage(decodedWorkflowAppId, {
         message,
         conversation_id: conversationId,
-        request_id: crypto.randomUUID(),
+        request_id: uuidV4(),
       }),
     onSuccess: (result) => {
       setConversationId(result.conversation_id)
@@ -59,7 +60,7 @@ export default function WorkflowChat() {
     if (!message || messageMutation.isPending) return
     setMessages((current) => [
       ...current,
-      { id: crypto.randomUUID(), role: 'user', content: message },
+      { id: uuidV4(), role: 'user', content: message },
     ])
     setInput('')
     messageMutation.mutate(message)

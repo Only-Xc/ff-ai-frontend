@@ -89,6 +89,7 @@ export function Header({ onOpenMenu: _onOpenMenu }: HeaderProps) {
         </Tooltip>
 
         <Dropdown
+          trigger={['click']}
           menu={{
             items: localeItems,
             selectedKeys: [locale],

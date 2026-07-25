@@ -49,6 +49,11 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
   }
 
+  location ^~ /mailgraph/ {
+    add_header Cache-Control "no-cache";
+    try_files $uri $uri/ /mailgraph/index.html;
+  }
+
   location ~* \.(?:js|css|png|jpg|jpeg|gif|ico|svg|webp|woff2?)$ {
     expires 1y;
     add_header Cache-Control "public, immutable";

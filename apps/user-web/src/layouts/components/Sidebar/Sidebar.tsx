@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons'
 import { Button, Menu, Tooltip, type MenuProps } from 'antd'
 import { createStyles } from 'antd-style'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import {
@@ -304,15 +304,17 @@ export function Sidebar({
 }: SidebarProps) {
   const { styles } = useStyles()
   const navigate = useNavigate()
-  const defaultOpenKeys = useMemo(
+  const activeOpenKeys = useMemo(
     () => getOpenNavKeys(activeKey, navItems),
     [activeKey, navItems],
   )
-  const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([])
-  const openKeys = useMemo(
-    () => Array.from(new Set([...defaultOpenKeys, ...manualOpenKeys])),
-    [defaultOpenKeys, manualOpenKeys],
-  )
+  const [openKeys, setOpenKeys] = useState<string[]>(activeOpenKeys)
+
+  useEffect(() => {
+    setOpenKeys((current) =>
+      Array.from(new Set([...current, ...activeOpenKeys])),
+    )
+  }, [activeOpenKeys])
 
   const items = useMemo<MenuItem[]>(
     () => toMenuItems(navItems, styles.submenuPopup, styles.groupAction),
@@ -359,7 +361,7 @@ export function Sidebar({
           },
         }}
         theme="light"
-        onOpenChange={setManualOpenKeys}
+        onOpenChange={setOpenKeys}
         onClick={({ key }) => {
           const action = actionByKey.get(key)
 

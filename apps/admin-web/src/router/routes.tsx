@@ -138,6 +138,18 @@ export const appRoutes: AppRouteObject[] = [
     },
   },
   {
+    path: '/plugins/:pluginId/app/*',
+    element: lazyLoad(() => import('@/pages/plugins/AdminPluginCarrier')),
+    handle: {
+      title: 'Plugin App',
+      navKey: 'plugin-center',
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permissions: ['admin.plugins.read', 'admin.exams.read'],
+      permissionMode: 'any',
+    },
+  },
+  {
     path: '/plugins/:pluginId',
     element: lazyLoad(() => import('@/pages/plugins/PluginDetail')),
     handle: {
@@ -200,8 +212,8 @@ export const appRoutes: AppRouteObject[] = [
     },
     children: [
       {
-        path: '/exams',
-        element: lazyLoad(() => import('@/pages/exam-management/ExamList')),
+        path: '/plugins/exam/app/admin/exams',
+        element: lazyLoad(() => import('@/pages/plugins/AdminPluginCarrier')),
         handle: {
           title: 'Exam Management',
           titleKey: 'routes.exams.title',
@@ -212,21 +224,8 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
       {
-        path: '/exams/:paperId',
-        element: lazyLoad(() => import('@/pages/exam-management/ExamDetail')),
-        handle: {
-          title: 'Exam Detail',
-          titleKey: 'routes.examDetail.title',
-          navKey: 'exams',
-          hideInMenu: true,
-          permission: 'admin.exams.read',
-        },
-      },
-      {
-        path: '/exam-attempts',
-        element: lazyLoad(
-          () => import('@/pages/exam-management/AttemptOverview'),
-        ),
+        path: '/plugins/exam/app/admin/exam-attempts',
+        element: lazyLoad(() => import('@/pages/plugins/AdminPluginCarrier')),
         handle: {
           title: 'Exam Attempts',
           titleKey: 'routes.examAttempts.title',
@@ -237,6 +236,33 @@ export const appRoutes: AppRouteObject[] = [
         },
       },
     ],
+  },
+  {
+    path: '/exams',
+    element: <Navigate replace to="/plugins/exam/app/admin/exams" />,
+    handle: {
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permission: 'admin.exams.read',
+    },
+  },
+  {
+    path: '/exams/:paperId',
+    element: lazyLoad(() => import('@/pages/plugins/LegacyExamRedirect')),
+    handle: {
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permission: 'admin.exams.read',
+    },
+  },
+  {
+    path: '/exam-attempts',
+    element: <Navigate replace to="/plugins/exam/app/admin/exam-attempts" />,
+    handle: {
+      hideInMenu: true,
+      hideInBreadcrumb: true,
+      permission: 'admin.exams.read',
+    },
   },
   {
     handle: {

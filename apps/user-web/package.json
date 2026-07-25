@@ -19,6 +19,7 @@
     "@ff-ai-frontend/api": "workspace:*",
     "@ff-ai-frontend/components": "workspace:*",
     "@ff-ai-frontend/dictionaries": "workspace:*",
+    "@ff-ai-frontend/mailgraph-web": "workspace:*",
     "@ff-ai-frontend/utils": "workspace:*",
     "@formatjs/intl-localematcher": "^0.8.6",
     "@tanstack/react-query": "^5.100.6",

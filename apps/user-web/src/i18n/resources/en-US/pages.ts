@@ -1,4 +1,6 @@
 export default {
+  'pages.mailgraph.loadTimeout': 'MailGraph Knowledge Base timed out while loading',
+  'pages.mailgraph.backToKnowledge': 'Back to Knowledge Base',
   'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
   'pages.pluginCarrier.sessionFailedHint':
     'The app may be disabled, unhealthy, or unavailable to your plugin scopes.',
@@ -21,6 +23,13 @@ export default {
   'pages.platformApps.empty': 'No platform apps are available',
   'pages.platformApps.noDescription': 'No description',
   'pages.platformApps.loadFailed': 'Failed to load platform apps',
+  'pages.platformApps.sidebar': 'In sidebar',
+  'pages.platformApps.filters.all': 'All apps',
+  'pages.platformApps.filters.favorite': 'In sidebar',
+  'pages.platformApps.filters.available': 'Available',
+  'pages.platformApps.stats.total': 'Total apps',
+  'pages.platformApps.stats.sidebar': 'Sidebar shortcuts',
+  'pages.platformApps.stats.available': 'Available apps',
   'pages.workflowChat.subtitle': 'Workflow conversation app',
   'pages.workflowChat.simulation': 'Simulation',
   'pages.workflowChat.connected': 'Connected',

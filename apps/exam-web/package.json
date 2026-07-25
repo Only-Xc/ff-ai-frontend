@@ -1,0 +1,48 @@
+{
+  "name": "@ff-ai-frontend/exam-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 8082",
+    "build": "vite build",
+    "lint": "oxlint && eslint . --max-warnings=0",
+    "typecheck": "tsc -b --noEmit",
+    "format": "oxfmt . --write && oxlint --fix && eslint . --fix",
+    "format:check": "oxfmt . --check",
+    "preview": "vite preview --port 4182"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.2.2",
+    "@ff-ai-frontend/api": "workspace:*",
+    "@ff-ai-frontend/components": "workspace:*",
+    "@ff-ai-frontend/dictionaries": "workspace:*",
+    "@ff-ai-frontend/exam-center-plugin": "workspace:*",
+    "@ff-ai-frontend/utils": "workspace:*",
+    "@rolldown/plugin-babel": "catalog:",
+    "@tailwindcss/vite": "catalog:",
+    "@tanstack/react-query": "^5.100.6",
+    "@tanstack/react-query-devtools": "^5.100.10",
+    "@vitejs/plugin-react": "catalog:",
+    "antd": "^6.3.7",
+    "babel-plugin-react-compiler": "catalog:",
+    "dayjs": "^1.11.20",
+    "i18next": "^26.0.10",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-i18next": "^17.0.7",
+    "react-router": "^7.14.2",
+    "tailwindcss": "catalog:",
+    "usehooks-ts": "^3.1.1",
+    "vite": "catalog:"
+  },
+  "devDependencies": {
+    "@ff-ai-frontend/tooling": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "eslint": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

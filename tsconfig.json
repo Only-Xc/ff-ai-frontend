@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/api" },
     { "path": "./packages/components" },
+    { "path": "./packages/exam-center-plugin" },
     { "path": "./packages/utils" },
     { "path": "./apps/admin-web" },
     { "path": "./apps/user-web" }

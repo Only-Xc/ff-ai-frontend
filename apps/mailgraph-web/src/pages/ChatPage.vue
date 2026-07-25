@@ -1,0 +1,933 @@
+<script setup lang="ts">
+import { onMounted, ref, computed, nextTick, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useChatStore } from '@/stores/chat'
+import {
+  graphApi,
+  type GraphFilter,
+  type GraphSources,
+  type QuerySourceScope,
+} from '@/api'
+import ChatMessage from '@/components/chat/ChatMessage.vue'
+import ChatInput from '@/components/chat/ChatInput.vue'
+import BrainFab from '@/components/layout/BrainFab.vue'
+import KnowledgeSourceTreeSelect from '@/components/knowledge/KnowledgeSourceTreeSelect.vue'
+import { findKnowledgeFolder } from '@/utils/knowledgeSourceOptions'
+import { t } from '@/platformContext'
+
+const chatStore = useChatStore()
+const messagesEl = ref<HTMLElement | null>(null)
+const chatInputRef = ref<InstanceType<typeof ChatInput> | null>(null)
+const route = useRoute()
+const editingTitle = ref<string | null>(null)
+const titleInput = ref<HTMLInputElement | null>(null)
+const memoryWrap = ref<HTMLElement | null>(null)
+const sources = ref<GraphSources>({ folders: [], files: [], mails: [] })
+const sourceSelection = ref('global')
+const sourceError = ref('')
+
+const hasMessages = computed(() => chatStore.messages.length > 0)
+const sessionCount = computed(() => chatStore.sessions.length)
+const showMemory = ref(false)
+const memoryEmpty = computed(() => {
+  const m = chatStore.memory
+  if (!m) return true
+  return !m.summary && !m.preferences?.length && !m.pinned_context?.length && !m.last_topics?.length
+})
+
+// Split preferences by Chinese/English semicolons for cleaner display
+const memoryPreferences = computed(() => {
+  const raw = chatStore.memory?.preferences ?? []
+  return raw.flatMap(p => p.split(/[；;]/).map(s => s.trim()).filter(Boolean))
+})
+
+// Parse summary into Q&A pairs
+const memoryQA = computed(() => {
+  const raw = chatStore.memory?.summary ?? ''
+  const pairs: { q: string; a: string }[] = []
+  // Match "用户问: ...；助手答: ..." or "用户问: ...；助手答: ..."
+  const regex = /用户问[：:]\s*(.*?)[；;]\s*助手答[：:]\s*(.*?)(?=用户问[：:]|$)/g
+  let m
+  while ((m = regex.exec(raw)) !== null) {
+    const a = m[2].trim()
+    pairs.push({ q: m[1].trim(), a: a.length > 200 ? a.slice(0, 200) + '…' : a })
+  }
+  return pairs
+})
+
+function activeFilter(): GraphFilter | undefined {
+  if (sourceSelection.value === 'global') return undefined
+  const splitAt = sourceSelection.value.indexOf(':')
+  const kind = sourceSelection.value.slice(0, splitAt)
+  const id = sourceSelection.value.slice(splitAt + 1)
+  if (kind === 'folder') return { folder_id: id }
+  if (kind === 'file') return { file_id: id }
+  if (kind === 'mail') return { mail_id: id }
+  return undefined
+}
+
+const activeScope = computed<QuerySourceScope>(() => {
+  const filter = activeFilter()
+  if (!filter) return { type: 'global', id: '', label: '全部知识来源' }
+  if (filter.folder_id) {
+    const folder = findKnowledgeFolder(sources.value.folders, filter.folder_id)
+    return { type: 'folder', id: filter.folder_id, label: `目录 · ${folder?.path || folder?.name || filter.folder_id}` }
+  }
+  if (filter.file_id) {
+    const file = sources.value.files.find(item => item.id === filter.file_id)
+    return { type: 'file', id: filter.file_id, label: `文件 · ${file?.name || filter.file_id}` }
+  }
+  const mail = sources.value.mails.find(item => item.id === filter.mail_id)
+  return { type: 'mail', id: filter.mail_id || '', label: `邮件 · ${mail?.name || filter.mail_id}` }
+})
+
+async function loadSources() {
+  try {
+    sources.value = await graphApi.sources()
+    sourceError.value = ''
+  } catch (error: any) {
+    sourceError.value = error.message || String(error)
+  }
+}
+
+function applyRouteSource(): boolean {
+  const source = route.query.source
+  if (typeof source !== 'string' || !/^(folder|file|mail):.+$/.test(source)) return false
+
+  const [kind, id] = source.split(':', 2)
+  const available = kind === 'folder'
+    ? Boolean(findKnowledgeFolder(sources.value.folders, id))
+    : kind === 'file'
+      ? sources.value.files.some(item => item.id === id)
+      : sources.value.mails.some(item => item.id === id)
+
+  if (!available) return false
+  sourceSelection.value = source
+  return true
+}
+
+function sessionTitle(title?: string) {
+  const value = title?.trim() || ''
+  return !value || value === '新对话' || value === 'New conversation' || value === 'محادثة جديدة'
+    ? t('新对话')
+    : value
+}
+
+function syncScopeFromMessages() {
+  const scope = [...chatStore.messages].reverse()
+    .map(message => message.result?.source_scope as QuerySourceScope | undefined)
+    .find(Boolean)
+  sourceSelection.value = scope && scope.type !== 'global' ? `${scope.type}:${scope.id}` : 'global'
+}
+
+onMounted(async () => {
+  await loadSources()
+  await chatStore.fetchSessions()
+
+  // Check if arriving from dashboard with a prefill prompt
+  const prefillPrompt = route.query.prompt as string | undefined
+  const targetSession = route.query.session as string | undefined
+
+  if (targetSession) {
+    chatStore.activeSessionId = targetSession
+    await chatStore.fetchSessions()
+    await chatStore.loadMessages(targetSession)
+  } else {
+    await chatStore.ensureSession()
+  }
+
+  if (chatStore.activeSessionId && !targetSession) {
+    await chatStore.loadMessages(chatStore.activeSessionId)
+  } else if (chatStore.activeSessionId) {
+    // Session already loaded via targetSession above
+  } else {
+    await chatStore.ensureSession()
+    if (chatStore.activeSessionId) {
+      await chatStore.loadMessages(chatStore.activeSessionId)
+    }
+  }
+
+  await chatStore.loadMemory()
+  if (!applyRouteSource()) syncScopeFromMessages()
+
+  // Auto-fill the input with prefill prompt
+  if (prefillPrompt) {
+    await nextTick()
+    // Small delay to ensure ChatInput is mounted
+    setTimeout(() => {
+      chatInputRef.value?.setText(prefillPrompt)
+    }, 200)
+  }
+})
+
+// Auto-scroll
+watch(() => chatStore.messages.length, scrollDown)
+watch(() => chatStore.streamAnswer, scrollDown)
+
+async function scrollDown() {
+  await nextTick()
+  messagesEl.value?.scrollTo({ top: messagesEl.value.scrollHeight, behavior: 'smooth' })
+}
+
+
+// Session title editing
+function startRename() {
+  editingTitle.value = chatStore.activeSession?.title || ''
+  nextTick(() => titleInput.value?.focus())
+}
+
+async function commitRename() {
+  if (editingTitle.value && chatStore.activeSessionId) {
+    const { conversationsApi } = await import('@/api')
+    await conversationsApi.rename(chatStore.activeSessionId, editingTitle.value)
+    await chatStore.fetchSessions()
+  }
+  editingTitle.value = null
+}
+
+function handleSuggest(text: string) {
+  chatInputRef.value?.setText(text)
+}
+
+async function handleSend(question: string) {
+  await chatStore.sendMessage(question, activeFilter(), activeScope.value)
+}
+
+async function handleSwitchSession(sessionId: string) {
+  await chatStore.switchSession(sessionId)
+  syncScopeFromMessages()
+}
+
+async function handleCreateSession() {
+  await chatStore.createSession()
+  sourceSelection.value = 'global'
+}
+</script>
+
+<template>
+  <div class="chat-page">
+    <!-- ── Header ── -->
+    <header class="chat-header">
+      <div class="header-top">
+        <div class="header-left">
+          <!-- Inline title editor -->
+          <div v-if="editingTitle !== null" class="title-edit-wrap">
+            <input
+              ref="titleInput"
+              v-model="editingTitle"
+              class="title-input"
+              placeholder="会话名称"
+              @keydown.enter="commitRename()"
+              @blur="commitRename()"
+            />
+          </div>
+          <button v-else class="chat-title-btn" @click="startRename()" :title="sessionTitle(chatStore.activeSession?.title)">
+            <span class="chat-title-text">{{ sessionTitle(chatStore.activeSession?.title) }}</span>
+            <svg class="title-edit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+            </svg>
+          </button>
+          <div v-if="!memoryEmpty" ref="memoryWrap" class="memory-trigger-wrap">
+            <button class="memory-btn" @click="showMemory = true" :class="{ active: showMemory }">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+              </svg>
+              <span class="memory-btn-text">Agent 记忆</span>
+            </button>
+          </div>
+
+          <!-- Memory Modal (Teleport to body) -->
+          <Teleport to="body">
+            <Transition name="memory-modal">
+              <div v-if="showMemory" class="memory-overlay" @click.self="showMemory = false">
+                <div class="memory-modal">
+                  <div class="memory-modal-header">
+                    <div class="memory-modal-title">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+                      </svg>
+                      <span>Agent Memory</span>
+                    </div>
+                    <button class="memory-modal-close" @click="showMemory = false">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <div class="memory-modal-body">
+                    <!-- Preferences -->
+                    <div v-if="memoryPreferences.length" class="mem-section">
+                      <div class="mem-section-title">⭐ 最近关注</div>
+                      <div class="mem-tags">
+                        <span v-for="p in memoryPreferences" :key="p" class="mem-tag">{{ p }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Conversation summary -->
+                    <div v-if="memoryQA.length" class="mem-section">
+                      <div class="mem-section-title">💬 会话摘要</div>
+                      <div class="mem-qa-list">
+                        <div v-for="(qa, i) in memoryQA" :key="i" class="mem-qa-item">
+                          <div class="mem-qa-q">Q: {{ qa.q }}</div>
+                          <div class="mem-qa-a">A: {{ qa.a }}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else-if="chatStore.memory?.summary" class="mem-section">
+                      <div class="mem-section-title">💬 会话摘要</div>
+                      <p class="mem-summary">{{ chatStore.memory.summary }}</p>
+                    </div>
+
+                    <!-- Pinned context -->
+                    <div v-if="chatStore.memory?.pinned_context?.length" class="mem-section">
+                      <div class="mem-section-title">📌 固定上下文</div>
+                      <ul class="mem-list">
+                        <li v-for="c in chatStore.memory.pinned_context" :key="c">{{ c }}</li>
+                      </ul>
+                    </div>
+
+                    <!-- Last topics -->
+                    <div v-if="chatStore.memory?.last_topics?.length" class="mem-section">
+                      <div class="mem-section-title">🕐 最近话题</div>
+                      <div class="mem-tags">
+                        <span v-for="t in chatStore.memory.last_topics" :key="t" class="mem-tag">{{ t }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div v-if="!memoryPreferences.length && !chatStore.memory?.summary && !chatStore.memory?.pinned_context?.length && !chatStore.memory?.last_topics?.length" class="mem-empty">
+                      暂无记忆。随着对话进行，Agent 会记录关键信息。
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+          </Teleport>
+        </div>
+        <div class="header-actions">
+          <button class="header-btn" @click="handleCreateSession" :title="t('新对话')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <button
+            v-if="sessionCount > 1"
+            class="header-btn header-btn-danger"
+            @click="chatStore.deleteSession(chatStore.activeSessionId!)"
+            title="删除对话"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-controls">
+        <div class="session-select-wrap" v-if="sessionCount > 0">
+          <select
+            class="session-dropdown"
+            :value="chatStore.activeSessionId"
+            title="选择对话"
+            @change="handleSwitchSession(($event.target as HTMLSelectElement).value)"
+          >
+            <option v-for="s in chatStore.sessions" :key="s.id" :value="s.id">
+              {{ sessionTitle(s.title) }} ({{ s.message_count }})
+            </option>
+          </select>
+        </div>
+        <KnowledgeSourceTreeSelect
+          v-model="sourceSelection"
+          class="chat-source-tree"
+          :folders="sources.folders"
+          :files="sources.files"
+          :mails="sources.mails"
+          :disabled="chatStore.streaming"
+          title="选择 AI 对话知识范围"
+        />
+        <span v-if="sourceError" class="source-load-error" :title="sourceError">来源加载失败</span>
+      </div>
+    </header>
+
+    <!-- ── Messages area ── -->
+    <div class="messages-area" ref="messagesEl">
+      <!-- Empty state (no messages + not streaming) -->
+      <div v-if="!hasMessages && !chatStore.streaming" class="empty-state">
+        <div class="empty-content">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <h3 class="empty-title">AI 知识助手</h3>
+          <p class="empty-desc">当前范围：{{ activeScope.label }}</p>
+          <div class="empty-suggestions">
+            <button class="suggest-chip" @click="handleSuggest('最近邮件中提到了哪些项目和合同？')">
+              <span class="chip-emoji">📋</span>
+              项目和合同一览
+            </button>
+            <button class="suggest-chip" @click="handleSuggest('各项目的进展如何？有哪些风险？')">
+              <span class="chip-emoji">⚡</span>
+              项目进展与风险
+            </button>
+            <button class="suggest-chip" @click="handleSuggest('邮件中涉及哪些公司和联系人？')">
+              <span class="chip-emoji">👥</span>
+              公司联系人
+            </button>
+            <button class="suggest-chip" @click="handleSuggest('最近有哪些待办事项和截止日期？')">
+              <span class="chip-emoji">📅</span>
+              待办与截止日
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message list -->
+      <div v-if="hasMessages" class="messages-list">
+        <ChatMessage
+          v-for="msg in chatStore.messages"
+          :key="msg.id"
+          :message="msg"
+          :result="msg.role === 'assistant' ? msg.result ?? null : null"
+        />
+
+        <!-- Streaming message -->
+        <ChatMessage
+          v-if="chatStore.streaming"
+          :message="{
+            id: 'stream',
+            role: 'assistant',
+            content: chatStore.streamAnswer,
+            created_at: Date.now() / 1000,
+          }"
+          :streaming="true"
+          :result="chatStore.streamResult"
+          :progress="chatStore.streamProgress"
+        />
+      </div>
+    </div>
+
+    <!-- ── Input area (sticky bottom) ── -->
+    <div class="input-area">
+      <div class="input-inner">
+        <ChatInput ref="chatInputRef" :disabled="chatStore.streaming" @send="handleSend" />
+        <div v-if="hasMessages || chatStore.streaming" class="input-hint">
+          <span>{{ activeScope.label }} · {{ chatStore.messages.length }} 条消息</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating brain -->
+    <BrainFab />
+  </div>
+</template>
+
+<style scoped>
+/* ═══════════════════════════════════════════
+   ChatPage — Product-grade layout
+   ═══════════════════════════════════════════ */
+
+.chat-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-h));
+  background: var(--bg);
+  position: relative;
+}
+
+/* ── Header ── */
+
+.chat-header {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: var(--space-4) var(--space-5) var(--space-3);
+  z-index: 10;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  flex: 1;
+}
+
+/* ── Title button (clickable) ── */
+
+.chat-title-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  margin: -0.2rem -0.4rem;
+  border-radius: var(--r-sm);
+  transition: background var(--dur-fast) var(--ease);
+  max-width: 320px;
+  font-family: inherit;
+}
+
+.chat-title-btn:hover {
+  background: var(--surface-2);
+}
+
+.chat-title-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--t1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.title-edit-icon {
+  flex-shrink: 0;
+  color: var(--t4);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.chat-title-btn:hover .title-edit-icon {
+  opacity: 1;
+}
+
+/* ── Title input (editing) ── */
+
+.title-edit-wrap {
+  max-width: 320px;
+}
+
+.title-input {
+  font-size: var(--text-md);
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border: 1.5px solid var(--p);
+  border-radius: var(--r-sm);
+  outline: none;
+  background: var(--surface);
+  color: var(--t1);
+  width: 100%;
+  font-family: inherit;
+}
+
+
+/* ── Header action buttons ── */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.header-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--t4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.header-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--p);
+  color: var(--p);
+}
+
+.header-btn-danger:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--red-bg);
+}
+
+/* ── Conversation controls ── */
+.chat-controls { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.session-select-wrap { flex-shrink: 0; }
+.session-dropdown {
+  font-size: 0.78rem; padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--t2);
+  cursor: pointer; font-family: inherit; max-width: 220px;
+  outline: none; transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2357534E' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 28px;
+}
+.chat-source-tree { width: min(380px, 55vw); }
+.session-dropdown:focus { border-color: var(--p); box-shadow: 0 0 0 2px var(--p-ring); }
+.source-load-error { color: var(--red-t); font-size: 0.72rem; white-space: nowrap; }
+
+/* ── Messages area ── */
+
+.messages-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+}
+
+/* ── Messages list (non-empty) ── */
+
+.messages-list {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+/* ── Empty state ── */
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+}
+
+.empty-content {
+  text-align: center;
+  max-width: 480px;
+  animation: emptyFadeIn 0.5s var(--ease-out);
+}
+
+@keyframes emptyFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.empty-icon {
+  color: var(--t5);
+  margin-bottom: var(--space-5);
+  display: flex;
+  justify-content: center;
+}
+
+.empty-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--t1);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.empty-desc {
+  font-size: var(--text-sm);
+  color: var(--t4);
+  line-height: 1.7;
+  margin-bottom: var(--space-6);
+}
+
+.empty-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.suggest-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  padding: 0.45rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--t3);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+  font-family: inherit;
+  font-weight: 500;
+  user-select: none;
+}
+
+.suggest-chip:hover {
+  background: var(--p-bg);
+  border-color: var(--p);
+  color: var(--p);
+  box-shadow: var(--sh-xs);
+}
+
+.chip-emoji {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* ── Input area (sticky bottom) ── */
+
+.input-area {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  z-index: 10;
+  padding: var(--space-4) var(--space-6) var(--space-5);
+  margin-top: auto;
+  background: var(--bg);
+}
+
+/* Smooth border transition at top of input area */
+.input-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: var(--space-6);
+  right: var(--space-6);
+  height: 1px;
+  background: var(--border);
+}
+
+.input-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.input-hint {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--t4);
+  margin-top: var(--space-2);
+  opacity: 0.55;
+}
+
+/* ── Responsive adjustments ── */
+
+@media (max-width: 640px) {
+  .chat-header {
+    padding: var(--space-3) var(--space-3) var(--space-2);
+  }
+
+  .chat-title-text {
+    font-size: var(--text-base);
+  }
+
+  .title-edit-wrap {
+    max-width: 200px;
+  }
+
+  .messages-list {
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+
+  .empty-state {
+    padding: var(--space-6) var(--space-3);
+  }
+
+  .input-area {
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+
+  .input-area::before {
+    left: var(--space-3);
+    right: var(--space-3);
+  }
+
+  .pill-title {
+    max-width: 80px;
+  }
+
+  .chat-controls { align-items: stretch; flex-direction: column; }
+  .session-select-wrap, .session-dropdown, .chat-source-tree { width: 100%; max-width: none; }
+}
+</style>
+
+<!-- Non-scoped styles for Teleported memory modal -->
+<style>
+.memory-trigger-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.memory-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--p-text);
+  background: var(--p-bg);
+  border: 1px solid color-mix(in srgb, var(--p) 20%, transparent);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.memory-btn:hover {
+  background: color-mix(in srgb, var(--p) 18%, transparent);
+  border-color: var(--p);
+}
+.memory-btn svg { opacity: 0.8; flex-shrink: 0; }
+.memory-btn-text { line-height: 1; }
+
+.memory-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.memory-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--sh-lg);
+  width: 100%;
+  max-width: 720px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.memory-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.memory-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  color: var(--t1);
+}
+.memory-modal-title svg { opacity: 0.7; color: var(--p); }
+
+.memory-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--t3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.memory-modal-close:hover { background: var(--border); color: var(--t1); }
+
+.memory-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+
+.mem-section {
+  margin-bottom: 1.2rem;
+}
+.mem-section:last-child { margin-bottom: 0; }
+
+.mem-section-title {
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: var(--t1);
+  margin-bottom: 0.5rem;
+}
+
+.mem-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.mem-tag {
+  font-size: 0.8rem;
+  color: var(--t2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.mem-qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.mem-qa-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+}
+.mem-qa-q {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--t2);
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+}
+.mem-qa-a {
+  font-size: 0.8rem;
+  color: var(--t3);
+  line-height: 1.55;
+}
+
+.mem-summary {
+  font-size: 0.84rem;
+  color: var(--t2);
+  line-height: 1.6;
+  margin: 0;
+  word-break: break-word;
+}
+
+.mem-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.mem-list li {
+  font-size: 0.84rem;
+  color: var(--t2);
+  line-height: 1.5;
+  margin: 0.15rem 0;
+}
+
+.mem-empty {
+  text-align: center;
+  color: var(--t4);
+  font-size: 0.85rem;
+  padding: 2rem 0;
+}
+
+.memory-modal-enter-active { transition: opacity 0.2s ease; }
+.memory-modal-leave-active { transition: opacity 0.15s ease; }
+.memory-modal-enter-from,
+.memory-modal-leave-to { opacity: 0; }
+.memory-modal-enter-from .memory-modal { transform: scale(0.96); transition: transform 0.2s ease; }
+.memory-modal-leave-to .memory-modal { transform: scale(0.96); transition: transform 0.15s ease; }
+</style>

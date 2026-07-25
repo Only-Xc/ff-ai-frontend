@@ -260,7 +260,7 @@ export function ProductionDetail() {
                     <Descriptions.Item
                       label={t('pages.production.detail.version')}
                     >
-                      v{approval.version}
+                      v{approval.deployment_version}
                     </Descriptions.Item>
                     <Descriptions.Item
                       label={t('pages.production.queue.agent')}

@@ -21,6 +21,12 @@ export interface PluginCatalogResult {
   count: number
 }
 
+export function isDirectlyIntegratedPlugin(
+  item: Pick<PluginCatalogItem, 'plugin_id'>,
+) {
+  return /^mailgraph-knowledge-base(?:-\d+)?$/.test(item.plugin_id)
+}
+
 export interface WorkflowRuntimeConfig {
   workflow_app_id: string
   workflow_version_id: string

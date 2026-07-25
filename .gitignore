@@ -12,6 +12,11 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+
+# Vue config output emitted by the MailGraph TypeScript build.
+apps/mailgraph-web/vite.config.js
+apps/mailgraph-web/vite.config.d.ts
 
 # Editor directories and files
 .vscode/*
@@ -19,6 +24,8 @@ dist-ssr
 !.vscode/settings.json
 .idea
 .DS_Store
+._*
+**/._*
 .turbo
 .superpowers/
 *.suo
