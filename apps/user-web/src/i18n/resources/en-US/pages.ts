@@ -1,5 +1,6 @@
 export default {
-  'pages.mailgraph.loadTimeout': 'MailGraph Knowledge Base timed out while loading',
+  'pages.mailgraph.loadTimeout':
+    'MailGraph Knowledge Base timed out while loading',
   'pages.mailgraph.backToKnowledge': 'Back to Knowledge Base',
   'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
   'pages.pluginCarrier.sessionFailedHint':
@@ -39,6 +40,11 @@ export default {
   'pages.workflowChat.send': 'Send',
   'pages.workflowChat.loadFailed': 'Failed to load the Workflow app',
   'pages.workflowChat.sendFailed': 'Failed to send the message',
+  'pages.workflowChat.history': 'Conversation history',
+  'pages.workflowChat.newConversation': 'New conversation',
+  'pages.workflowChat.deleteConversation': 'Delete conversation',
+  'pages.workflowChat.noHistory': 'No conversation history',
+  'pages.workflowChat.thinking': 'Thinking...',
   'pages.shell.usageSubtitle':
     'Review resource usage, plan quotas, billing, and balance.',
   'pages.shell.defaultSubtitle':

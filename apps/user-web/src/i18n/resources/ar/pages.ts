@@ -37,6 +37,11 @@ export default {
   'pages.workflowChat.send': 'إرسال',
   'pages.workflowChat.loadFailed': 'فشل تحميل Workflow',
   'pages.workflowChat.sendFailed': 'فشل إرسال الرسالة',
+  'pages.workflowChat.history': 'سجل المحادثات',
+  'pages.workflowChat.newConversation': 'محادثة جديدة',
+  'pages.workflowChat.deleteConversation': 'حذف المحادثة',
+  'pages.workflowChat.noHistory': 'لا يوجد سجل محادثات',
+  'pages.workflowChat.thinking': 'جارٍ التفكير...',
   'pages.shell.usageSubtitle':
     'راجع استهلاك الموارد وحدود الخطة والفواتير والرصيد.',
   'pages.shell.defaultSubtitle': 'راجع مهام المنصة والتطبيقات وحالة الموارد.',

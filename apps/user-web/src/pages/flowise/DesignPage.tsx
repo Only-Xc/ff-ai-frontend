@@ -18,6 +18,7 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   buildFlowiseEditorUrl,
@@ -52,7 +53,7 @@ export default function FlowiseDesignPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { appId } = useParams<{ appId: string }>()
-  const [sessionNonce] = useState(() => crypto.randomUUID())
+  const [sessionNonce] = useState(() => uuidv4())
   const [publishModalOpen, setPublishModalOpen] = useState(false)
   const [accessScope, setAccessScope] = useState<WorkflowAccessScope>('tenant')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])

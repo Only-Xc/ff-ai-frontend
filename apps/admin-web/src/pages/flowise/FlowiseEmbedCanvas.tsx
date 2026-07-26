@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Spin } from 'antd'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   buildFlowiseReadonlyViewerUrl,
@@ -22,7 +23,7 @@ export function FlowiseEmbedCanvas({
   fallback,
 }: FlowiseEmbedCanvasProps) {
   const { t } = useTranslation()
-  const [sessionNonce, setSessionNonce] = useState(() => crypto.randomUUID())
+  const [sessionNonce, setSessionNonce] = useState(() => uuidv4())
   const { data, isLoading, isError } = useQuery({
     queryKey: [
       ...flowiseKeys.readonlyBrowserSession(appId, versionId),
@@ -47,7 +48,7 @@ export function FlowiseEmbedCanvas({
       ) {
         return
       }
-      setSessionNonce(crypto.randomUUID())
+      setSessionNonce(uuidv4())
     }
 
     window.addEventListener('message', handleMessage)

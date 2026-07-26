@@ -4,6 +4,7 @@ import { Alert, Button, Space, Spin, Typography } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   buildFlowiseEditorUrl,
@@ -19,7 +20,7 @@ export default function WorkflowCanvasPage() {
   const navigate = useNavigate()
   const { workflowAppId = '' } = useParams()
   const appId = decodeURIComponent(workflowAppId)
-  const [sessionNonce] = useState(() => crypto.randomUUID())
+  const [sessionNonce] = useState(() => uuidv4())
   const sessionQuery = useQuery({
     queryKey: [...flowiseKeys.browserSession(appId), sessionNonce],
     queryFn: () => createFlowiseBrowserSession(appId),
