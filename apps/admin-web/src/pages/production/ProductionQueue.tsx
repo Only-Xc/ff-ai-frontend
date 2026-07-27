@@ -123,18 +123,19 @@ export function ProductionQueue() {
           <span className="text-gray-400">—</span>
         ),
     },
-    {
-      title: t('pages.production.queue.qa'),
-      dataIndex: 'qa_passed',
-      key: 'qa_passed',
-      width: 100,
-      render: (v: boolean) =>
-        v ? (
-          <Tag color="green">{t('pages.production.queue.qaPassed')}</Tag>
-        ) : (
-          <Tag color="red">{t('pages.production.queue.qaFailed')}</Tag>
-        ),
-    },
+    // QA 结果列暂时隐藏
+    // {
+    //   title: t('pages.production.queue.qa'),
+    //   dataIndex: 'qa_passed',
+    //   key: 'qa_passed',
+    //   width: 100,
+    //   render: (v: boolean) =>
+    //     v ? (
+    //       <Tag color="green">{t('pages.production.queue.qaPassed')}</Tag>
+    //     ) : (
+    //       <Tag color="red">{t('pages.production.queue.qaFailed')}</Tag>
+    //     ),
+    // },
     {
       title: t('pages.production.queue.createdAt'),
       dataIndex: 'created_at',

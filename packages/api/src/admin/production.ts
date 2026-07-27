@@ -187,3 +187,21 @@ export const rollbackProductionAgentRequest = (
     `${PRODUCTION_PREFIX}/agents/${encodeURIComponent(agentId)}/rollback`,
     { data },
   )
+
+export const refreshRuntimeRequest = (approvalId: string) =>
+  createRequest<ProductionApprovalDetail>(
+    'POST',
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/runtime/refresh`,
+  )
+
+export const stopRuntimeRequest = (approvalId: string) =>
+  createRequest<ProductionApprovalDetail>(
+    'POST',
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/runtime/stop`,
+  )
+
+export const restartRuntimeRequest = (approvalId: string) =>
+  createRequest<ProductionApprovalDetail>(
+    'POST',
+    `${PRODUCTION_PREFIX}/approvals/${encodeURIComponent(approvalId)}/runtime/restart`,
+  )

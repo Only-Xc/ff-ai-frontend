@@ -2044,6 +2044,14 @@ export default {
   'pages.production.detail.upstreamUrl': 'Internal Upstream',
   'pages.production.detail.healthUrl': 'Health URL',
   'pages.production.detail.predictionPath': 'Prediction Path',
+  'pages.production.detail.refreshRuntime': 'Refresh Status',
+  'pages.production.detail.refreshRuntimeSuccess': 'Runtime status refreshed',
+  'pages.production.detail.stopContainer': 'Stop Container',
+  'pages.production.detail.stopContainerConfirm':
+    'Are you sure you want to stop this runtime instance? Users will no longer be able to access this workflow.',
+  'pages.production.detail.stopContainerSuccess': 'Container stopped',
+  'pages.production.detail.restartContainer': 'Restart Container',
+  'pages.production.detail.restartContainerSuccess': 'Container restarted',
   'pages.production.decisionDrawer.title': 'Submit Approval Decision',
   'pages.production.decisionDrawer.submit': 'Submit',
   'pages.production.decisionDrawer.decision': 'Decision',
@@ -2197,6 +2205,7 @@ export default {
   'pages.workflowAdmin.status.published': 'Published',
   'pages.workflowAdmin.status.active': 'Active',
   'pages.workflowAdmin.status.disabled': 'Disabled',
+  'pages.workflowAdmin.status.deleted': 'Deleted',
   'pages.workflowAdmin.status.rejected': 'Rejected',
   'pages.workflowAdmin.apps.viewDetail': 'View',
   'pages.workflowAdmin.apps.tenantFilter': 'Tenant Filter',
@@ -2206,6 +2215,7 @@ export default {
   'pages.workflowAdmin.catalogStatus.pending_approval': 'Pending Approval',
   'pages.workflowAdmin.catalogStatus.rejected': 'Rejected',
   'pages.workflowAdmin.catalogStatus.disabled': 'Disabled',
+  'pages.workflowAdmin.catalogStatus.deleted': 'Deleted',
 
   // Flowise Integration
   'pages.flowise.viewTitle': 'View Workflow',

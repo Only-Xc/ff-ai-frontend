@@ -4,7 +4,10 @@ import {
   createProductionApprovalRequest,
   getProductionApprovalRequest,
   listProductionApprovalsRequest,
+  refreshRuntimeRequest,
+  restartRuntimeRequest,
   rollbackProductionAgentRequest,
+  stopRuntimeRequest,
   submitProductionDecisionRequest,
   type ProductionApprovalQuery,
 } from '@ff-ai-frontend/api'
@@ -57,3 +60,9 @@ export const productionApprovals_cancel = request(
 export const productionApprovals_apply = request(applyProductionApprovalRequest)
 
 export const productionAgents_rollback = request(rollbackProductionAgentRequest)
+
+export const productionRuntime_refresh = request(refreshRuntimeRequest)
+
+export const productionRuntime_stop = request(stopRuntimeRequest)
+
+export const productionRuntime_restart = request(restartRuntimeRequest)

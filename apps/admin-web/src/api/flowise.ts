@@ -40,8 +40,12 @@ export function getFlowiseBaseUrl(): string {
     : 'http://localhost:3000'
 }
 
-export function buildFlowiseReadonlyViewerUrl(ticket: string): string {
+export function buildFlowiseBootstrapUrl(): string {
   const base = getFlowiseBaseUrl().replace(/\/$/, '')
+  return `${base}/ffai-bootstrap.html`
+}
+
+export function buildFlowiseReadonlyViewerUrl(ticket: string): string {
   const fragment = new URLSearchParams({ ticket })
-  return `${base}/ffai-bootstrap.html#${fragment.toString()}`
+  return `${buildFlowiseBootstrapUrl()}#${fragment.toString()}`
 }

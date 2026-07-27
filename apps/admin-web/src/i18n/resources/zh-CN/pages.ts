@@ -1915,6 +1915,14 @@ export default {
   'pages.production.detail.upstreamUrl': '内部服务地址',
   'pages.production.detail.healthUrl': '健康检查地址',
   'pages.production.detail.predictionPath': 'Prediction Path',
+  'pages.production.detail.refreshRuntime': '刷新运行状态',
+  'pages.production.detail.refreshRuntimeSuccess': '运行状态已刷新',
+  'pages.production.detail.stopContainer': '停止容器',
+  'pages.production.detail.stopContainerConfirm':
+    '确定停止该运行实例？停止后用户将无法访问该工作流。',
+  'pages.production.detail.stopContainerSuccess': '容器已停止',
+  'pages.production.detail.restartContainer': '重启容器',
+  'pages.production.detail.restartContainerSuccess': '容器已重启',
   'pages.production.decisionDrawer.title': '提交审批决定',
   'pages.production.decisionDrawer.submit': '提交',
   'pages.production.decisionDrawer.decision': '决定',
@@ -2060,6 +2068,7 @@ export default {
   'pages.workflowAdmin.status.published': '已发布',
   'pages.workflowAdmin.status.active': '已上线',
   'pages.workflowAdmin.status.disabled': '已下架',
+  'pages.workflowAdmin.status.deleted': '已删除',
   'pages.workflowAdmin.status.rejected': '已拒绝',
   'pages.workflowAdmin.apps.viewDetail': '查看',
   'pages.workflowAdmin.apps.tenantFilter': '租户筛选',
@@ -2069,6 +2078,7 @@ export default {
   'pages.workflowAdmin.catalogStatus.pending_approval': '待审批',
   'pages.workflowAdmin.catalogStatus.rejected': '已拒绝',
   'pages.workflowAdmin.catalogStatus.disabled': '已下架',
+  'pages.workflowAdmin.catalogStatus.deleted': '已删除',
 
   // Flowise 集成
   'pages.flowise.viewTitle': '查看工作流',

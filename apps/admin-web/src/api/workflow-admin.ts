@@ -1,4 +1,5 @@
 import {
+  deleteWorkflowAdminAppRequest,
   getWorkflowAdminDashboardRequest,
   getWorkflowAppDraftRequest,
   getWorkflowAppGraphRequest,
@@ -45,6 +46,7 @@ export const workflowAdminAppGraph_get = request(getWorkflowAppGraphRequest)
 export const workflowAdminVersionGraph_get = request(
   getWorkflowVersionGraphRequest,
 )
+export const workflowAdminApp_delete = request(deleteWorkflowAdminAppRequest)
 
 /** List of admin tenants (lifted for type re-export). */
 export type WorkflowAdminTenant = AdminTenant

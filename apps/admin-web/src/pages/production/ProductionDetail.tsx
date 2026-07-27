@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, EyeOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, EyeOutlined, RedoOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
@@ -29,6 +29,9 @@ import {
   productionApprovals_get,
   productionApprovals_submitDecision,
   productionKeys,
+  productionRuntime_refresh,
+  productionRuntime_restart,
+  productionRuntime_stop,
   type ProductionApprovalDecisionPayload,
 } from '@/api/production'
 
@@ -113,6 +116,7 @@ export function ProductionDetail() {
   const [decisionDrawerOpen, setDecisionDrawerOpen] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
+  const [stopModalOpen, setStopModalOpen] = useState(false)
 
   const { data, isFetching } = useQuery({
     queryKey: productionKeys.detail(approvalId),
@@ -155,6 +159,46 @@ export function ProductionDetail() {
     mutationFn: () => productionApprovals_apply(approvalId),
     onSuccess: () => {
       message.success(t('pages.production.detail.reapplySuccess'))
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
+    },
+    onError: (err: Error) => {
+      message.error(err.message || t('common.errors.unknown'))
+    },
+  })
+
+  const refreshRuntimeMutation = useMutation({
+    mutationFn: () => productionRuntime_refresh(approvalId),
+    onSuccess: () => {
+      message.success(t('pages.production.detail.refreshRuntimeSuccess'))
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
+    },
+    onError: (err: Error) => {
+      message.error(err.message || t('common.errors.unknown'))
+    },
+  })
+
+  const stopRuntimeMutation = useMutation({
+    mutationFn: () => productionRuntime_stop(approvalId),
+    onSuccess: () => {
+      message.success(t('pages.production.detail.stopContainerSuccess'))
+      setStopModalOpen(false)
+      void queryClient.invalidateQueries({
+        queryKey: productionKeys.detail(approvalId),
+      })
+    },
+    onError: (err: Error) => {
+      message.error(err.message || t('common.errors.unknown'))
+    },
+  })
+
+  const restartRuntimeMutation = useMutation({
+    mutationFn: () => productionRuntime_restart(approvalId),
+    onSuccess: () => {
+      message.success(t('pages.production.detail.restartContainerSuccess'))
       void queryClient.invalidateQueries({
         queryKey: productionKeys.detail(approvalId),
       })
@@ -539,7 +583,45 @@ export function ProductionDetail() {
                 )}
 
                 {approval.target_type === 'workflow' && (
-                  <Card title={t('pages.production.detail.runtimeMetadata')}>
+                  <Card
+                    title={t('pages.production.detail.runtimeMetadata')}
+                    extra={
+                      hasRuntime ? (
+                        <Space>
+                          <Button
+                            icon={<ReloadOutlined />}
+                            size="small"
+                            loading={refreshRuntimeMutation.isPending}
+                            onClick={() => refreshRuntimeMutation.mutate()}
+                          >
+                            {t('pages.production.detail.refreshRuntime')}
+                          </Button>
+                          <Button
+                            icon={<StopOutlined />}
+                            size="small"
+                            danger
+                            disabled={
+                              readOptionalString(runtime.status) === 'stopped'
+                            }
+                            onClick={() => setStopModalOpen(true)}
+                          >
+                            {t('pages.production.detail.stopContainer')}
+                          </Button>
+                          <Button
+                            icon={<RedoOutlined />}
+                            size="small"
+                            loading={restartRuntimeMutation.isPending}
+                            disabled={
+                              readOptionalString(runtime.status) !== 'stopped'
+                            }
+                            onClick={() => restartRuntimeMutation.mutate()}
+                          >
+                            {t('pages.production.detail.restartContainer')}
+                          </Button>
+                        </Space>
+                      ) : undefined
+                    }
+                  >
                     {hasRuntime ? (
                       <Descriptions column={2} bordered size="small">
                         <Descriptions.Item
@@ -547,7 +629,11 @@ export function ProductionDetail() {
                         >
                           <Tag
                             color={
-                              runtime.healthy === true ? 'green' : 'orange'
+                              readOptionalString(runtime.status) === 'running'
+                                ? 'green'
+                                : readOptionalString(runtime.status) === 'stopped'
+                                  ? 'red'
+                                  : 'orange'
                             }
                           >
                             {readOptionalString(runtime.status) ?? '—'}
@@ -679,6 +765,20 @@ export function ProductionDetail() {
             placeholder={t('pages.production.detail.cancelReasonRequired')}
           />
         </div>
+      </Modal>
+
+      <Modal
+        title={t('pages.production.detail.stopContainer')}
+        open={stopModalOpen}
+        okText={t('common.actions.confirm')}
+        cancelText={t('common.actions.cancel')}
+        okButtonProps={{ danger: true, loading: stopRuntimeMutation.isPending }}
+        confirmLoading={stopRuntimeMutation.isPending}
+        onOk={() => stopRuntimeMutation.mutate()}
+        onCancel={() => setStopModalOpen(false)}
+        destroyOnHidden
+      >
+        <p>{t('pages.production.detail.stopContainerConfirm')}</p>
       </Modal>
     </PageContainer>
   )

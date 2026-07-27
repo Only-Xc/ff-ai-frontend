@@ -1984,6 +1984,14 @@ export default {
   'pages.production.detail.upstreamUrl': 'عنوان الخدمة الداخلي',
   'pages.production.detail.healthUrl': 'عنوان فحص الصحة',
   'pages.production.detail.predictionPath': 'مسار Prediction',
+  'pages.production.detail.refreshRuntime': 'تحديث حالة التشغيل',
+  'pages.production.detail.refreshRuntimeSuccess': 'تم تحديث حالة التشغيل',
+  'pages.production.detail.stopContainer': 'إيقاف الحاوية',
+  'pages.production.detail.stopContainerConfirm':
+    'هل أنت متأكد من إيقاف مثيل التشغيل هذا؟ لن يتمكن المستخدمون من الوصول إلى سير العمل هذا.',
+  'pages.production.detail.stopContainerSuccess': 'تم إيقاف الحاوية',
+  'pages.production.detail.restartContainer': 'إعادة تشغيل الحاوية',
+  'pages.production.detail.restartContainerSuccess': 'تمت إعادة تشغيل الحاوية',
   'pages.production.decisionDrawer.title': 'تقديم قرار الموافقة',
   'pages.production.decisionDrawer.submit': 'إرسال',
   'pages.production.decisionDrawer.decision': 'القرار',
@@ -2134,6 +2142,7 @@ export default {
   'pages.workflowAdmin.status.published': 'منشور',
   'pages.workflowAdmin.status.active': 'نشط',
   'pages.workflowAdmin.status.disabled': 'معطل',
+  'pages.workflowAdmin.status.deleted': 'محذوف',
   'pages.workflowAdmin.status.rejected': 'مرفوض',
   'pages.workflowAdmin.apps.viewDetail': 'عرض',
   'pages.workflowAdmin.apps.tenantFilter': 'تصفية المستأجر',
@@ -2143,6 +2152,7 @@ export default {
   'pages.workflowAdmin.catalogStatus.pending_approval': 'بانتظار الموافقة',
   'pages.workflowAdmin.catalogStatus.rejected': 'مرفوض',
   'pages.workflowAdmin.catalogStatus.disabled': 'معطل',
+  'pages.workflowAdmin.catalogStatus.deleted': 'محذوف',
 
   // Flowise Integration
   'pages.flowise.viewTitle': 'عرض سير العمل',

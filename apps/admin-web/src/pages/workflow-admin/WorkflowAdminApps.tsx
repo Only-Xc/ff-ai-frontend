@@ -1,14 +1,16 @@
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { DeleteOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
   Empty,
   Input,
+  Popconfirm,
   Segmented,
   Skeleton,
   Space,
   Table,
   Tag,
+  message,
 } from 'antd'
 import type { TableProps } from 'antd'
 import dayjs from 'dayjs'
@@ -19,6 +21,7 @@ import { useNavigate } from 'react-router'
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { useAuthStore } from '@/store/useAuth'
 import {
+  workflowAdminApp_delete,
   workflowAdminApps_list,
   workflowAdminKeys,
   type AdminWorkflowApp,
@@ -45,6 +48,7 @@ const STATUS_COLOR: Record<string, string> = {
   published: 'success',
   active: 'success',
   disabled: 'error',
+  deleted: 'error',
 }
 
 const CATALOG_STATUS_COLOR: Record<string, string> = {
@@ -54,11 +58,13 @@ const CATALOG_STATUS_COLOR: Record<string, string> = {
   pending_approval: 'warning',
   rejected: 'magenta',
   disabled: 'magenta',
+  deleted: 'error',
 }
 
 export function WorkflowAdminApps() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const isSuperuser = useAuthStore((state) => state.user?.is_superuser) === true
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<WorkflowAppStatus | ''>('')
@@ -83,6 +89,19 @@ export function WorkflowAdminApps() {
     queryKey: workflowAdminKeys.apps(queryParams),
     queryFn: () => workflowAdminApps_list(queryParams),
     placeholderData: keepPreviousData,
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (appId: string) => workflowAdminApp_delete(appId),
+    onSuccess: () => {
+      message.success(t('pages.workflowAdmin.apps.deleteSuccess', '应用已删除'))
+      void queryClient.invalidateQueries({
+        queryKey: workflowAdminKeys.all,
+      })
+    },
+    onError: (err: Error) => {
+      message.error(err.message || t('common.errors.unknown'))
+    },
   })
 
   const items = data?.items ?? []
@@ -130,19 +149,38 @@ export function WorkflowAdminApps() {
       {
         title: t('pages.workflowAdmin.apps.actions', '操作'),
         key: 'actions',
-        width: 100,
+        width: 150,
         fixed: 'right',
         render: (_: unknown, record: AdminWorkflowApp) => (
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              void navigate(`/workflow-apps/${record.id}/review`)
-            }}
-          >
-            {t('pages.workflowAdmin.apps.viewDetail', '查看')}
-          </Button>
+          <Space size={4}>
+            <Button
+              type="link"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                void navigate(`/workflow-apps/${record.id}/review`)
+              }}
+            >
+              {t('pages.workflowAdmin.apps.viewDetail', '查看')}
+            </Button>
+            <Popconfirm
+              title={t('pages.workflowAdmin.apps.deleteConfirm', '确定删除该应用？删除后不可恢复。')}
+              onConfirm={() => deleteMutation.mutate(record.id)}
+              okText={t('common.actions.confirm')}
+              cancelText={t('common.actions.cancel')}
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                loading={deleteMutation.isPending}
+              >
+                {t('common.actions.delete', '删除')}
+              </Button>
+            </Popconfirm>
+          </Space>
         ),
       },
     ]

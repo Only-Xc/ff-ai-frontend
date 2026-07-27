@@ -209,6 +209,13 @@ export const getWorkflowVersionGraphRequest = (versionId: string) =>
     `${WORKFLOW_ADMIN_PREFIX}/versions/${encodeURIComponent(versionId)}/graph`,
   )
 
+/** 管理端软删除 Workflow 应用（允许删除任何状态，含 PUBLISHED）。 */
+export const deleteWorkflowAdminAppRequest = (appId: string) =>
+  createRequest<void>(
+    'DELETE',
+    `${WORKFLOW_ADMIN_PREFIX}/apps/${encodeURIComponent(appId)}`,
+  )
+
 // ---------------------------------------------------------------------------
 // React Query keys
 // ---------------------------------------------------------------------------
