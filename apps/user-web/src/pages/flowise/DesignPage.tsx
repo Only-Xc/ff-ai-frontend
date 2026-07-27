@@ -97,7 +97,13 @@ export default function FlowiseDesignPage() {
         role_ids: accessScope === 'roles' ? selectedRoleIds : [],
       })
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.status === 'approval_failed') {
+        void message.error(
+          t('pages.flowise.publishError', 'Approval submission failed'),
+        )
+        return
+      }
       setPublishModalOpen(false)
       void message.success(
         t('pages.flowise.publishSuccess', 'Published for approval'),

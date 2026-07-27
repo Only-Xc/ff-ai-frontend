@@ -134,7 +134,7 @@ export default function WorkflowList() {
         if (releaseStatus === 'active') {
           displayStatuses = ['published']
         } else if (releaseStatus === 'building') {
-          displayStatuses = ['approved', 'building']
+          displayStatuses = ['building']
         } else if (
           releaseStatus === 'pending_approval' ||
           releaseStatus === 'rejected'
