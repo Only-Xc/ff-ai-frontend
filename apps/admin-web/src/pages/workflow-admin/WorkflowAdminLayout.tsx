@@ -6,11 +6,7 @@ import { Outlet } from 'react-router'
  * 主侧边栏已提供导航，此处仅作为 Outlet 容器。
  */
 export function WorkflowAdminLayout() {
-  return (
-    <div style={{ padding: '16px 24px', minHeight: '100%' }}>
-      <Outlet />
-    </div>
-  )
+  return <Outlet />
 }
 
 export default WorkflowAdminLayout

@@ -707,6 +707,11 @@ export default {
 
   // Flowise Integration
   'pages.flowise.designTitle': 'تصميم سير العمل',
+  'pages.flowise.nameRequired': 'أدخل اسم سير العمل',
+  'pages.flowise.rename': 'إعادة تسمية',
+  'pages.flowise.renameInputLabel': 'اسم سير العمل',
+  'pages.flowise.renameSuccess': 'تم تحديث اسم سير العمل',
+  'pages.flowise.renameError': 'فشل تحديث اسم سير العمل',
   'pages.flowise.chatTitle': 'محادثة سير العمل',
   'pages.flowise.loadingSession': 'جارٍ إنشاء جلسة المحرر...',
   'pages.flowise.loadingChat': 'جاري تحميل المحادثة...',

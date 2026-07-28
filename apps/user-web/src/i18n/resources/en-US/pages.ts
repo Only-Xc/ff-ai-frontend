@@ -721,6 +721,11 @@ export default {
 
   // Flowise Integration
   'pages.flowise.designTitle': 'Workflow Design',
+  'pages.flowise.nameRequired': 'Enter a workflow name',
+  'pages.flowise.rename': 'Rename',
+  'pages.flowise.renameInputLabel': 'Workflow name',
+  'pages.flowise.renameSuccess': 'Workflow name updated',
+  'pages.flowise.renameError': 'Failed to update workflow name',
   'pages.flowise.chatTitle': 'Workflow Chat',
   'pages.flowise.loadingSession': 'Loading editor session...',
   'pages.flowise.loadingChat': 'Loading chat...',

@@ -1,7 +1,7 @@
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, NodeIndexOutlined } from '@ant-design/icons'
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
 import { useQuery } from '@tanstack/react-query'
-import { Alert, Button, Empty, Skeleton } from 'antd'
+import { Alert, Button, Empty, Skeleton, Space } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 
@@ -39,7 +39,6 @@ export default function FlowiseReviewPage() {
   })
   const readonlyFallback = data ? (
     <>
-      <PageHeader title={data.name} />
       {data.graph_json.nodes.length === 0 ? (
         <Empty description={t('pages.flowise.emptyGraph')} />
       ) : (
@@ -54,8 +53,15 @@ export default function FlowiseReviewPage() {
     data?.source === 'draft' || Boolean(data?.flowise_runtime_chatflow_id)
 
   return (
-    <PageContainer className="p-5">
-      <div className="mb-4">
+    <PageContainer className="min-h-full p-4">
+      <PageHeader
+        title={
+          <Space>
+            <NodeIndexOutlined />
+            {data?.name ?? t('routes.workflowReview.title')}
+          </Space>
+        }
+      >
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => {
@@ -68,7 +74,7 @@ export default function FlowiseReviewPage() {
         >
           {t('common.actions.back')}
         </Button>
-      </div>
+      </PageHeader>
       {isLoading ? (
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : isError ? (

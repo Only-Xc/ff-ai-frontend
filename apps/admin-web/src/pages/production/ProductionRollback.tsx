@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, SafetyCertificateOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
 import {
   Alert,
@@ -49,9 +49,14 @@ export function ProductionRollback() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('pages.production.rollback.title')}
+        title={
+          <Space>
+            <SafetyCertificateOutlined />
+            {t('pages.production.rollback.title')}
+          </Space>
+        }
         subtitle={t('pages.production.rollback.subtitle')}
       >
         <Button

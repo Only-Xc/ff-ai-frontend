@@ -15,7 +15,9 @@ const { Text } = Typography
 
 export function WorkflowAdminDashboard() {
   const { t } = useTranslation()
-  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined)
+  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(
+    undefined,
+  )
 
   const query = useMemo(
     () => (selectedOrgId ? { org_id: selectedOrgId } : {}),
@@ -38,9 +40,14 @@ export function WorkflowAdminDashboard() {
   const scope = data?.scope ?? 'tenant'
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('pages.workflowAdmin.dashboard.title', 'Workflow 管理台')}
+        title={
+          <Space>
+            <NodeIndexOutlined />
+            {t('pages.workflowAdmin.dashboard.title', 'Workflow 管理台')}
+          </Space>
+        }
         subtitle={t(
           'pages.workflowAdmin.dashboard.subtitle',
           '跨租户 / 同租户 Workflow 运维指标聚合',
@@ -64,7 +71,10 @@ export function WorkflowAdminDashboard() {
               <Space>
                 <NodeIndexOutlined style={{ fontSize: 24, color: '#1677ff' }} />
                 <Text type="secondary">
-                  {t('pages.workflowAdmin.metrics.total_workflows', 'Workflow 总数')}
+                  {t(
+                    'pages.workflowAdmin.metrics.total_workflows',
+                    'Workflow 总数',
+                  )}
                 </Text>
               </Space>
               <div style={{ fontSize: 28, fontWeight: 600, marginTop: 8 }}>

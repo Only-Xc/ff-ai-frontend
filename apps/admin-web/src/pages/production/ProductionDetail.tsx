@@ -1,4 +1,11 @@
-import { ArrowLeftOutlined, EyeOutlined, RedoOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons'
+import {
+  ArrowLeftOutlined,
+  EyeOutlined,
+  RedoOutlined,
+  ReloadOutlined,
+  SafetyCertificateOutlined,
+  StopOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
@@ -210,14 +217,14 @@ export function ProductionDetail() {
 
   if (isFetching && !data) {
     return (
-      <PageContainer>
+      <PageContainer className="min-h-full p-4">
         <Skeleton active />
       </PageContainer>
     )
   }
   if (!data) {
     return (
-      <PageContainer>
+      <PageContainer className="min-h-full p-4">
         <Empty description={t('pages.production.detail.notFound')} />
       </PageContainer>
     )
@@ -274,9 +281,14 @@ export function ProductionDetail() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={`${t('pages.production.detail.title')} · ${approval.approval_no}`}
+        title={
+          <Space>
+            <SafetyCertificateOutlined />
+            {`${t('pages.production.detail.title')} · ${approval.approval_no}`}
+          </Space>
+        }
         subtitle={t('pages.production.detail.subtitle')}
       >
         <Space wrap>
@@ -631,7 +643,8 @@ export function ProductionDetail() {
                             color={
                               readOptionalString(runtime.status) === 'running'
                                 ? 'green'
-                                : readOptionalString(runtime.status) === 'stopped'
+                                : readOptionalString(runtime.status) ===
+                                    'stopped'
                                   ? 'red'
                                   : 'orange'
                             }

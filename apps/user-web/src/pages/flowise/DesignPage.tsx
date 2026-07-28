@@ -1,5 +1,6 @@
 import {
   ArrowLeftOutlined,
+  EditOutlined,
   ReloadOutlined,
   RocketOutlined,
 } from '@ant-design/icons'
@@ -7,10 +8,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
   Form,
+  Input,
   message,
   Modal,
   Radio,
   Select,
+  Skeleton,
   Space,
   Spin,
   Typography,
@@ -27,14 +30,16 @@ import {
   syncFlowiseDraft,
 } from '@/api/flowise'
 import {
+  getWorkflowApp,
   listWorkflowAccessRoles,
   publishWorkflow,
   type WorkflowAccessScope,
+  updateWorkflowApp,
   workflowKeys,
 } from '@/api/workflow'
 import { useFlowiseIframeSessionRefresh } from '@/hooks/useFlowiseIframeSessionRefresh'
 
-const { Title } = Typography
+const { Text, Title } = Typography
 
 /**
  * Flowise Design Page
@@ -57,6 +62,15 @@ export default function FlowiseDesignPage() {
   const [publishModalOpen, setPublishModalOpen] = useState(false)
   const [accessScope, setAccessScope] = useState<WorkflowAccessScope>('tenant')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [draftName, setDraftName] = useState('')
+
+  const { data: workflowApp, isLoading: workflowAppLoading } = useQuery({
+    queryKey: workflowKeys.app(appId!),
+    queryFn: () => getWorkflowApp(appId!),
+    enabled: !!appId,
+    retry: false,
+  })
 
   // Establish the Flowise technical session only after ff-ai authorization.
   const {
@@ -118,6 +132,20 @@ export default function FlowiseDesignPage() {
     },
   })
 
+  const renameMutation = useMutation({
+    mutationFn: (name: string) => updateWorkflowApp(appId!, { name }),
+    onSuccess: (updatedApp) => {
+      queryClient.setQueryData(workflowKeys.app(appId!), updatedApp)
+      void queryClient.invalidateQueries({ queryKey: workflowKeys.apps() })
+      setDraftName(updatedApp.name)
+      setRenameModalOpen(false)
+      void message.success(t('pages.flowise.renameSuccess'))
+    },
+    onError: (error: Error) => {
+      void message.error(error.message || t('pages.flowise.renameError'))
+    },
+  })
+
   // Build iframe URL
   const iframeSrc = browserSession
     ? buildFlowiseEditorUrl(browserSession.ticket)
@@ -135,6 +163,30 @@ export default function FlowiseDesignPage() {
     publishMutation.mutate()
   }
 
+  const openRenameModal = () => {
+    if (!workflowApp) return
+    setDraftName(workflowApp.name)
+    setRenameModalOpen(true)
+  }
+
+  const closeRenameModal = () => {
+    setDraftName(workflowApp?.name ?? '')
+    setRenameModalOpen(false)
+  }
+
+  const saveName = () => {
+    const name = draftName.trim()
+    if (!name) {
+      void message.warning(t('pages.flowise.nameRequired'))
+      return
+    }
+    if (name === workflowApp?.name) {
+      setRenameModalOpen(false)
+      return
+    }
+    renameMutation.mutate(name)
+  }
+
   return (
     <div style={{ padding: 24 }}>
       <div
@@ -142,10 +194,12 @@ export default function FlowiseDesignPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
           marginBottom: 16,
         }}
       >
-        <Space>
+        <Space wrap style={{ minWidth: 0 }}>
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => {
@@ -157,8 +211,32 @@ export default function FlowiseDesignPage() {
           <Title level={4} style={{ margin: 0 }}>
             {t('pages.flowise.designTitle', 'Workflow Design')}
           </Title>
+          <Text aria-hidden>:</Text>
+          {workflowAppLoading ? (
+            <Skeleton.Input active size="small" style={{ width: 160 }} />
+          ) : (
+            <Text
+              ellipsis={{ tooltip: workflowApp?.name }}
+              style={{
+                color: 'var(--ant-color-link)',
+                fontSize: 20,
+                fontWeight: 400,
+                lineHeight: 1.4,
+                maxWidth: 320,
+              }}
+            >
+              {workflowApp?.name ?? '—'}
+            </Text>
+          )}
         </Space>
         <Space>
+          <Button
+            disabled={!workflowApp}
+            icon={<EditOutlined />}
+            onClick={openRenameModal}
+          >
+            {t('pages.flowise.rename')}
+          </Button>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => void handleReload()}
@@ -208,6 +286,32 @@ export default function FlowiseDesignPage() {
           {t('pages.flowise.sessionError', 'Failed to load editor session')}
         </div>
       )}
+
+      <Modal
+        open={renameModalOpen}
+        title={t('pages.flowise.rename')}
+        okText={t('common.save')}
+        cancelText={t('common.cancel')}
+        confirmLoading={renameMutation.isPending}
+        okButtonProps={{ disabled: !draftName.trim() }}
+        onCancel={closeRenameModal}
+        onOk={saveName}
+        destroyOnHidden
+      >
+        <Form layout="vertical">
+          <Form.Item label={t('pages.flowise.renameInputLabel')} required>
+            <Input
+              aria-label={t('pages.flowise.renameInputLabel')}
+              autoFocus
+              disabled={renameMutation.isPending}
+              maxLength={255}
+              value={draftName}
+              onChange={(event) => setDraftName(event.target.value)}
+              onPressEnter={saveName}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       <Modal
         open={publishModalOpen}

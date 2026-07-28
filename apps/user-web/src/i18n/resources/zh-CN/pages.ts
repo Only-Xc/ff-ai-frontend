@@ -688,6 +688,11 @@ export default {
 
   // Flowise 集成
   'pages.flowise.designTitle': '工作流设计',
+  'pages.flowise.nameRequired': '请输入工作流名称',
+  'pages.flowise.rename': '重命名',
+  'pages.flowise.renameInputLabel': '工作流名称',
+  'pages.flowise.renameSuccess': '工作流名称已更新',
+  'pages.flowise.renameError': '更新工作流名称失败',
   'pages.flowise.chatTitle': '工作流对话',
   'pages.flowise.loadingSession': '正在建立编辑会话...',
   'pages.flowise.loadingChat': '加载对话中...',

@@ -1,5 +1,16 @@
-import { DeleteOutlined, EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  DeleteOutlined,
+  EyeOutlined,
+  NodeIndexOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import {
   Button,
   Empty,
@@ -164,7 +175,10 @@ export function WorkflowAdminApps() {
               {t('pages.workflowAdmin.apps.viewDetail', '查看')}
             </Button>
             <Popconfirm
-              title={t('pages.workflowAdmin.apps.deleteConfirm', '确定删除该应用？删除后不可恢复。')}
+              title={t(
+                'pages.workflowAdmin.apps.deleteConfirm',
+                '确定删除该应用？删除后不可恢复。',
+              )}
               onConfirm={() => deleteMutation.mutate(record.id)}
               okText={t('common.actions.confirm')}
               cancelText={t('common.actions.cancel')}
@@ -218,9 +232,14 @@ export function WorkflowAdminApps() {
   }, [t, isSuperuser, navigate])
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('pages.workflowAdmin.apps.title', 'Workflow 应用列表')}
+        title={
+          <Space>
+            <NodeIndexOutlined />
+            {t('pages.workflowAdmin.apps.title', 'Workflow 应用列表')}
+          </Space>
+        }
         subtitle={t(
           'pages.workflowAdmin.apps.subtitle',
           '跨租户 Workflow 应用管理（仅 system_admin 可跨租户；tenant_admin 仅看自己）',
