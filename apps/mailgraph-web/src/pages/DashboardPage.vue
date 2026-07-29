@@ -1,19 +1,37 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { mailsApi, graphApi, projectsApi, type MailStats, type ProjectItem, type ProjectReport, type ProjectSummary, type AnalysisHistoryItem } from '@/api'
+import {
+  mailsApi,
+  graphApi,
+  projectsApi,
+  type MailStats,
+  type ProjectItem,
+  type ProjectReport,
+  type ProjectSummary,
+  type AnalysisHistoryItem,
+} from '@/api'
 import { useChatStore } from '@/stores/chat'
 import SvgIcon from '@/components/SvgIcon.vue'
 import KpiCards from '@/components/dashboard/KpiCards.vue'
 import ProjectCard from '@/components/dashboard/ProjectCard.vue'
 import ProjectReportModal from '@/components/dashboard/ProjectReportModal.vue'
+import { platformLocale, t, tf } from '@/platformContext'
 
 const router = useRouter()
 const chatStore = useChatStore()
 
 const PAGE_SIZE = 20
 
-const kpi = ref<MailStats>({ total: 0, done: 0, pending: 0, failed: 0, skipped: 0, ingested: 0, indexed: 0 })
+const kpi = ref<MailStats>({
+  total: 0,
+  done: 0,
+  pending: 0,
+  failed: 0,
+  skipped: 0,
+  ingested: 0,
+  indexed: 0,
+})
 const graphNodes = ref(0)
 const projectCount = ref(0)
 const contactCount = ref(0)
@@ -33,7 +51,9 @@ const modalHistory = ref<AnalysisHistoryItem[]>([])
 const modalViewingHistoryId = ref<string | null>(null)
 const modalProgress = ref<string[]>([])
 
-const totalPages = computed(() => Math.max(1, Math.ceil(totalProjects.value / PAGE_SIZE)))
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(totalProjects.value / PAGE_SIZE)),
+)
 
 const PEOPLE_TYPES = ['person', 'contact', 'employee']
 const etype = (e: any) => String(e?.type || '').toLowerCase()
@@ -52,8 +72,12 @@ async function loadDashboard() {
     kpi.value = stats
     const entities = entRes.entities || []
     graphNodes.value = entities.length
-    projectCount.value = entities.filter((e: any) => etype(e) === 'project').length
-    contactCount.value = entities.filter((e: any) => PEOPLE_TYPES.includes(etype(e))).length
+    projectCount.value = entities.filter(
+      (e: any) => etype(e) === 'project',
+    ).length
+    contactCount.value = entities.filter((e: any) =>
+      PEOPLE_TYPES.includes(etype(e)),
+    ).length
 
     await loadProjects(currentPage.value)
   } catch (e) {
@@ -82,7 +106,9 @@ async function goToPage(page: number) {
 const filtered = computed(() => {
   if (!search.value) return projects.value
   const q = search.value.toLowerCase()
-  return projects.value.filter((p: ProjectItem) => p.name.toLowerCase().includes(q))
+  return projects.value.filter((p: ProjectItem) =>
+    p.name.toLowerCase().includes(q),
+  )
 })
 
 // ── Report modal ──
@@ -106,7 +132,9 @@ async function viewHistoryItem(name: string, item: AnalysisHistoryItem) {
         modalReport.value = cached.report
         modalSummary.value = cached.summary
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   } else {
     modalViewingHistoryId.value = item.id
     // Use the full report from history if available
@@ -237,15 +265,25 @@ async function handleReanalyze(name: string) {
 // ── Chat deep analysis ──
 
 async function handleChatAnalyze(name: string) {
-  const project = projects.value.find(p => p.name === name)
+  const project = projects.value.find((p) => p.name === name)
   const overview = project?.ai_summary?.overview || project?.description || ''
-
-  const prompt = `请帮我深入分析项目「${name}」。\n\n项目概述：${overview}\n\n请从知识图谱中提取更多细节，包括邮件往来、合同金额、时间线、风险点等。`
+  const prompt =
+    platformLocale.value === 'en-US'
+      ? `Analyze project "${name}" in depth.\n\nProject overview: ${overview}\n\nUse the knowledge graph to identify more detail, including mail exchanges, contract values, timelines, and risks.`
+      : platformLocale.value === 'ar'
+        ? `حلّل المشروع «${name}» بعمق.\n\nنظرة عامة: ${overview}\n\nاستخدم رسم المعرفة لاستخراج تفاصيل المراسلات وقيم العقود والجداول الزمنية والمخاطر.`
+        : `请帮我深入分析项目“${name}”。\n\n项目概述：${overview}\n\n请从知识图谱中提取更多细节，包括邮件往来、合同金额、时间线、风险点等。`
 
   // Create a new conversation and navigate
   try {
     const { conversationsApi } = await import('@/api')
-    const session = await conversationsApi.create(`分析: ${name}`)
+    const sessionTitle =
+      platformLocale.value === 'en-US'
+        ? `Analysis: ${name}`
+        : platformLocale.value === 'ar'
+          ? `تحليل: ${name}`
+          : `分析: ${name}`
+    const session = await conversationsApi.create(sessionTitle)
     // Navigate with prefill prompt
     router.push({ path: '/chat', query: { prompt, session: session.id } })
   } catch {
@@ -255,7 +293,15 @@ async function handleChatAnalyze(name: string) {
 }
 
 async function handleDelete(name: string) {
-  if (!confirm(`确定要删除项目「${name}」吗？此操作将从知识图谱中移除该项目及其关联缓存，不可撤销。`)) return
+  if (
+    !confirm(
+      tf(
+        '确定要删除项目“{name}”吗？此操作将从知识图谱中移除该项目及其关联缓存，不可撤销。',
+        { name },
+      ),
+    )
+  )
+    return
   try {
     await projectsApi.delete(name)
     // Reload current page; if last item on last page, go back one page
@@ -265,7 +311,7 @@ async function handleDelete(name: string) {
     await loadProjects(page)
   } catch (e: any) {
     console.error('Failed to delete project:', e)
-    alert(`删除失败：${e.message || '未知错误'}`)
+    alert(tf('删除失败：{error}', { error: e.message || t('未知错误') }))
   }
 }
 </script>
@@ -274,8 +320,10 @@ async function handleDelete(name: string) {
   <div>
     <div class="page-head">
       <div>
-        <h2>项目看板</h2>
-        <p class="page-desc">基于邮件内容自动识别的项目、人员与组织关系</p>
+        <h2>{{ t('项目看板') }}</h2>
+        <p class="page-desc">
+          {{ t('基于邮件内容自动识别的项目、人员与组织关系') }}
+        </p>
       </div>
       <div class="head-actions">
         <div class="search-wrap" v-if="projects.length > 0">
@@ -283,12 +331,16 @@ async function handleDelete(name: string) {
           <input
             v-model="search"
             type="text"
-            placeholder="搜索项目..."
+            :placeholder="t('搜索项目...')"
             class="search-input-inline"
           />
         </div>
-        <button class="btn btn-secondary btn-sm refresh-btn" :disabled="loading" @click="loadDashboard">
-          🔄 {{ loading ? '刷新中…' : '界面刷新' }}
+        <button
+          class="btn btn-secondary btn-sm refresh-btn"
+          :disabled="loading"
+          @click="loadDashboard"
+        >
+          🔄 {{ t(loading ? '刷新中…' : '界面刷新') }}
         </button>
       </div>
     </div>
@@ -316,8 +368,14 @@ async function handleDelete(name: string) {
       <div class="empty-icon">
         <SvgIcon name="inbox" :size="32" />
       </div>
-      <h3>暂无项目数据</h3>
-      <p>请先在「邮件工作台」拉取邮件并导入到知识图谱，系统将自动识别项目信息。</p>
+      <h3>{{ t('暂无项目数据') }}</h3>
+      <p>
+        {{
+          t(
+            '请先在「邮件工作台」拉取邮件并导入到知识图谱，系统将自动识别项目信息。',
+          )
+        }}
+      </p>
     </div>
 
     <!-- Project grid + Pagination -->
@@ -351,24 +409,30 @@ async function handleDelete(name: string) {
           :disabled="currentPage <= 1"
           @click="goToPage(currentPage - 1)"
         >
-          ← 上一页
+          {{ t('← 上一页') }}
         </button>
         <span class="page-info">
           {{ currentPage }} / {{ totalPages }}
-          <span class="page-total">（共 {{ totalProjects }} 个项目）</span>
+          <span class="page-total"
+            >({{ tf('共 {count} 个项目', { count: totalProjects }) }})</span
+          >
         </span>
         <button
           class="page-btn"
           :disabled="currentPage >= totalPages"
           @click="goToPage(currentPage + 1)"
         >
-          下一页 →
+          {{ t('下一页 →') }}
         </button>
       </div>
     </template>
 
-    <p v-if="!loading && projects.length > 0 && !filtered.length" class="text-muted" style="text-align:center;margin-top:2rem;">
-      没有匹配「{{ search }}」的项目
+    <p
+      v-if="!loading && projects.length > 0 && !filtered.length"
+      class="text-muted"
+      style="text-align: center; margin-top: 2rem"
+    >
+      {{ tf('没有匹配“{query}”的项目', { query: search }) }}
     </p>
 
     <!-- Report Modal -->
@@ -382,8 +446,15 @@ async function handleDelete(name: string) {
       :history="modalHistory"
       :viewing-history-id="modalViewingHistoryId"
       @close="handleCloseModal"
-      @chat-analyze="(name: string) => { handleCloseModal(); handleChatAnalyze(name) }"
-      @view-history="(item: AnalysisHistoryItem) => viewHistoryItem(modalProjectName, item)"
+      @chat-analyze="
+        (name: string) => {
+          handleCloseModal()
+          handleChatAnalyze(name)
+        }
+      "
+      @view-history="
+        (item: AnalysisHistoryItem) => viewHistoryItem(modalProjectName, item)
+      "
       @reanalyze="(name: string) => handleReanalyze(name)"
     />
   </div>
@@ -392,12 +463,18 @@ async function handleDelete(name: string) {
 <style scoped>
 /* Reuse existing styles, add pagination */
 .page-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .page-desc {
-  color: var(--t3); font-size: 0.82rem; margin-top: 0.2rem;
+  color: var(--t3);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
 }
 
 .search-wrap {
@@ -406,14 +483,23 @@ async function handleDelete(name: string) {
 }
 
 .head-actions {
-  display: flex; align-items: center; gap: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   flex-shrink: 0;
 }
-.refresh-btn { flex-shrink: 0; white-space: nowrap; }
+.refresh-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 
 .search-icon {
-  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-  color: var(--t4); pointer-events: none;
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--t4);
+  pointer-events: none;
 }
 
 .search-input-inline {
@@ -488,43 +574,71 @@ async function handleDelete(name: string) {
 }
 
 .sk-line {
-  height: 12px; border-radius: 4px;
+  height: 12px;
+  border-radius: 4px;
   background: var(--border-light);
   margin-bottom: 0.55rem;
   animation: shimmer 1.6s infinite;
 }
 
-.sk-title { width: 55%; height: 15px; }
-.sk-body { width: 90%; }
-.sk-body.short { width: 65%; }
-.sk-meta { width: 40%; height: 10px; }
+.sk-title {
+  width: 55%;
+  height: 15px;
+}
+.sk-body {
+  width: 90%;
+}
+.sk-body.short {
+  width: 65%;
+}
+.sk-meta {
+  width: 40%;
+  height: 10px;
+}
 
 @keyframes shimmer {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 /* Empty state */
 .empty-state {
-  text-align: center; padding: 3rem 1.5rem;
-  background: var(--surface); border: 1px solid var(--border);
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--r);
 }
 
 .empty-icon {
-  width: 52px; height: 52px; border-radius: 8px;
-  background: var(--surface-2); color: var(--t4);
-  display: flex; align-items: center; justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--t4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto 1rem;
 }
 
 .empty-state h3 {
-  color: var(--t2); margin-bottom: 0.35rem;
+  color: var(--t2);
+  margin-bottom: 0.35rem;
 }
 
 .empty-state p {
-  color: var(--t4); font-size: 0.82rem; max-width: 380px;
-  margin: 0 auto; line-height: 1.5;
+  color: var(--t4);
+  font-size: 0.82rem;
+  max-width: 380px;
+  margin: 0 auto;
+  line-height: 1.5;
 }
 </style>

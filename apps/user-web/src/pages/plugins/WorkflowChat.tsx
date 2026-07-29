@@ -1,13 +1,16 @@
 import {
   ArrowUpOutlined,
+  ClockCircleOutlined,
   DeleteOutlined,
+  MessageOutlined,
   PlusOutlined,
   RobotOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Empty, Input, Skeleton, Tag, Typography } from 'antd'
-import { useEffect, useMemo, useState } from 'react'
+import dayjs from 'dayjs'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 import { v4 as uuidV4 } from 'uuid'
@@ -31,19 +34,39 @@ function eventText(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback
 }
 
+function formatConversationTime(value: string) {
+  const date = dayjs(value)
+  if (!date.isValid()) return ''
+  if (date.isSame(dayjs(), 'day')) return date.format('HH:mm')
+  if (date.isSame(dayjs(), 'year')) return date.format('MMM D')
+  return date.format('YYYY-MM-DD')
+}
+
 export default function WorkflowChat() {
-  const { t } = useTranslation()
-  const queryClient = useQueryClient()
   const { workflowAppId = '' } = useParams()
   const decodedWorkflowAppId = useMemo(
     () => decodeURIComponent(workflowAppId),
     [workflowAppId],
   )
+
+  return (
+    <WorkflowChatView
+      key={decodedWorkflowAppId}
+      workflowAppId={decodedWorkflowAppId}
+    />
+  )
+}
+
+function WorkflowChatView({ workflowAppId }: { workflowAppId: string }) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const decodedWorkflowAppId = workflowAppId
   const [input, setInput] = useState('')
   const [conversationId, setConversationId] = useState<string>()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [sendError, setSendError] = useState(false)
+  const streamControllerRef = useRef<AbortController | null>(null)
 
   const configQuery = useQuery({
     queryKey: pluginCatalogKeys.workflow(decodedWorkflowAppId),
@@ -83,6 +106,13 @@ export default function WorkflowChat() {
     setMessages(messagesQuery.data.messages)
   }, [conversationId, messagesQuery.data])
 
+  useEffect(
+    () => () => {
+      streamControllerRef.current?.abort()
+    },
+    [],
+  )
+
   const startNewConversation = () => {
     if (isStreaming) return
     setConversationId(undefined)
@@ -95,7 +125,9 @@ export default function WorkflowChat() {
     if (!message || isStreaming) return
     const requestId = uuidV4()
     const assistantId = `assistant-${requestId}`
+    const streamController = new AbortController()
     let resolvedConversationId = conversationId
+    streamControllerRef.current = streamController
     setMessages((current) => [
       ...current,
       { id: `user-${requestId}`, role: 'user', content: message },
@@ -139,6 +171,7 @@ export default function WorkflowChat() {
             )
           }
         },
+        streamController.signal,
       )
       await queryClient.invalidateQueries({
         queryKey: pluginCatalogKeys.workflowConversations(decodedWorkflowAppId),
@@ -152,12 +185,16 @@ export default function WorkflowChat() {
         })
       }
     } catch {
+      if (streamController.signal.aborted) return
       setSendError(true)
       setMessages((current) =>
         current.filter((item) => item.id !== assistantId || item.content),
       )
     } finally {
-      setIsStreaming(false)
+      if (streamControllerRef.current === streamController) {
+        streamControllerRef.current = null
+        setIsStreaming(false)
+      }
     }
   }
 
@@ -173,6 +210,7 @@ export default function WorkflowChat() {
   }
 
   const config = configQuery.data
+  const conversations = conversationsQuery.data?.conversations ?? []
   const displayMessages = messages.length
     ? messages
     : config.opening_statement
@@ -186,55 +224,111 @@ export default function WorkflowChat() {
       : []
 
   return (
-    <div className="grid h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full grid-cols-[260px_minmax(0,1fr)] overflow-hidden border border-(--border) bg-(--panel) max-md:grid-cols-1 max-md:grid-rows-[34vh_minmax(0,1fr)]">
-      <aside className="flex min-h-0 flex-col border-r border-(--border) bg-(--background) max-md:border-r-0 max-md:border-b">
-        <div className="flex items-center justify-between border-b border-(--border) px-4 py-3">
-          <Typography.Title className="mb-0! text-base!" level={2}>
-            {t('pages.workflowChat.history')}
-          </Typography.Title>
+    <div className="grid h-[calc(100vh-var(--ant-layout-header-height)-10px)] min-h-0 w-full grid-cols-[292px_minmax(0,1fr)] overflow-hidden rounded-lg border border-(--border) bg-(--panel) max-md:grid-cols-1 max-md:grid-rows-[38vh_minmax(0,1fr)] max-md:rounded-none">
+      <aside className="flex min-h-0 flex-col border-r border-(--border) bg-[color-mix(in_srgb,var(--background)_72%,var(--panel))] max-md:border-r-0 max-md:border-b">
+        <div className="border-b border-(--border) px-4 pt-4 pb-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <Typography.Title className="mb-0! text-[15px]!" level={2}>
+              {t('pages.workflowChat.history')}
+            </Typography.Title>
+            <span
+              className="inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--border)_74%,transparent)] bg-(--panel) px-2 text-[11px] font-semibold tabular-nums text-(--muted)"
+              title={t('pages.workflowChat.historyCount', {
+                count: conversations.length,
+              })}
+            >
+              {conversations.length}
+            </span>
+          </div>
           <Button
             aria-label={t('pages.workflowChat.newConversation')}
+            block
             icon={<PlusOutlined />}
-            size="small"
             title={t('pages.workflowChat.newConversation')}
+            type="primary"
             onClick={startNewConversation}
-          />
+          >
+            {t('pages.workflowChat.newConversation')}
+          </Button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-2">
-          {conversationsQuery.data?.conversations.length ? (
-            conversationsQuery.data.conversations.map((conversation) => (
-              <div
-                className={`mb-1 flex items-center gap-1 rounded-md border px-2 py-1 ${
-                  conversation.id === conversationId
-                    ? 'border-(--admin-primary) bg-(--panel)'
-                    : 'border-transparent hover:bg-(--panel)'
-                }`}
-                key={conversation.id}
-              >
-                <button
-                  className="min-w-0 flex-1 truncate bg-transparent px-1 py-2 text-left text-sm text-(--text-strong)"
-                  type="button"
-                  onClick={() => setConversationId(conversation.id)}
-                >
-                  {conversation.title}
-                </button>
-                <Button
-                  aria-label={t('pages.workflowChat.deleteConversation')}
-                  danger
-                  icon={<DeleteOutlined />}
-                  loading={
-                    deleteMutation.isPending &&
-                    deleteMutation.variables === conversation.id
-                  }
-                  size="small"
-                  title={t('pages.workflowChat.deleteConversation')}
-                  type="text"
-                  onClick={() => deleteMutation.mutate(conversation.id)}
-                />
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
+          {conversations.length ? (
+            <>
+              <div className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-normal text-(--muted)">
+                {t('pages.workflowChat.recent')}
               </div>
-            ))
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
+                {conversations.map((conversation) => {
+                  const active = conversation.id === conversationId
+                  const updatedAt = formatConversationTime(
+                    conversation.updated_at || conversation.created_at,
+                  )
+                  return (
+                    <li key={conversation.id}>
+                      <div
+                        className={`group relative flex min-h-15 items-stretch overflow-hidden rounded-lg border transition-[background-color,border-color,box-shadow] duration-150 ${
+                          active
+                            ? 'border-[color-mix(in_srgb,var(--admin-primary)_32%,var(--border))] bg-[color-mix(in_srgb,var(--admin-primary)_9%,var(--panel))] shadow-[inset_3px_0_0_var(--admin-primary),0_1px_2px_rgb(15_23_42/0.04)]'
+                            : 'border-transparent hover:border-[color-mix(in_srgb,var(--border)_80%,transparent)] hover:bg-(--panel)'
+                        }`}
+                      >
+                        <button
+                          aria-current={active ? 'page' : undefined}
+                          className="flex min-w-0 flex-1 items-center gap-3 border-0 bg-transparent px-3 py-2.5 text-left text-(--text-strong) outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-(--focus-ring)"
+                          title={conversation.title}
+                          type="button"
+                          onClick={() => setConversationId(conversation.id)}
+                        >
+                          <span
+                            className={`flex size-8 shrink-0 items-center justify-center rounded-md border ${
+                              active
+                                ? 'border-[color-mix(in_srgb,var(--admin-primary)_24%,transparent)] bg-[color-mix(in_srgb,var(--admin-primary)_12%,var(--panel))] text-(--admin-primary)'
+                                : 'border-(--border) bg-(--background) text-(--muted)'
+                            }`}
+                          >
+                            <MessageOutlined />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[13px] font-medium leading-5">
+                              {conversation.title}
+                            </span>
+                            {updatedAt ? (
+                              <span className="mt-0.5 flex items-center gap-1 text-[11px] leading-4 text-(--muted)">
+                                <ClockCircleOutlined className="text-[10px]" />
+                                <time dateTime={conversation.updated_at}>
+                                  {t('pages.workflowChat.updated', {
+                                    time: updatedAt,
+                                  })}
+                                </time>
+                              </span>
+                            ) : null}
+                          </span>
+                        </button>
+                        <Button
+                          aria-label={t(
+                            'pages.workflowChat.deleteConversation',
+                          )}
+                          className="my-auto mr-1.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                          danger
+                          icon={<DeleteOutlined />}
+                          loading={
+                            deleteMutation.isPending &&
+                            deleteMutation.variables === conversation.id
+                          }
+                          size="small"
+                          title={t('pages.workflowChat.deleteConversation')}
+                          type="text"
+                          onClick={() => deleteMutation.mutate(conversation.id)}
+                        />
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
           ) : (
             <Empty
+              className="mt-8"
               description={t('pages.workflowChat.noHistory')}
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />

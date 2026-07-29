@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import SvgIcon from '@/components/SvgIcon.vue'
 import type { ProjectSummary, NeighborEntity } from '@/api'
+import { t, tf } from '@/platformContext'
 
 const props = defineProps<{
   name: string
@@ -28,9 +29,12 @@ const entityLines = computed(() => {
   const lines: { label: string; text: string }[] = []
   const add = (label: string, items: NeighborEntity[]) => {
     if (!items.length) return
-    const names = items.slice(0, 4).map(i => i.name)
-    const suffix = items.length > 4 ? ` 等${items.length}个` : ''
-    lines.push({ label, text: names.join('、') + suffix })
+    const names = items.slice(0, 4).map((i) => i.name)
+    const suffix =
+      items.length > 4
+        ? tf('，另有 {count} 个', { count: items.length - 4 })
+        : ''
+    lines.push({ label: t(label), text: names.join('、') + suffix })
   }
   add('人员', props.people)
   add('公司', props.companies)
@@ -74,12 +78,18 @@ const entityLines = computed(() => {
     </div>
 
     <!-- Fallback description when no AI summary -->
-    <p v-else class="pc-desc">{{ description || '图谱中暂无该项目的描述信息。' }}</p>
+    <p v-else class="pc-desc">
+      {{ description || t('图谱中暂无该项目的描述信息。') }}
+    </p>
 
     <!-- Entity lines -->
     <div class="pc-meta">
       <div v-if="entityLines.length" class="pc-entity-lines">
-        <div v-for="line in entityLines" :key="line.label" class="pc-entity-line">
+        <div
+          v-for="line in entityLines"
+          :key="line.label"
+          class="pc-entity-line"
+        >
           <span class="pc-el-label">{{ line.label }}</span>
           <span class="pc-el-text">{{ line.text }}</span>
         </div>
@@ -93,44 +103,87 @@ const entityLines = computed(() => {
     <!-- Action buttons -->
     <div class="pc-actions">
       <button class="pc-btn pc-btn-primary" @click="$emit('view-report', name)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
         </svg>
-        {{ aiSummary ? '查看报告' : 'AI 分析' }}
+        {{ aiSummary ? t('查看报告') : t('AI 分析') }}
       </button>
       <button
         v-if="aiSummary"
         class="pc-btn pc-btn-ghost"
         @click="$emit('reanalyze', name)"
-        title="重新 AI 分析"
+        :title="t('重新 AI 分析')"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
         </svg>
-        重新分析
+        {{ t('重新分析') }}
       </button>
       <button
         v-else
         class="pc-btn pc-btn-ghost"
         @click="$emit('chat-analyze', name)"
-        title="在 Chat 中深度分析"
+        :title="t('在 Chat 中深度分析')"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path
+            d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+          />
         </svg>
-        Chat 分析
+        {{ t('Chat 分析') }}
       </button>
       <button
         class="pc-btn pc-btn-delete"
         @click.stop="$emit('delete', name)"
-        title="删除项目"
+        :title="t('删除项目')"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="3 6 5 6 21 6" />
+          <path
+            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+          />
         </svg>
       </button>
     </div>
@@ -143,7 +196,10 @@ const entityLines = computed(() => {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: 1.15rem 1.25rem;
-  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    transform 0.12s;
   display: flex;
   flex-direction: column;
 }
@@ -155,23 +211,33 @@ const entityLines = computed(() => {
 }
 
 .pc-header {
-  display: flex; align-items: center; gap: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   margin-bottom: 0.5rem;
 }
 
 .pc-icon {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 7px;
-  background: #FEF2F2;
-  color: #9A3B2E;
-  display: flex; align-items: center; justify-content: center;
+  background: #fef2f2;
+  color: #9a3b2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
 .pc-name {
-  font-size: 0.92rem; font-weight: 620; color: var(--t1);
-  line-height: 1.3; margin: 0;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 0.92rem;
+  font-weight: 620;
+  color: var(--t1);
+  line-height: 1.3;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* AI Summary */
@@ -191,7 +257,9 @@ const entityLines = computed(() => {
   line-height: 1.45;
   margin-bottom: 0.15rem;
 }
-.ai-summary-row:last-child { margin-bottom: 0; }
+.ai-summary-row:last-child {
+  margin-bottom: 0;
+}
 
 .ai-label {
   flex-shrink: 0;
@@ -214,9 +282,13 @@ const entityLines = computed(() => {
 
 /* Description fallback */
 .pc-desc {
-  font-size: 0.78rem; color: var(--t3); line-height: 1.55;
+  font-size: 0.78rem;
+  color: var(--t3);
+  line-height: 1.55;
   margin-bottom: 0.7rem;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   flex: 1;
 }
@@ -257,8 +329,11 @@ const entityLines = computed(() => {
 }
 
 .pc-meta-item {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 0.73rem; color: var(--t3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.73rem;
+  color: var(--t3);
 }
 
 .pc-meta-item.empty {
@@ -322,8 +397,8 @@ const entityLines = computed(() => {
 }
 
 .pc-btn-delete:hover {
-  background: #FEF2F2;
-  border-color: #FECACA;
-  color: #DC2626;
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 </style>

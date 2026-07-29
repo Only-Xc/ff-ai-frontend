@@ -14,6 +14,14 @@ const router = useRouter()
 
 const tree = ref<KnowledgeFolder[]>([])
 const files = ref<KnowledgeFile[]>([])
+const totalFiles = ref(0)
+const page = ref(1)
+const pageSize = ref(20)
+const totalPages = ref(1)
+const selectedFileIds = ref<Set<string>>(new Set())
+const moveMode = ref<'files' | 'folder' | null>(null)
+const targetFolderId = ref('')
+const moving = ref(false)
 const selectedFolderId = ref('')
 const expanded = ref<Set<string>>(new Set())
 const loading = ref(false)
@@ -30,8 +38,10 @@ const searchError = ref('')
 const searchResults = ref<KnowledgeSearchChunk[]>([])
 const searchHasRun = ref(false)
 const searchEmbeddingModel = ref('text-embedding-v4')
+const folderIdCopyStatus = ref<'idle' | 'success' | 'error'>('idle')
 const RETRIEVAL_TOP_K = 10
 let pollTimer: ReturnType<typeof setInterval> | null = null
+let folderIdCopyTimer: ReturnType<typeof setTimeout> | null = null
 
 interface FlatFolder extends KnowledgeFolder { depth: number }
 
@@ -58,6 +68,30 @@ const folderMap = computed(() => {
 })
 
 const selectedFolder = computed(() => folderMap.value.get(selectedFolderId.value))
+const allFolders = computed<FlatFolder[]>(() => {
+  const result: FlatFolder[] = []
+  const visit = (nodes: KnowledgeFolder[], depth: number) => {
+    for (const node of nodes) {
+      result.push({ ...node, depth })
+      visit(node.children || [], depth + 1)
+    }
+  }
+  visit(tree.value, 0)
+  return result
+})
+const selectedCount = computed(() => selectedFileIds.value.size)
+const allPageSelected = computed(() => (
+  files.value.length > 0 && files.value.every(item => selectedFileIds.value.has(item.id))
+))
+const blockedFolderTargets = computed(() => {
+  if (moveMode.value !== 'folder' || !selectedFolderId.value) return new Set<string>()
+  return new Set(folderDescendantIds(selectedFolderId.value))
+})
+const moveTargetFolders = computed(() => allFolders.value.filter((folder) => {
+  if (moveMode.value === 'files') return folder.id !== selectedFolderId.value
+  if (blockedFolderTargets.value.has(folder.id)) return false
+  return folder.id !== selectedFolder.value?.parent_id
+}))
 const bestSimilarity = computed(() => {
   if (!searchResults.value.length) return null
   return Math.max(...searchResults.value.map(item => item.similarity))
@@ -75,10 +109,19 @@ async function refreshTree() {
 async function refreshFiles() {
   if (!selectedFolderId.value) {
     files.value = []
+    totalFiles.value = 0
+    totalPages.value = 1
     return
   }
-  const result = await knowledgeApi.files(selectedFolderId.value)
+  const result = await knowledgeApi.filePage(selectedFolderId.value, page.value, pageSize.value)
+  if (page.value > result.pages) {
+    page.value = result.pages
+    await refreshFiles()
+    return
+  }
   files.value = result.items
+  totalFiles.value = result.total
+  totalPages.value = result.pages
 }
 
 async function refreshAll() {
@@ -96,6 +139,9 @@ async function refreshAll() {
 
 async function selectFolder(id: string) {
   selectedFolderId.value = id
+  page.value = 1
+  selectedFileIds.value = new Set()
+  clearFolderIdCopyStatus()
   searchOpen.value = false
   searchResults.value = []
   searchHasRun.value = false
@@ -160,6 +206,7 @@ async function upload(selected: File[]) {
   error.value = ''
   try {
     await knowledgeApi.upload(selectedFolderId.value, selected)
+    page.value = 1
     await refreshFiles()
   } catch (err: any) {
     error.value = err.message || String(err)
@@ -182,9 +229,86 @@ async function removeFile(item: KnowledgeFile) {
   if (!window.confirm(`${t('删除')}“${item.name}”？`)) return
   try {
     await knowledgeApi.deleteFile(item.id)
+    selectedFileIds.value.delete(item.id)
+    selectedFileIds.value = new Set(selectedFileIds.value)
     await refreshFiles()
     await refreshTree()
   } catch (err: any) { error.value = err.message || String(err) }
+}
+
+function folderDescendantIds(folderId: string) {
+  const result: string[] = []
+  const visit = (nodes: KnowledgeFolder[]) => {
+    for (const node of nodes) {
+      if (node.id === folderId || result.includes(node.parent_id)) result.push(node.id)
+      visit(node.children || [])
+    }
+  }
+  visit(tree.value)
+  return result
+}
+
+function toggleFile(fileId: string, checked: boolean) {
+  const next = new Set(selectedFileIds.value)
+  checked ? next.add(fileId) : next.delete(fileId)
+  selectedFileIds.value = next
+}
+
+function toggleCurrentPage(checked: boolean) {
+  const next = new Set(selectedFileIds.value)
+  for (const item of files.value) checked ? next.add(item.id) : next.delete(item.id)
+  selectedFileIds.value = next
+}
+
+function openFileMove() {
+  if (!selectedCount.value) return
+  moveMode.value = 'files'
+  targetFolderId.value = moveTargetFolders.value[0]?.id || ''
+}
+
+function openFolderMove() {
+  if (!selectedFolder.value) return
+  moveMode.value = 'folder'
+  targetFolderId.value = ''
+}
+
+function closeMove() {
+  if (moving.value) return
+  moveMode.value = null
+  targetFolderId.value = ''
+}
+
+async function confirmMove() {
+  if (!moveMode.value || (moveMode.value === 'files' && !targetFolderId.value)) return
+  moving.value = true
+  error.value = ''
+  try {
+    if (moveMode.value === 'files') {
+      await knowledgeApi.moveFiles([...selectedFileIds.value], targetFolderId.value)
+      selectedFileIds.value = new Set()
+    } else if (selectedFolder.value) {
+      await knowledgeApi.updateFolder(selectedFolder.value.id, { parent_id: targetFolderId.value })
+    }
+    moveMode.value = null
+    targetFolderId.value = ''
+    await refreshTree()
+    await refreshFiles()
+  } catch (err: any) {
+    error.value = err.message || String(err)
+  } finally {
+    moving.value = false
+  }
+}
+
+async function goToPage(nextPage: number) {
+  if (nextPage < 1 || nextPage > totalPages.value || nextPage === page.value) return
+  page.value = nextPage
+  await refreshFiles()
+}
+
+async function changePageSize() {
+  page.value = 1
+  await refreshFiles()
 }
 
 function formatSize(size: number) {
@@ -252,8 +376,53 @@ function scoreTone(score: number) {
   return 'score-low'
 }
 
+async function copyText(content: string) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(content)
+      return
+    } catch {
+      // Public HTTP pages can deny the Clipboard API; use the DOM fallback below.
+    }
+  }
+
+  const textArea = document.createElement('textarea')
+  textArea.value = content
+  textArea.setAttribute('readonly', '')
+  textArea.style.position = 'fixed'
+  textArea.style.opacity = '0'
+  document.body.appendChild(textArea)
+  textArea.select()
+  const copied = document.execCommand('copy')
+  textArea.remove()
+  if (!copied) throw new Error('Clipboard copy failed')
+}
+
+function clearFolderIdCopyStatus() {
+  folderIdCopyStatus.value = 'idle'
+  if (folderIdCopyTimer) {
+    clearTimeout(folderIdCopyTimer)
+    folderIdCopyTimer = null
+  }
+}
+
+async function copyFolderId() {
+  if (!selectedFolderId.value) return
+  clearFolderIdCopyStatus()
+  try {
+    await copyText(selectedFolderId.value)
+    folderIdCopyStatus.value = 'success'
+  } catch {
+    folderIdCopyStatus.value = 'error'
+  }
+  folderIdCopyTimer = setTimeout(() => {
+    folderIdCopyStatus.value = 'idle'
+    folderIdCopyTimer = null
+  }, 2400)
+}
+
 async function copyChunk(content: string) {
-  await navigator.clipboard.writeText(content)
+  await copyText(content)
 }
 
 const statusLabel: Record<string, string> = {
@@ -271,6 +440,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (pollTimer) clearInterval(pollTimer)
+  if (folderIdCopyTimer) clearTimeout(folderIdCopyTimer)
 })
 </script>
 
@@ -333,6 +503,19 @@ onUnmounted(() => {
             <strong>{{ selectedFolder?.path || '尚未选择目录' }}</strong>
           </div>
           <div class="toolbar-actions" v-if="selectedFolder">
+            <button
+              class="btn btn-secondary btn-sm"
+              type="button"
+              :class="{ 'copy-error': folderIdCopyStatus === 'error' }"
+              :title="`${t('当前目录 ID')}：${selectedFolderId}`"
+              @click="copyFolderId"
+            >
+              {{ folderIdCopyStatus === 'success'
+                ? t('目录 ID 已复制')
+                : folderIdCopyStatus === 'error'
+                  ? t('复制失败，请重试')
+                  : t('复制目录 ID') }}
+            </button>
             <button class="btn btn-secondary btn-sm" @click="openFolderSearch">
               <SvgIcon name="search" :size="15" />
               检索实验室
@@ -343,6 +526,7 @@ onUnmounted(() => {
             </button>
             <button class="btn btn-secondary btn-sm" @click="beginCreate(selectedFolder.id)">新建子目录</button>
             <button class="btn btn-secondary btn-sm" @click="renameFolder">重命名</button>
+            <button class="btn btn-secondary btn-sm" @click="openFolderMove">移动当前目录</button>
             <button class="btn btn-secondary btn-sm danger" @click="deleteFolder" title="仅可删除空目录">删除目录</button>
             <button class="btn btn-primary btn-sm" :disabled="uploading" @click="chooseFiles">
               <SvgIcon name="upload" :size="15" />
@@ -452,15 +636,39 @@ onUnmounted(() => {
         </div>
 
         <div v-if="!selectedFolder" class="empty-state">请先创建或选择一个目录</div>
-        <div v-else-if="!files.length && !loading" class="empty-state">该目录还没有文件</div>
+        <div v-else-if="!totalFiles && !loading" class="empty-state">该目录还没有文件</div>
 
         <div v-else class="file-table-wrap">
+          <div class="file-list-actions">
+            <span>共 {{ totalFiles }} 个文件</span>
+            <button class="btn btn-secondary btn-sm" :disabled="!selectedCount" @click="openFileMove">
+              移动所选<span v-if="selectedCount"> ({{ selectedCount }})</span>
+            </button>
+          </div>
           <table class="file-table">
             <thead>
-              <tr><th>文件名</th><th>大小</th><th>状态</th><th>上传时间</th><th></th></tr>
+              <tr>
+                <th class="select-cell">
+                  <input
+                    type="checkbox"
+                    :checked="allPageSelected"
+                    title="选择当前页全部文件"
+                    @change="toggleCurrentPage(($event.target as HTMLInputElement).checked)"
+                  />
+                </th>
+                <th>文件名</th><th>大小</th><th>状态</th><th>上传时间</th><th></th>
+              </tr>
             </thead>
             <tbody>
               <tr v-for="item in files" :key="item.id">
+                <td class="select-cell">
+                  <input
+                    type="checkbox"
+                    :checked="selectedFileIds.has(item.id)"
+                    :title="`选择 ${item.name}`"
+                    @change="toggleFile(item.id, ($event.target as HTMLInputElement).checked)"
+                  />
+                </td>
                 <td>
                   <div class="file-name" data-no-ui-translate><SvgIcon name="file" :size="16" /><span>{{ item.name }}</span></div>
                   <div v-if="item.error" class="file-error" :title="item.error">{{ item.error }}</div>
@@ -472,8 +680,53 @@ onUnmounted(() => {
               </tr>
             </tbody>
           </table>
+          <div class="file-pagination">
+            <span>第 {{ page }} / {{ totalPages }} 页</span>
+            <label>
+              每页
+              <select v-model.number="pageSize" @change="changePageSize">
+                <option :value="10">10</option>
+                <option :value="20">20</option>
+                <option :value="50">50</option>
+                <option :value="100">100</option>
+              </select>
+            </label>
+            <button class="icon-btn page-button" title="上一页" :disabled="page <= 1" @click="goToPage(page - 1)">‹</button>
+            <button class="icon-btn page-button" title="下一页" :disabled="page >= totalPages" @click="goToPage(page + 1)">›</button>
+          </div>
         </div>
         </template>
+      </section>
+    </div>
+
+    <div v-if="moveMode" class="move-overlay" @click.self="closeMove">
+      <section class="move-dialog" role="dialog" aria-modal="true" :aria-label="moveMode === 'files' ? '移动所选文件' : '移动当前目录'">
+        <header>
+          <div>
+            <h3>{{ moveMode === 'files' ? '移动所选文件' : '移动当前目录' }}</h3>
+            <p v-if="moveMode === 'files'">将 {{ selectedCount }} 个文件迁移到指定目录，不会重新解析文件。</p>
+            <p v-else>当前目录及全部子目录、文件会一起移动。</p>
+          </div>
+          <button class="icon-btn" type="button" title="关闭" :disabled="moving" @click="closeMove">×</button>
+        </header>
+        <label class="move-target">
+          <span>目标目录</span>
+          <select v-model="targetFolderId">
+            <option v-if="moveMode === 'folder'" value="">根目录</option>
+            <option v-for="folder in moveTargetFolders" :key="folder.id" :value="folder.id">
+              {{ '　'.repeat(folder.depth) }}{{ folder.path }}
+            </option>
+          </select>
+        </label>
+        <footer>
+          <button class="btn btn-secondary" type="button" :disabled="moving" @click="closeMove">取消</button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            :disabled="moving || (moveMode === 'files' && !targetFolderId)"
+            @click="confirmMove"
+          >{{ moving ? '迁移中' : '确认迁移' }}</button>
+        </footer>
       </section>
     </div>
   </div>
@@ -509,6 +762,7 @@ onUnmounted(() => {
 .path-label { color: var(--t4); font-size: 0.65rem; }
 .toolbar-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .graph-action { color: var(--p); }
+.copy-error { color: var(--red-t); border-color: var(--red-t); }
 .danger { color: var(--red-t); }
 .hidden-input { display: none; }
 .retrieval-lab { flex: 1; min-height: 0; margin: 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
@@ -566,17 +820,33 @@ onUnmounted(() => {
 .drop-zone small { color: var(--t4); font-size: 0.66rem; }
 .drop-zone:hover, .drop-zone.dragging { border-color: var(--p); background: var(--p-light); color: var(--p); }
 .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--t4); font-size: 0.82rem; }
-.file-table-wrap { overflow: auto; padding: 0 12px 12px; }
+.file-table-wrap { flex: 1; min-height: 0; overflow: auto; padding: 0 12px 12px; }
+.file-list-actions { position: sticky; top: 0; z-index: 3; min-height: 44px; padding: 7px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.file-list-actions > span { color: var(--t4); font-size: 0.72rem; }
 .file-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.file-table th { position: sticky; top: 0; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border); text-align: left; color: var(--t4); font-size: 0.68rem; font-weight: 600; }
-.file-table th:nth-child(1) { width: 45%; }.file-table th:nth-child(2) { width: 12%; }.file-table th:nth-child(3) { width: 13%; }.file-table th:nth-child(4) { width: 23%; }.file-table th:nth-child(5) { width: 40px; }
+.file-table th { position: sticky; top: 44px; z-index: 2; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border); text-align: left; color: var(--t4); font-size: 0.68rem; font-weight: 600; }
+.file-table th:nth-child(1) { width: 36px; }.file-table th:nth-child(2) { width: 42%; }.file-table th:nth-child(3) { width: 12%; }.file-table th:nth-child(4) { width: 13%; }.file-table th:nth-child(5) { width: 23%; }.file-table th:nth-child(6) { width: 40px; }
 .file-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-light); font-size: 0.77rem; vertical-align: middle; }
+.select-cell { padding-right: 0 !important; text-align: center !important; }
+.select-cell input { width: 15px; height: 15px; margin: 0; accent-color: var(--p); cursor: pointer; }
 .file-name { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--t1); font-weight: 500; }
 .file-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .file-error { margin: 3px 0 0 23px; color: var(--red-t); font-size: 0.66rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .muted { color: var(--t4); }
 .status { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; font-size: 0.68rem; white-space: nowrap; }
 .status-uploaded { background: var(--blue-bg); color: var(--blue-t); }.status-processing { background: var(--amber-bg); color: var(--amber-t); }.status-done { background: var(--green-bg); color: var(--green-t); }.status-failed { background: var(--red-bg); color: var(--red-t); }
+.file-pagination { position: sticky; bottom: 0; z-index: 3; min-height: 48px; padding: 8px 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; border-top: 1px solid var(--border); background: var(--surface); color: var(--t4); font-size: 0.72rem; }
+.file-pagination label { display: inline-flex; align-items: center; gap: 5px; }
+.file-pagination select { min-height: 30px; padding: 0 24px 0 8px; border: 1px solid var(--border-strong); border-radius: 5px; background: var(--surface); color: var(--t2); }
+.page-button { border: 1px solid var(--border-strong); color: var(--t2); font-size: 1.1rem; }
+.move-overlay { position: fixed; inset: 0; z-index: 100; padding: 20px; display: flex; align-items: center; justify-content: center; background: rgb(15 23 42 / 42%); }
+.move-dialog { width: min(480px, 100%); border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); box-shadow: 0 20px 60px rgb(15 23 42 / 18%); overflow: hidden; }
+.move-dialog header { padding: 16px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--border); }
+.move-dialog h3 { margin: 0; color: var(--t1); font-size: 1rem; }
+.move-dialog p { margin: 5px 0 0; color: var(--t4); font-size: 0.74rem; line-height: 1.55; }
+.move-target { padding: 18px; display: grid; gap: 7px; color: var(--t2); font-size: 0.76rem; font-weight: 600; }
+.move-target select { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: 5px; background: var(--surface); color: var(--t1); }
+.move-dialog footer { padding: 12px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); background: var(--surface-2); }
 @media (max-width: 1100px) {
   .retrieval-query-panel { grid-template-columns: 1fr; }
   .retrieval-context { border-right: 0; border-bottom: 1px solid var(--border); }
@@ -592,12 +862,16 @@ onUnmounted(() => {
   .retrieval-lab { min-height: 780px; overflow: visible; }
   .retrieval-body { overflow: visible; }
   .retrieval-results-pane { min-height: 420px; }
-  .file-table th:nth-child(2), .file-table td:nth-child(2), .file-table th:nth-child(4), .file-table td:nth-child(4) { display: none; }
+  .file-table th:nth-child(3), .file-table td:nth-child(3), .file-table th:nth-child(5), .file-table td:nth-child(5) { display: none; }
 }
 @media (max-width: 620px) {
   .retrieval-context { grid-template-columns: 1fr; }
   .retrieval-meta { border-top: 1px solid var(--border); border-left: 0; }
   .retrieval-form { grid-template-columns: 1fr; }
   .retrieval-form label { grid-column: auto; }
+  .file-list-actions { align-items: flex-start; }
+  .file-pagination { flex-wrap: wrap; justify-content: flex-start; }
+  .move-overlay { padding: 12px; align-items: flex-end; }
+  .move-dialog { width: 100%; }
 }
 </style>

@@ -3,7 +3,7 @@ export default {
   'routes.groups.workspace': 'مساحة العمل',
   'routes.groups.business': 'إدارة الأعمال',
   'routes.login.title': 'تسجيل الدخول',
-  'routes.chat.title': 'الاستخدام والرصيد',
+  'routes.chat.title': 'مساحة العمل',
   'routes.platformApps.title': 'تطبيقات المنصة',
   'routes.workflowChat.title': 'تطبيق Workflow',
   'routes.pluginCarrier.title': 'تطبيق المكون الإضافي',

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { ProjectReport, ProjectSummary, AnalysisHistoryItem } from '@/api'
+import { t, tf } from '@/platformContext'
 
 const props = defineProps<{
   visible: boolean
@@ -23,9 +24,12 @@ const emit = defineEmits<{
 const showHistoryDropdown = ref(false)
 
 // Reset dropdown when modal opens/closes
-watch(() => props.visible, (v) => {
-  if (!v) showHistoryDropdown.value = false
-})
+watch(
+  () => props.visible,
+  (v) => {
+    if (!v) showHistoryDropdown.value = false
+  },
+)
 
 function formatContent(val: string): string {
   if (!val) return ''
@@ -35,14 +39,18 @@ function formatContent(val: string): string {
     try {
       const parsed = JSON.parse(val)
       if (Array.isArray(parsed)) {
-        return parsed.map((item: any) => {
-          if (typeof item === 'object' && item.name) {
-            return item.role ? item.name + '（' + item.role + '）' : item.name
-          }
-          return String(item)
-        }).join('\n')
+        return parsed
+          .map((item: any) => {
+            if (typeof item === 'object' && item.name) {
+              return item.role ? item.name + '（' + item.role + '）' : item.name
+            }
+            return String(item)
+          })
+          .join('\n')
       }
-    } catch { /* not valid JSON, display as-is */ }
+    } catch {
+      /* not valid JSON, display as-is */
+    }
   }
   return val
 }
@@ -57,14 +65,42 @@ function formatTime(ts: number): string {
 const sections = computed(() => {
   if (!props.report) return []
   return [
-    { icon: '📌', label: '一句话概述', content: formatContent(props.report.overview) },
-    { icon: '📈', label: '项目阶段/状态', content: formatContent(props.report.stage) },
-    { icon: '💰', label: '合同与金额', content: formatContent(props.report.contract) },
-    { icon: '📅', label: '关键时间节点', content: formatContent(props.report.key_dates) },
-    { icon: '👥', label: '核心人员', content: formatContent(props.report.core_people) },
-    { icon: '🏢', label: '相关公司/组织', content: formatContent(props.report.companies) },
-    { icon: '📝', label: '近期关键动态', content: formatContent(props.report.recent_activity) },
-  ].filter(s => s.content)
+    {
+      icon: '📌',
+      label: t('一句话概述'),
+      content: formatContent(props.report.overview),
+    },
+    {
+      icon: '📈',
+      label: t('项目阶段/状态'),
+      content: formatContent(props.report.stage),
+    },
+    {
+      icon: '💰',
+      label: t('合同与金额'),
+      content: formatContent(props.report.contract),
+    },
+    {
+      icon: '📅',
+      label: t('关键时间节点'),
+      content: formatContent(props.report.key_dates),
+    },
+    {
+      icon: '👥',
+      label: t('核心人员'),
+      content: formatContent(props.report.core_people),
+    },
+    {
+      icon: '🏢',
+      label: t('相关公司/组织'),
+      content: formatContent(props.report.companies),
+    },
+    {
+      icon: '📝',
+      label: t('近期关键动态'),
+      content: formatContent(props.report.recent_activity),
+    },
+  ].filter((s) => s.content)
 })
 
 const hasHistory = computed(() => props.history.length > 1)
@@ -88,24 +124,63 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
           <!-- Header -->
           <div class="report-header">
             <div class="report-title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                />
+                <polyline points="14 2 14 8 20 8" />
               </svg>
-              <span>{{ projectName }} — AI 分析报告</span>
+              <span>{{ projectName }} — {{ t('AI 分析报告') }}</span>
             </div>
             <div class="report-header-right">
               <!-- History selector -->
               <div v-if="hasHistory && !loading" class="history-select-wrap">
-                <button class="history-trigger" @click="showHistoryDropdown = !showHistoryDropdown">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                <button
+                  class="history-trigger"
+                  @click="showHistoryDropdown = !showHistoryDropdown"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
                   </svg>
-                  <span>{{ viewingHistoryId ? '历史报告' : '最新报告' }}</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  <span>{{
+                    viewingHistoryId ? t('历史报告') : t('最新报告')
+                  }}</span>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </button>
                 <Transition name="drop">
-                  <div v-if="showHistoryDropdown" class="history-dropdown" @click.self="showHistoryDropdown = false">
+                  <div
+                    v-if="showHistoryDropdown"
+                    class="history-dropdown"
+                    @click.self="showHistoryDropdown = false"
+                  >
                     <button
                       v-for="item in history"
                       :key="item.id"
@@ -114,17 +189,31 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
                       @click="selectHistory(item)"
                     >
                       <span class="history-item-label">
-                        {{ item.is_latest ? '🆕 最新' : '📋 历史' }}
+                        {{
+                          item.is_latest ? `🆕 ${t('最新')}` : `📋 ${t('历史')}`
+                        }}
                       </span>
-                      <span class="history-item-time">{{ formatTime(item.generated_at) }}</span>
+                      <span class="history-item-time">{{
+                        formatTime(item.generated_at)
+                      }}</span>
                     </button>
                   </div>
                 </Transition>
               </div>
 
               <button class="report-close" @click="$emit('close')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
@@ -135,16 +224,24 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
             <!-- Loading state -->
             <div v-if="loading" class="report-loading">
               <div class="loading-spinner"></div>
-              <p>AI 正在分析项目「{{ projectName }}」…</p>
+              <p>{{ tf('AI 正在分析项目“{name}”…', { name: projectName }) }}</p>
               <!-- Progress steps -->
               <div v-if="progress.length" class="analysis-progress">
                 <div v-for="(p, i) in progress" :key="i" class="analysis-step">
-                  <span class="step-dot" :class="{ done: i < progress.length - 1 }"></span>
+                  <span
+                    class="step-dot"
+                    :class="{ done: i < progress.length - 1 }"
+                  ></span>
                   <span class="step-text">{{ p }}</span>
-                  <span v-if="i === progress.length - 1" class="step-pulse"></span>
+                  <span
+                    v-if="i === progress.length - 1"
+                    class="step-pulse"
+                  ></span>
                 </div>
               </div>
-              <p v-else class="loading-hint">正在从知识图谱中提取邮件、人员、合同等关键信息</p>
+              <p v-else class="loading-hint">
+                {{ t('正在从知识图谱中提取邮件、人员、合同等关键信息') }}
+              </p>
             </div>
 
             <!-- Report content -->
@@ -159,7 +256,7 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 
               <!-- Empty state if no sections -->
               <div v-if="!sections.length" class="report-empty">
-                报告内容为空，请重新生成。
+                {{ t('报告内容为空，请重新生成。') }}
               </div>
             </div>
           </div>
@@ -167,22 +264,57 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
           <!-- Footer -->
           <div class="report-footer" v-if="!loading && report">
             <p class="footer-hint">
-              <template v-if="viewingHistoryId">正在查看历史报告（{{ formatTime(Number(viewingHistoryId)) }}）</template>
-              <template v-else-if="hasHistory">已生成 {{ history.length }} 次报告</template>
-              <template v-else>不满意这份报告？可以重新生成。</template>
+              <template v-if="viewingHistoryId">{{
+                tf('正在查看历史报告（{time}）', {
+                  time: formatTime(Number(viewingHistoryId)),
+                })
+              }}</template>
+              <template v-else-if="hasHistory">{{
+                tf('已生成 {count} 次报告', { count: history.length })
+              }}</template>
+              <template v-else>{{
+                t('不满意这份报告？可以重新生成。')
+              }}</template>
             </p>
             <div class="footer-btns">
-              <button class="footer-reanalyze-btn" @click="$emit('reanalyze', projectName)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              <button
+                class="footer-reanalyze-btn"
+                @click="$emit('reanalyze', projectName)"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                 </svg>
-                重新分析
+                {{ t('重新分析') }}
               </button>
-              <button class="footer-chat-btn" @click="$emit('chat-analyze', projectName)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <button
+                class="footer-chat-btn"
+                @click="$emit('chat-analyze', projectName)"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                  />
                 </svg>
-                Chat 分析 →
+                {{ t('Chat 分析 →') }}
               </button>
             </div>
           </div>
@@ -238,7 +370,10 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
   font-weight: 650;
   color: var(--t1);
 }
-.report-title svg { opacity: 0.7; color: var(--p); }
+.report-title svg {
+  opacity: 0.7;
+  color: var(--p);
+}
 
 .report-header-right {
   display: flex;
@@ -321,7 +456,8 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 .report-close {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-2);
@@ -332,7 +468,10 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
   justify-content: center;
   transition: all 0.15s;
 }
-.report-close:hover { background: var(--border); color: var(--t1); }
+.report-close:hover {
+  background: var(--border);
+  color: var(--t1);
+}
 
 /* Body */
 .report-body {
@@ -348,7 +487,8 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 .loading-spinner {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   border: 3px solid var(--border-light);
   border-top-color: var(--p);
   border-radius: 50%;
@@ -357,7 +497,9 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .report-loading p {
@@ -389,7 +531,8 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 .analysis-step .step-dot {
-  width: 7px; height: 7px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
   background: var(--border);
@@ -401,18 +544,25 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 .analysis-step .step-pulse {
-  width: 8px; height: 8px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--p);
-  box-shadow: 0 0 0 rgba(0,0,0,0);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
   animation: pulse 1.2s ease-in-out infinite;
   flex-shrink: 0;
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p) 60%, transparent); }
-  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--p) 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--p) 0%, transparent); }
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--p) 60%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--p) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--p) 0%, transparent);
+  }
 }
 
 /* Sections */
@@ -421,7 +571,10 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-light);
 }
-.report-section:last-child { border-bottom: none; margin-bottom: 0; }
+.report-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
 
 .report-section-title {
   display: flex;
@@ -433,7 +586,9 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
   margin-bottom: 0.4rem;
 }
 
-.rs-icon { font-size: 0.85rem; }
+.rs-icon {
+  font-size: 0.85rem;
+}
 
 .report-section-content {
   font-size: 0.84rem;
@@ -521,15 +676,35 @@ function isViewingHistoryItem(item: AnalysisHistoryItem): boolean {
 }
 
 /* Transitions */
-.report-modal-enter-active { transition: opacity 0.2s ease; }
-.report-modal-leave-active { transition: opacity 0.15s ease; }
+.report-modal-enter-active {
+  transition: opacity 0.2s ease;
+}
+.report-modal-leave-active {
+  transition: opacity 0.15s ease;
+}
 .report-modal-enter-from,
-.report-modal-leave-to { opacity: 0; }
-.report-modal-enter-from .report-modal { transform: scale(0.96); transition: transform 0.2s ease; }
-.report-modal-leave-to .report-modal { transform: scale(0.96); transition: transform 0.15s ease; }
+.report-modal-leave-to {
+  opacity: 0;
+}
+.report-modal-enter-from .report-modal {
+  transform: scale(0.96);
+  transition: transform 0.2s ease;
+}
+.report-modal-leave-to .report-modal {
+  transform: scale(0.96);
+  transition: transform 0.15s ease;
+}
 
 /* Dropdown transition */
-.drop-enter-active { transition: all 0.15s ease; }
-.drop-leave-active { transition: all 0.1s ease; }
-.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-4px); }
+.drop-enter-active {
+  transition: all 0.15s ease;
+}
+.drop-leave-active {
+  transition: all 0.1s ease;
+}
+.drop-enter-from,
+.drop-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
 </style>

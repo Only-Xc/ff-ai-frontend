@@ -12,14 +12,14 @@ const mobileNavOpen = ref(false)
 const immersiveRoutes = new Set(['chat', 'graph'])
 const embedded = window.self !== window.top
 
-watch(() => route.fullPath, () => {
+watch(() => route.name, () => {
   mobileNavOpen.value = false
-  if (embedded) postPlatformRoute(route)
+  if (embedded) postPlatformRoute(route, 'route-change')
 })
 
 onMounted(() => {
   accountStore.fetchAccounts()
-  if (embedded) postPlatformRoute(route)
+  if (embedded) postPlatformRoute(route, 'ready')
 })
 </script>
 

@@ -27,6 +27,7 @@ const SECTION_TITLE_KEYS: Record<string, string> = {
 
 interface MailGraphRouteMessage {
   query?: Record<string, unknown>
+  reason: 'ready' | 'route-change'
   section: string
   type: 'ff-mailgraph-route'
 }
@@ -37,6 +38,7 @@ function isMailGraphRouteMessage(value: unknown): value is MailGraphRouteMessage
 
   return (
     message.type === 'ff-mailgraph-route' &&
+    (message.reason === 'ready' || message.reason === 'route-change') &&
     typeof message.section === 'string' &&
     (message.query === undefined ||
       (typeof message.query === 'object' && message.query !== null))
@@ -121,14 +123,19 @@ export default function MailGraphKnowledgeBase() {
       }
       const nextSection = event.data.section
       if (!MAILGRAPH_SECTIONS.has(nextSection)) return
+      // Query-only changes (for example selecting a graph folder) stay inside
+      // the iframe. Reloading the iframe for every query update caused stale
+      // ready messages to race and bounce between graph and file routes.
+      if (event.data.reason !== 'route-change' || nextSection === section) return
       const query = serializeRouteQuery(event.data.query)
       void navigate(
         `/knowledge/mailgraph/${nextSection}${query ? `?${query}` : ''}`,
+        { replace: true },
       )
     }
     window.addEventListener('message', handleMailGraphMessage)
     return () => window.removeEventListener('message', handleMailGraphMessage)
-  }, [navigate])
+  }, [navigate, section])
 
   const reload = () => {
     setLoaded(false)

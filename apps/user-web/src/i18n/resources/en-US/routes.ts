@@ -3,7 +3,7 @@ export default {
   'routes.groups.workspace': 'Workspace',
   'routes.groups.business': 'Business',
   'routes.login.title': 'Login',
-  'routes.chat.title': 'Usage & Balance',
+  'routes.chat.title': 'Workbench',
   'routes.platformApps.title': 'Platform Apps',
   'routes.workflowChat.title': 'Workflow App',
   'routes.pluginCarrier.title': 'Plugin App',

@@ -351,8 +351,8 @@ function graphQuery(page: number, pageSize: number, filter?: GraphFilter): strin
 }
 
 export const graphApi = {
-  entities: (page = 1, pageSize = 500, filter?: GraphFilter) =>
-    request<{ entities: any[]; page: number }>(`/graph/entities?${graphQuery(page, pageSize, filter)}`),
+  entities: (page = 1, pageSize = 50, filter?: GraphFilter) =>
+    request<{ entities: any[]; page: number; page_size: number; total: number }>(`/graph/entities?${graphQuery(page, pageSize, filter)}`),
   relationships: (page = 1, pageSize = 1000, filter?: GraphFilter) =>
     request<{ relationships: any[]; page: number }>(`/graph/relationships?${graphQuery(page, pageSize, filter)}`),
   sources: () => request<GraphSources>('/graph/sources'),
@@ -394,6 +394,19 @@ export interface KnowledgeFile {
   error: string
   created_at: string
   updated_at: string
+}
+
+export interface KnowledgeFilePage {
+  items: KnowledgeFile[]
+  total: number
+  page: number
+  page_size: number
+  pages: number
+}
+
+export interface KnowledgeFileMoveResponse {
+  moved: number
+  items: KnowledgeFile[]
 }
 
 export interface KnowledgeSearchChunk {
@@ -445,6 +458,19 @@ export const knowledgeApi = {
     if (folderId) params.set('folder_id', folderId)
     return request<{ items: KnowledgeFile[] }>(`/knowledge/files?${params.toString()}`)
   },
+  filePage: (folderId: string, page = 1, pageSize = 20) => {
+    const params = new URLSearchParams({
+      folder_id: folderId,
+      page: String(page),
+      page_size: String(pageSize),
+    })
+    return request<KnowledgeFilePage>(`/knowledge/files/page?${params.toString()}`)
+  },
+  moveFiles: (fileIds: string[], targetFolderId: string) =>
+    request<KnowledgeFileMoveResponse>('/knowledge/files/move', {
+      method: 'POST',
+      body: JSON.stringify({ file_ids: fileIds, target_folder_id: targetFolderId }),
+    }),
   detail: (id: string) => request<KnowledgeFile>(`/knowledge/files/${id}`),
   upload: async (folderId: string, files: File[]) => {
     const form = new FormData()

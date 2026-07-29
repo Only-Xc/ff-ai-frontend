@@ -8,6 +8,7 @@ import KnowledgeSourceTreeSelect from '@/components/knowledge/KnowledgeSourceTre
 import SvgIcon from '@/components/SvgIcon.vue'
 
 type GraphMode = 'files' | 'mails'
+const NODE_LIMIT_OPTIONS = [50, 100, 200, 500] as const
 
 const route = useRoute()
 const router = useRouter()
@@ -22,6 +23,8 @@ const sources = ref<GraphSources>({ folders: [], files: [], mails: [] })
 const graphMode = ref<GraphMode>(route.query.scope === 'mails' ? 'mails' : 'files')
 const sourceSelection = ref(typeof route.query.source === 'string' ? route.query.source : '')
 const sourceError = ref('')
+const nodeLimit = ref<number>(50)
+const totalEntities = ref(0)
 
 function activeFilter(): GraphFilter | undefined {
   const splitAt = sourceSelection.value.indexOf(':')
@@ -74,16 +77,18 @@ async function loadGraph() {
     entityTypes.value = []
     selectedTypes.value = []
     typeCounts.value = {}
+    totalEntities.value = 0
     return
   }
   refreshing.value = true
   sourceError.value = ''
   try {
     const [entRes, relRes] = await Promise.all([
-      graphApi.entities(1, 500, filter),
+      graphApi.entities(1, nodeLimit.value, filter),
       graphApi.relationships(1, 1000, filter),
     ])
     entities.value = entRes.entities || []
+    totalEntities.value = Number.isFinite(entRes.total) ? entRes.total : entities.value.length
     relationships.value = relRes.relationships || []
 
     const counts: Record<string, number> = {}
@@ -96,6 +101,10 @@ async function loadGraph() {
     selectedTypes.value = [...entityTypes.value]
   } catch (e: any) { sourceError.value = e.message || String(e) }
   finally { refreshing.value = false }
+}
+
+async function changeNodeLimit() {
+  await loadGraph()
 }
 
 async function changeMode(mode: GraphMode) {
@@ -143,66 +152,77 @@ onMounted(async () => {
   <div class="graph-dashboard">
     <!-- Top toolbar -->
     <div class="graph-toolbar">
-      <div class="toolbar-left">
-        <div>
-          <h2 class="toolbar-title">关系图谱</h2>
-          <span class="toolbar-sub">按目录、文件或邮件查看关系来源</span>
+      <div class="toolbar-main">
+        <div class="toolbar-left">
+          <div class="toolbar-heading">
+            <h2 class="toolbar-title">关系图谱</h2>
+            <span class="toolbar-sub">按目录、文件或邮件查看关系来源</span>
+          </div>
+          <div class="graph-mode" role="tablist" aria-label="图谱来源类型">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="graphMode === 'files'"
+              :class="{ active: graphMode === 'files' }"
+              @click="changeMode('files')"
+            >
+              <SvgIcon name="folder" :size="14" />
+              <span>文件知识图谱</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="graphMode === 'mails'"
+              :class="{ active: graphMode === 'mails' }"
+              @click="changeMode('mails')"
+            >
+              <SvgIcon name="mail" :size="14" />
+              <span>邮件知识图谱</span>
+            </button>
+          </div>
+          <KnowledgeSourceTreeSelect
+            v-model="sourceSelection"
+            class="graph-source-tree"
+            :folders="sources.folders"
+            :files="sources.files"
+            :mails="sources.mails"
+            :mode="graphMode"
+            title="选择图谱数据范围"
+            @change="changeSource"
+          />
         </div>
-        <div class="graph-mode" role="tablist" aria-label="图谱来源类型">
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="graphMode === 'files'"
-            :class="{ active: graphMode === 'files' }"
-            @click="changeMode('files')"
-          >
-            <SvgIcon name="folder" :size="14" />
-            <span>文件知识图谱</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="graphMode === 'mails'"
-            :class="{ active: graphMode === 'mails' }"
-            @click="changeMode('mails')"
-          >
-            <SvgIcon name="mail" :size="14" />
-            <span>邮件知识图谱</span>
-          </button>
-        </div>
-        <KnowledgeSourceTreeSelect
-          v-model="sourceSelection"
-          class="graph-source-tree"
-          :folders="sources.folders"
-          :files="sources.files"
-          :mails="sources.mails"
-          :mode="graphMode"
-          title="选择图谱数据范围"
-          @change="changeSource"
-        />
-      </div>
-      <div class="toolbar-center">
-        <div class="stat-pills-inline">
-          <span class="stat-pill-mini">节点 <b>{{ shownEntities.length }}</b></span>
-          <span class="stat-pill-mini">关系 <b>{{ shownRelationships.length }}</b></span>
-        </div>
-      </div>
-      <div class="toolbar-right">
-        <div class="filter-row" v-if="entityTypes.length">
-          <label
-            v-for="t in entityTypes" :key="t"
-            class="filter-chip" :class="{ active: selectedTypes.includes(t) }"
-            :style="{ '--chip': colorOf(t) }"
-          >
-            <input type="checkbox" :checked="selectedTypes.includes(t)" @change="toggleType(t)" hidden />
-            <span class="chip-dot"></span>
-            {{ LABEL_ICONS[t] || '' }} {{ LABEL_NAMES[t] || t }}
-            <span class="chip-count">{{ typeCounts[t] }}</span>
+        <div class="toolbar-summary" role="group" aria-label="图谱数据概览">
+          <label class="node-limit-control">
+            <span>节点</span>
+            <select v-model.number="nodeLimit" :disabled="refreshing" aria-label="节点展示数量" @change="changeNodeLimit">
+              <option v-for="option in NODE_LIMIT_OPTIONS" :key="option" :value="option">{{ option }}</option>
+            </select>
           </label>
+          <div class="toolbar-metric">
+            <span>当前</span>
+            <b>{{ shownEntities.length }}</b>
+            <span class="metric-detail">/ 总计 {{ totalEntities }}</span>
+          </div>
+          <div class="toolbar-metric">
+            <span>关系</span>
+            <b>{{ shownRelationships.length }}</b>
+          </div>
+          <button class="refresh-btn" type="button" :disabled="refreshing || !sourceSelection" @click="loadGraph">
+            {{ refreshing ? '刷新中…' : '界面刷新' }}
+          </button>
         </div>
-        <button class="btn btn-secondary btn-sm refresh-btn" :disabled="refreshing || !sourceSelection" @click="loadGraph">
-          {{ refreshing ? '刷新中…' : '界面刷新' }}
-        </button>
+      </div>
+      <div class="filter-row" v-if="entityTypes.length">
+        <label
+          v-for="t in entityTypes" :key="t"
+          class="filter-chip" :class="{ active: selectedTypes.includes(t) }"
+          :style="{ '--chip': colorOf(t) }"
+        >
+          <input type="checkbox" :checked="selectedTypes.includes(t)" @change="toggleType(t)" hidden />
+          <span class="chip-dot"></span>
+          {{ LABEL_ICONS[t] || '' }} {{ LABEL_NAMES[t] || t }}
+          <span class="chip-count">{{ typeCounts[t] }}</span>
+        </label>
       </div>
     </div>
 
@@ -223,13 +243,15 @@ onMounted(async () => {
 }
 
 .graph-toolbar {
-  display: flex; align-items: center; gap: 1rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  flex-shrink: 0; flex-wrap: wrap;
+  flex-shrink: 0;
 }
-.toolbar-left { display: flex; align-items: center; gap: 0.75rem; min-width: 260px; }
+.toolbar-main { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.toolbar-left { min-width: 0; display: flex; align-items: center; gap: 0.75rem; }
+.toolbar-heading { flex-shrink: 0; }
 .toolbar-title { font-size: 0.95rem; font-weight: 700; color: var(--t1); }
 .toolbar-sub { font-size: 0.7rem; color: var(--t4); }
 .graph-source-tree { width: min(320px, 34vw); min-width: 190px; }
@@ -263,14 +285,45 @@ onMounted(async () => {
   box-shadow: var(--sh-xs);
 }
 .source-error { flex-shrink: 0; padding: 4px 12px; color: var(--red-t); background: var(--red-bg); font-size: 0.7rem; }
-.toolbar-center { flex: 1; display: flex; justify-content: center; }
-.stat-pills-inline { display: flex; gap: 0.5rem; }
-.stat-pill-mini {
-  font-size: 0.72rem; color: var(--t3);
-  background: var(--surface-2); padding: 3px 10px; border-radius: 20px;
+.toolbar-summary {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  min-height: 34px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
 }
-.toolbar-right { display: flex; align-items: center; gap: 0.6rem; }
-.refresh-btn { flex-shrink: 0; white-space: nowrap; }
+.node-limit-control {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-width: 112px; padding: 4px 8px 4px 10px;
+  font-size: 0.72rem; color: var(--t3);
+  background: var(--surface-2);
+}
+.node-limit-control select {
+  min-width: 58px; height: 24px; padding: 0 22px 0 8px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: var(--surface); color: var(--t1); font: inherit; cursor: pointer;
+}
+.node-limit-control select:disabled { cursor: wait; opacity: 0.65; }
+.toolbar-metric {
+  display: inline-flex; align-items: baseline; justify-content: center; gap: 4px;
+  min-width: 96px; padding: 6px 10px;
+  border-inline-start: 1px solid var(--border);
+  font-size: 0.72rem; color: var(--t3); white-space: nowrap;
+}
+.toolbar-metric b { color: var(--p); font-size: 0.78rem; }
+.metric-detail { color: var(--t4); }
+.refresh-btn {
+  min-width: 78px; padding: 0 12px;
+  border: 0; border-inline-start: 1px solid var(--border);
+  background: var(--surface-2); color: var(--t2);
+  font: inherit; font-size: 0.72rem; font-weight: 600;
+  white-space: nowrap; cursor: pointer;
+}
+.refresh-btn:hover:not(:disabled) { background: var(--p-lt); color: var(--p); }
+.refresh-btn:disabled { opacity: 0.55; cursor: wait; }
 
 .graph-container {
   flex: 1; min-height: 0;
@@ -278,18 +331,9 @@ onMounted(async () => {
   background: var(--graph-bg);
 }
 
-.filter-row { display: flex; gap: 4px; flex-wrap: wrap; }
-
-.stat-row { display: flex; gap: 0.6rem; margin-bottom: 0.85rem; }
-.stat-pill {
-  font-size: 0.76rem; color: var(--t3);
-  background: var(--surface-2); border: 1px solid var(--border);
-  padding: 0.28rem 0.7rem; border-radius: 9999px;
-}
-.stat-pill b { color: var(--p); font-weight: 700; }
-
 .filter-row {
-  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.85rem;
+  width: 100%; display: flex; flex-wrap: wrap; gap: 0.4rem;
+  padding-top: 0.5rem; border-top: 1px solid var(--border);
 }
 .filter-chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -327,12 +371,25 @@ onMounted(async () => {
   width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
 }
 
+@media (max-width: 1180px) {
+  .toolbar-main { align-items: flex-start; flex-wrap: wrap; }
+  .toolbar-summary { margin-inline-start: auto; }
+}
+
 @media (max-width: 900px) {
-  .graph-toolbar { align-items: flex-start; }
   .toolbar-left { width: 100%; flex-wrap: wrap; }
+  .toolbar-heading { width: 100%; }
   .graph-mode { width: 100%; min-width: 0; }
   .graph-source-tree { width: 100%; }
-  .toolbar-center { justify-content: flex-start; }
-  .toolbar-right { width: 100%; flex-wrap: wrap; }
+  .toolbar-summary { width: 100%; margin-inline-start: 0; grid-template-columns: auto 1fr auto auto; }
+}
+
+@media (max-width: 560px) {
+  .graph-toolbar { padding-inline: 0.65rem; }
+  .toolbar-summary { grid-template-columns: 1fr 1fr; }
+  .toolbar-metric { border-block-start: 1px solid var(--border); }
+  .toolbar-metric:nth-child(2) { border-inline-start: 1px solid var(--border); border-block-start: 0; }
+  .toolbar-metric:nth-child(3) { border-inline-start: 0; }
+  .refresh-btn { min-height: 34px; border-block-start: 1px solid var(--border); }
 }
 </style>

@@ -80,7 +80,7 @@ export function ProductionQueue() {
           dataIndex: 'approval_no',
           key: 'approval_no',
           width: 180,
-          render: (v: string, row) => (
+          render: (v: string, row: ProductionApproval) => (
             <a onClick={() => navigate(`/production/approvals/${row.id}`)}>
               {v}
             </a>
@@ -139,7 +139,7 @@ export function ProductionQueue() {
           dataIndex: 'risk_level',
           key: 'risk_level',
           width: 120,
-          render: (v: string, row) =>
+          render: (v: string, row: ProductionApproval) =>
             v ? (
               <Space size={4}>
                 <Tag color={row.risk_score >= 50 ? 'red' : 'gold'}>{v}</Tag>

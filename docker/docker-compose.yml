@@ -7,10 +7,13 @@ services:
       dockerfile: docker/Dockerfile
       args:
         APP_NAME: user-web
-        VITE_FLOWISE_BASE_URL: ${VITE_FLOWISE_BASE_URL:-http://localhost:3000}
+        VITE_FLOWISE_BASE_URL: ${VITE_FLOWISE_BASE_URL:-/flowise}
     image: ff-ai-frontend-user-web:latest
     ports:
       - "18080:80"
+    environment:
+      FLOWISE_PROXY_UPSTREAM: ${FLOWISE_PROXY_UPSTREAM:-http://host.docker.internal:13000}
+      PLATFORM_API_UPSTREAM: ${PLATFORM_API_UPSTREAM:-http://host.docker.internal:11499}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -21,10 +24,13 @@ services:
       dockerfile: docker/Dockerfile
       args:
         APP_NAME: admin-web
-        VITE_FLOWISE_BASE_URL: ${VITE_FLOWISE_BASE_URL:-http://localhost:3000}
+        VITE_FLOWISE_BASE_URL: ${VITE_FLOWISE_BASE_URL:-/flowise}
     image: ff-ai-frontend-admin-web:latest
     ports:
       - "18081:80"
+    environment:
+      FLOWISE_PROXY_UPSTREAM: ${FLOWISE_PROXY_UPSTREAM:-http://host.docker.internal:13000}
+      PLATFORM_API_UPSTREAM: ${PLATFORM_API_UPSTREAM:-http://host.docker.internal:11499}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
