@@ -29,6 +29,7 @@ const uploading = ref(false)
 const dragging = ref(false)
 const error = ref('')
 const fileInput = ref<HTMLInputElement>()
+const fileKeyword = ref('')
 const createParent = ref<string | null | undefined>(undefined)
 const newFolderName = ref('')
 const searchOpen = ref(false)
@@ -68,6 +69,7 @@ const folderMap = computed(() => {
 })
 
 const selectedFolder = computed(() => folderMap.value.get(selectedFolderId.value))
+const hasSelectedFolder = computed(() => Boolean(selectedFolderId.value))
 const allFolders = computed<FlatFolder[]>(() => {
   const result: FlatFolder[] = []
   const visit = (nodes: KnowledgeFolder[], depth: number) => {
@@ -113,7 +115,12 @@ async function refreshFiles() {
     totalPages.value = 1
     return
   }
-  const result = await knowledgeApi.filePage(selectedFolderId.value, page.value, pageSize.value)
+  const result = await knowledgeApi.filePage(
+    selectedFolderId.value,
+    page.value,
+    pageSize.value,
+    fileKeyword.value,
+  )
   if (page.value > result.pages) {
     page.value = result.pages
     await refreshFiles()
@@ -140,6 +147,7 @@ async function refreshAll() {
 async function selectFolder(id: string) {
   selectedFolderId.value = id
   page.value = 1
+  fileKeyword.value = ''
   selectedFileIds.value = new Set()
   clearFolderIdCopyStatus()
   searchOpen.value = false
@@ -309,6 +317,18 @@ async function goToPage(nextPage: number) {
 async function changePageSize() {
   page.value = 1
   await refreshFiles()
+}
+
+async function searchFilesByName() {
+  page.value = 1
+  selectedFileIds.value = new Set()
+  await refreshFiles()
+}
+
+async function clearFileSearch() {
+  if (!fileKeyword.value) return
+  fileKeyword.value = ''
+  await searchFilesByName()
 }
 
 function formatSize(size: number) {
@@ -621,7 +641,7 @@ onUnmounted(() => {
 
         <template v-else>
         <div
-          v-if="selectedFolder"
+          v-if="hasSelectedFolder"
           class="drop-zone"
           :class="{ dragging }"
           @dragenter.prevent="dragging = true"
@@ -635,51 +655,70 @@ onUnmounted(() => {
           <small>PDF、Office、文本、HTML、JSON、图片，单文件不超过 50MB</small>
         </div>
 
-        <div v-if="!selectedFolder" class="empty-state">请先创建或选择一个目录</div>
-        <div v-else-if="!totalFiles && !loading" class="empty-state">该目录还没有文件</div>
+        <div v-if="!hasSelectedFolder" class="empty-state">请先创建或选择一个目录</div>
 
-        <div v-else class="file-table-wrap">
+        <div v-else :key="selectedFolderId" class="file-table-wrap" :data-folder-id="selectedFolderId">
           <div class="file-list-actions">
-            <span>共 {{ totalFiles }} 个文件</span>
+            <span>
+              共 {{ totalFiles }} 个文件
+              <template v-if="fileKeyword.trim()"> · 文件名包含“<span data-no-ui-translate>{{ fileKeyword.trim() }}</span>”</template>
+            </span>
+            <form class="file-search" role="search" @submit.prevent="searchFilesByName">
+              <SvgIcon name="search" :size="15" />
+              <input
+                v-model="fileKeyword"
+                type="search"
+                maxlength="200"
+                placeholder="按文件名搜索"
+                :disabled="loading"
+                @search="searchFilesByName"
+              />
+              <button v-if="fileKeyword" class="icon-btn clear-file-search" type="button" title="清空搜索" @click="clearFileSearch">×</button>
+            </form>
             <button class="btn btn-secondary btn-sm" :disabled="!selectedCount" @click="openFileMove">
               移动所选<span v-if="selectedCount"> ({{ selectedCount }})</span>
             </button>
           </div>
-          <table class="file-table">
-            <thead>
-              <tr>
-                <th class="select-cell">
-                  <input
-                    type="checkbox"
-                    :checked="allPageSelected"
-                    title="选择当前页全部文件"
-                    @change="toggleCurrentPage(($event.target as HTMLInputElement).checked)"
-                  />
-                </th>
-                <th>文件名</th><th>大小</th><th>状态</th><th>上传时间</th><th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in files" :key="item.id">
-                <td class="select-cell">
-                  <input
-                    type="checkbox"
-                    :checked="selectedFileIds.has(item.id)"
-                    :title="`选择 ${item.name}`"
-                    @change="toggleFile(item.id, ($event.target as HTMLInputElement).checked)"
-                  />
-                </td>
-                <td>
-                  <div class="file-name" data-no-ui-translate><SvgIcon name="file" :size="16" /><span>{{ item.name }}</span></div>
-                  <div v-if="item.error" class="file-error" :title="item.error">{{ item.error }}</div>
-                </td>
-                <td class="muted">{{ formatSize(item.size) }}</td>
-                <td><span class="status" :class="`status-${item.status}`">{{ statusLabel[item.status] || item.status }}</span></td>
-                <td class="muted">{{ formatDate(item.created_at) }}</td>
-                <td><button class="icon-btn" title="删除文件" :disabled="item.status === 'processing'" @click="removeFile(item)">×</button></td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="file-table-scroll">
+            <div v-if="!totalFiles && !loading" class="empty-state">
+              {{ fileKeyword.trim() ? '没有找到匹配的文件' : '该目录还没有文件' }}
+            </div>
+            <table v-else class="file-table">
+              <thead>
+                <tr>
+                  <th class="select-cell">
+                    <input
+                      type="checkbox"
+                      :checked="allPageSelected"
+                      title="选择当前页全部文件"
+                      @change="toggleCurrentPage(($event.target as HTMLInputElement).checked)"
+                    />
+                  </th>
+                  <th>文件名</th><th>大小</th><th>状态</th><th>上传时间</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in files" :key="item.id">
+                  <td class="select-cell">
+                    <input
+                      type="checkbox"
+                      :checked="selectedFileIds.has(item.id)"
+                      :title="`选择 ${item.name}`"
+                      @change="toggleFile(item.id, ($event.target as HTMLInputElement).checked)"
+                    />
+                  </td>
+                  <td>
+                    <div class="file-name" data-no-ui-translate><SvgIcon name="file" :size="16" /><span>{{ item.name }}</span></div>
+                    <div v-if="item.error" class="file-error" :title="item.error">{{ item.error }}</div>
+                  </td>
+                  <td class="muted">{{ formatSize(item.size) }}</td>
+                  <td><span class="status" :class="`status-${item.status}`">{{ statusLabel[item.status] || item.status }}</span></td>
+                  <td class="muted">{{ formatDate(item.created_at) }}</td>
+                  <td><button class="icon-btn" title="删除文件" :disabled="item.status === 'processing'" @click="removeFile(item)">×</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
           <div class="file-pagination">
             <span>第 {{ page }} / {{ totalPages }} 页</span>
             <label>
@@ -738,7 +777,7 @@ onUnmounted(() => {
 .page-header p { margin-top: 3px; font-size: 0.82rem; color: var(--t3); }
 .error-bar { margin-bottom: 0.7rem; border: 1px solid #E8C7C0; background: var(--red-bg); color: var(--red-t); padding: 0.5rem 0.7rem; border-radius: var(--r-sm); font-size: 0.78rem; }
 .library-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); border: 1px solid var(--border); background: var(--surface); border-radius: var(--r); overflow: hidden; }
-.folder-pane { min-width: 0; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface-2); }
+.folder-pane { min-width: 0; min-height: 0; overflow: hidden; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--surface-2); }
 .pane-header { min-height: 45px; padding: 0 10px 0 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); color: var(--t3); font-size: 0.76rem; font-weight: 650; }
 .icon-btn { width: 28px; height: 28px; border: 0; border-radius: 5px; background: transparent; color: var(--t3); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
 .icon-btn:hover:not(:disabled) { background: var(--surface-2); color: var(--t1); }
@@ -755,7 +794,7 @@ onUnmounted(() => {
 .folder-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .folder-count { margin-left: auto; color: var(--t4); font-size: 0.68rem; }
 .folder-empty { padding: 2rem 1rem; text-align: center; }
-.file-pane { min-width: 0; display: flex; flex-direction: column; }
+.file-pane { min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
 .file-toolbar { min-height: 58px; padding: 8px 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
 .path-block { min-width: 0; display: flex; flex-direction: column; }
 .path-block strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.83rem; color: var(--t1); }
@@ -820,11 +859,17 @@ onUnmounted(() => {
 .drop-zone small { color: var(--t4); font-size: 0.66rem; }
 .drop-zone:hover, .drop-zone.dragging { border-color: var(--p); background: var(--p-light); color: var(--p); }
 .empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--t4); font-size: 0.82rem; }
-.file-table-wrap { flex: 1; min-height: 0; overflow: auto; padding: 0 12px 12px; }
-.file-list-actions { position: sticky; top: 0; z-index: 3; min-height: 44px; padding: 7px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
-.file-list-actions > span { color: var(--t4); font-size: 0.72rem; }
+.file-table-wrap { flex: 1; min-height: 0; overflow: hidden; padding: 0 12px 12px; display: flex; flex-direction: column; }
+.file-list-actions { flex: 0 0 auto; z-index: 3; min-height: 44px; padding: 7px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.file-list-actions > span { min-width: 0; flex: 1 1 auto; color: var(--t4); font-size: 0.72rem; }
+.file-search { flex: 0 1 320px; min-width: 220px; min-height: 32px; display: flex; align-items: center; gap: 7px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface-2); color: var(--t4); }
+.file-search input { min-width: 0; flex: 1; height: 30px; border: 0; outline: 0; background: transparent; color: var(--t1); font-size: 0.78rem; }
+.file-search input::placeholder { color: var(--t4); }
+.clear-file-search { width: 22px; height: 22px; color: var(--t4); }
+.file-table-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.file-table-scroll > .empty-state { min-height: 100%; }
 .file-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-.file-table th { position: sticky; top: 44px; z-index: 2; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border); text-align: left; color: var(--t4); font-size: 0.68rem; font-weight: 600; }
+.file-table th { position: sticky; top: 0; z-index: 2; background: var(--surface); padding: 8px; border-bottom: 1px solid var(--border); text-align: left; color: var(--t4); font-size: 0.68rem; font-weight: 600; }
 .file-table th:nth-child(1) { width: 36px; }.file-table th:nth-child(2) { width: 42%; }.file-table th:nth-child(3) { width: 12%; }.file-table th:nth-child(4) { width: 13%; }.file-table th:nth-child(5) { width: 23%; }.file-table th:nth-child(6) { width: 40px; }
 .file-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-light); font-size: 0.77rem; vertical-align: middle; }
 .select-cell { padding-right: 0 !important; text-align: center !important; }
@@ -835,7 +880,7 @@ onUnmounted(() => {
 .muted { color: var(--t4); }
 .status { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 5px; font-size: 0.68rem; white-space: nowrap; }
 .status-uploaded { background: var(--blue-bg); color: var(--blue-t); }.status-processing { background: var(--amber-bg); color: var(--amber-t); }.status-done { background: var(--green-bg); color: var(--green-t); }.status-failed { background: var(--red-bg); color: var(--red-t); }
-.file-pagination { position: sticky; bottom: 0; z-index: 3; min-height: 48px; padding: 8px 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; border-top: 1px solid var(--border); background: var(--surface); color: var(--t4); font-size: 0.72rem; }
+.file-pagination { flex: 0 0 auto; z-index: 3; min-height: 48px; padding: 8px 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; border-top: 1px solid var(--border); background: var(--surface); color: var(--t4); font-size: 0.72rem; }
 .file-pagination label { display: inline-flex; align-items: center; gap: 5px; }
 .file-pagination select { min-height: 30px; padding: 0 24px 0 8px; border: 1px solid var(--border-strong); border-radius: 5px; background: var(--surface); color: var(--t2); }
 .page-button { border: 1px solid var(--border-strong); color: var(--t2); font-size: 1.1rem; }
@@ -869,7 +914,8 @@ onUnmounted(() => {
   .retrieval-meta { border-top: 1px solid var(--border); border-left: 0; }
   .retrieval-form { grid-template-columns: 1fr; }
   .retrieval-form label { grid-column: auto; }
-  .file-list-actions { align-items: flex-start; }
+  .file-list-actions { align-items: flex-start; flex-wrap: wrap; }
+  .file-list-actions > span, .file-search { flex-basis: 100%; }
   .file-pagination { flex-wrap: wrap; justify-content: flex-start; }
   .move-overlay { padding: 12px; align-items: flex-end; }
   .move-dialog { width: 100%; }

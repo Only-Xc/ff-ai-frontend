@@ -458,12 +458,13 @@ export const knowledgeApi = {
     if (folderId) params.set('folder_id', folderId)
     return request<{ items: KnowledgeFile[] }>(`/knowledge/files?${params.toString()}`)
   },
-  filePage: (folderId: string, page = 1, pageSize = 20) => {
+  filePage: (folderId: string, page = 1, pageSize = 20, keyword = '') => {
     const params = new URLSearchParams({
       folder_id: folderId,
       page: String(page),
       page_size: String(pageSize),
     })
+    if (keyword.trim()) params.set('keyword', keyword.trim())
     return request<KnowledgeFilePage>(`/knowledge/files/page?${params.toString()}`)
   },
   moveFiles: (fileIds: string[], targetFolderId: string) =>

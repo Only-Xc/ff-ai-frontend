@@ -5,10 +5,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
-import { pluginCatalogKeys, plugins_createUiSession } from '@/api/plugins'
+import {
+  pluginCatalogKeys,
+  plugins_catalog,
+  plugins_createUiSession,
+} from '@/api/plugins'
+import { useLocale } from '@/i18n/useLocale'
 import { useAppStore } from '@/store/useApp'
 
 const LOAD_TIMEOUT_MS = 15_000
+const SESSION_REFRESH_BUFFER_MS = 60_000
 
 export default function PluginCarrier() {
   const { t } = useTranslation()
@@ -16,6 +22,7 @@ export default function PluginCarrier() {
   const location = useLocation()
   const { pluginId = '', '*': pluginPath = '' } = useParams()
   const themeMode = useAppStore((state) => state.theme)
+  const { locale } = useLocale()
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [timedOut, setTimedOut] = useState(false)
@@ -25,6 +32,16 @@ export default function PluginCarrier() {
     enabled: Boolean(pluginId),
     retry: false,
   })
+  const sessionExpiresAt = sessionQuery.data?.expires_at
+  const refreshSession = sessionQuery.refetch
+  const catalogQuery = useQuery({
+    queryKey: pluginCatalogKeys.list(false, pluginId),
+    queryFn: () => plugins_catalog({ keyword: pluginId }),
+    enabled: Boolean(pluginId),
+  })
+  const pluginName =
+    catalogQuery.data?.data.find((item) => item.plugin_id === pluginId)?.name ??
+    pluginId
 
   useEffect(() => {
     if (!sessionQuery.data?.url || loaded) return
@@ -32,16 +49,39 @@ export default function PluginCarrier() {
     return () => window.clearTimeout(timeout)
   }, [loaded, sessionQuery.data?.url])
 
-  const syncTheme = useCallback(() => {
-    iframeRef.current?.contentWindow?.postMessage(
-      { type: 'ff-ai:theme', theme: themeMode },
-      '*',
-    )
-  }, [themeMode])
+  useEffect(() => {
+    if (!sessionExpiresAt) return
+    const expiresAt = Date.parse(sessionExpiresAt)
+    if (!Number.isFinite(expiresAt)) return
+    const refreshDelay = Math.max(1_000, expiresAt - Date.now() - SESSION_REFRESH_BUFFER_MS)
+    const timeout = window.setTimeout(() => {
+      void refreshSession()
+    }, refreshDelay)
+    return () => window.clearTimeout(timeout)
+  }, [refreshSession, sessionExpiresAt])
+
+  const syncPreferences = useCallback(() => {
+    const target = iframeRef.current?.contentWindow
+    target?.postMessage({ type: 'ff-ai:theme', theme: themeMode }, '*')
+    target?.postMessage({ type: 'ff-ai:locale', locale }, '*')
+  }, [locale, themeMode])
 
   useEffect(() => {
-    if (loaded) syncTheme()
-  }, [loaded, syncTheme])
+    if (loaded) syncPreferences()
+  }, [loaded, syncPreferences])
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.source === iframeRef.current?.contentWindow &&
+        event.data?.type === 'ff-ai:plugin-ready'
+      ) {
+        syncPreferences()
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [syncPreferences])
 
   const retry = async () => {
     setLoaded(false)
@@ -82,15 +122,17 @@ export default function PluginCarrier() {
       {pluginId !== 'exam' ? (
         <header className="flex shrink-0 items-center justify-between border-b border-(--border) px-4 py-2">
           <Space>
-            <Button
-              aria-label={t('pages.pluginCarrier.back')}
-              icon={<ArrowLeftOutlined />}
-              type="text"
-              onClick={() => void navigate('/platform-apps')}
-            />
+            {pluginId !== 'kb-pipeline' ? (
+              <Button
+                aria-label={t('pages.pluginCarrier.back')}
+                icon={<ArrowLeftOutlined />}
+                type="text"
+                onClick={() => void navigate('/platform-apps')}
+              />
+            ) : null}
             <div className="min-w-0">
               <Typography.Text className="block font-medium">
-                {pluginId}
+                {pluginName}
               </Typography.Text>
               <Typography.Text className="block text-xs" type="secondary">
                 {t('pages.pluginCarrier.connected')}
@@ -131,11 +173,11 @@ export default function PluginCarrier() {
           referrerPolicy="no-referrer"
           sandbox="allow-downloads allow-forms allow-modals allow-popups allow-same-origin allow-scripts"
           src={frameUrl}
-          title={t('pages.pluginCarrier.frameTitle', { pluginId })}
+          title={t('pages.pluginCarrier.frameTitle', { pluginId: pluginName })}
           onLoad={() => {
             setLoaded(true)
             setTimedOut(false)
-            syncTheme()
+            syncPreferences()
           }}
         />
       </div>
