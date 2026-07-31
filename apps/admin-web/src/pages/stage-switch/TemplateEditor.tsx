@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   stageSwitchKeys,
   stageSwitchTemplate_clone,
@@ -52,9 +53,13 @@ interface TemplateFields {
   direction: StageSwitchDirection
 }
 
-type NodeErrors = Partial<Record<StageSwitchTemplateNodeInput['node_key'], string[]>>
+type NodeErrors = Partial<
+  Record<StageSwitchTemplateNodeInput['node_key'], string[]>
+>
 
-function createDefaultNodes(t: (key: string) => string): StageSwitchTemplateNodeInput[] {
+function createDefaultNodes(
+  t: (key: string) => string,
+): StageSwitchTemplateNodeInput[] {
   const createNode = (
     node_key: StageSwitchTemplateNodeInput['node_key'],
     sequence: number,
@@ -104,7 +109,9 @@ export default function TemplateEditor() {
   const [nodes, setNodes] = useState<StageSwitchTemplateNodeInput[]>(() =>
     createDefaultNodes(t),
   )
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof TemplateFields, string>>>({})
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof TemplateFields, string>>
+  >({})
   const [nodeErrors, setNodeErrors] = useState<NodeErrors>({})
   const [isDirty, setIsDirty] = useState(isCreate)
 
@@ -140,7 +147,9 @@ export default function TemplateEditor() {
     void queryClient.invalidateQueries({
       queryKey: stageSwitchKeys.templateLists(),
     })
-    void queryClient.invalidateQueries({ queryKey: stageSwitchKeys.template(id) })
+    void queryClient.invalidateQueries({
+      queryKey: stageSwitchKeys.template(id),
+    })
   }
 
   const validateLocally = () => {
@@ -169,7 +178,9 @@ export default function TemplateEditor() {
         )
       }
       if (node.sla_minutes <= 0) {
-        errors.push(t('pages.stageSwitch.templateEditor.validation.slaPositive'))
+        errors.push(
+          t('pages.stageSwitch.templateEditor.validation.slaPositive'),
+        )
       }
       if (
         node.reminder_policy.before_due_minutes < 0 ||
@@ -186,15 +197,17 @@ export default function TemplateEditor() {
       }
       if (node.reminder_policy.escalation_threshold_minutes < 0) {
         errors.push(
-          t('pages.stageSwitch.templateEditor.validation.escalationNonNegative'),
+          t(
+            'pages.stageSwitch.templateEditor.validation.escalationNonNegative',
+          ),
         )
       }
 
       const sourceIds =
         node.approver_source_type === 'ROLE'
-          ? node.approver_source_config.role_ids ?? []
+          ? (node.approver_source_config.role_ids ?? [])
           : node.approver_source_type === 'USER'
-            ? node.approver_source_config.user_ids ?? []
+            ? (node.approver_source_config.user_ids ?? [])
             : undefined
       if (sourceIds?.length === 0) {
         errors.push(
@@ -230,7 +243,9 @@ export default function TemplateEditor() {
       Object.keys(nextFieldErrors).length === 0 &&
       Object.keys(nextNodeErrors).length === 0
     if (!valid) {
-      void message.error(t('pages.stageSwitch.templateEditor.validation.fixErrors'))
+      void message.error(
+        t('pages.stageSwitch.templateEditor.validation.fixErrors'),
+      )
     }
     return valid
   }
@@ -242,13 +257,18 @@ export default function TemplateEditor() {
         name: node.name.trim(),
         approver_source_config: {
           ...node.approver_source_config,
-          role_ids: node.approver_source_config.role_ids?.map((id) => id.trim()),
-          user_ids: node.approver_source_config.user_ids?.map((id) => id.trim()),
+          role_ids: node.approver_source_config.role_ids?.map((id) =>
+            id.trim(),
+          ),
+          user_ids: node.approver_source_config.user_ids?.map((id) =>
+            id.trim(),
+          ),
         },
         reminder_policy: {
           ...node.reminder_policy,
-          escalation_role_ids:
-            node.reminder_policy.escalation_role_ids.map((id) => id.trim()),
+          escalation_role_ids: node.reminder_policy.escalation_role_ids.map(
+            (id) => id.trim(),
+          ),
         },
       })),
     [nodes],
@@ -283,7 +303,10 @@ export default function TemplateEditor() {
       }
     },
     onError: (error) => {
-      if (error instanceof Error && error.message === 'LOCAL_VALIDATION_FAILED') {
+      if (
+        error instanceof Error &&
+        error.message === 'LOCAL_VALIDATION_FAILED'
+      ) {
         return
       }
       void message.error(
@@ -356,7 +379,7 @@ export default function TemplateEditor() {
 
   if (!isCreate && detailQuery.isLoading) {
     return (
-      <PageContainer className="flex min-h-100 items-center justify-center p-5">
+      <PageContainer className="flex min-h-100 items-center justify-center p-4">
         <Spin />
       </PageContainer>
     )
@@ -364,7 +387,7 @@ export default function TemplateEditor() {
 
   if (!isCreate && (detailQuery.isError || !template)) {
     return (
-      <PageContainer className="p-5">
+      <PageContainer className="min-h-full p-4">
         <Result
           status={detailQuery.isError ? 'error' : '404'}
           title={
@@ -383,7 +406,10 @@ export default function TemplateEditor() {
                 {t('pages.stageSwitch.templateEditor.backToList')}
               </Button>
               {detailQuery.isError ? (
-                <Button type="primary" onClick={() => void detailQuery.refetch()}>
+                <Button
+                  type="primary"
+                  onClick={() => void detailQuery.refetch()}
+                >
                   {t('common.actions.retry')}
                 </Button>
               ) : null}
@@ -395,12 +421,14 @@ export default function TemplateEditor() {
   }
 
   return (
-    <PageContainer className="p-5">
+    <PageContainer className="min-h-full p-4">
       <PageHeader
         title={
-          isCreate
-            ? t('pages.stageSwitch.templateEditor.createTitle')
-            : fields.name
+          <AdminPageTitle section="stageSwitch">
+            {isCreate
+              ? t('pages.stageSwitch.templateEditor.createTitle')
+              : fields.name}
+          </AdminPageTitle>
         }
         subtitle={
           isCreate
@@ -543,7 +571,9 @@ export default function TemplateEditor() {
                 }}
               />
             </Form.Item>
-            <Form.Item label={t('pages.stageSwitch.templateEditor.description')}>
+            <Form.Item
+              label={t('pages.stageSwitch.templateEditor.description')}
+            >
               <Input.TextArea
                 autoSize={{ minRows: 2, maxRows: 5 }}
                 value={fields.description}

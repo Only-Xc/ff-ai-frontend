@@ -1,5 +1,10 @@
 import { CheckOutlined, ReloadOutlined } from '@ant-design/icons'
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import {
   Alert,
   App,
@@ -18,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   stageSwitchKeys,
   stageSwitchNotification_read,
@@ -111,15 +117,17 @@ export default function NotificationCenter() {
     }
   }
 
-  const renderTranslation = (
-    key: string,
-    payload: Record<string, unknown>,
-  ) => t(key, { ...payload, defaultValue: key })
+  const renderTranslation = (key: string, payload: Record<string, unknown>) =>
+    t(key, { ...payload, defaultValue: key })
 
   return (
-    <PageContainer className="p-5">
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.stageSwitch.notifications.title')}
+        title={
+          <AdminPageTitle section="stageSwitch">
+            {t('routes.stageSwitch.notifications.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.stageSwitch.notifications.subtitle')}
       >
         <Space wrap>
@@ -191,7 +199,10 @@ export default function NotificationCenter() {
               : t('common.errors.requestFailed')
           }
           action={
-            <Button size="small" onClick={() => void notificationsQuery.refetch()}>
+            <Button
+              size="small"
+              onClick={() => void notificationsQuery.refetch()}
+            >
               {t('common.actions.retry')}
             </Button>
           }
@@ -222,7 +233,8 @@ export default function NotificationCenter() {
         renderItem={(notification) => {
           const unread = notification.status === 'UNREAD'
           const pending =
-            readMutation.isPending && readMutation.variables?.id === notification.id
+            readMutation.isPending &&
+            readMutation.variables?.id === notification.id
           return (
             <List.Item
               className={notification.request_id ? 'cursor-pointer' : undefined}
@@ -251,7 +263,10 @@ export default function NotificationCenter() {
                 title={
                   <Space wrap>
                     <Typography.Text strong={unread}>
-                      {renderTranslation(notification.title_key, notification.payload)}
+                      {renderTranslation(
+                        notification.title_key,
+                        notification.payload,
+                      )}
                     </Typography.Text>
                     {unread ? (
                       <Typography.Text type="secondary">
@@ -263,10 +278,15 @@ export default function NotificationCenter() {
                 description={
                   <Space direction="vertical" size={2}>
                     <Typography.Text type="secondary">
-                      {renderTranslation(notification.body_key, notification.payload)}
+                      {renderTranslation(
+                        notification.body_key,
+                        notification.payload,
+                      )}
                     </Typography.Text>
                     <Typography.Text type="secondary">
-                      {dayjs(notification.created_at).format('YYYY-MM-DD HH:mm')}
+                      {dayjs(notification.created_at).format(
+                        'YYYY-MM-DD HH:mm',
+                      )}
                     </Typography.Text>
                   </Space>
                 }

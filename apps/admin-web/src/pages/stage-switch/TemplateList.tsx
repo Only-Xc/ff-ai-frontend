@@ -1,9 +1,10 @@
+import { CopyOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import {
-  CopyOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons'
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import {
   Alert,
   App,
@@ -23,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   stageSwitchKeys,
   stageSwitchTemplate_clone,
@@ -89,7 +91,8 @@ export default function TemplateList() {
   }
 
   const validateMutation = useMutation({
-    mutationFn: (templateId: string) => stageSwitchTemplate_validate(templateId),
+    mutationFn: (templateId: string) =>
+      stageSwitchTemplate_validate(templateId),
     onSuccess: (result) => {
       if (result.valid) {
         void message.success(t('pages.stageSwitch.templates.validationPassed'))
@@ -284,7 +287,8 @@ export default function TemplateList() {
                 size="small"
                 icon={<CopyOutlined />}
                 loading={
-                  cloneMutation.isPending && cloneMutation.variables === record.id
+                  cloneMutation.isPending &&
+                  cloneMutation.variables === record.id
                 }
                 onClick={() => cloneMutation.mutate(record.id)}
               >
@@ -307,9 +311,13 @@ export default function TemplateList() {
   )
 
   return (
-    <PageContainer className="p-5">
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.stageSwitch.templates.title')}
+        title={
+          <AdminPageTitle section="stageSwitch">
+            {t('routes.stageSwitch.templates.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.stageSwitch.templates.subtitle')}
       >
         <Space wrap>

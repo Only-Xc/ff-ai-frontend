@@ -7,9 +7,14 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import { grcReviewCases_list } from '@/api/grc'
 import { useAuthStore } from '@/store/useAuth'
-import type { GrcReviewCase, GrcReviewCaseListQuery, ReviewStatus } from '@ff-ai-frontend/api'
+import type {
+  GrcReviewCase,
+  GrcReviewCaseListQuery,
+  ReviewStatus,
+} from '@ff-ai-frontend/api'
 
 dayjs.extend(relativeTime)
 
@@ -43,7 +48,7 @@ const STATUS_OPTIONS: ReviewStatus[] = [
 
 export function ReviewQueue() {
   const { t } = useTranslation()
-  const orgId = useAuthStore(state => state.organizationIds[0])
+  const orgId = useAuthStore((state) => state.organizationIds[0])
 
   const [tab, setTab] = useState<'myTodo' | 'all'>('all')
   const [statusFilter, setStatusFilter] = useState<ReviewStatus | undefined>()
@@ -110,7 +115,9 @@ export function ReviewQueue() {
                 ? 'blue'
                 : 'green'
         return (
-          <Tag color={color}>{t(`pages.grc.riskLevel.${level.toLowerCase()}`)}</Tag>
+          <Tag color={color}>
+            {t(`pages.grc.riskLevel.${level.toLowerCase()}`)}
+          </Tag>
         )
       },
     },
@@ -119,7 +126,8 @@ export function ReviewQueue() {
       dataIndex: 'risk_score',
       key: 'risk_score',
       width: 100,
-      sorter: (a: GrcReviewCase, b: GrcReviewCase) => a.risk_score - b.risk_score,
+      sorter: (a: GrcReviewCase, b: GrcReviewCase) =>
+        a.risk_score - b.risk_score,
     },
     {
       title: t('pages.grc.reviews.status'),
@@ -154,15 +162,19 @@ export function ReviewQueue() {
   ]
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.grc.reviews.title')}
+        title={
+          <AdminPageTitle section="governance">
+            {t('routes.grc.reviews.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.grc.reviews.subtitle')}
       />
       <Space wrap style={{ marginBottom: 16 }}>
         <Segmented
           value={tab}
-          onChange={value => {
+          onChange={(value) => {
             setTab(value as 'myTodo' | 'all')
             setPage(1)
           }}
@@ -175,7 +187,7 @@ export function ReviewQueue() {
           allowClear
           placeholder={t('pages.grc.reviews.searchPlaceholder')}
           style={{ width: 240 }}
-          onSearch={value => {
+          onSearch={(value) => {
             setKeyword(value.trim())
             setPage(1)
           }}
@@ -185,11 +197,14 @@ export function ReviewQueue() {
           placeholder={t('pages.grc.reviews.filterStatus')}
           style={{ width: 160 }}
           value={statusFilter}
-          onChange={value => {
+          onChange={(value) => {
             setStatusFilter(value)
             setPage(1)
           }}
-          options={STATUS_OPTIONS.map(s => ({ value: s, label: getStatusTag(s) }))}
+          options={STATUS_OPTIONS.map((s) => ({
+            value: s,
+            label: getStatusTag(s),
+          }))}
         />
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
           {t('pages.grc.common.refresh')}
@@ -205,7 +220,8 @@ export function ReviewQueue() {
           pageSize,
           total: data?.count ?? 0,
           showSizeChanger: true,
-          showTotal: total => t('pages.grc.common.totalItems', { count: total }),
+          showTotal: (total) =>
+            t('pages.grc.common.totalItems', { count: total }),
           onChange: (nextPage, nextSize) => {
             setPage(nextPage)
             setPageSize(nextSize)

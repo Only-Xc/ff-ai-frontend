@@ -1,4 +1,9 @@
-import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreOutlined } from '@ant-design/icons'
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  AppstoreOutlined,
+} from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Input, Modal, Select, Space, Table, Tag, message } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
@@ -7,6 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   serviceCatalogKeys,
   serviceCatalogService_delete,
@@ -22,7 +28,11 @@ export default function ServiceListPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [query, setQuery] = useState<ServiceListQuery>({
-    skip: 0, limit: 20, keyword: '', service_level: undefined, status: undefined,
+    skip: 0,
+    limit: 20,
+    keyword: '',
+    service_level: undefined,
+    status: undefined,
   })
   const { data, isLoading } = useQuery({
     queryKey: serviceCatalogKeys.services(query),
@@ -42,25 +52,35 @@ export default function ServiceListPage() {
     {
       title: t('pages.serviceCatalog.columns.serviceLevel'),
       dataIndex: 'service_level',
-      render: (v: string) => <Tag color={v === 'P0' ? 'red' : v === 'P1' ? 'orange' : 'blue'}>{v}</Tag>,
+      render: (v: string) => (
+        <Tag color={v === 'P0' ? 'red' : v === 'P1' ? 'orange' : 'blue'}>
+          {v}
+        </Tag>
+      ),
     },
     {
       title: t('pages.serviceCatalog.columns.status'),
       dataIndex: 'status',
-      render: (v: string) => <Tag color={v === 'active' ? 'green' : 'default'}>{v}</Tag>,
+      render: (v: string) => (
+        <Tag color={v === 'active' ? 'green' : 'default'}>{v}</Tag>
+      ),
     },
     {
       title: t('pages.serviceCatalog.columns.actions'),
       render: (_: any, row: ServiceDefinition) => (
         <Space>
           <Link to={`/service-catalog/services/${row.id}`}>
-            <Button size="small">{t('pages.serviceCatalog.actions.view')}</Button>
+            <Button size="small">
+              {t('pages.serviceCatalog.actions.view')}
+            </Button>
           </Link>
           <Link to={`/service-catalog/services/${row.id}/edit`}>
             <Button size="small" icon={<EditOutlined />} />
           </Link>
           <Button
-            size="small" danger icon={<DeleteOutlined />}
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
             onClick={() =>
               Modal.confirm({
                 title: t('pages.serviceCatalog.actions.confirmDelete'),
@@ -74,15 +94,24 @@ export default function ServiceListPage() {
   ]
 
   return (
-    <PageContainer>
-      <PageHeader title={t('routes.serviceCatalog.services.title')} />
+    <PageContainer className="min-h-full p-4">
+      <PageHeader
+        title={
+          <AdminPageTitle section="serviceCatalog">
+            {t('routes.serviceCatalog.services.title')}
+          </AdminPageTitle>
+        }
+        subtitle={t('routes.serviceCatalog.services.subtitle')}
+      />
       <Space style={{ marginBottom: 16 }}>
         <Input.Search
           allowClear
           style={{ width: 240 }}
           placeholder={t('pages.serviceCatalog.actions.searchKeyword')}
           value={query.keyword}
-          onChange={(e) => setQuery({ ...query, keyword: e.target.value, skip: 0 })}
+          onChange={(e) =>
+            setQuery({ ...query, keyword: e.target.value, skip: 0 })
+          }
         />
         <Select
           allowClear
@@ -106,7 +135,9 @@ export default function ServiceListPage() {
           </Button>
         </Link>
         <Link to="/service-catalog/categories">
-          <Button icon={<AppstoreOutlined />}>{t('pages.serviceCatalog.actions.manageCategories')}</Button>
+          <Button icon={<AppstoreOutlined />}>
+            {t('pages.serviceCatalog.actions.manageCategories')}
+          </Button>
         </Link>
         <Link to="/service-catalog/import">
           <Button>{t('pages.serviceCatalog.actions.importFile')}</Button>
@@ -121,7 +152,8 @@ export default function ServiceListPage() {
           total: data?.count ?? 0,
           current: Math.floor((query.skip ?? 0) / (query.limit ?? 20)) + 1,
           pageSize: query.limit,
-          onChange: (page) => setQuery({ ...query, skip: (page - 1) * (query.limit ?? 20) }),
+          onChange: (page) =>
+            setQuery({ ...query, skip: (page - 1) * (query.limit ?? 20) }),
         }}
       />
     </PageContainer>

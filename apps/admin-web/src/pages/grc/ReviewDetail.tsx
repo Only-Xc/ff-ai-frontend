@@ -22,6 +22,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import type { DecisionOutcome } from '@ff-ai-frontend/api'
 import {
   grcEvaluationResults_list,
@@ -43,7 +44,10 @@ const STATUS_COLORS: Record<string, string> = {
   EXCEPTION_REQUESTED: 'purple',
 }
 
-type UserRef = { id: string; email: string; full_name: string | null } | null | undefined
+type UserRef =
+  | { id: string; email: string; full_name: string | null }
+  | null
+  | undefined
 
 /** Prefer full_name, then email, then fall back to the raw id. */
 function userLabel(ref: UserRef, fallbackId?: string | null): string {
@@ -52,7 +56,8 @@ function userLabel(ref: UserRef, fallbackId?: string | null): string {
 
 /** Prefer "code · name", then name or code, then fall back to the raw rule_id. */
 function ruleLabel(row: GrcEvaluationResult): string {
-  if (row.rule_code && row.rule_name) return `${row.rule_code} · ${row.rule_name}`
+  if (row.rule_code && row.rule_name)
+    return `${row.rule_code} · ${row.rule_name}`
   return row.rule_name || row.rule_code || row.rule_id
 }
 
@@ -63,19 +68,12 @@ const DECISION_IMPACTS: Record<
   APPROVED: {
     title: 'approve',
     color: 'success',
-    items: [
-      'agentWillDeploy',
-      'releaseAuthGenerated',
-      'taskWillComplete',
-    ],
+    items: ['agentWillDeploy', 'releaseAuthGenerated', 'taskWillComplete'],
   },
   APPROVED_WITH_CONDITIONS: {
     title: 'approveWithConditions',
     color: 'warning',
-    items: [
-      'conditionsMustBeMet',
-      'agentBlockedUntilConditionsMet',
-    ],
+    items: ['conditionsMustBeMet', 'agentBlockedUntilConditionsMet'],
   },
   REJECTED: {
     title: 'reject',
@@ -89,11 +87,7 @@ const DECISION_IMPACTS: Record<
   REMEDIATION_REQUIRED: {
     title: 'requireRemediation',
     color: 'warning',
-    items: [
-      'agentRemainsBlocked',
-      'taskRemainsPending',
-      'canRepromptAfterFix',
-    ],
+    items: ['agentRemainsBlocked', 'taskRemainsPending', 'canRepromptAfterFix'],
   },
   EXCEPTION_REQUESTED: {
     title: 'requestException',
@@ -127,7 +121,12 @@ export function ReviewDetail() {
   const decisions: GrcReviewDecision[] = decisionsData ?? []
 
   const { data: evalResultsData } = useQuery({
-    queryKey: ['grc', 'evaluation', caseData?.evaluation_id, 'results'] as const,
+    queryKey: [
+      'grc',
+      'evaluation',
+      caseData?.evaluation_id,
+      'results',
+    ] as const,
     queryFn: () => grcEvaluationResults_list(caseData!.evaluation_id),
     enabled: !!caseData?.evaluation_id,
   })
@@ -159,7 +158,7 @@ export function ReviewDetail() {
   })
 
   const handleDecide = () => {
-    form.validateFields().then(values => {
+    form.validateFields().then((values) => {
       decideMutation.mutate({
         decision: values.decision,
         rationale: values.rationale,
@@ -170,19 +169,26 @@ export function ReviewDetail() {
 
   const isDecided =
     caseData != null &&
-    !['OPEN', 'IN_REVIEW', 'REMEDIATION_REQUIRED', 'EXCEPTION_REQUESTED'].includes(
-      caseData.status,
-    )
+    ![
+      'OPEN',
+      'IN_REVIEW',
+      'REMEDIATION_REQUIRED',
+      'EXCEPTION_REQUESTED',
+    ].includes(caseData.status)
 
   // getEvaluationResults_list returns ListResult<GrcEvaluationResult>; unwrap data field
   const evalResults: GrcEvaluationResult[] = Array.isArray(evalResultsData)
     ? evalResultsData
-    : evalResultsData?.data ?? []
+    : (evalResultsData?.data ?? [])
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={caseData?.case_no ?? t('pages.grc.reviews.caseNo')}
+        title={
+          <AdminPageTitle section="governance">
+            {caseData?.case_no ?? t('pages.grc.reviews.caseNo')}
+          </AdminPageTitle>
+        }
         subtitle={caseData?.title}
       >
         {!isDecided && (
@@ -201,7 +207,10 @@ export function ReviewDetail() {
                 title={t('pages.grc.reviews.riskLevel')}
                 value={caseData.risk_level}
               />
-              <Statistic title={t("pages.grc.reviews.riskScore")} value={caseData.risk_score} />
+              <Statistic
+                title={t('pages.grc.reviews.riskScore')}
+                value={caseData.risk_score}
+              />
               <Statistic
                 title={t('pages.grc.reviews.status')}
                 value={caseData.status}
@@ -216,28 +225,28 @@ export function ReviewDetail() {
 
           {/* Case Details */}
           <Descriptions
-            title={t("pages.grc.reviews.caseInfo")}
+            title={t('pages.grc.reviews.caseInfo')}
             bordered
             size="small"
             column={2}
             style={{ marginBottom: 24 }}
           >
-            <Descriptions.Item label={t("pages.grc.reviews.subject")}>
+            <Descriptions.Item label={t('pages.grc.reviews.subject')}>
               {caseData.subject_type}: {caseData.subject_id}
             </Descriptions.Item>
-            <Descriptions.Item label={t("pages.grc.reviews.agent")}>
+            <Descriptions.Item label={t('pages.grc.reviews.agent')}>
               {caseData.agent_id ?? '-'}
             </Descriptions.Item>
-            <Descriptions.Item label={t("pages.grc.reviews.requester")}>
+            <Descriptions.Item label={t('pages.grc.reviews.requester')}>
               {userLabel(caseData.requester, caseData.requester_id)}
             </Descriptions.Item>
-            <Descriptions.Item label={t("pages.grc.reviews.assigneeField")}>
+            <Descriptions.Item label={t('pages.grc.reviews.assigneeField')}>
               {userLabel(caseData.assignee, caseData.assignee_id)}
             </Descriptions.Item>
-            <Descriptions.Item label={t("pages.grc.reviews.opened")}>
+            <Descriptions.Item label={t('pages.grc.reviews.opened')}>
               {dayjs(caseData.opened_at).format()}
             </Descriptions.Item>
-            <Descriptions.Item label={t("pages.grc.reviews.due")}>
+            <Descriptions.Item label={t('pages.grc.reviews.due')}>
               {caseData.due_at ? dayjs(caseData.due_at).format() : '-'}
             </Descriptions.Item>
           </Descriptions>
@@ -258,7 +267,8 @@ export function ReviewDetail() {
                     dataIndex: 'rule_id',
                     key: 'rule_id',
                     width: 200,
-                    render: (_: string, row: GrcEvaluationResult) => ruleLabel(row),
+                    render: (_: string, row: GrcEvaluationResult) =>
+                      ruleLabel(row),
                   },
                   {
                     title: t('pages.grc.reviews.evaluationResult'),
@@ -277,7 +287,9 @@ export function ReviewDetail() {
                                 : 'orange'
                         }
                       >
-                        {v === 'review_required' ? t('pages.grc.rules.resultReviewRequired') : v}
+                        {v === 'review_required'
+                          ? t('pages.grc.rules.resultReviewRequired')
+                          : v}
                       </Tag>
                     ),
                   },
@@ -302,7 +314,11 @@ export function ReviewDetail() {
                       <Typography.Text strong>
                         {t('pages.grc.reviews.evaluationEvidence')}
                       </Typography.Text>
-                      <Typography.Paragraph code copyable style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}>
+                      <Typography.Paragraph
+                        code
+                        copyable
+                        style={{ marginTop: 4, whiteSpace: 'pre-wrap' }}
+                      >
                         {JSON.stringify(row.evidence, null, 2)}
                       </Typography.Paragraph>
                     </div>
@@ -320,7 +336,7 @@ export function ReviewDetail() {
                 {t('pages.grc.reviews.auditTimeline')}
               </Typography.Title>
               <Timeline
-                items={decisions.map(d => ({
+                items={decisions.map((d) => ({
                   color:
                     d.decision === 'APPROVED'
                       ? 'green'
@@ -329,7 +345,8 @@ export function ReviewDetail() {
                         : 'orange',
                   children: (
                     <div>
-                      <strong>{d.decision}</strong> by {userLabel(d.decided_by_user, d.decided_by)}
+                      <strong>{d.decision}</strong> by{' '}
+                      {userLabel(d.decided_by_user, d.decided_by)}
                       <br />
                       <span style={{ color: '#999' }}>
                         {dayjs(d.decided_at).format()}
@@ -352,7 +369,11 @@ export function ReviewDetail() {
         width={500}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="decision" label={t("pages.grc.reviews.decision")} rules={[{ required: true }]}>
+          <Form.Item
+            name="decision"
+            label={t('pages.grc.reviews.decision')}
+            rules={[{ required: true }]}
+          >
             <Select
               onChange={setSelectedDecision}
               options={[
@@ -387,20 +408,22 @@ export function ReviewDetail() {
             style={{ marginBottom: 16, marginTop: 8 }}
             type={DECISION_IMPACTS[selectedDecision].color}
             showIcon
-            message={t(`pages.grc.reviews.impactPreview.${DECISION_IMPACTS[selectedDecision].title}`)}
+            message={t(
+              `pages.grc.reviews.impactPreview.${DECISION_IMPACTS[selectedDecision].title}`,
+            )}
             description={
               <ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
                 {DECISION_IMPACTS[selectedDecision].items.map((key) => (
-                  <li key={key}>{t(`pages.grc.reviews.impactPreview.${key}`)}</li>
+                  <li key={key}>
+                    {t(`pages.grc.reviews.impactPreview.${key}`)}
+                  </li>
                 ))}
               </ul>
             }
           />
         )}
 
-        <div
-          style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}
-        >
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <Button onClick={() => setDecisionOpen(false)}>
             {t('pages.grc.common.cancel')}
           </Button>

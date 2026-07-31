@@ -15,10 +15,15 @@ import {
   Tag,
 } from 'antd'
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
-import { DownloadOutlined, ReloadOutlined, SafetyOutlined } from '@ant-design/icons'
+import {
+  DownloadOutlined,
+  ReloadOutlined,
+  SafetyOutlined,
+} from '@ant-design/icons'
 import dayjs from 'dayjs'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   grcAuditChain_verify,
   grcAuditEvents_list,
@@ -45,8 +50,19 @@ const RISK_LEVEL_COLORS: Record<string, string> = {
   low: 'green',
 }
 
-const ALL_TREATMENT_TYPES: TreatmentType[] = ['mitigate', 'avoid', 'transfer', 'accept']
-const ALL_TREATMENT_STATUSES: TreatmentStatus[] = ['open', 'in_progress', 'verified', 'closed', 'overdue']
+const ALL_TREATMENT_TYPES: TreatmentType[] = [
+  'mitigate',
+  'avoid',
+  'transfer',
+  'accept',
+]
+const ALL_TREATMENT_STATUSES: TreatmentStatus[] = [
+  'open',
+  'in_progress',
+  'verified',
+  'closed',
+  'overdue',
+]
 
 const EVAL_RESULT_COLORS: Record<string, string> = {
   PASS: 'green',
@@ -238,8 +254,10 @@ export function GovernanceReports() {
                 title: t('pages.grc.reports.count'),
                 dataIndex: 'count',
                 key: 'count',
-                sorter: (a: GrcRiskDistributionItem, b: GrcRiskDistributionItem) =>
-                  a.count - b.count,
+                sorter: (
+                  a: GrcRiskDistributionItem,
+                  b: GrcRiskDistributionItem,
+                ) => a.count - b.count,
               },
             ]}
             pagination={false}
@@ -271,7 +289,11 @@ export function GovernanceReports() {
                 key: 'result',
                 render: (v: string) => evalResultTag(v),
               },
-              { title: t('pages.grc.reports.count'), dataIndex: 'count', key: 'count' },
+              {
+                title: t('pages.grc.reports.count'),
+                dataIndex: 'count',
+                key: 'count',
+              },
             ]}
             pagination={false}
           />
@@ -363,7 +385,11 @@ export function GovernanceReports() {
       children: (
         <Card loading={treatmentQuery.isFetching}>
           {treatmentQuery.data && (
-            <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+            <Space
+              orientation="vertical"
+              size="middle"
+              style={{ width: '100%' }}
+            >
               <Row gutter={16}>
                 <Col span={6}>
                   <Statistic
@@ -385,7 +411,12 @@ export function GovernanceReports() {
                     size="small"
                     dataSource={ALL_TREATMENT_TYPES.map((type) => ({
                       type,
-                      count: (treatmentQuery.data.by_type as Record<string, number> | undefined)?.[type] ?? 0,
+                      count:
+                        (
+                          treatmentQuery.data.by_type as
+                            | Record<string, number>
+                            | undefined
+                        )?.[type] ?? 0,
                     }))}
                     rowKey="type"
                     pagination={false}
@@ -411,7 +442,12 @@ export function GovernanceReports() {
                     size="small"
                     dataSource={ALL_TREATMENT_STATUSES.map((status) => ({
                       status,
-                      count: (treatmentQuery.data.by_status as Record<string, number> | undefined)?.[status] ?? 0,
+                      count:
+                        (
+                          treatmentQuery.data.by_status as
+                            | Record<string, number>
+                            | undefined
+                        )?.[status] ?? 0,
                     }))}
                     rowKey="status"
                     pagination={false}
@@ -506,7 +542,17 @@ export function GovernanceReports() {
                 key: 'hit_rate',
                 width: 100,
                 render: (v: number) => (
-                  <Tag color={v > 50 ? 'red' : v > 20 ? 'orange' : v > 0 ? 'blue' : 'green'}>
+                  <Tag
+                    color={
+                      v > 50
+                        ? 'red'
+                        : v > 20
+                          ? 'orange'
+                          : v > 0
+                            ? 'blue'
+                            : 'green'
+                    }
+                  >
                     {v}%
                   </Tag>
                 ),
@@ -516,7 +562,8 @@ export function GovernanceReports() {
                 dataIndex: 'last_evaluated_at',
                 key: 'last_evaluated_at',
                 width: 170,
-                render: (v: string | null) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-'),
+                render: (v: string | null) =>
+                  v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
               },
             ]}
             pagination={false}
@@ -605,9 +652,13 @@ export function GovernanceReports() {
   ]
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.grc.reports.title')}
+        title={
+          <AdminPageTitle section="governance">
+            {t('routes.grc.reports.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.grc.reports.subtitle')}
       >
         <Space>

@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import { isRequestError } from '@ff-ai-frontend/utils'
 import {
   stageSwitchDecision_submit,
@@ -88,7 +89,9 @@ export default function RequestDetail() {
     void queryClient.invalidateQueries({
       queryKey: stageSwitchKeys.request(requestId),
     })
-    void queryClient.invalidateQueries({ queryKey: stageSwitchKeys.taskLists() })
+    void queryClient.invalidateQueries({
+      queryKey: stageSwitchKeys.taskLists(),
+    })
     void queryClient.invalidateQueries({
       queryKey: stageSwitchKeys.requestLists(),
     })
@@ -157,7 +160,7 @@ export default function RequestDetail() {
 
   if (detailQuery.isLoading) {
     return (
-      <PageContainer className="flex min-h-100 items-center justify-center p-5">
+      <PageContainer className="flex min-h-100 items-center justify-center p-4">
         <Spin />
       </PageContainer>
     )
@@ -165,7 +168,7 @@ export default function RequestDetail() {
 
   if (detailQuery.isError || !detail || !request) {
     return (
-      <PageContainer className="p-5">
+      <PageContainer className="min-h-full p-4">
         <Result
           status={detailQuery.isError ? 'error' : '404'}
           title={
@@ -222,9 +225,13 @@ export default function RequestDetail() {
     canRetryExecution(request.execution_status)
 
   return (
-    <PageContainer className="p-5">
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={request.request_no}
+        title={
+          <AdminPageTitle section="stageSwitch">
+            {request.request_no}
+          </AdminPageTitle>
+        }
         subtitle={t('pages.stageSwitch.detail.subtitle', {
           agentId: request.agent_id,
         })}
@@ -354,14 +361,14 @@ export default function RequestDetail() {
         <ApprovalProgress nodes={detail.nodes} assignees={detail.assignees} />
       </Card>
 
-      <Card
-        size="small"
-        title={t('pages.stageSwitch.detail.decisionHistory')}
-      >
+      <Card size="small" title={t('pages.stageSwitch.detail.decisionHistory')}>
         {detail.decisions.length > 0 ? (
           <Timeline
             items={[...detail.decisions]
-              .sort((a, b) => dayjs(b.decided_at).valueOf() - dayjs(a.decided_at).valueOf())
+              .sort(
+                (a, b) =>
+                  dayjs(b.decided_at).valueOf() - dayjs(a.decided_at).valueOf(),
+              )
               .map((record) => ({
                 color: decisionColor(record.decision),
                 children: (

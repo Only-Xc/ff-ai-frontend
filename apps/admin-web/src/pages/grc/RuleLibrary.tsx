@@ -6,10 +6,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
-import {
-  type GrcRule,
-  grcRules_list,
-} from '@/api/grc'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
+import { type GrcRule, grcRules_list } from '@/api/grc'
 import { useAuthStore } from '@/store/useAuth'
 import { usePaginationParams } from '@/hooks/usePaginationParams'
 import { usePermission } from '@/hooks/usePermission'
@@ -42,22 +40,30 @@ export function RuleLibrary() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const orgId = useAuthStore(state => state.organizationIds[0])
+  const orgId = useAuthStore((state) => state.organizationIds[0])
   const { hasPermission } = usePermission()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editingRule, setEditingRule] = useState<GrcRule | null>(null)
-  const [selectedTemplate, setSelectedTemplate] = useState<RuleTemplate | null>(null)
+  const [selectedTemplate, setSelectedTemplate] = useState<RuleTemplate | null>(
+    null,
+  )
   const [category, setCategory] = useState<string | undefined>(undefined)
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined)
   const [keyword, setKeyword] = useState<string>('')
   const [committedKeyword, setCommittedKeyword] = useState<string>('')
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false)
 
-  const { current, pageSize, skip, limit, handleChange } = usePaginationParams({ defaultPageSize: 20 })
+  const { current, pageSize, skip, limit, handleChange } = usePaginationParams({
+    defaultPageSize: 20,
+  })
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['grc', 'rules', { category, isActive, keyword: committedKeyword, orgId, skip, limit }],
+    queryKey: [
+      'grc',
+      'rules',
+      { category, isActive, keyword: committedKeyword, orgId, skip, limit },
+    ],
     queryFn: () =>
       grcRules_list({
         category,
@@ -83,11 +89,22 @@ export function RuleLibrary() {
   }
 
   const columns = [
-    { title: t('pages.grc.rules.code'), dataIndex: 'code', key: 'code', width: 220,
-      render: (v: string, r: GrcRule) => <a onClick={() => navigate(`/grc/rules/${r.id}`)}>{v}</a>,
+    {
+      title: t('pages.grc.rules.code'),
+      dataIndex: 'code',
+      key: 'code',
+      width: 220,
+      render: (v: string, r: GrcRule) => (
+        <a onClick={() => navigate(`/grc/rules/${r.id}`)}>{v}</a>
+      ),
     },
     { title: t('pages.grc.rules.name'), dataIndex: 'name', key: 'name' },
-    { title: t('pages.grc.rules.category'), dataIndex: 'category', key: 'category', width: 120 },
+    {
+      title: t('pages.grc.rules.category'),
+      dataIndex: 'category',
+      key: 'category',
+      width: 120,
+    },
     {
       title: t('pages.grc.rules.version'),
       key: 'version',
@@ -99,7 +116,9 @@ export function RuleLibrary() {
         return (
           <Space size={4}>
             <span>v{r.current_version}</span>
-            <Tag color={color}>{t(`pages.grc.rules.status_${status}`, status)}</Tag>
+            <Tag color={color}>
+              {t(`pages.grc.rules.status_${status}`, status)}
+            </Tag>
           </Space>
         )
       },
@@ -108,7 +127,8 @@ export function RuleLibrary() {
       title: t('pages.grc.rules.severity'),
       key: 'severity',
       width: 100,
-      render: (r: GrcRule) => (r.current_severity ? <Tag>{r.current_severity}</Tag> : '-'),
+      render: (r: GrcRule) =>
+        r.current_severity ? <Tag>{r.current_severity}</Tag> : '-',
     },
     {
       title: t('pages.grc.rules.ruleActive'),
@@ -116,7 +136,9 @@ export function RuleLibrary() {
       width: 100,
       render: (r: GrcRule) => (
         <Tag color={r.is_active ? 'green' : 'default'}>
-          {r.is_active ? t('pages.grc.rules.enabled') : t('pages.grc.rules.disabled')}
+          {r.is_active
+            ? t('pages.grc.rules.enabled')
+            : t('pages.grc.rules.disabled')}
         </Tag>
       ),
     },
@@ -127,12 +149,26 @@ export function RuleLibrary() {
       render: (_: unknown, r: GrcRule) => (
         <Space>
           {hasPermission('admin.grc.rules.update') && (
-            <Button size="small" onClick={() => { setEditingRule(r); setSelectedTemplate(null); setDrawerOpen(true) }}>
+            <Button
+              size="small"
+              onClick={() => {
+                setEditingRule(r)
+                setSelectedTemplate(null)
+                setDrawerOpen(true)
+              }}
+            >
               {t('pages.grc.rules.edit')}
             </Button>
           )}
           {hasPermission('admin.grc.rules.create') && (
-            <Button size="small" onClick={() => { setEditingRule(r); setSelectedTemplate(null); setDrawerOpen(true) }}>
+            <Button
+              size="small"
+              onClick={() => {
+                setEditingRule(r)
+                setSelectedTemplate(null)
+                setDrawerOpen(true)
+              }}
+            >
               {t('pages.grc.rules.createVersion')}
             </Button>
           )}
@@ -142,9 +178,13 @@ export function RuleLibrary() {
   ]
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.grc.rules.title')}
+        title={
+          <AdminPageTitle section="governance">
+            {t('routes.grc.rules.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.grc.rules.subtitle')}
       >
         <Space>
@@ -153,7 +193,15 @@ export function RuleLibrary() {
               <Button onClick={() => setTemplatePickerOpen(true)}>
                 {t('pages.grc.rules.fromTemplate')}
               </Button>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => { setEditingRule(null); setSelectedTemplate(null); setDrawerOpen(true) }}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setEditingRule(null)
+                  setSelectedTemplate(null)
+                  setDrawerOpen(true)
+                }}
+              >
                 {t('pages.grc.common.create')}
               </Button>
             </>
@@ -210,8 +258,14 @@ export function RuleLibrary() {
         open={drawerOpen}
         rule={editingRule}
         template={selectedTemplate}
-        onClose={() => { setDrawerOpen(false); setEditingRule(null); setSelectedTemplate(null) }}
-        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['grc', 'rules'] })}
+        onClose={() => {
+          setDrawerOpen(false)
+          setEditingRule(null)
+          setSelectedTemplate(null)
+        }}
+        onSuccess={() =>
+          queryClient.invalidateQueries({ queryKey: ['grc', 'rules'] })
+        }
       />
       <RuleTemplatePicker
         open={templatePickerOpen}

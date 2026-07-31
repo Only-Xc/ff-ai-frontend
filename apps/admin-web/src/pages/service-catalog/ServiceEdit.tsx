@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import { adminOrganizations_list, adminUsers_list } from '@/api/rbac'
 import { useAuthStore } from '@/store/useAuth'
 import {
@@ -31,7 +32,8 @@ export default function ServiceEditPage() {
 
   const { data: cats = [] } = useQuery({
     queryKey: ['service-catalog', 'categories'],
-    queryFn: () => serviceCategories_list() as unknown as Promise<ServiceCategory[]>,
+    queryFn: () =>
+      serviceCategories_list() as unknown as Promise<ServiceCategory[]>,
   })
   const { data: orgsData } = useQuery({
     queryKey: ['rbac', 'organizations', 'for-service-catalog'],
@@ -51,12 +53,17 @@ export default function ServiceEditPage() {
 
   useEffect(() => {
     if (existing) form.setFieldsValue(existing.service as any)
-    else if (currentUser) form.setFieldsValue({ owner_user_id: currentUser.id } as any)
+    else if (currentUser)
+      form.setFieldsValue({ owner_user_id: currentUser.id } as any)
   }, [existing, form, currentUser])
 
   const saveMut = useMutation({
     mutationFn: async (body: ServiceDefinitionCreate) => {
-      if (isNew) return serviceCatalogService_create({ ...body, owner_user_id: body.owner_user_id || currentUser?.id || '' })
+      if (isNew)
+        return serviceCatalogService_create({
+          ...body,
+          owner_user_id: body.owner_user_id || currentUser?.id || '',
+        })
       return serviceCatalogService_update(serviceId!, body)
     },
     onSuccess: () => {
@@ -73,50 +80,100 @@ export default function ServiceEditPage() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={isNew ? t('pages.serviceCatalog.actions.createService') : t('pages.serviceCatalog.actions.editService')}
+        title={
+          <AdminPageTitle section="serviceCatalog">
+            {isNew
+              ? t('pages.serviceCatalog.actions.createService')
+              : t('pages.serviceCatalog.actions.editService')}
+          </AdminPageTitle>
+        }
       />
       <Form form={form} layout="vertical" style={{ maxWidth: 640 }}>
-        <Form.Item name="name" label={t('pages.serviceCatalog.columns.name')} rules={[{ required: true }]}>
+        <Form.Item
+          name="name"
+          label={t('pages.serviceCatalog.columns.name')}
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
-        <Form.Item name="code" label={t('pages.serviceCatalog.columns.code')} rules={[{ required: true }]}>
+        <Form.Item
+          name="code"
+          label={t('pages.serviceCatalog.columns.code')}
+          rules={[{ required: true }]}
+        >
           <Input disabled={!isNew} />
         </Form.Item>
-        <Form.Item name="category_id" label={t('pages.serviceCatalog.columns.categoryCode')} rules={[{ required: true }]}>
-          <Select options={cats.map((c: any) => ({ value: c.id, label: c.name }))} />
+        <Form.Item
+          name="category_id"
+          label={t('pages.serviceCatalog.columns.categoryCode')}
+          rules={[{ required: true }]}
+        >
+          <Select
+            options={cats.map((c: any) => ({ value: c.id, label: c.name }))}
+          />
         </Form.Item>
-        <Form.Item name="organization_id" label={t('pages.serviceCatalog.columns.organization')}>
+        <Form.Item
+          name="organization_id"
+          label={t('pages.serviceCatalog.columns.organization')}
+        >
           <Select
             allowClear
             showSearch
             optionFilterProp="label"
             placeholder={t('pages.serviceCatalog.actions.optionalPlaceholder')}
-            options={orgs.map((o: any) => ({ value: o.id, label: `${o.name} (${o.code})` }))}
+            options={orgs.map((o: any) => ({
+              value: o.id,
+              label: `${o.name} (${o.code})`,
+            }))}
           />
         </Form.Item>
-        <Form.Item name="owner_user_id" label={t('pages.serviceCatalog.columns.owner')} rules={[{ required: true }]}>
+        <Form.Item
+          name="owner_user_id"
+          label={t('pages.serviceCatalog.columns.owner')}
+          rules={[{ required: true }]}
+        >
           <Select
             showSearch
             optionFilterProp="label"
-            options={users.map((u: any) => ({ value: u.id, label: `${u.full_name || u.email} (${u.email})` }))}
+            options={users.map((u: any) => ({
+              value: u.id,
+              label: `${u.full_name || u.email} (${u.email})`,
+            }))}
           />
         </Form.Item>
-        <Form.Item name="service_level" label={t('pages.serviceCatalog.columns.serviceLevel')} rules={[{ required: true }]}>
+        <Form.Item
+          name="service_level"
+          label={t('pages.serviceCatalog.columns.serviceLevel')}
+          rules={[{ required: true }]}
+        >
           <Select options={LEVELS.map((v) => ({ value: v, label: v }))} />
         </Form.Item>
-        <Form.Item name="status" label={t('pages.serviceCatalog.columns.status')}>
-          <Select options={[{ value: 'active', label: 'active' }, { value: 'inactive', label: 'inactive' }]} />
+        <Form.Item
+          name="status"
+          label={t('pages.serviceCatalog.columns.status')}
+        >
+          <Select
+            options={[
+              { value: 'active', label: 'active' },
+              { value: 'inactive', label: 'inactive' },
+            ]}
+          />
         </Form.Item>
-        <Form.Item name="description" label={t('pages.serviceCatalog.columns.description')}>
+        <Form.Item
+          name="description"
+          label={t('pages.serviceCatalog.columns.description')}
+        >
           <Input.TextArea rows={3} />
         </Form.Item>
         <Space>
           <Button type="primary" loading={saveMut.isPending} onClick={submit}>
             {t('pages.serviceCatalog.actions.save')}
           </Button>
-          <Button onClick={() => nav(-1)}>{t('pages.serviceCatalog.actions.cancel')}</Button>
+          <Button onClick={() => nav(-1)}>
+            {t('pages.serviceCatalog.actions.cancel')}
+          </Button>
         </Space>
       </Form>
     </PageContainer>

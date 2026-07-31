@@ -2,19 +2,12 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
-import {
-  Button,
-  Input,
-  Select,
-  Space,
-  Table,
-  Tag,
-  message,
-} from 'antd'
+import { Button, Input, Select, Space, Table, Tag, message } from 'antd'
 import { ReloadOutlined } from '@ant-design/icons'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   grcEvaluations_list,
   grcEvaluation_rerun,
@@ -45,7 +38,9 @@ export function EvaluationList() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { hasPermission } = usePermission()
-  const { current, pageSize, skip, limit, handleChange } = usePaginationParams({ defaultPageSize: 20 })
+  const { current, pageSize, skip, limit, handleChange } = usePaginationParams({
+    defaultPageSize: 20,
+  })
 
   const [filters, setFilters] = useState<{
     agent_id: string
@@ -61,12 +56,24 @@ export function EvaluationList() {
   const [rerunning, setRerunning] = useState<string | null>(null)
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['grc', 'evaluations', { agent_id: committedAgentId, result: filters.result, risk_level: filters.risk_level, skip, limit }],
+    queryKey: [
+      'grc',
+      'evaluations',
+      {
+        agent_id: committedAgentId,
+        result: filters.result,
+        risk_level: filters.risk_level,
+        skip,
+        limit,
+      },
+    ],
     queryFn: () =>
       grcEvaluations_list({
         agent_id: committedAgentId || undefined,
-        result: (filters.result as EvaluationResultType | undefined) || undefined,
-        risk_level: (filters.risk_level as RiskLevelType | undefined) || undefined,
+        result:
+          (filters.result as EvaluationResultType | undefined) || undefined,
+        risk_level:
+          (filters.risk_level as RiskLevelType | undefined) || undefined,
         skip,
         limit,
       }),
@@ -95,13 +102,19 @@ export function EvaluationList() {
       width: 180,
       render: (v: string) => v.slice(0, 8) + '...',
     },
-    { title: t('pages.grc.evaluations.agentId'), dataIndex: 'agent_id', key: 'agent_id' },
+    {
+      title: t('pages.grc.evaluations.agentId'),
+      dataIndex: 'agent_id',
+      key: 'agent_id',
+    },
     {
       title: t('pages.grc.evaluations.result'),
       dataIndex: 'result',
       key: 'result',
       width: 140,
-      render: (v: string) => <Tag color={RESULT_COLORS[v] ?? 'default'}>{v}</Tag>,
+      render: (v: string) => (
+        <Tag color={RESULT_COLORS[v] ?? 'default'}>{v}</Tag>
+      ),
     },
     {
       title: t('pages.grc.evaluations.riskLevel'),
@@ -110,14 +123,24 @@ export function EvaluationList() {
       width: 120,
       render: (v: string) => <Tag color={RISK_COLORS[v] ?? 'default'}>{v}</Tag>,
     },
-    { title: t('pages.grc.evaluations.riskScore'), dataIndex: 'risk_score', key: 'risk_score', width: 100 },
-    { title: t('pages.grc.evaluations.triggerType'), dataIndex: 'trigger_type', key: 'trigger_type', width: 100 },
+    {
+      title: t('pages.grc.evaluations.riskScore'),
+      dataIndex: 'risk_score',
+      key: 'risk_score',
+      width: 100,
+    },
+    {
+      title: t('pages.grc.evaluations.triggerType'),
+      dataIndex: 'trigger_type',
+      key: 'trigger_type',
+      width: 100,
+    },
     {
       title: t('pages.grc.evaluations.startedAt'),
       dataIndex: 'started_at',
       key: 'started_at',
       width: 170,
-      render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
+      render: (v: string) => (v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-'),
     },
     {
       title: t('pages.grc.common.actions'),
@@ -125,7 +148,10 @@ export function EvaluationList() {
       width: 180,
       render: (_: unknown, row: { id: string }) => (
         <Space>
-          <Button size="small" onClick={() => navigate(`/grc/evaluations/${row.id}`)}>
+          <Button
+            size="small"
+            onClick={() => navigate(`/grc/evaluations/${row.id}`)}
+          >
             {t('pages.grc.evaluations.viewDetail')}
           </Button>
           {hasPermission('admin.grc.evaluations.run') && (
@@ -149,9 +175,13 @@ export function EvaluationList() {
   const evaluations = data?.data ?? []
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.grc.evaluations.title')}
+        title={
+          <AdminPageTitle section="governance">
+            {t('routes.grc.evaluations.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.grc.evaluations.subtitle')}
       >
         {hasPermission('admin.grc.evaluations.run') && (
@@ -167,15 +197,17 @@ export function EvaluationList() {
         <Input.Search
           placeholder={t('pages.grc.evaluations.filterAgentId')}
           value={filters.agent_id}
-          onChange={e => setFilters(f => ({ ...f, agent_id: e.target.value }))}
-          onSearch={v => setCommittedAgentId(v.trim())}
+          onChange={(e) =>
+            setFilters((f) => ({ ...f, agent_id: e.target.value }))
+          }
+          onSearch={(v) => setCommittedAgentId(v.trim())}
           allowClear
           style={{ width: 260 }}
         />
         <Select
           placeholder={t('pages.grc.evaluations.filterResult')}
           value={filters.result || undefined}
-          onChange={v => setFilters(f => ({ ...f, result: v || '' }))}
+          onChange={(v) => setFilters((f) => ({ ...f, result: v || '' }))}
           allowClear
           style={{ width: 180 }}
           options={[
@@ -189,7 +221,7 @@ export function EvaluationList() {
         <Select
           placeholder={t('pages.grc.evaluations.filterRiskLevel')}
           value={filters.risk_level || undefined}
-          onChange={v => setFilters(f => ({ ...f, risk_level: v || '' }))}
+          onChange={(v) => setFilters((f) => ({ ...f, risk_level: v || '' }))}
           allowClear
           style={{ width: 140 }}
           options={[

@@ -24,6 +24,7 @@ import { ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   approveException,
   getExceptions,
@@ -60,7 +61,9 @@ export function ExceptionManagement() {
   const queryClient = useQueryClient()
   const orgId = useAuthStore((state) => state.organizationIds[0])
 
-  const [statusFilter, setStatusFilter] = useState<ExceptionStatus | undefined>()
+  const [statusFilter, setStatusFilter] = useState<
+    ExceptionStatus | undefined
+  >()
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -70,7 +73,15 @@ export function ExceptionManagement() {
   const [detailRow, setDetailRow] = useState<GrcException | null>(null)
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['grc', 'exceptions', statusFilter, keyword, page, pageSize, orgId],
+    queryKey: [
+      'grc',
+      'exceptions',
+      statusFilter,
+      keyword,
+      page,
+      pageSize,
+      orgId,
+    ],
     placeholderData: keepPreviousData,
     queryFn: () =>
       getExceptions({
@@ -244,9 +255,13 @@ export function ExceptionManagement() {
   ]
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.grc.exceptions.title')}
+        title={
+          <AdminPageTitle section="governance">
+            {t('routes.grc.exceptions.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.grc.exceptions.subtitle')}
       />
 
@@ -269,7 +284,10 @@ export function ExceptionManagement() {
             setStatusFilter(value)
             setPage(1)
           }}
-          options={STATUS_OPTIONS.map((s) => ({ value: s, label: getStatusTag(s) }))}
+          options={STATUS_OPTIONS.map((s) => ({
+            value: s,
+            label: getStatusTag(s),
+          }))}
         />
         <Button icon={<ReloadOutlined />} onClick={() => refetch()}>
           {t('pages.grc.common.refresh')}
@@ -315,7 +333,8 @@ export function ExceptionManagement() {
           pageSize,
           total: data?.count ?? 0,
           showSizeChanger: true,
-          showTotal: (total) => t('pages.grc.common.totalItems', { count: total }),
+          showTotal: (total) =>
+            t('pages.grc.common.totalItems', { count: total }),
           onChange: (nextPage, nextSize) => {
             setPage(nextPage)
             setPageSize(nextSize)
@@ -369,10 +388,14 @@ export function ExceptionManagement() {
                 {JSON.stringify(detailRow.scope ?? {}, null, 2)}
               </Typography.Text>
             </Descriptions.Item>
-            <Descriptions.Item label={t('pages.grc.exceptions.compensatingControls')}>
+            <Descriptions.Item
+              label={t('pages.grc.exceptions.compensatingControls')}
+            >
               <Typography.Text
                 code
-                copyable={Object.keys(detailRow.compensating_controls ?? {}).length > 0}
+                copyable={
+                  Object.keys(detailRow.compensating_controls ?? {}).length > 0
+                }
               >
                 {JSON.stringify(detailRow.compensating_controls ?? {}, null, 2)}
               </Typography.Text>
@@ -391,7 +414,9 @@ export function ExceptionManagement() {
               {detailRow.used_count} / {detailRow.max_uses ?? '∞'}
             </Descriptions.Item>
             <Descriptions.Item label={t('pages.grc.exceptions.reviewCase')}>
-              <Typography.Link href={`/grc/reviews/${detailRow.review_case_id}`}>
+              <Typography.Link
+                href={`/grc/reviews/${detailRow.review_case_id}`}
+              >
                 {detailRow.review_case_id}
               </Typography.Link>
             </Descriptions.Item>
@@ -399,7 +424,9 @@ export function ExceptionManagement() {
               <Typography.Text copyable>{detailRow.rule_id}</Typography.Text>
             </Descriptions.Item>
             <Descriptions.Item label={t('pages.grc.exceptions.ruleVersionId')}>
-              <Typography.Text copyable>{detailRow.rule_version_id}</Typography.Text>
+              <Typography.Text copyable>
+                {detailRow.rule_version_id}
+              </Typography.Text>
             </Descriptions.Item>
             <Descriptions.Item label={t('pages.grc.exceptions.requestedBy')}>
               {userLabel(detailRow.requested_by)}
@@ -413,7 +440,9 @@ export function ExceptionManagement() {
               </Descriptions.Item>
             )}
             {detailRow.revoked_reason && (
-              <Descriptions.Item label={t('pages.grc.exceptions.revokedReason')}>
+              <Descriptions.Item
+                label={t('pages.grc.exceptions.revokedReason')}
+              >
                 {detailRow.revoked_reason}
               </Descriptions.Item>
             )}

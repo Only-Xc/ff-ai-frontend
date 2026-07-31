@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   serviceCatalogKeys,
   serviceCategories_list,
@@ -70,7 +71,9 @@ export default function CategoryTreePage() {
 
   const [editing, setEditing] = useState<ServiceCategory | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  const [form] = Form.useForm<ServiceCategoryCreate & { parent_id?: string | null }>()
+  const [form] = Form.useForm<
+    ServiceCategoryCreate & { parent_id?: string | null }
+  >()
 
   const allCats = useMemo<ServiceCategory[]>(() => {
     const out: ServiceCategory[] = []
@@ -93,7 +96,9 @@ export default function CategoryTreePage() {
       setModalOpen(false)
     },
     onError: (e: any) =>
-      message.error(errorMessage(e, t('pages.serviceCatalog.messages.createFailed'))),
+      message.error(
+        errorMessage(e, t('pages.serviceCatalog.messages.createFailed')),
+      ),
   })
 
   const updateMut = useMutation({
@@ -106,7 +111,9 @@ export default function CategoryTreePage() {
       setEditing(null)
     },
     onError: (e: any) =>
-      message.error(errorMessage(e, t('pages.serviceCatalog.messages.updateFailed'))),
+      message.error(
+        errorMessage(e, t('pages.serviceCatalog.messages.updateFailed')),
+      ),
   })
 
   const deleteMut = useMutation({
@@ -116,12 +123,19 @@ export default function CategoryTreePage() {
       qc.invalidateQueries({ queryKey: ['service-catalog'] })
     },
     onError: (e: any) =>
-      message.error(errorMessage(e, t('pages.serviceCatalog.messages.deleteBlocked'))),
+      message.error(
+        errorMessage(e, t('pages.serviceCatalog.messages.deleteBlocked')),
+      ),
   })
 
   const toggleStatusMut = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
-      serviceCategory_update(id, { status }),
+    mutationFn: ({
+      id,
+      status,
+    }: {
+      id: string
+      status: 'active' | 'inactive'
+    }) => serviceCategory_update(id, { status }),
     onSuccess: (_data, vars) => {
       message.success(
         vars.status === 'active'
@@ -131,7 +145,9 @@ export default function CategoryTreePage() {
       qc.invalidateQueries({ queryKey: ['service-catalog'] })
     },
     onError: (e: any) =>
-      message.error(errorMessage(e, t('pages.serviceCatalog.messages.updateFailed'))),
+      message.error(
+        errorMessage(e, t('pages.serviceCatalog.messages.updateFailed')),
+      ),
   })
 
   const openCreate = (parentId?: string) => {
@@ -199,7 +215,7 @@ export default function CategoryTreePage() {
     )
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => nav('/service-catalog/services')}
@@ -208,11 +224,19 @@ export default function CategoryTreePage() {
         {t('pages.serviceCatalog.actions.back')}
       </Button>
       <PageHeader
-        title={t('routes.serviceCatalog.categories.title')}
+        title={
+          <AdminPageTitle section="serviceCatalog">
+            {t('routes.serviceCatalog.categories.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.serviceCatalog.categories.subtitle')}
       />
       <Space style={{ marginBottom: 16 }} wrap>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreate()}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => openCreate()}
+        >
           {t('pages.serviceCatalog.actions.createRootCategory')}
         </Button>
       </Space>
@@ -224,7 +248,11 @@ export default function CategoryTreePage() {
           description={
             <Space direction="vertical" size={4}>
               <span>{t('pages.serviceCatalog.actions.emptyHint')}</span>
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreate()}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => openCreate()}
+              >
                 {t('pages.serviceCatalog.actions.createRootCategory')}
               </Button>
             </Space>
@@ -241,7 +269,12 @@ export default function CategoryTreePage() {
             const isActive = cat.status === 'active'
             return (
               <Space size={6} wrap>
-                <strong style={{ textDecoration: isActive ? 'none' : 'line-through', color: isActive ? undefined : '#999' }}>
+                <strong
+                  style={{
+                    textDecoration: isActive ? 'none' : 'line-through',
+                    color: isActive ? undefined : '#999',
+                  }}
+                >
                   {cat.name}
                 </strong>
                 <Tag color="blue">{cat.code}</Tag>
@@ -274,12 +307,19 @@ export default function CategoryTreePage() {
                 />
                 <Popconfirm
                   title={t('pages.serviceCatalog.actions.confirmDelete')}
-                  description={t('pages.serviceCatalog.actions.confirmDeleteDesc')}
+                  description={t(
+                    'pages.serviceCatalog.actions.confirmDeleteDesc',
+                  )}
                   okText={t('pages.serviceCatalog.actions.delete')}
                   cancelText={t('pages.serviceCatalog.actions.cancel')}
                   onConfirm={() => deleteMut.mutate(cat.id)}
                 >
-                  <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+                  <Button
+                    size="small"
+                    type="text"
+                    danger
+                    icon={<DeleteOutlined />}
+                  />
                 </Popconfirm>
               </Space>
             )
@@ -315,7 +355,10 @@ export default function CategoryTreePage() {
             label={t('pages.serviceCatalog.columns.code')}
             rules={[
               { required: true, max: 128 },
-              { pattern: /^[A-Za-z0-9_-]+$/, message: t('pages.serviceCatalog.actions.codePattern') },
+              {
+                pattern: /^[A-Za-z0-9_-]+$/,
+                message: t('pages.serviceCatalog.actions.codePattern'),
+              },
             ]}
           >
             <Input disabled={!!editing} placeholder="IT-CLOUD" />
@@ -328,18 +371,32 @@ export default function CategoryTreePage() {
               allowClear
               showSearch
               optionFilterProp="label"
-              placeholder={t('pages.serviceCatalog.actions.parentCategoryPlaceholder')}
+              placeholder={t(
+                'pages.serviceCatalog.actions.parentCategoryPlaceholder',
+              )}
               options={parentOptions}
             />
           </Form.Item>
-          <Form.Item name="sort_order" label={t('pages.serviceCatalog.columns.sortOrder')}>
+          <Form.Item
+            name="sort_order"
+            label={t('pages.serviceCatalog.columns.sortOrder')}
+          >
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="status" label={t('pages.serviceCatalog.columns.status')}>
+          <Form.Item
+            name="status"
+            label={t('pages.serviceCatalog.columns.status')}
+          >
             <Select
               options={[
-                { value: 'active', label: t('pages.serviceCatalog.actions.active') },
-                { value: 'inactive', label: t('pages.serviceCatalog.actions.inactive') },
+                {
+                  value: 'active',
+                  label: t('pages.serviceCatalog.actions.active'),
+                },
+                {
+                  value: 'inactive',
+                  label: t('pages.serviceCatalog.actions.inactive'),
+                },
               ]}
             />
           </Form.Item>

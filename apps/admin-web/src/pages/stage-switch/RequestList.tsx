@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
 import {
   stageSwitchKeys,
   stageSwitchRequests_list,
@@ -80,13 +81,7 @@ export default function RequestList() {
       direction,
       ...allPagination.query,
     }),
-    [
-      allPagination.query,
-      approvalStatus,
-      direction,
-      executionStatus,
-      keyword,
-    ],
+    [allPagination.query, approvalStatus, direction, executionStatus, keyword],
   )
 
   const tasksQuery = useQuery({
@@ -191,9 +186,13 @@ export default function RequestList() {
   }
 
   return (
-    <PageContainer className="p-5">
+    <PageContainer className="min-h-full p-4">
       <PageHeader
-        title={t('routes.stageSwitch.requests.title')}
+        title={
+          <AdminPageTitle section="stageSwitch">
+            {t('routes.stageSwitch.requests.title')}
+          </AdminPageTitle>
+        }
         subtitle={t('routes.stageSwitch.requests.subtitle')}
       >
         <Button

@@ -1,20 +1,16 @@
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useMutation } from '@tanstack/react-query'
-import {
-  Alert,
-  Button,
-  Card,
-  Space,
-  Typography,
-  Upload,
-  message,
-} from 'antd'
+import { Alert, Button, Card, Space, Typography, Upload, message } from 'antd'
 import type { UploadFile } from 'antd/es/upload/interface'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
-import { serviceCatalog_export, serviceCatalog_import } from '@/api/service-catalog'
+import { AdminPageTitle } from '@/components/AdminPageTitle'
+import {
+  serviceCatalog_export,
+  serviceCatalog_import,
+} from '@/api/service-catalog'
 
 export default function ImportPanelPage() {
   const { t } = useTranslation()
@@ -23,7 +19,11 @@ export default function ImportPanelPage() {
     mutationFn: (file: File) => serviceCatalog_import(file),
     onSuccess: (data: any) => {
       if (data.success) {
-        message.success(t('pages.serviceCatalog.messages.imported', { summary: JSON.stringify(data.summary) }))
+        message.success(
+          t('pages.serviceCatalog.messages.imported', {
+            summary: JSON.stringify(data.summary),
+          }),
+        )
       } else {
         message.warning(t('pages.serviceCatalog.messages.importFailed'))
       }
@@ -35,7 +35,9 @@ export default function ImportPanelPage() {
       const blob: any = await serviceCatalog_export({ template: 1 } as any)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = 'service-catalog-template.xlsx'; a.click()
+      a.href = url
+      a.download = 'service-catalog-template.xlsx'
+      a.click()
       URL.revokeObjectURL(url)
     },
   })
@@ -44,13 +46,15 @@ export default function ImportPanelPage() {
       const blob: any = await serviceCatalog_export({} as any)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url; a.download = 'service-catalog-export.xlsx'; a.click()
+      a.href = url
+      a.download = 'service-catalog-export.xlsx'
+      a.click()
       URL.revokeObjectURL(url)
     },
   })
 
   return (
-    <PageContainer>
+    <PageContainer className="min-h-full p-4">
       <Button
         icon={<ArrowLeftOutlined />}
         onClick={() => nav('/service-catalog/services')}
@@ -58,7 +62,14 @@ export default function ImportPanelPage() {
       >
         {t('pages.serviceCatalog.actions.back')}
       </Button>
-      <PageHeader title={t('routes.serviceCatalog.import.title')} />
+      <PageHeader
+        title={
+          <AdminPageTitle section="serviceCatalog">
+            {t('routes.serviceCatalog.import.title')}
+          </AdminPageTitle>
+        }
+        subtitle={t('routes.serviceCatalog.import.subtitle')}
+      />
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <Card title={t('pages.serviceCatalog.actions.downloadTemplate')}>
           <Space>
@@ -80,14 +91,19 @@ export default function ImportPanelPage() {
             }}
             maxCount={1}
           >
-            <Typography.Title level={5}>{t('pages.serviceCatalog.actions.dragHere')}</Typography.Title>
+            <Typography.Title level={5}>
+              {t('pages.serviceCatalog.actions.dragHere')}
+            </Typography.Title>
             <Typography.Text type="secondary">
               {t('pages.serviceCatalog.actions.supportXlsx')}
             </Typography.Text>
           </Upload.Dragger>
         </Card>
         {importMut.isError ? (
-          <Alert type="error" message={t('pages.serviceCatalog.messages.importFailed')} />
+          <Alert
+            type="error"
+            message={t('pages.serviceCatalog.messages.importFailed')}
+          />
         ) : null}
       </Space>
     </PageContainer>
