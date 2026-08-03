@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, Button, Result, Skeleton, Space, Typography } from 'antd'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
@@ -15,6 +15,27 @@ import { useAppStore } from '@/store/useApp'
 
 const LOAD_TIMEOUT_MS = 15_000
 const SESSION_REFRESH_BUFFER_MS = 60_000
+
+function messageTargetOrigin(url: string | undefined) {
+  if (!url) return null
+  try {
+    const parsed = new URL(url, window.location.origin)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+      ? parsed.origin
+      : null
+  } catch {
+    return null
+  }
+}
+
+function isPluginReadyMessage(value: unknown) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    value.type === 'ff-ai:plugin-ready'
+  )
+}
 
 export default function PluginCarrier() {
   const { t } = useTranslation()
@@ -34,6 +55,10 @@ export default function PluginCarrier() {
   })
   const sessionExpiresAt = sessionQuery.data?.expires_at
   const refreshSession = sessionQuery.refetch
+  const targetOrigin = useMemo(
+    () => messageTargetOrigin(sessionQuery.data?.url),
+    [sessionQuery.data?.url],
+  )
   const catalogQuery = useQuery({
     queryKey: pluginCatalogKeys.list(false, pluginId),
     queryFn: () => plugins_catalog({ keyword: pluginId }),
@@ -53,7 +78,10 @@ export default function PluginCarrier() {
     if (!sessionExpiresAt) return
     const expiresAt = Date.parse(sessionExpiresAt)
     if (!Number.isFinite(expiresAt)) return
-    const refreshDelay = Math.max(1_000, expiresAt - Date.now() - SESSION_REFRESH_BUFFER_MS)
+    const refreshDelay = Math.max(
+      1_000,
+      expiresAt - Date.now() - SESSION_REFRESH_BUFFER_MS,
+    )
     const timeout = window.setTimeout(() => {
       void refreshSession()
     }, refreshDelay)
@@ -61,10 +89,11 @@ export default function PluginCarrier() {
   }, [refreshSession, sessionExpiresAt])
 
   const syncPreferences = useCallback(() => {
+    if (!targetOrigin) return
     const target = iframeRef.current?.contentWindow
-    target?.postMessage({ type: 'ff-ai:theme', theme: themeMode }, '*')
-    target?.postMessage({ type: 'ff-ai:locale', locale }, '*')
-  }, [locale, themeMode])
+    target?.postMessage({ type: 'ff-ai:theme', theme: themeMode }, targetOrigin)
+    target?.postMessage({ type: 'ff-ai:locale', locale }, targetOrigin)
+  }, [locale, targetOrigin, themeMode])
 
   useEffect(() => {
     if (loaded) syncPreferences()
@@ -74,14 +103,15 @@ export default function PluginCarrier() {
     const handleMessage = (event: MessageEvent) => {
       if (
         event.source === iframeRef.current?.contentWindow &&
-        event.data?.type === 'ff-ai:plugin-ready'
+        event.origin === targetOrigin &&
+        isPluginReadyMessage(event.data)
       ) {
         syncPreferences()
       }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [syncPreferences])
+  }, [syncPreferences, targetOrigin])
 
   const retry = async () => {
     setLoaded(false)

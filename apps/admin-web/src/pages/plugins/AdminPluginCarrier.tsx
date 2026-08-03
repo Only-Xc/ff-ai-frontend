@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined, ReloadOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
 import { Alert, Button, Result, Skeleton, Space, Typography } from 'antd'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 
@@ -9,6 +9,18 @@ import { pluginKeys, plugins_createUiSession } from '@/api/plugins'
 import { useAppStore } from '@/store/useApp'
 
 const LOAD_TIMEOUT_MS = 15_000
+
+function messageTargetOrigin(url: string | undefined) {
+  if (!url) return null
+  try {
+    const parsed = new URL(url, window.location.origin)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+      ? parsed.origin
+      : null
+  } catch {
+    return null
+  }
+}
 
 export default function AdminPluginCarrier() {
   const { t } = useTranslation()
@@ -31,6 +43,10 @@ export default function AdminPluginCarrier() {
     enabled: Boolean(pluginId),
     retry: false,
   })
+  const targetOrigin = useMemo(
+    () => messageTargetOrigin(sessionQuery.data?.url),
+    [sessionQuery.data?.url],
+  )
 
   useEffect(() => {
     if (!sessionQuery.data?.url || loaded) return
@@ -39,11 +55,12 @@ export default function AdminPluginCarrier() {
   }, [loaded, sessionQuery.data?.url])
 
   const syncTheme = useCallback(() => {
+    if (!targetOrigin) return
     iframeRef.current?.contentWindow?.postMessage(
       { type: 'ff-ai:theme', theme: themeMode },
-      '*',
+      targetOrigin,
     )
-  }, [themeMode])
+  }, [targetOrigin, themeMode])
 
   useEffect(() => {
     if (loaded) syncTheme()
