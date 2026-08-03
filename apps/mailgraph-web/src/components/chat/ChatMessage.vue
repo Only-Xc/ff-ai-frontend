@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { marked } from 'marked'
 import type { ChatMessage as ChatMessageType, QueryResult } from '@/api'
-
-// Configure marked for GFM (tables, strikethrough, etc.)
-marked.setOptions({
-  breaks: true,
-  gfm: true,
-})
+import { renderSafeMarkdown } from '@/security/markdown'
 
 const props = defineProps<{
   message: ChatMessageType
@@ -61,7 +55,7 @@ const renderedContent = computed(() => {
     return '\n' + header + '\n' + sep + '\n' + body + '\n'
   })
 
-  return marked.parse(raw) as string
+  return renderSafeMarkdown(raw)
 })
 
 // Group chunks by doc_name for document sources

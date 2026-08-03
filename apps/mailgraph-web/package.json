@@ -9,6 +9,7 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "dompurify": "3.4.5",
     "marked": "^18.0.6",
     "pinia": "^2.1.7",
     "vis-data": "^8.0.4",
