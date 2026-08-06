@@ -19,6 +19,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
 } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -121,6 +122,7 @@ export default function WorkflowList() {
       title: t('pages.workflow.columns.name'),
       dataIndex: 'name',
       key: 'name',
+      width: 280,
       render: (name: string, record: WorkflowApp) => (
         <a
           onClick={() => {
@@ -135,6 +137,7 @@ export default function WorkflowList() {
       title: t('pages.workflow.columns.status'),
       dataIndex: 'status',
       key: 'status',
+      width: 130,
       render: (status: string, record: WorkflowApp) => {
         const releaseStatus = record.catalog_status
         let displayStatuses: string[]
@@ -175,50 +178,57 @@ export default function WorkflowList() {
       title: t('pages.workflow.columns.updatedAt'),
       dataIndex: 'updated_at',
       key: 'updated_at',
+      width: 190,
       render: (v: string) => new Date(v).toLocaleString(),
     },
     {
       title: t('pages.workflow.columns.actions'),
       key: 'actions',
+      align: 'right' as const,
+      width: 152,
       render: (_: unknown, record: WorkflowApp) => (
-        <Space>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              void navigate(`/workflow/flowise/${record.id}/design`)
-            }}
-          >
-            {t('common.edit')}
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<CopyOutlined />}
-            onClick={() => duplicateMutation.mutate(record.id)}
-          >
-            {t('common.duplicate')}
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<ExperimentOutlined />}
-            onClick={() => {
-              void navigate(`/workflow/flowise/${record.id}/evaluations`)
-            }}
-          >
-            {t('pages.workflow.evaluations.shortTitle')}
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record)}
-          >
-            {t('common.delete')}
-          </Button>
+        <Space size={4}>
+          <Tooltip title={t('common.edit')}>
+            <Button
+              type="text"
+              size="small"
+              aria-label={t('common.edit')}
+              icon={<EditOutlined />}
+              onClick={() => {
+                void navigate(`/workflow/flowise/${record.id}/design`)
+              }}
+            />
+          </Tooltip>
+          <Tooltip title={t('common.duplicate')}>
+            <Button
+              type="text"
+              size="small"
+              aria-label={t('common.duplicate')}
+              icon={<CopyOutlined />}
+              onClick={() => duplicateMutation.mutate(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title={t('pages.workflow.evaluations.shortTitle')}>
+            <Button
+              type="text"
+              size="small"
+              aria-label={t('pages.workflow.evaluations.shortTitle')}
+              icon={<ExperimentOutlined />}
+              onClick={() => {
+                void navigate(`/workflow/flowise/${record.id}/evaluations`)
+              }}
+            />
+          </Tooltip>
+          <Tooltip title={t('common.delete')}>
+            <Button
+              type="text"
+              size="small"
+              danger
+              aria-label={t('common.delete')}
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -310,6 +320,8 @@ export default function WorkflowList() {
           columns={columns}
           dataSource={data?.items ?? []}
           loading={isLoading}
+          scroll={{ x: 960 }}
+          tableLayout="fixed"
           pagination={{
             current: page,
             total: data?.total ?? 0,
