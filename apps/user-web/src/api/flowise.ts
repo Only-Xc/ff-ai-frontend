@@ -1,6 +1,7 @@
 import { requestClient } from '@/utils/request'
 
 export const FLOWISE_SESSION_EXPIRED_EVENT = 'ffai:flowise-session-expired'
+export const FLOWISE_SESSION_TICKET_EVENT = 'ffai:flowise-session-ticket'
 
 export interface FlowiseBrowserSession {
   ticket: string

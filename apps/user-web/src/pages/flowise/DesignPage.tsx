@@ -1,6 +1,8 @@
 import {
   ArrowLeftOutlined,
+  DatabaseOutlined,
   EditOutlined,
+  ExperimentOutlined,
   ReloadOutlined,
   RocketOutlined,
 } from '@ant-design/icons'
@@ -38,6 +40,7 @@ import {
   workflowKeys,
 } from '@/api/workflow'
 import { useFlowiseIframeSessionRefresh } from '@/hooks/useFlowiseIframeSessionRefresh'
+import ResourceBindingsDrawer from './ResourceBindingsDrawer'
 
 const { Text, Title } = Typography
 
@@ -63,6 +66,7 @@ export default function FlowiseDesignPage() {
   const [accessScope, setAccessScope] = useState<WorkflowAccessScope>('tenant')
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([])
   const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [resourcesOpen, setResourcesOpen] = useState(false)
   const [draftName, setDraftName] = useState('')
 
   const { data: workflowApp, isLoading: workflowAppLoading } = useQuery({
@@ -232,6 +236,22 @@ export default function FlowiseDesignPage() {
         <Space>
           <Button
             disabled={!workflowApp}
+            icon={<DatabaseOutlined />}
+            onClick={() => setResourcesOpen(true)}
+          >
+            {t('pages.flowise.resources.title')}
+          </Button>
+          <Button
+            disabled={!workflowApp}
+            icon={<ExperimentOutlined />}
+            onClick={() => {
+              void navigate(`/workflow/flowise/${appId}/evaluations`)
+            }}
+          >
+            {t('pages.workflow.evaluations.title')}
+          </Button>
+          <Button
+            disabled={!workflowApp}
             icon={<EditOutlined />}
             onClick={openRenameModal}
           >
@@ -365,6 +385,12 @@ export default function FlowiseDesignPage() {
           ) : null}
         </Form>
       </Modal>
+
+      <ResourceBindingsDrawer
+        appId={appId ?? ''}
+        open={resourcesOpen}
+        onClose={() => setResourcesOpen(false)}
+      />
     </div>
   )
 }

@@ -19,8 +19,10 @@ export default {
   'common.user.logout': 'Sign out',
   // Workflow common actions
   'common.save': 'Save',
+  'common.create': 'Create',
   'common.confirm': 'Confirm',
   'common.cancel': 'Cancel',
+  'common.back': 'Back',
   'common.edit': 'Edit',
   'common.duplicate': 'Duplicate',
   'common.delete': 'Delete',

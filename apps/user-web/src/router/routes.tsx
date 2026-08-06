@@ -431,6 +431,17 @@ export const appRoutes: AppRouteObject[] = [
           permission: 'admin.workflow_apps.update',
         },
       },
+      {
+        path: '/workflow/flowise/:appId/evaluations',
+        element: lazyLoad(() => import('@/pages/flowise/EvaluationsPage')),
+        handle: {
+          title: 'Workflow Evaluations',
+          titleKey: 'routes.workflow.evaluations',
+          hideInMenu: true,
+          hideInBreadcrumb: true,
+          permission: 'admin.workflow_apps.update',
+        },
+      },
     ],
   },
   {

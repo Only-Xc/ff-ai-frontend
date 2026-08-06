@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  Alert,
   Button,
   Card,
   Descriptions,
@@ -39,6 +40,7 @@ import {
   productionRuntime_refresh,
   productionRuntime_restart,
   productionRuntime_stop,
+  type ProductionApprovalDetail,
   type ProductionApprovalDecisionPayload,
 } from '@/api/production'
 
@@ -58,6 +60,12 @@ function readString(value: unknown): string {
   return typeof value === 'string' ? value : ''
 }
 
+function readRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object'
+    ? (value as Record<string, unknown>)
+    : undefined
+}
+
 function readOptionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value ? value : undefined
 }
@@ -70,6 +78,25 @@ function readStringArray(value: unknown): string[] {
   return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === 'string')
     : []
+}
+
+function readErrorMessage(value: unknown): string | undefined {
+  if (typeof value === 'string' && value) return value
+  return readOptionalString(readRecord(value)?.message)
+}
+
+function formatErrorText(value: unknown): string | undefined {
+  const message = readErrorMessage(value)
+  if (message) return message
+
+  const record = readRecord(value)
+  if (!record) return undefined
+
+  try {
+    return JSON.stringify(record, null, 2)
+  } catch {
+    return undefined
+  }
 }
 
 interface AccessRoleSnapshot {
@@ -124,9 +151,15 @@ export function ProductionDetail() {
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const [stopModalOpen, setStopModalOpen] = useState(false)
+  const detailQueryKey = productionKeys.detail(approvalId)
+
+  const syncProductionDetail = (detail: ProductionApprovalDetail) => {
+    queryClient.setQueryData(detailQueryKey, detail)
+    void queryClient.invalidateQueries({ queryKey: productionKeys.lists() })
+  }
 
   const { data, isFetching } = useQuery({
-    queryKey: productionKeys.detail(approvalId),
+    queryKey: detailQueryKey,
     queryFn: () => productionApprovals_get(approvalId),
     enabled: Boolean(approvalId),
   })
@@ -134,11 +167,9 @@ export function ProductionDetail() {
   const decisionMutation = useMutation({
     mutationFn: (values: ProductionApprovalDecisionPayload) =>
       productionApprovals_submitDecision(approvalId, values),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.decisionSuccess'))
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
+      syncProductionDetail(detail)
       setDecisionDrawerOpen(false)
     },
     onError: (err: Error) => {
@@ -149,13 +180,11 @@ export function ProductionDetail() {
   const cancelMutation = useMutation({
     mutationFn: (rationale: string) =>
       productionApprovals_cancel(approvalId, { rationale }),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.cancelSuccess'))
+      syncProductionDetail(detail)
       setCancelModalOpen(false)
       setCancelReason('')
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -164,11 +193,9 @@ export function ProductionDetail() {
 
   const applyMutation = useMutation({
     mutationFn: () => productionApprovals_apply(approvalId),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.reapplySuccess'))
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
+      syncProductionDetail(detail)
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -177,11 +204,9 @@ export function ProductionDetail() {
 
   const refreshRuntimeMutation = useMutation({
     mutationFn: () => productionRuntime_refresh(approvalId),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.refreshRuntimeSuccess'))
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
+      syncProductionDetail(detail)
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -190,12 +215,10 @@ export function ProductionDetail() {
 
   const stopRuntimeMutation = useMutation({
     mutationFn: () => productionRuntime_stop(approvalId),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.stopContainerSuccess'))
+      syncProductionDetail(detail)
       setStopModalOpen(false)
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -204,11 +227,9 @@ export function ProductionDetail() {
 
   const restartRuntimeMutation = useMutation({
     mutationFn: () => productionRuntime_restart(approvalId),
-    onSuccess: () => {
+    onSuccess: (detail) => {
       message.success(t('pages.production.detail.restartContainerSuccess'))
-      void queryClient.invalidateQueries({
-        queryKey: productionKeys.detail(approvalId),
-      })
+      syncProductionDetail(detail)
     },
     onError: (err: Error) => {
       message.error(err.message || t('common.errors.unknown'))
@@ -242,6 +263,7 @@ export function ProductionDetail() {
     }),
   )
   const artifact = data.artifact_snapshot ?? {}
+  const release = data.release_snapshot ?? {}
   const runtime = data.runtime_snapshot ?? {}
   const accessScope = readOptionalString(artifact.access_scope)
   const accessRoles = readAccessRoles(artifact.roles)
@@ -249,6 +271,8 @@ export function ProductionDetail() {
   const hasArtifact = Object.keys(artifact).length > 0
   const hasRuntime = Object.keys(runtime).length > 0
   const hasAccessPolicy = accessScope === 'tenant' || accessScope === 'roles'
+  const builderErrorMessage = readErrorMessage(release.error_json)
+  const runtimeErrorText = formatErrorText(runtime.last_error)
 
   const decisionColumns: TableProps<DecisionRecord>['columns'] = [
     {
@@ -508,6 +532,15 @@ export function ProductionDetail() {
 
                 {approval.target_type === 'workflow' && (
                   <Card title={t('pages.production.detail.artifactMetadata')}>
+                    {builderErrorMessage ? (
+                      <Alert
+                        className="mb-4"
+                        showIcon
+                        type="error"
+                        message={t('pages.production.detail.builderError')}
+                        description={builderErrorMessage}
+                      />
+                    ) : null}
                     {hasArtifact ? (
                       <Descriptions column={2} bordered size="small">
                         <Descriptions.Item
@@ -634,6 +667,19 @@ export function ProductionDetail() {
                       ) : undefined
                     }
                   >
+                    {runtimeErrorText ? (
+                      <Alert
+                        className="mb-4"
+                        showIcon
+                        type="error"
+                        message={t('pages.production.detail.runtimeLastError')}
+                        description={
+                          <pre className="m-0 whitespace-pre-wrap text-xs">
+                            {runtimeErrorText}
+                          </pre>
+                        }
+                      />
+                    ) : null}
                     {hasRuntime ? (
                       <Descriptions column={2} bordered size="small">
                         <Descriptions.Item

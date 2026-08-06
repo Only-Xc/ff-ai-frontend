@@ -165,6 +165,15 @@ function WorkflowChatView({ workflowAppId }: { workflowAppId: string }) {
                 item.id === assistantId ? { ...item, content: answer } : item,
               ),
             )
+          } else if (type === 'answer_replace') {
+            const replacement = eventText(data.text)
+            setMessages((current) =>
+              current.map((item) =>
+                item.id === assistantId
+                  ? { ...item, content: replacement }
+                  : item,
+              ),
+            )
           } else if (type === 'error') {
             throw new Error(
               eventText(data.message, 'Workflow execution failed'),

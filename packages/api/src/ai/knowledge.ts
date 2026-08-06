@@ -36,18 +36,23 @@ export interface KnowledgeParserConfig {
 export interface KnowledgeDataset {
   id: string
   name: string
+  parent_id?: string
+  path?: string
+  file_count?: number
+  version_id?: string
   avatar?: string | null
   description?: string | null
   embedding_model: string
-  permission: KnowledgePermission
-  chunk_method: KnowledgeChunkMethod
+  permission: KnowledgePermission | string
+  chunk_method: KnowledgeChunkMethod | string
   parser_config: KnowledgeParserConfig
   create_time: KnowledgeDateTime
+  created_at?: KnowledgeDateTime
   create_date?: KnowledgeDateTime
   update_time: KnowledgeDateTime
   update_date?: KnowledgeDateTime
-  document_count: number
-  chunk_count: number
+  document_count?: number
+  chunk_count?: number
   token_num?: number
   language?: string | null
   similarity_threshold?: number
@@ -184,34 +189,54 @@ interface KnowledgeDocumentListResponse {
   message?: string
 }
 
-function readKnowledgeData<T>(
-  response: KnowledgeProxyResponse<KnowledgeDataResponse<T>>,
+type KnowledgeResponse<T> = T | KnowledgeProxyResponse<T>
+
+function unwrapKnowledgeResponse<T extends { code: number; data: unknown }>(
+  response: KnowledgeResponse<T>,
 ): T {
-  return response.data.data
+  const nested = response.data
+  if (
+    nested &&
+    typeof nested === 'object' &&
+    !Array.isArray(nested) &&
+    'code' in nested &&
+    'data' in nested
+  ) {
+    return nested as T
+  }
+  return response as T
+}
+
+function readKnowledgeData<T>(
+  response: KnowledgeResponse<KnowledgeDataResponse<T>>,
+): T {
+  return unwrapKnowledgeResponse(response).data
 }
 
 function readDatasetList(
-  response: KnowledgeProxyResponse<KnowledgeDatasetListResponse>,
+  response: KnowledgeResponse<KnowledgeDatasetListResponse>,
 ): KnowledgeListResult<KnowledgeDataset> {
+  const payload = unwrapKnowledgeResponse(response)
   return {
-    data: response.data.data,
-    count: response.data.total_datasets,
+    data: payload.data,
+    count: payload.total_datasets,
   }
 }
 
 function readDocumentList(
-  response: KnowledgeProxyResponse<KnowledgeDocumentListResponse>,
+  response: KnowledgeResponse<KnowledgeDocumentListResponse>,
 ): KnowledgeListResult<KnowledgeDocument> {
+  const payload = unwrapKnowledgeResponse(response)
   return {
-    data: response.data.data.docs,
-    count: response.data.data.total,
+    data: payload.data.docs,
+    count: payload.data.total,
   }
 }
 
 function readDocumentItem(
-  response: KnowledgeProxyResponse<KnowledgeDocumentListResponse>,
+  response: KnowledgeResponse<KnowledgeDocumentListResponse>,
 ): KnowledgeDocument {
-  return response.data.data.docs[0]
+  return unwrapKnowledgeResponse(response).data.docs[0]
 }
 
 export const listKnowledgeDatasetsRequest = (params: KnowledgeDatasetQuery) =>
@@ -237,8 +262,8 @@ export const getKnowledgeDatasetRequest = (datasetId: string) =>
     'GET',
     path`/api/v1/ai-generation/api/ai/knowledge/datasets/${datasetId}`,
     undefined,
-    (response: KnowledgeProxyResponse<KnowledgeDatasetListResponse>) =>
-      response.data.data[0],
+    (response: KnowledgeResponse<KnowledgeDatasetListResponse>) =>
+      unwrapKnowledgeResponse(response).data[0],
   )
 
 export const updateKnowledgeDatasetRequest = (

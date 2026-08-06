@@ -2019,9 +2019,11 @@ export default {
   'pages.production.detail.artifactMetadata': 'Release Artifact',
   'pages.production.detail.artifactMetadataEmpty':
     'No release artifact metadata',
+  'pages.production.detail.builderError': 'Builder Error',
   'pages.production.detail.runtimeMetadata': 'Runtime Instance',
   'pages.production.detail.runtimeMetadataEmpty':
     'Runtime instance has not been created',
+  'pages.production.detail.runtimeLastError': 'Latest Runtime Error',
   'pages.production.detail.imageName': 'Image Name',
   'pages.production.detail.ociDigest': 'OCI Digest',
   'pages.production.detail.artifactLocation': 'MinIO Artifact Location',

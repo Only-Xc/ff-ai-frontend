@@ -8,7 +8,7 @@ export interface WorkflowApp {
   name: string
   icon: string | null
   description: string | null
-  app_type: string
+  app_type: 'chatflow' | 'agentflow'
   owner_id: string
   status: string
   active_version_id: string | null
@@ -133,6 +133,150 @@ export interface WorkflowMessage {
   created_at: string
 }
 
+export type WorkflowTestTargetType = 'draft' | 'version'
+export type WorkflowTestStatus =
+  | 'queued'
+  | 'running'
+  | 'completed'
+  | 'completed_with_errors'
+  | 'cancel_requested'
+  | 'failed'
+  | 'cancelled'
+
+export interface WorkflowTestSuite {
+  id: string
+  org_id: string
+  app_id: string
+  name: string
+  description: string | null
+  revision: number
+  case_count: number
+  created_by: string
+  updated_by: string
+  created_at: string
+  updated_at: string
+}
+
+export interface WorkflowTestSuiteCreatePayload {
+  name: string
+  description?: string
+}
+
+export interface WorkflowTestSuiteUpdatePayload {
+  name?: string
+  description?: string
+}
+
+export interface WorkflowTestCase {
+  id: string
+  suite_id: string
+  ordinal: number
+  question: string
+  expected_answer: string | null
+  tags: string[]
+  variables: Record<string, unknown>
+  enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface WorkflowTestRuleEvaluatorConfig {
+  exact_match: boolean
+  contains_keywords: string[]
+  citation_required: boolean
+  weights: Record<string, number>
+}
+
+export interface WorkflowTestLlmEvaluatorConfig {
+  enabled: boolean
+  model: string | null
+  prompt_version: string
+}
+
+export interface WorkflowTestEvaluatorConfig {
+  rules: WorkflowTestRuleEvaluatorConfig
+  llm: WorkflowTestLlmEvaluatorConfig
+}
+
+export interface WorkflowTestResult {
+  id: string
+  case_id: string
+  ordinal: number
+  question: string
+  expected_answer: string | null
+  tags: string[]
+  variables: Record<string, unknown>
+  status: WorkflowTestStatus
+  attempt: number
+  actual_answer: string | null
+  citations: Record<string, unknown>[]
+  evidence: Record<string, unknown>[]
+  retrieval_trace: Record<string, unknown>
+  metrics: Record<string, unknown>
+  rule_scores: Record<string, unknown>
+  evaluator_result: Record<string, unknown> | null
+  score: number | null
+  error: Record<string, unknown> | null
+  started_at: string | null
+  finished_at: string | null
+}
+
+export interface WorkflowTestRun {
+  id: string
+  org_id: string
+  app_id: string
+  suite_id: string
+  suite_revision: number
+  target_type: WorkflowTestTargetType
+  target_version_id: string | null
+  target_revision: number | null
+  graph_checksum: string
+  prompt_checksum: string
+  evaluator_config: WorkflowTestEvaluatorConfig
+  status: WorkflowTestStatus
+  total_count: number
+  completed_count: number
+  failed_count: number
+  cancelled_count: number
+  cleanup_status: string
+  cleanup_error: Record<string, unknown> | null
+  created_by: string
+  created_at: string
+  started_at: string | null
+  finished_at: string | null
+  results: WorkflowTestResult[]
+}
+
+export interface WorkflowTestComparisonRow {
+  case_id: string
+  question: string
+  left_score: number | null
+  right_score: number | null
+  score_delta: number | null
+  left_status: WorkflowTestStatus | null
+  right_status: WorkflowTestStatus | null
+}
+
+export interface WorkflowTestComparisonSummary {
+  left_average_score: number | null
+  right_average_score: number | null
+  score_delta: number | null
+}
+
+export interface WorkflowTestComparison {
+  left: WorkflowTestRun
+  right: WorkflowTestRun
+  summary: WorkflowTestComparisonSummary
+  cases: WorkflowTestComparisonRow[]
+}
+
+export interface WorkflowTestCaseImportResponse {
+  imported_count: number
+  skipped_count: number
+  errors: Record<string, unknown>[]
+  suite_revision: number
+}
+
 // ─── Query Keys ──────────────────────────────────────────────────────────────
 
 export const workflowKeys = {
@@ -149,6 +293,16 @@ export const workflowKeys = {
     [...workflowKeys.all, 'conversations', appId] as const,
   messages: (conversationId: string) =>
     [...workflowKeys.all, 'messages', conversationId] as const,
+  testSuites: (appId: string) =>
+    [...workflowKeys.all, 'test-suites', appId] as const,
+  testCases: (appId: string, suiteId: string) =>
+    [...workflowKeys.testSuites(appId), suiteId, 'cases'] as const,
+  testRuns: (appId: string) =>
+    [...workflowKeys.all, 'test-runs', appId] as const,
+  testRun: (appId: string, runId: string) =>
+    [...workflowKeys.testRuns(appId), runId] as const,
+  testComparison: (appId: string, left: string, right: string) =>
+    [...workflowKeys.testRuns(appId), 'compare', left, right] as const,
 }
 
 // ─── Admin API (Design Management) ──────────────────────────────────────────
@@ -168,6 +322,7 @@ export function createWorkflowApp(payload: {
   name: string
   icon?: string
   description?: string
+  app_type?: 'chatflow' | 'agentflow'
 }): Promise<WorkflowApp> {
   return requestClient.post<WorkflowApp>(
     '/api/v1/workflow-apps',
@@ -264,6 +419,184 @@ export function disableWorkflow(appId: string) {
 
 export function enableWorkflow(appId: string) {
   return requestClient.post(`/api/v1/workflow-apps/${appId}/enable`)
+}
+
+// ─── Batch Evaluation API ──────────────────────────────────────────────────
+
+export function listWorkflowTestSuites(
+  appId: string,
+): Promise<WorkflowTestSuite[]> {
+  return requestClient.get<WorkflowTestSuite[]>(
+    `/api/v1/workflow-apps/${appId}/test-suites`,
+  ) as unknown as Promise<WorkflowTestSuite[]>
+}
+
+export function createWorkflowTestSuite(
+  appId: string,
+  payload: WorkflowTestSuiteCreatePayload,
+): Promise<WorkflowTestSuite> {
+  return requestClient.post<WorkflowTestSuite>(
+    `/api/v1/workflow-apps/${appId}/test-suites`,
+    payload,
+  ) as unknown as Promise<WorkflowTestSuite>
+}
+
+export function updateWorkflowTestSuite(
+  appId: string,
+  suiteId: string,
+  payload: WorkflowTestSuiteUpdatePayload,
+): Promise<WorkflowTestSuite> {
+  return requestClient.patch<WorkflowTestSuite>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}`,
+    payload,
+  ) as unknown as Promise<WorkflowTestSuite>
+}
+
+export function deleteWorkflowTestSuite(appId: string, suiteId: string) {
+  return requestClient.delete(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}`,
+  )
+}
+
+export function listWorkflowTestCases(
+  appId: string,
+  suiteId: string,
+): Promise<WorkflowTestCase[]> {
+  return requestClient.get<WorkflowTestCase[]>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}/cases`,
+  ) as unknown as Promise<WorkflowTestCase[]>
+}
+
+export function addWorkflowTestCase(
+  appId: string,
+  suiteId: string,
+  payload: {
+    question: string
+    expected_answer?: string
+    tags?: string[]
+    variables?: Record<string, unknown>
+    enabled?: boolean
+    ordinal?: number
+  },
+): Promise<WorkflowTestCase> {
+  return requestClient.post<WorkflowTestCase>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}/cases`,
+    payload,
+  ) as unknown as Promise<WorkflowTestCase>
+}
+
+export function updateWorkflowTestCase(
+  appId: string,
+  suiteId: string,
+  caseId: string,
+  payload: {
+    question?: string
+    expected_answer?: string | null
+    tags?: string[]
+    variables?: Record<string, unknown>
+    enabled?: boolean
+    ordinal?: number
+  },
+): Promise<WorkflowTestCase> {
+  return requestClient.patch<WorkflowTestCase>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}/cases/${caseId}`,
+    payload,
+  ) as unknown as Promise<WorkflowTestCase>
+}
+
+export function deleteWorkflowTestCase(
+  appId: string,
+  suiteId: string,
+  caseId: string,
+): Promise<void> {
+  return requestClient.delete<void>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}/cases/${caseId}`,
+  ) as unknown as Promise<void>
+}
+
+export function importWorkflowTestCases(
+  appId: string,
+  suiteId: string,
+  file: File,
+): Promise<WorkflowTestCaseImportResponse> {
+  const data = new FormData()
+  data.append('file', file)
+  return requestClient.post<WorkflowTestCaseImportResponse>(
+    `/api/v1/workflow-apps/${appId}/test-suites/${suiteId}/import`,
+    data,
+  ) as unknown as Promise<WorkflowTestCaseImportResponse>
+}
+
+export function listWorkflowTestRuns(
+  appId: string,
+): Promise<WorkflowTestRun[]> {
+  return requestClient.get<WorkflowTestRun[]>(
+    `/api/v1/workflow-apps/${appId}/test-runs`,
+  ) as unknown as Promise<WorkflowTestRun[]>
+}
+
+export function createWorkflowTestRun(
+  appId: string,
+  payload: {
+    suite_id: string
+    target_type: WorkflowTestTargetType
+    target_version_id?: string
+    evaluator_config: WorkflowTestEvaluatorConfig
+  },
+): Promise<WorkflowTestRun> {
+  return requestClient.post<WorkflowTestRun>(
+    `/api/v1/workflow-apps/${appId}/test-runs`,
+    payload,
+  ) as unknown as Promise<WorkflowTestRun>
+}
+
+export function getWorkflowTestRun(
+  appId: string,
+  runId: string,
+): Promise<WorkflowTestRun> {
+  return requestClient.get<WorkflowTestRun>(
+    `/api/v1/workflow-apps/${appId}/test-runs/${runId}`,
+  ) as unknown as Promise<WorkflowTestRun>
+}
+
+export function cancelWorkflowTestRun(
+  appId: string,
+  runId: string,
+): Promise<WorkflowTestRun> {
+  return requestClient.post<WorkflowTestRun>(
+    `/api/v1/workflow-apps/${appId}/test-runs/${runId}/cancel`,
+  ) as unknown as Promise<WorkflowTestRun>
+}
+
+export function rerunFailedWorkflowTestResults(
+  appId: string,
+  runId: string,
+): Promise<WorkflowTestRun> {
+  return requestClient.post<WorkflowTestRun>(
+    `/api/v1/workflow-apps/${appId}/test-runs/${runId}/rerun-failed`,
+  ) as unknown as Promise<WorkflowTestRun>
+}
+
+export function compareWorkflowTestRuns(
+  appId: string,
+  left: string,
+  right: string,
+): Promise<WorkflowTestComparison> {
+  return requestClient.get<WorkflowTestComparison>(
+    `/api/v1/workflow-apps/${appId}/test-runs/compare`,
+    { params: { left, right } },
+  ) as unknown as Promise<WorkflowTestComparison>
+}
+
+export function exportWorkflowTestRun(
+  appId: string,
+  runId: string,
+  format: 'csv' | 'json',
+): Promise<Blob> {
+  return requestClient.get(
+    `/api/v1/workflow-apps/${appId}/test-runs/${runId}/export`,
+    { params: { format }, responseType: 'blob' },
+  ) as unknown as Promise<Blob>
 }
 
 // ─── User API (Runtime) ─────────────────────────────────────────────────────

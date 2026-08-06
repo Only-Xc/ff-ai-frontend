@@ -1959,9 +1959,11 @@ export default {
     'لم يتم تسجيل نطاق الوصول لهذا الإصدار القديم',
   'pages.production.detail.artifactMetadata': 'عنصر الإصدار',
   'pages.production.detail.artifactMetadataEmpty': 'لا توجد بيانات لعنصر الإصدار',
+  'pages.production.detail.builderError': 'خطأ البناء',
   'pages.production.detail.runtimeMetadata': 'مثيل التشغيل',
   'pages.production.detail.runtimeMetadataEmpty':
     'لم يتم إنشاء مثيل التشغيل بعد',
+  'pages.production.detail.runtimeLastError': 'آخر خطأ في وقت التشغيل',
   'pages.production.detail.imageName': 'اسم الصورة',
   'pages.production.detail.ociDigest': 'بصمة OCI',
   'pages.production.detail.artifactLocation': 'موقع العنصر في MinIO',

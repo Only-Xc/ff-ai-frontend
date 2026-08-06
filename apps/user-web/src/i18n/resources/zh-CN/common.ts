@@ -19,8 +19,10 @@ export default {
   'common.user.logout': '退出登录',
   // Workflow 通用操作
   'common.save': '保存',
+  'common.create': '创建',
   'common.confirm': '确定',
   'common.cancel': '取消',
+  'common.back': '返回',
   'common.edit': '编辑',
   'common.duplicate': '复制',
   'common.delete': '删除',

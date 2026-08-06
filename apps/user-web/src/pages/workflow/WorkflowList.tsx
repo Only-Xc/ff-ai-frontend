@@ -2,6 +2,7 @@ import {
   CopyOutlined,
   DeleteOutlined,
   EditOutlined,
+  ExperimentOutlined,
   PlusOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
@@ -13,6 +14,7 @@ import {
   Input,
   message,
   Modal,
+  Segmented,
   Select,
   Space,
   Table,
@@ -53,6 +55,9 @@ export default function WorkflowList() {
   const [createOpen, setCreateOpen] = useState(false)
   const [newName, setNewName] = useState('')
   const [newDesc, setNewDesc] = useState('')
+  const [newAppType, setNewAppType] = useState<'chatflow' | 'agentflow'>(
+    'chatflow',
+  )
 
   const { data, isLoading } = useQuery({
     queryKey: workflowKeys.appList({ page, search, status: statusFilter }),
@@ -77,9 +82,11 @@ export default function WorkflowList() {
       setCreateOpen(false)
       setNewName('')
       setNewDesc('')
+      setNewAppType('chatflow')
       message.success(t('pages.workflow.createSuccess'))
       void navigate(`/workflow/flowise/${res.id}/design`)
     },
+    onError: (error: Error) => message.error(error.message),
   })
 
   const deleteMutation = useMutation({
@@ -192,6 +199,16 @@ export default function WorkflowList() {
             onClick={() => duplicateMutation.mutate(record.id)}
           >
             {t('common.duplicate')}
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            icon={<ExperimentOutlined />}
+            onClick={() => {
+              void navigate(`/workflow/flowise/${record.id}/evaluations`)
+            }}
+          >
+            {t('pages.workflow.evaluations.shortTitle')}
           </Button>
           <Button
             type="link"
@@ -310,6 +327,7 @@ export default function WorkflowList() {
           createMutation.mutate({
             name: newName,
             description: newDesc || undefined,
+            app_type: newAppType,
           })
         }
         confirmLoading={createMutation.isPending}
@@ -327,6 +345,26 @@ export default function WorkflowList() {
             onChange={(e) => setNewDesc(e.target.value)}
             rows={3}
           />
+          <div>
+            <div style={{ marginBottom: 8 }}>{t('pages.workflow.appType')}</div>
+            <Segmented
+              block
+              value={newAppType}
+              onChange={(value) =>
+                setNewAppType(value as 'chatflow' | 'agentflow')
+              }
+              options={[
+                {
+                  label: t('pages.workflow.appType.chatflow'),
+                  value: 'chatflow',
+                },
+                {
+                  label: t('pages.workflow.appType.agentflow'),
+                  value: 'agentflow',
+                },
+              ]}
+            />
+          </div>
         </Space>
       </Modal>
     </div>

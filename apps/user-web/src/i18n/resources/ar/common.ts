@@ -20,8 +20,10 @@ export default {
   'common.user.logout': 'تسجيل الخروج',
   // Workflow 通用操作
   'common.save': 'حفظ',
+  'common.create': 'إنشاء',
   'common.confirm': 'تأكيد',
   'common.cancel': 'إلغاء',
+  'common.back': 'رجوع',
   'common.edit': 'تعديل',
   'common.duplicate': 'نسخ',
   'common.delete': 'حذف',

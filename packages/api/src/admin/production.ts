@@ -65,11 +65,57 @@ export interface ApproverRef {
   email?: string | null
 }
 
+export interface ProductionErrorInfo extends Record<string, unknown> {
+  message?: string | null
+}
+
+export interface ProductionArtifactSnapshot extends Record<string, unknown> {
+  release_id?: string | null
+  image_name?: string | null
+  oci_digest?: string | null
+  artifact_bucket?: string | null
+  artifact_prefix?: string | null
+  image_object_key?: string | null
+  artifact_sha256?: string | null
+  artifact_size_bytes?: number | null
+  build_finished_at?: string | null
+  runtime_base_image?: string | null
+  runtime_base_digest?: string | null
+  flow_id?: string | null
+  access_scope?: string | null
+  role_ids?: string[] | null
+  roles?: Array<Record<string, unknown>> | null
+}
+
+export interface ProductionReleaseSnapshot extends Record<string, unknown> {
+  status?: string | null
+  current_step?: string | null
+  error_json?: ProductionErrorInfo | null
+  build_started_at?: string | null
+  build_finished_at?: string | null
+}
+
+export interface ProductionRuntimeSnapshot extends Record<string, unknown> {
+  status?: string | null
+  container_port?: number | null
+  container_name?: string | null
+  container_id?: string | null
+  network_name?: string | null
+  network_alias?: string | null
+  image?: string | null
+  image_digest?: string | null
+  upstream_url?: string | null
+  health_url?: string | null
+  prediction_path?: string | null
+  last_error?: string | ProductionErrorInfo | null
+}
+
 export interface ProductionApprovalDetail {
   request: ProductionApproval
   qa_result_snapshot: Record<string, unknown>
-  artifact_snapshot: Record<string, unknown>
-  runtime_snapshot: Record<string, unknown>
+  artifact_snapshot: ProductionArtifactSnapshot
+  release_snapshot: ProductionReleaseSnapshot
+  runtime_snapshot: ProductionRuntimeSnapshot
   approver_role_ids: string[]
   approver_user_ids: string[]
   approver_users: ApproverRef[]

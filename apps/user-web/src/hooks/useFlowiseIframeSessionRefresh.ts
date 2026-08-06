@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   FLOWISE_SESSION_EXPIRED_EVENT,
+  FLOWISE_SESSION_TICKET_EVENT,
+  createFlowiseBrowserSession,
   getFlowiseBaseUrl,
   type FlowiseBrowserSession,
 } from '@/api/flowise'
@@ -23,10 +25,11 @@ function getExpectedFlowiseOrigin() {
   }
 }
 
-function isFlowiseSessionExpiredMessage(event: MessageEvent) {
+function getFlowiseSessionRefreshRequest(event: MessageEvent) {
   if (event.origin !== getExpectedFlowiseOrigin()) return false
-  const data = event.data as { type?: unknown } | null
-  return data?.type === FLOWISE_SESSION_EXPIRED_EVENT
+  const data = event.data as { type?: unknown; requestId?: unknown } | null
+  if (data?.type !== FLOWISE_SESSION_EXPIRED_EVENT) return false
+  return { requestId: typeof data.requestId === 'string' ? data.requestId : '' }
 }
 
 export function useFlowiseIframeSessionRefresh({
@@ -52,8 +55,27 @@ export function useFlowiseIframeSessionRefresh({
     if (!appId) return
 
     const handleMessage = (event: MessageEvent) => {
-      if (!isFlowiseSessionExpiredMessage(event)) return
-      void refreshIframeSession()
+      const request = getFlowiseSessionRefreshRequest(event)
+      if (!request) return
+      if (!request.requestId || !event.source) {
+        void refreshIframeSession()
+        return
+      }
+
+      void createFlowiseBrowserSession(appId)
+        .then((session) => {
+          event.source?.postMessage(
+            {
+              type: FLOWISE_SESSION_TICKET_EVENT,
+              requestId: request.requestId,
+              ticket: session.ticket,
+            },
+            { targetOrigin: getExpectedFlowiseOrigin() },
+          )
+        })
+        .catch(() => {
+          void refreshIframeSession()
+        })
     }
 
     window.addEventListener('message', handleMessage)
