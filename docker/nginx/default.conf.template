@@ -1,6 +1,6 @@
 map $http_referer $ffai_api_upstream {
   default ${PLATFORM_API_UPSTREAM};
-  ~^https?://[^/]+/(flowise|canvas|review-canvas)/ ${FLOWISE_PROXY_UPSTREAM};
+  ~^https?://[^/]+/(flowise|canvas|review-canvas|v2/agentcanvas)/ ${FLOWISE_PROXY_UPSTREAM};
 }
 
 server {
@@ -97,6 +97,18 @@ server {
   }
 
   location ^~ /review-canvas/ {
+    proxy_pass ${FLOWISE_PROXY_UPSTREAM};
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 3600s;
+  }
+
+  location ^~ /v2/agentcanvas/ {
     proxy_pass ${FLOWISE_PROXY_UPSTREAM};
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;

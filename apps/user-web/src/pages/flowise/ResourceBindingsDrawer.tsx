@@ -31,6 +31,8 @@ import {
 
 const { Text, Title } = Typography
 
+const KNOWLEDGE_RETRIEVAL_TIMEOUT_MS = 120_000
+
 interface ResourceBinding {
   resource_type: string
   resource_id: string
@@ -190,7 +192,7 @@ export default function ResourceBindingsDrawer({
             fusion: { algorithm: 'rrf', k: 60 },
             dedup: { key: 'content_hash' },
             rerank: { enabled: row.rerank_enabled, top_n: row.top_k },
-            timeout_ms: 30000,
+            timeout_ms: KNOWLEDGE_RETRIEVAL_TIMEOUT_MS,
           },
         }
       })
