@@ -38,6 +38,10 @@ export function accessEndpointToFormValues(
     table: querySpec.type === 'postgresql' ? querySpec.table : undefined,
     path: querySpec.type === 'http_api' ? querySpec.path : undefined,
     method: querySpec.type === 'http_api' ? querySpec.method : undefined,
+    forwardPagination:
+      querySpec.type === 'http_api'
+        ? (querySpec.forward_pagination ?? true)
+        : undefined,
     availableFields: endpoint.available_fields,
     parameters,
   }
@@ -73,10 +77,15 @@ export function accessEndpointFormToPayload(
           parameter_locations: Object.fromEntries(
             parameters.map((parameter) => [
               parameter.name,
-              parameter.target === 'body' ? 'body' : 'query',
+              parameter.target === 'body'
+                ? 'body'
+                : parameter.target === 'path'
+                  ? 'path'
+                  : 'query',
             ]),
-          ) as Record<string, 'body' | 'query'>,
+          ) as Record<string, 'body' | 'path' | 'query'>,
           default_fields: availableFields,
+          forward_pagination: values.forwardPagination ?? true,
         }
 
   return {

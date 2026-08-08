@@ -16,6 +16,11 @@ function normalizedCredentialValue(value?: string, authType?: string) {
   return trimmed === '' ? undefined : trimmed
 }
 
+function normalizedOptionalValue(value?: string) {
+  const trimmed = value?.trim()
+  return trimmed === '' ? undefined : trimmed
+}
+
 function parseJsonObject(value?: string) {
   if (!value?.trim()) return {}
   const parsed: unknown = JSON.parse(value)
@@ -74,8 +79,15 @@ export function dataSourceToFormValues(
     metadataPath: config.metadata_path ?? undefined,
     authType: config.auth_type,
     authHeader: config.auth_header,
+    loginPath: config.login_path ?? undefined,
+    loginBodyJson: formatJsonObject(config.login_body),
+    tokenPath: config.token_path ?? 'data.token',
+    credentialTransform: config.credential_transform ?? 'none',
+    credentialTransformKey: config.credential_transform_key ?? undefined,
+    credentialTransformIv: config.credential_transform_iv ?? undefined,
     timeoutSeconds: config.timeout_seconds,
     verifyTls: config.verify_tls,
+    preserveResponseEnvelope: config.preserve_response_envelope ?? false,
   }
 }
 
@@ -104,6 +116,7 @@ export function dataSourceFormToPayload(
   } else {
     const metadataPath = values.metadataPath?.trim()
     const healthBody = parseJsonObject(values.healthBodyJson)
+    const loginBody = parseJsonObject(values.loginBodyJson)
     config = {
       type: 'http_api',
       base_url: values.baseUrl ?? '',
@@ -118,9 +131,23 @@ export function dataSourceFormToPayload(
       metadata_path: metadataPath === '' ? undefined : metadataPath,
       auth_type: values.authType ?? 'none',
       auth_header: values.authHeader ?? 'Authorization',
+      login_path: normalizedOptionalValue(values.loginPath),
+      login_body:
+        values.authType === 'login_bearer' && Object.keys(loginBody).length > 0
+          ? loginBody
+          : undefined,
+      token_path: normalizedOptionalValue(values.tokenPath) ?? 'data.token',
+      credential_transform: values.credentialTransform ?? 'none',
+      credential_transform_key: normalizedOptionalValue(
+        values.credentialTransformKey,
+      ),
+      credential_transform_iv: normalizedOptionalValue(
+        values.credentialTransformIv,
+      ),
       credential_ref: credentialRef,
       timeout_seconds: values.timeoutSeconds ?? 10,
       verify_tls: values.verifyTls ?? true,
+      preserve_response_envelope: values.preserveResponseEnvelope ?? false,
     }
   }
 

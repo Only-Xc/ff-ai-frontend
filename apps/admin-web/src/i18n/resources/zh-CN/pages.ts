@@ -1,6 +1,7 @@
 export default {
   'pages.pluginCarrier.sessionFailed': '插件应用连接失败',
-  'pages.pluginCarrier.sessionFailedHint': '无法创建插件访问会话，请检查插件安装状态和当前账号权限。',
+  'pages.pluginCarrier.sessionFailedHint':
+    '无法创建插件访问会话，请检查插件安装状态和当前账号权限。',
   'pages.pluginCarrier.back': '返回插件中心',
   'pages.pluginCarrier.connected': '已通过插件平台安全网关连接',
   'pages.pluginCarrier.timeout': '插件页面加载超时，请检查插件服务状态后重试。',
@@ -343,9 +344,20 @@ export default {
     '可选；留空时使用上述探测请求的 JSON 响应推断元数据。',
   'pages.dataAccess.sourceForm.authType': '鉴权方式',
   'pages.dataAccess.sourceForm.authNone': '无鉴权',
+  'pages.dataAccess.sourceForm.authLoginBearer': '动态登录 Bearer Token',
   'pages.dataAccess.sourceForm.authHeader': '鉴权请求头',
+  'pages.dataAccess.sourceForm.loginPath': '登录路径',
+  'pages.dataAccess.sourceForm.loginBody': '登录 JSON Body',
+  'pages.dataAccess.sourceForm.loginBodyHelp':
+    '使用 {{credential}} 占位符注入下方凭据。',
+  'pages.dataAccess.sourceForm.tokenPath': 'Token 响应路径',
+  'pages.dataAccess.sourceForm.credentialTransform': '凭据转换',
+  'pages.dataAccess.sourceForm.transformNone': '不转换',
+  'pages.dataAccess.sourceForm.credentialTransformKey': 'AES 密钥（32 字节）',
+  'pages.dataAccess.sourceForm.credentialTransformIv': 'AES IV（16 字节）',
   'pages.dataAccess.sourceForm.timeout': '超时（秒）',
   'pages.dataAccess.sourceForm.verifyTls': 'TLS 证书校验',
+  'pages.dataAccess.sourceForm.preserveResponseEnvelope': '保留完整响应',
   'pages.dataAccess.sourceForm.credential': '凭据 Token / 密码 / API Key',
   'pages.dataAccess.sourceForm.credentialEditHelp':
     '留空将保留已有凭据；填写新值会覆盖原凭据。',
@@ -379,6 +391,7 @@ export default {
     '可使用 schema.table，例如 public.customers',
   'pages.dataAccess.endpointForm.apiPath': 'API 路径',
   'pages.dataAccess.endpointForm.method': '请求方法',
+  'pages.dataAccess.endpointForm.forwardPagination': '自动转发分页参数',
   'pages.dataAccess.endpointForm.fields': '公开字段',
   'pages.dataAccess.endpointForm.fieldsHelp':
     '输入后按回车添加，这些是端点允许返回的字段',
@@ -390,8 +403,11 @@ export default {
   'pages.dataAccess.parameterTypes.integer': '整数',
   'pages.dataAccess.parameterTypes.number': '数值',
   'pages.dataAccess.parameterTypes.boolean': '布尔',
+  'pages.dataAccess.parameterTypes.object': '对象',
+  'pages.dataAccess.parameterTypes.array': '数组',
   'pages.dataAccess.mapping.query': 'Query 参数',
   'pages.dataAccess.mapping.body': 'Body 字段',
+  'pages.dataAccess.mapping.path': '路径参数',
   'pages.dataAccess.preview.title': '接入端点预览',
   'pages.dataAccess.preview.publishedWithChanges':
     '该端点已发布，当前配置有待发布修改',

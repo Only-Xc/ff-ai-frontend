@@ -45,11 +45,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PageContainer, PageHeader } from '@ff-ai-frontend/components'
-import {
-  adminUsers_list,
-  rbacKeys,
-  type User,
-} from '@/api/rbac'
+import { adminUsers_list, rbacKeys, type User } from '@/api/rbac'
 
 import { useAccessEndpoints } from './hooks/useAccessEndpoints'
 import { useDataSources } from './hooks/useDataSources'
@@ -201,7 +197,8 @@ function formatDataAccessDateTime(
   translate: (key: string) => string,
 ) {
   if (!value) return '-'
-  if (value === '__just_now__') return translate('pages.dataAccess.time.justNow')
+  if (value === '__just_now__')
+    return translate('pages.dataAccess.time.justNow')
   if (value.startsWith(I18N_VALUE_PREFIX)) {
     return localizeRecordValue(value, translate)
   }
@@ -354,6 +351,10 @@ export function DataAccessConsole() {
   const [sourceForm] = Form.useForm<DataSourceFormValues>()
   const sourceType = Form.useWatch('type', sourceForm)
   const sourceAuthType = Form.useWatch('authType', sourceForm)
+  const sourceCredentialTransform = Form.useWatch(
+    'credentialTransform',
+    sourceForm,
+  )
   const sourceHealthMethod = Form.useWatch('healthMethod', sourceForm)
   const [endpointForm] = Form.useForm<EndpointFormValues>()
   const endpointSourceId = Form.useWatch('sourceId', endpointForm)
@@ -538,8 +539,7 @@ export function DataAccessConsole() {
         id: log.id,
         userName: log.user_name,
         userAccount: log.user_account,
-        targetType:
-          log.target_type === 'endpoint' ? 'endpoint' : 'database',
+        targetType: log.target_type === 'endpoint' ? 'endpoint' : 'database',
         targetName: log.target_name,
         targetCode: log.target_code,
         usedAt: log.accessed_at,
@@ -602,7 +602,9 @@ export function DataAccessConsole() {
           row.field,
           row.dataType,
           nullableLabel,
-        ].some((value) => value.toLowerCase().includes(normalizedMetadataSearch))
+        ].some((value) =>
+          value.toLowerCase().includes(normalizedMetadataSearch),
+        )
       }),
     [metadataRows, normalizedMetadataSearch, t],
   )
@@ -722,8 +724,11 @@ export function DataAccessConsole() {
       healthExpectedStatus: 200,
       authType: 'none',
       authHeader: 'Authorization',
+      tokenPath: 'data.token',
+      credentialTransform: 'none',
       timeoutSeconds: 10,
       verifyTls: true,
+      preserveResponseEnvelope: false,
     })
     setSourceDrawerOpen(true)
   }
@@ -791,6 +796,7 @@ export function DataAccessConsole() {
       sourceId: undefined,
       mode: 'PASSTHROUGH',
       method: 'GET',
+      forwardPagination: true,
       availableFields: [],
       parameters: [],
     })
@@ -1708,8 +1714,7 @@ export function DataAccessConsole() {
                 icon={<ReloadOutlined />}
                 loading={
                   (workspace === 'sources' && sourceListQuery.isFetching) ||
-                  (workspace === 'endpoints' &&
-                    endpointListQuery.isFetching) ||
+                  (workspace === 'endpoints' && endpointListQuery.isFetching) ||
                   (workspace === 'policies' &&
                     fieldPolicyListQuery.isFetching) ||
                   (workspace === 'usage' && accessLogsListQuery.isFetching)
@@ -1815,10 +1820,7 @@ export function DataAccessConsole() {
                 <Alert
                   showIcon
                   action={
-                    <Button
-                      size="small"
-                      onClick={() => refetchFieldPolicies()}
-                    >
+                    <Button size="small" onClick={() => refetchFieldPolicies()}>
                       {t('pages.dataAccess.actions.retry')}
                     </Button>
                   }
@@ -1850,10 +1852,7 @@ export function DataAccessConsole() {
                 <Alert
                   showIcon
                   action={
-                    <Button
-                      size="small"
-                      onClick={() => refetchAccessLogs()}
-                    >
+                    <Button size="small" onClick={() => refetchAccessLogs()}>
                       {t('pages.dataAccess.actions.retry')}
                     </Button>
                   }
@@ -2180,6 +2179,10 @@ export function DataAccessConsole() {
                       },
                       { label: 'Bearer Token', value: 'bearer' },
                       { label: 'API Key', value: 'api_key' },
+                      {
+                        label: t('pages.dataAccess.sourceForm.authLoginBearer'),
+                        value: 'login_bearer',
+                      },
                     ]}
                   />
                 </Form.Item>
@@ -2190,7 +2193,89 @@ export function DataAccessConsole() {
                   <Input placeholder="Authorization / X-API-Key" />
                 </Form.Item>
               </div>
-              <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
+              {sourceAuthType === 'login_bearer' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
+                    <Form.Item
+                      label={t('pages.dataAccess.sourceForm.loginPath')}
+                      name="loginPath"
+                      rules={[{ required: true }]}
+                    >
+                      <Input placeholder="/api/User/Login" />
+                    </Form.Item>
+                    <Form.Item
+                      label={t('pages.dataAccess.sourceForm.tokenPath')}
+                      name="tokenPath"
+                      rules={[{ required: true }]}
+                    >
+                      <Input placeholder="data.token" />
+                    </Form.Item>
+                  </div>
+                  <Form.Item
+                    extra={t('pages.dataAccess.sourceForm.loginBodyHelp')}
+                    label={t('pages.dataAccess.sourceForm.loginBody')}
+                    name="loginBodyJson"
+                    rules={[
+                      { required: true },
+                      {
+                        validator: (_rule, value?: string) =>
+                          validateOptionalJsonObject(
+                            value,
+                            t('pages.dataAccess.validation.jsonObject'),
+                            t('pages.dataAccess.validation.jsonInvalid'),
+                          ),
+                      },
+                    ]}
+                  >
+                    <Input.TextArea
+                      autoSize={{ minRows: 4, maxRows: 10 }}
+                      placeholder={
+                        '{"loginProvider":"user@example.com","providerKey":"{{credential}}","loginType":1}'
+                      }
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label={t('pages.dataAccess.sourceForm.credentialTransform')}
+                    name="credentialTransform"
+                  >
+                    <Select
+                      options={[
+                        {
+                          label: t('pages.dataAccess.sourceForm.transformNone'),
+                          value: 'none',
+                        },
+                        {
+                          label: 'AES-256-CBC + Base64',
+                          value: 'aes_256_cbc_base64',
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                  {sourceCredentialTransform === 'aes_256_cbc_base64' ? (
+                    <div className="grid grid-cols-2 gap-x-3 max-[560px]:grid-cols-1">
+                      <Form.Item
+                        label={t(
+                          'pages.dataAccess.sourceForm.credentialTransformKey',
+                        )}
+                        name="credentialTransformKey"
+                        rules={[{ required: true, len: 32 }]}
+                      >
+                        <Input.Password />
+                      </Form.Item>
+                      <Form.Item
+                        label={t(
+                          'pages.dataAccess.sourceForm.credentialTransformIv',
+                        )}
+                        name="credentialTransformIv"
+                        rules={[{ required: true, len: 16 }]}
+                      >
+                        <Input.Password />
+                      </Form.Item>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+              <div className="grid grid-cols-3 gap-x-3 max-[700px]:grid-cols-1">
                 <Form.Item
                   label={t('pages.dataAccess.sourceForm.timeout')}
                   name="timeoutSeconds"
@@ -2200,6 +2285,18 @@ export function DataAccessConsole() {
                 <Form.Item
                   label={t('pages.dataAccess.sourceForm.verifyTls')}
                   name="verifyTls"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    checkedChildren={t('pages.dataAccess.common.on')}
+                    unCheckedChildren={t('pages.dataAccess.common.off')}
+                  />
+                </Form.Item>
+                <Form.Item
+                  label={t(
+                    'pages.dataAccess.sourceForm.preserveResponseEnvelope',
+                  )}
+                  name="preserveResponseEnvelope"
                   valuePropName="checked"
                 >
                   <Switch
@@ -2264,7 +2361,9 @@ export function DataAccessConsole() {
                   key: 'type',
                   label: t('pages.dataAccess.columns.type'),
                   children: metadataSource ? (
-                    <Tag color={SOURCE_TYPE_META[metadataSource.source_type].color}>
+                    <Tag
+                      color={SOURCE_TYPE_META[metadataSource.source_type].color}
+                    >
                       {SOURCE_TYPE_META[metadataSource.source_type].label}
                     </Tag>
                   ) : (
@@ -2275,7 +2374,9 @@ export function DataAccessConsole() {
                   key: 'code',
                   label: t('pages.dataAccess.columns.code'),
                   children: metadataSource ? (
-                    <Typography.Text code>{metadataSource.code}</Typography.Text>
+                    <Typography.Text code>
+                      {metadataSource.code}
+                    </Typography.Text>
                   ) : (
                     '-'
                   ),
@@ -2497,6 +2598,7 @@ export function DataAccessConsole() {
                   endpointForm.setFieldsValue({
                     table: undefined,
                     path: undefined,
+                    forwardPagination: true,
                     parameters: [],
                   })
                 }}
@@ -2570,6 +2672,19 @@ export function DataAccessConsole() {
                 />
               </Form.Item>
             </div>
+          ) : null}
+
+          {endpointSourceType === 'http_api' ? (
+            <Form.Item
+              label={t('pages.dataAccess.endpointForm.forwardPagination')}
+              name="forwardPagination"
+              valuePropName="checked"
+            >
+              <Switch
+                checkedChildren={t('pages.dataAccess.common.on')}
+                unCheckedChildren={t('pages.dataAccess.common.off')}
+              />
+            </Form.Item>
           ) : null}
 
           <Form.Item
@@ -2673,6 +2788,14 @@ export function DataAccessConsole() {
                             value: 'boolean',
                             label: t('pages.dataAccess.parameterTypes.boolean'),
                           },
+                          {
+                            value: 'object',
+                            label: t('pages.dataAccess.parameterTypes.object'),
+                          },
+                          {
+                            value: 'array',
+                            label: t('pages.dataAccess.parameterTypes.array'),
+                          },
                           { value: 'uuid', label: 'UUID' },
                         ]}
                       />
@@ -2700,6 +2823,10 @@ export function DataAccessConsole() {
                             {
                               value: 'body',
                               label: t('pages.dataAccess.mapping.body'),
+                            },
+                            {
+                              value: 'path',
+                              label: t('pages.dataAccess.mapping.path'),
                             },
                           ]}
                         />

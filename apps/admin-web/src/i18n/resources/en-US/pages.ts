@@ -1,9 +1,12 @@
 export default {
   'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
-  'pages.pluginCarrier.sessionFailedHint': 'The plugin session could not be created. Check the installation and your permissions.',
+  'pages.pluginCarrier.sessionFailedHint':
+    'The plugin session could not be created. Check the installation and your permissions.',
   'pages.pluginCarrier.back': 'Back to Plugin Center',
-  'pages.pluginCarrier.connected': 'Connected through the plugin platform gateway',
-  'pages.pluginCarrier.timeout': 'The plugin page timed out. Check the plugin service and retry.',
+  'pages.pluginCarrier.connected':
+    'Connected through the plugin platform gateway',
+  'pages.pluginCarrier.timeout':
+    'The plugin page timed out. Check the plugin service and retry.',
   'pages.pluginCarrier.frameTitle': '{{pluginId}} plugin app',
   'pages.pluginCenter.title': 'Plugin Center',
   'pages.pluginCenter.subtitle':
@@ -364,9 +367,21 @@ export default {
     'Optional. When empty, metadata is inferred from the JSON response of the probe request above.',
   'pages.dataAccess.sourceForm.authType': 'Authentication type',
   'pages.dataAccess.sourceForm.authNone': 'No authentication',
+  'pages.dataAccess.sourceForm.authLoginBearer': 'Dynamic login Bearer token',
   'pages.dataAccess.sourceForm.authHeader': 'Authentication header',
+  'pages.dataAccess.sourceForm.loginPath': 'Login path',
+  'pages.dataAccess.sourceForm.loginBody': 'Login JSON body',
+  'pages.dataAccess.sourceForm.loginBodyHelp':
+    'Use the {{credential}} placeholder to inject the credential below.',
+  'pages.dataAccess.sourceForm.tokenPath': 'Token response path',
+  'pages.dataAccess.sourceForm.credentialTransform': 'Credential transform',
+  'pages.dataAccess.sourceForm.transformNone': 'No transform',
+  'pages.dataAccess.sourceForm.credentialTransformKey': 'AES key (32 bytes)',
+  'pages.dataAccess.sourceForm.credentialTransformIv': 'AES IV (16 bytes)',
   'pages.dataAccess.sourceForm.timeout': 'Timeout (seconds)',
   'pages.dataAccess.sourceForm.verifyTls': 'Verify TLS certificate',
+  'pages.dataAccess.sourceForm.preserveResponseEnvelope':
+    'Preserve full response',
   'pages.dataAccess.sourceForm.credential':
     'Credential token / password / API key',
   'pages.dataAccess.sourceForm.credentialEditHelp':
@@ -403,6 +418,8 @@ export default {
     'Use schema.table, for example public.customers',
   'pages.dataAccess.endpointForm.apiPath': 'API path',
   'pages.dataAccess.endpointForm.method': 'Request method',
+  'pages.dataAccess.endpointForm.forwardPagination':
+    'Forward pagination parameters',
   'pages.dataAccess.endpointForm.fields': 'Exposed fields',
   'pages.dataAccess.endpointForm.fieldsHelp':
     'Press Enter after each field. Only these fields may be returned by the endpoint.',
@@ -416,8 +433,11 @@ export default {
   'pages.dataAccess.parameterTypes.integer': 'Integer',
   'pages.dataAccess.parameterTypes.number': 'Number',
   'pages.dataAccess.parameterTypes.boolean': 'Boolean',
+  'pages.dataAccess.parameterTypes.object': 'Object',
+  'pages.dataAccess.parameterTypes.array': 'Array',
   'pages.dataAccess.mapping.query': 'Query parameter',
   'pages.dataAccess.mapping.body': 'Body field',
+  'pages.dataAccess.mapping.path': 'Path parameter',
   'pages.dataAccess.preview.title': 'Access endpoint preview',
   'pages.dataAccess.preview.publishedWithChanges':
     'This endpoint is published and has unpublished configuration changes',

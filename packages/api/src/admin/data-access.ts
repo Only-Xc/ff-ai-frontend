@@ -48,11 +48,18 @@ export interface HttpApiDataSourceConfig {
   health_body?: Record<string, unknown> | null
   health_expected_status: number
   metadata_path?: string | null
-  auth_type: 'none' | 'bearer' | 'api_key'
+  auth_type: 'none' | 'bearer' | 'api_key' | 'login_bearer'
   auth_header: string
+  login_path?: string | null
+  login_body?: Record<string, unknown> | null
+  token_path: string
+  credential_transform: 'none' | 'aes_256_cbc_base64'
+  credential_transform_key?: string | null
+  credential_transform_iv?: string | null
   credential_ref?: string | null
   timeout_seconds: number
   verify_tls: boolean
+  preserve_response_envelope: boolean
 }
 
 export type DataSourceConfig =
@@ -128,9 +135,11 @@ export interface DataSourceMetadataResult {
 export type AccessEndpointStatus = 'deprecated' | 'draft' | 'published'
 export type AccessEndpointMode = 'PASSTHROUGH'
 export type AccessEndpointParameterType =
+  | 'array'
   | 'boolean'
   | 'integer'
   | 'number'
+  | 'object'
   | 'string'
   | 'uuid'
 
@@ -151,8 +160,9 @@ export interface HttpApiAccessEndpointQuerySpec {
   type: 'http_api'
   path: string
   method: 'GET' | 'POST'
-  parameter_locations: Record<string, 'body' | 'query'>
+  parameter_locations: Record<string, 'body' | 'path' | 'query'>
   default_fields: string[]
+  forward_pagination: boolean
 }
 
 export type AccessEndpointQuerySpec =
@@ -456,11 +466,10 @@ export const createFieldPolicyRequest = (
   data: FieldPolicyCreateBody,
   headers?: DataAccessContextHeaders,
 ) =>
-  createRequest<FieldPolicy>(
-    'POST',
-    '/api/v1/data-ingestion/field-policies',
-    { data, headers },
-  )
+  createRequest<FieldPolicy>('POST', '/api/v1/data-ingestion/field-policies', {
+    data,
+    headers,
+  })
 
 export const updateFieldPolicyRequest = (
   policyId: string,

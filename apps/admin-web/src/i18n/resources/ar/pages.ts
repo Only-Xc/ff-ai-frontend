@@ -1,9 +1,12 @@
 export default {
   'pages.pluginCarrier.sessionFailed': 'Unable to connect to plugin app',
-  'pages.pluginCarrier.sessionFailedHint': 'The plugin session could not be created. Check the installation and your permissions.',
+  'pages.pluginCarrier.sessionFailedHint':
+    'The plugin session could not be created. Check the installation and your permissions.',
   'pages.pluginCarrier.back': 'Back to Plugin Center',
-  'pages.pluginCarrier.connected': 'Connected through the plugin platform gateway',
-  'pages.pluginCarrier.timeout': 'The plugin page timed out. Check the plugin service and retry.',
+  'pages.pluginCarrier.connected':
+    'Connected through the plugin platform gateway',
+  'pages.pluginCarrier.timeout':
+    'The plugin page timed out. Check the plugin service and retry.',
   'pages.pluginCarrier.frameTitle': '{{pluginId}} plugin app',
   'pages.pluginCenter.title': 'Plugin Center',
   'pages.pluginCenter.subtitle':
@@ -359,9 +362,22 @@ export default {
     'اختياري. عند تركه فارغًا تُستنتج البيانات الوصفية من استجابة JSON لطلب الفحص أعلاه.',
   'pages.dataAccess.sourceForm.authType': 'نوع المصادقة',
   'pages.dataAccess.sourceForm.authNone': 'بلا مصادقة',
+  'pages.dataAccess.sourceForm.authLoginBearer':
+    'رمز Bearer من تسجيل دخول ديناميكي',
   'pages.dataAccess.sourceForm.authHeader': 'ترويسة المصادقة',
+  'pages.dataAccess.sourceForm.loginPath': 'مسار تسجيل الدخول',
+  'pages.dataAccess.sourceForm.loginBody': 'محتوى JSON لتسجيل الدخول',
+  'pages.dataAccess.sourceForm.loginBodyHelp':
+    'استخدم {{credential}} لإدراج بيانات الاعتماد أدناه.',
+  'pages.dataAccess.sourceForm.tokenPath': 'مسار الرمز في الاستجابة',
+  'pages.dataAccess.sourceForm.credentialTransform': 'تحويل بيانات الاعتماد',
+  'pages.dataAccess.sourceForm.transformNone': 'بدون تحويل',
+  'pages.dataAccess.sourceForm.credentialTransformKey': 'مفتاح AES ‏(32 بايت)',
+  'pages.dataAccess.sourceForm.credentialTransformIv': 'متجه AES IV ‏(16 بايت)',
   'pages.dataAccess.sourceForm.timeout': 'المهلة (ثوانٍ)',
   'pages.dataAccess.sourceForm.verifyTls': 'التحقق من شهادة TLS',
+  'pages.dataAccess.sourceForm.preserveResponseEnvelope':
+    'الاحتفاظ بالاستجابة كاملة',
   'pages.dataAccess.sourceForm.credential':
     'رمز اعتماد / كلمة مرور / مفتاح API',
   'pages.dataAccess.sourceForm.credentialEditHelp':
@@ -395,6 +411,8 @@ export default {
     'استخدم schema.table، مثل public.customers',
   'pages.dataAccess.endpointForm.apiPath': 'مسار API',
   'pages.dataAccess.endpointForm.method': 'طريقة الطلب',
+  'pages.dataAccess.endpointForm.forwardPagination':
+    'تمرير معلمات التصفح تلقائيًا',
   'pages.dataAccess.endpointForm.fields': 'الحقول المكشوفة',
   'pages.dataAccess.endpointForm.fieldsHelp':
     'اضغط Enter بعد كل حقل. لا يمكن لنقطة الوصول إرجاع سوى هذه الحقول.',
@@ -408,8 +426,11 @@ export default {
   'pages.dataAccess.parameterTypes.integer': 'عدد صحيح',
   'pages.dataAccess.parameterTypes.number': 'رقم',
   'pages.dataAccess.parameterTypes.boolean': 'قيمة منطقية',
+  'pages.dataAccess.parameterTypes.object': 'كائن',
+  'pages.dataAccess.parameterTypes.array': 'مصفوفة',
   'pages.dataAccess.mapping.query': 'معلمة Query',
   'pages.dataAccess.mapping.body': 'حقل Body',
+  'pages.dataAccess.mapping.path': 'معلمة المسار',
   'pages.dataAccess.preview.title': 'معاينة نقطة الوصول',
   'pages.dataAccess.preview.publishedWithChanges':
     'نقطة الوصول منشورة ولديها تغييرات تهيئة غير منشورة',
@@ -1936,7 +1957,8 @@ export default {
   'pages.production.detail.cancelReasonRequired': 'الرجاء إدخال سبب الإلغاء',
   'pages.production.detail.cancelSuccess': 'تم إلغاء الموافقة',
   'pages.production.detail.reapply': 'إعادة تطبيق الطرح',
-  'pages.production.detail.reapplySuccess': 'تم إرسال مهمة التفعيل غير المتزامنة',
+  'pages.production.detail.reapplySuccess':
+    'تم إرسال مهمة التفعيل غير المتزامنة',
   'pages.production.detail.activationStatus': 'حالة التفعيل',
   'pages.production.detail.activation.PENDING': 'بانتظار التفعيل',
   'pages.production.detail.activation.ACTIVE': 'نشط',

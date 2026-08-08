@@ -57,10 +57,17 @@ export interface DataSourceFormValues {
   healthBodyJson?: string
   healthExpectedStatus?: number
   metadataPath?: string
-  authType?: 'none' | 'bearer' | 'api_key'
+  authType?: 'none' | 'bearer' | 'api_key' | 'login_bearer'
   authHeader?: string
+  loginPath?: string
+  loginBodyJson?: string
+  tokenPath?: string
+  credentialTransform?: 'none' | 'aes_256_cbc_base64'
+  credentialTransformKey?: string
+  credentialTransformIv?: string
   timeoutSeconds?: number
   verifyTls?: boolean
+  preserveResponseEnvelope?: boolean
 }
 
 export interface EndpointFormValues {
@@ -71,6 +78,7 @@ export interface EndpointFormValues {
   table?: string
   path?: string
   method?: 'GET' | 'POST'
+  forwardPagination?: boolean
   availableFields: string[]
   parameters: EndpointParameterFormValues[]
 }
