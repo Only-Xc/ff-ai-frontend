@@ -41,6 +41,7 @@ const searchHasRun = ref(false)
 const searchEmbeddingModel = ref('text-embedding-v4')
 const folderIdCopyStatus = ref<'idle' | 'success' | 'error'>('idle')
 const RETRIEVAL_TOP_K = 10
+const MAX_UPLOAD_FILE_SIZE = 500 * 1024 * 1024
 let pollTimer: ReturnType<typeof setInterval> | null = null
 let folderIdCopyTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -210,6 +211,12 @@ function chooseFiles() {
 
 async function upload(selected: File[]) {
   if (!selectedFolderId.value || !selected.length) return
+  const oversized = selected.find(file => file.size > MAX_UPLOAD_FILE_SIZE)
+  if (oversized) {
+    error.value = `${t('单个文件不能超过 500MB')}：${oversized.name}`
+    if (fileInput.value) fileInput.value.value = ''
+    return
+  }
   uploading.value = true
   error.value = ''
   try {
@@ -652,7 +659,7 @@ onUnmounted(() => {
         >
           <SvgIcon name="upload" :size="20" />
           <span>拖放文件到此目录，或点击选择</span>
-          <small>PDF、Office、文本、HTML、JSON、图片，单文件不超过 50MB</small>
+          <small>{{ t('PDF、Office、文本、HTML、JSON、图片，单文件不超过 500MB') }}</small>
         </div>
 
         <div v-if="!hasSelectedFolder" class="empty-state">请先创建或选择一个目录</div>

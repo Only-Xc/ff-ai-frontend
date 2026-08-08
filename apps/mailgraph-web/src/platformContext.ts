@@ -38,8 +38,9 @@ const EN: Record<string, string> = {
   '复制失败，请重试': 'Copy failed. Try again',
   '当前目录 ID': 'Current folder ID',
   '拖放文件到此目录，或点击选择': 'Drop files here or click to select',
-  'PDF、Office、文本、HTML、JSON、图片，单文件不超过 50MB':
-    'PDF, Office, text, HTML, JSON, and images; 50 MB max per file',
+  'PDF、Office、文本、HTML、JSON、图片，单文件不超过 500MB':
+    'PDF, Office, text, HTML, JSON, and images; 500 MB max per file',
+  '单个文件不能超过 500MB': 'A file cannot exceed 500 MB',
   请先创建或选择一个目录: 'Create or select a folder first',
   该目录还没有文件: 'No files in this folder',
   文件名: 'File name',
@@ -334,8 +335,9 @@ const AR: Record<string, string> = {
   '复制失败，请重试': 'فشل النسخ. حاول مرة أخرى',
   '当前目录 ID': 'معرّف المجلد الحالي',
   '拖放文件到此目录，或点击选择': 'أفلت الملفات هنا أو انقر للاختيار',
-  'PDF、Office、文本、HTML、JSON、图片，单文件不超过 50MB':
-    'ملفات PDF وOffice والنصوص وHTML وJSON والصور؛ 50 ميغابايت للملف',
+  'PDF、Office、文本、HTML、JSON、图片，单文件不超过 500MB':
+    'ملفات PDF وOffice والنصوص وHTML وJSON والصور؛ 500 ميغابايت للملف',
+  '单个文件不能超过 500MB': 'لا يمكن أن يتجاوز حجم الملف 500 ميغابايت',
   请先创建或选择一个目录: 'أنشئ مجلدًا أو اختره أولاً',
   该目录还没有文件: 'لا توجد ملفات في هذا المجلد',
   文件名: 'اسم الملف',
